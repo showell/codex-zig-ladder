@@ -71,6 +71,12 @@ truth_arm() {
     printf '%s\n' "$bout" | tail -1
     [ -s ${m}-subject.codex ] || { echo "BUNDLE FAILED: no ${m}-subject.codex"; return 1; }
 
+    # Ask the cheap question before the expensive one. A chapter bundled twice
+    # is visible in the subject text and costs milliseconds to see; it cost us
+    # a compile four minutes into a sweep once and twenty-five minutes into one
+    # the next day.
+    python3 "$T/check_bundles.py" "$m" || { echo "BUNDLE REFUSED for $m"; return 1; }
+
     python3 - "$m" "$(mode_flags $m)" <<'PY'
 import sys
 m, flags = sys.argv[1], sys.argv[2]
