@@ -43,6 +43,16 @@ fi
 printf '%s\n' "$cout" | grep -vE "^(WD|HEAP|STACK):" | tail -25
 [ -s "$PLUG_CDX" ] || { echo "PLUG COMPILE FAILED: no zig-plug.cdx"; exit 1; }
 
+# Stamp the plug with the source it was built from. CODEX_ROOT names a working
+# TREE, not a commit, so `git checkout` in that clone silently changes what the
+# ladder is testing -- and it did: a sweep was mid-flight when the checkout moved
+# to a branch without the __deck-set fix, the plug was rebuilt without it, and
+# `lower` failed with an error we had already fixed. Nothing said the ground had
+# moved. Now the arms check this and say so.
+cat "$REPO/codex/plugs/zig/ZigEmitter.codex" "$REPO/codex/plugs/zig/ZigPlug.codex" \
+    | sha256sum | cut -d' ' -f1 > "$(dirname "$PLUG_CDX")/zig-plug.fingerprint"
+echo "plug fingerprint: $(cut -c1-16 "$(dirname "$PLUG_CDX")/zig-plug.fingerprint")"
+
 # Each warmup diffs against its banked bare-metal truth (see
 # warmups/regen.sh), so a pass is an oracle match, not an eyeball.
 for prog in "$@"; do

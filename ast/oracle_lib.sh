@@ -152,10 +152,30 @@ pingpong_fixed_point() {
     fi
 }
 
+# The plug binary is only evidence about the ZigEmitter it was built from, and
+# CODEX_ROOT names a working tree that can move underneath a running sweep. This
+# refuses rather than reporting on a plug whose source has since changed.
+plug_provenance() {
+    local fp="$REPO/codex/plugs/zig/build-output/zig-plug.fingerprint"
+    [ -f "$fp" ] || { echo "NO PLUG FINGERPRINT -- run cycle.sh"; return 1; }
+    local now
+    now=$(cat "$REPO/codex/plugs/zig/ZigEmitter.codex" "$REPO/codex/plugs/zig/ZigPlug.codex" \
+          | sha256sum | cut -d' ' -f1)
+    local was
+    was=$(cat "$fp")
+    if [ "$now" != "$was" ]; then
+        echo "PLUG SOURCE MOVED since the plug was built:"
+        echo "  built from ${was:0:16}, tree now holds ${now:0:16}"
+        echo "  the checkout at $REPO changed under this run; rebuild with cycle.sh"
+        return 1
+    fi
+}
+
 # Run the emitted zig, diff against the truth. Shared by both arms: the
 # transport is what differs between them, never the verdict.
 zig_verdict() {
     local m=$1
+    plug_provenance || return 1
     cd $T/ast
     # program output goes to stderr (std.debug.print); truth was serial bytes
     if timeout 600 zig run ${m}.zig 2> ${m}.zigout; then
