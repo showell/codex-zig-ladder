@@ -52,8 +52,17 @@ $lines = [System.Collections.Generic.List[string]]::new()
 # The real deck-short-of reads __deck-pos where the stub did not, and that
 # is harmless here: the harness passes a 0 ceiling, for which both answer
 # False.
-foreach ($ch in @('codex/foreword/core/CCE.codex',
-                  'codex/compiler/Core/OffsetTable.codex',
+# CCE is NOT listed here, though it was until Update 46 made it fail.
+# plug-build-lib carries a foreword chapter automatically once something
+# cites it, and this bundle cites it, so listing it as well put CCE in twice
+# -- once as Foreword--CCE and once as Parsmi--CCE. Two quires, two copies of
+# every definition in it.
+#
+# That was visible the whole time as CDX3006 warnings and we read past them.
+# The value duplicates only warn; CharClass is a TYPE, and Update 46 makes a
+# duplicate type definition CDX3001, a hard error. lir lists CCE too and is
+# right to: nothing there cites it, so the explicit copy is the only one.
+foreach ($ch in @('codex/compiler/Core/OffsetTable.codex',
                   'codex/compiler/Core/VmProfile.codex',
                   'codex/compiler/Types/Builtins.codex',
                   'codex/compiler/IR/Lir.codex',
