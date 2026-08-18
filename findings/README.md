@@ -1,4 +1,4 @@
-# Findings: six closed upstream, six standing, one fixed here, one proposal
+# Findings: six closed upstream, seven standing, one fixed here, one proposal
 
 This directory holds the findings and the probes that make them runnable.
 It is discussion material rather than a proposed addition to the Codex tree,
@@ -13,8 +13,10 @@ The probes are Codex chapters and still compile with the depot's own tooling:
 
 **Status re-checked against Update 45 / seed 270227BE, 2026-08-17.** Update 46
 (`adfae029`, seed 12B07296) landed the same day and closed what was left of
-finding 11; that is marked at its heading and not re-verified here, since the
-ladder has not been re-banked against 46 yet.
+finding 11; that is marked at its heading and not re-verified here. The ladder
+WAS re-banked against 46 on 2026-08-18 and every rung came back byte-identical
+to the u45 bank, so nothing below changed under the new seed; the findings
+themselves were not re-read against it.
 
 Findings 1 through 5 were fixed by Update 43 and each is marked at its
 heading. Finding 1's fix is verified present in this seed: `emit-net-recv-raw-helper`
