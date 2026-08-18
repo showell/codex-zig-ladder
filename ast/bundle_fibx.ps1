@@ -62,6 +62,12 @@ $lines = [System.Collections.Generic.List[string]]::new()
 # The value duplicates only warn; CharClass is a TYPE, and Update 46 makes a
 # duplicate type definition CDX3001, a hard error. lir lists CCE too and is
 # right to: nothing there cites it, so the explicit copy is the only one.
+# ListUtils is NOT listed here. Resolve-CiteOrder walks it
+# unconditionally, so this bundle already carries Foreword--ListUtils, and
+# listing it again put a second copy in the Parsmi quire: two chapters
+# defining list-map, fold-list, list-take and the rest, which is what every
+# CDX3006 in this rung's log was telling us. See bundle_parse.ps1, where the
+# explicit listing IS the only copy and stays.
 foreach ($ch in @('codex/compiler/Core/OffsetTable.codex',
                   'codex/compiler/Core/VmProfile.codex',
                   'codex/compiler/Types/Builtins.codex',
@@ -83,7 +89,6 @@ foreach ($ch in @('codex/compiler/Core/OffsetTable.codex',
                   'codex/compiler/Emit/X86_64ListHelpers.codex',
                   'codex/compiler/Emit/X86_64ProcessHelpers.codex',
                   'codex/compiler/Emit/X86_64TextHelpers.codex',
-                  'codex/foreword/core/ListUtils.codex',
                   'codex/compiler/Core/BuildSettings.codex',
                   'codex/compiler/Core/Phase.codex',
                   'codex/compiler/Core/PhaseAllocator.codex',

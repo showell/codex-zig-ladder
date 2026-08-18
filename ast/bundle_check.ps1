@@ -58,8 +58,13 @@ $lines = [System.Collections.Generic.List[string]]::new()
 # The real deck-short-of reads __deck-pos where the stub did not, and that
 # is harmless here: the harness passes a 0 ceiling, for which both answer
 # False.
-foreach ($ch in @('codex/foreword/core/ListUtils.codex',
-                  'codex/compiler/Core/BuildSettings.codex',
+# ListUtils is NOT listed here. Resolve-CiteOrder walks it
+# unconditionally, so this bundle already carries Foreword--ListUtils, and
+# listing it again put a second copy in the Parsmi quire: two chapters
+# defining list-map, fold-list, list-take and the rest, which is what every
+# CDX3006 in this rung's log was telling us. See bundle_parse.ps1, where the
+# explicit listing IS the only copy and stays.
+foreach ($ch in @('codex/compiler/Core/BuildSettings.codex',
                   'codex/compiler/Core/Phase.codex',
                   'codex/compiler/Core/PhaseAllocator.codex',
                   'codex/compiler/Core/TextFormat.codex',
