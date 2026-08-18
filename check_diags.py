@@ -27,6 +27,12 @@ import sys
 #          NOTE  -- expected, but print a count; something we are watching
 #          FAIL  -- stops the rung
 #
+# A third element pins the population: (verdict, why, expected_count). A class
+# that fires constantly and benignly is the shape CDX3006 had right before it
+# hid a real error from us, so for those the useful question is not "is this
+# class benign" but "is this still the same set of instances". A count that
+# moves is a new instance somebody should read.
+#
 # Every entry needs a why. An entry without one is the habit this file exists
 # to break, wearing a table for a disguise.
 POLICY = {
@@ -40,9 +46,19 @@ POLICY = {
     'CDX3005': ('OK', "a definition shadows a builtin. The compiler's own is-digit, "
                       'is-letter and is-whitespace do this; depot source, not ours, and '
                       'not something a subset bundle can fix.'),
-    'CDX6020': ('NOTE', '__record-set in a constructor field: other fields reading the same '
-                        'record see the mutated value. This is finding 10 territory and '
-                        'nobody has read these yet. Counted, not ignored, until someone has.'),
+    # Read all 37 on 2026-08-18, both sites. Benign at every one: the hazard is
+    # a SIBLING field reading the record that was just mutated, and no site does.
+    #   X86_64State:923  EmitResult { state = __record-set st1 ..., reg = scratch }
+    #                    scratch is an Integer, not a read of st1.
+    #   Parser:764       ParseTypeDefResult { maybe-type-def = Just (__record-set td ...),
+    #                                         state = st-deriv }
+    #                    st-deriv is a ParseState; td is a TypeDef.
+    # Left as NOTE with the count pinned rather than promoted to OK, because
+    # "benign in every instance we read" is a statement about a population, and
+    # the population is what changes.
+    'CDX6020': ('NOTE', '__record-set in a constructor field. All 37 read 2026-08-18 and '
+                        'benign: no sibling field reads the mutated record. A change in '
+                        'count means an instance nobody has read.', 37),
     'CDX3006': ('FAIL', 'duplicate definition across chapters. Every instance we have ever '
                         'seen was a bundle including the same chapter twice, which is ours '
                         'to fix. This is the code whose noise hid the CharClass duplicate.'),
@@ -56,7 +72,7 @@ POLICY = {
 CODE = re.compile(r'CDX\d{4}')
 
 
-def judge(path):
+def judge(path, population=False):
     text = pathlib.Path(path).read_text(errors='replace')
     census = {}
     for line in text.splitlines():
@@ -65,7 +81,8 @@ def judge(path):
 
     failures, notes, unknown = [], [], []
     for code, lines in sorted(census.items()):
-        verdict, _ = POLICY.get(code, (None, None))
+        entry = POLICY.get(code)
+        verdict = entry[0] if entry else None
         if code == 'uncoded':
             # The compiler's own summary lines carry no CDX code. CODEGEN-ERRORS
             # and CODEGEN-HALTED mean the compile refused, which the SIZE-marker
@@ -85,7 +102,15 @@ def judge(path):
             notes.append((code, lines))
 
     for code, lines in notes:
-        print(f'  NOTE {code} x{len(lines)}  {POLICY[code][1]}')
+        entry = POLICY[code]
+        expected = entry[2] if len(entry) > 2 else None
+        # The pinned count is a SWEEP total, so it only means anything when
+        # every rung's diagnostics are in front of us. Checking it per rung
+        # would report a move on every rung and teach us to ignore the line,
+        # which is the exact habit this file exists to break.
+        moved = '' if (not population) or expected in (None, len(lines)) else \
+            f'  <-- POPULATION MOVED, was {expected}; read the new ones and re-pin'
+        print(f'  NOTE {code} x{len(lines)}  {entry[1]}{moved}')
     for code, lines in unknown:
         print(f'  UNKNOWN {code} x{len(lines)} -- not in check_diags.py POLICY.')
         print(f'    {lines[0][:150]}')
@@ -103,13 +128,27 @@ def judge(path):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        raise SystemExit('usage: check_diags.py <file.diags> [...]')
+    args = [a for a in sys.argv[1:] if a != '--census']
+    # --census judges every rung's diagnostics as one population, which is the
+    # only scale at which the pinned counts mean anything. allcycles runs it
+    # once at the end; a rung runs without it.
+    census_mode = '--census' in sys.argv
+    if not args:
+        raise SystemExit('usage: check_diags.py [--census] <file.diags> [...]')
     rc, judged = 0, 0
-    for p in sys.argv[1:]:
-        if pathlib.Path(p).exists():
-            rc |= judge(p)
-            judged += 1
+    if census_mode:
+        merged = '\n'.join(pathlib.Path(p).read_text(errors='replace')
+                            for p in args if pathlib.Path(p).exists())
+        if merged.strip():
+            tmp = pathlib.Path('/tmp/.ladder-census.diags')
+            tmp.write_text(merged)
+            rc = judge(tmp, population=True)
+            judged = 1
+    else:
+        for p in args:
+            if pathlib.Path(p).exists():
+                rc |= judge(p)
+                judged += 1
     # A clean compile writes no .diags at all, which is legitimate. Say so
     # rather than exiting 0 in silence: a gate that cannot tell "nothing to
     # judge" from "never ran" is a gate that rots without anyone noticing.
