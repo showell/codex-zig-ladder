@@ -37,7 +37,8 @@ defects on our side of the line rather than the depot's:
   It gets what `opening.codex` passes now.
 - And one that was the depot's: `ZigEmitter` emitted `__deck-set` as a bare
   constant, dropping its argument, so a caller whose binding had no second
-  consumer would not compile. Fixed in the plug and filed as finding 12.
+  consumer would not compile. Filed as finding 12, and landed upstream: it is in
+Perforce main 16627 and public with Update 47.
 
 **Both Updates are banked, and every rung is byte-identical across them.**
 Fourteen subjects, two compilers a release apart, not one byte of emitted image
@@ -198,7 +199,24 @@ agreement is about*:
 | `lex` `parse` `desugar` `scope` `check` `lower` | a dump this harness designed: tokens, CST, AST, IR text | two independent code generators produce programs that agree on the phase's observable behaviour, for the instruction mix that phase uses. Blind to anything the dump does not print. |
 | `text` `pingpong` | Codex source re-emitted by the compiler's own `CodexEmitter` | as above, plus `pingpong` alone carries a self-consistency claim: emitting from stage 1's text must reproduce it. That is a different question from arm agreement and is checked separately by `pingpong_fixed_point`. |
 | `lir` | machine-code bytes from hand-built `LirFunc` data, no front end involved | the instruction selector agrees. The bytes are compared as decimal text and never executed. |
-| `fib` `fibx` `scale` `whole` `clamp` | the **actual CDX image the compiler emits** -- header, content, tail, symbol map | the strongest rungs, and the reason the ladder exists: the thing under comparison is now the x86 back end's real output rather than a dump of intermediate state. `whole` does it for every chapter but the driver. |
+| `fib` | the IR, in IRTextEmitter's grammar, for a front end run end to end | as the dump rungs above: a designed dump, not an image. Listed apart from them only because its subject reaches further. |
+| `fibx` `scale` `whole` `clamp` | the **actual CDX image the compiler emits** -- header, content, tail, symbol map | the strongest rungs, and the reason the ladder exists: the thing under comparison is now the x86 back end's real output rather than a dump of intermediate state. `whole` does it for every chapter but the driver. |
+
+**Fourteen rungs are not fourteen independent constructions.** Three pairs
+share a bundled unit and differ only in the harness riding in it:
+
+| unit | rungs | differ by |
+|---|---|---|
+| ~1.03 MB | `text` `pingpong` | 19 bytes: the harness and its stubs |
+| ~2.44 MB | `fibx` `scale` | the subject in the harness's text literal |
+| ~2.58 MB | `whole` `clamp` | the subject in the harness's text literal |
+
+That is not a flaw and it is not padding. Each pair asks the same compiler a
+different question -- `pingpong` feeds it its own output, `scale` gives it a
+real chapter instead of a toy, `clamp` gives it a subject that fails to compile
+-- and those are the questions worth asking. But the evidence is eleven distinct
+units, not fourteen, and a reader counting rungs should know which number is
+which.
 
 Two provenance facts that bound all of it:
 
@@ -217,7 +235,7 @@ Which leaves two sentences worth being careful about.
 
 **What this establishes.** Given IR produced by the seed, the zig plug plus an
 unrelated x86-64 code generator reproduce, byte for byte, the observable output
-of the seed's own back end across thirteen subjects, up to and including the
+of the seed's own back end across fourteen subjects, up to and including the
 entire compiler minus its driver -- and for four of those, the complete CDX
 image the compiler emits.
 
@@ -349,7 +367,7 @@ the passes do something: dropping the inline passes moves `scale-by-four` from
 
 **`clamp` exists because every other rung exercises the success path.** Its
 subject produces emit errors, which is how the diagnostic accounting got tested
-at all -- see `deck-record-repro/README.md`, finding 11.
+at all -- see `findings/README.md`.
 
 Four rungs -- `fibx`, `scale`, `whole` and `clamp` -- are the ones that run the
 back end all the way to a CDX. They are also the four that need the ring
@@ -540,9 +558,12 @@ than an hour-two surprise.
   subject to IR with the seed and push it through the plug"). `native_build.sh`
   does that for `codexir` and `zigemit`; `zigc` has no such script, so the
   transcript is not reproducible as written.
-- `clamp`'s paragraph points at finding 11 in `deck-record-repro/README.md`
-  without saying what it is. That finding is currently being re-measured and
-  may not survive, so it is deliberately not summarised here yet.
+- ~~`clamp`'s paragraph points at finding 11~~ Resolved. Finding 11 was
+  withdrawn as filed: the cause was ours, a harness that skipped the driver's
+  RESOLVE phase. What survived it -- `emit-record` laying a record out by a
+  rule no reader uses when the type is unresolved -- is closed in Update 46.
+  What `clamp` actually earned is separate and larger: it is the rung that
+  caught the deck intrinsic being off in every bundle we had ever built.
 - **Could the seed be taken out of the loop entirely, making this a complete
   DDC witness?** Today both arms pass through the seed, because it is the seed
   that compiles a subject down to the IR the plug consumes. `codexir` and
