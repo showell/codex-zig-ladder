@@ -1,4 +1,4 @@
-# Findings: six closed upstream, five standing, one fixed here
+# Findings: six closed upstream, six standing, one fixed here, one proposal
 
 This directory holds the findings and the probes that make them runnable.
 It is discussion material rather than a proposed addition to the Codex tree,
@@ -35,6 +35,11 @@ measured on 2,798,031 and are recorded here as they were found.
 
 **Finding 12 is new and fixed in this PR.** Finding 11 was withdrawn as filed --
 the cause was ours -- and the one thing that survived it is closed in Update 46.
+
+**Findings 13 and 14 were added 2026-08-18, against Update 46.** 13 is a
+proposal with a patch and a measurement rather than a defect report: the depot
+does not have the bug today and the change is inert across all 52 of its plug
+bundles. 14 is a portability gap found while verifying 13.
 
 ## 1. `net-recv-raw` truncates odd-length frames
 
@@ -593,3 +598,76 @@ The general shape is worth carrying to the other 43 plugs: a target that has no
 analogue for a builtin still has to consume that builtin's operands, or it
 silently changes which bindings are live. A target whose compiler happens not to
 mind unused locals would not have reported this at all.
+
+
+## 13. A cite is satisfied by presence, but only after the registry says no
+
+**Proposed change, not a defect they have today.** Patch:
+`findings/present-hoist.patch` (two files, +12/-2).
+
+`Resolve-PlugForewords` opens by stating the rule:
+
+> A cite is satisfied two ways, and the second one is why the strict pattern
+> needs this: the chapter is RESOLVED through the registry, or it is already
+> PRESENT because Add-PlugChapter bundled it.
+
+The code asks the second question only when the first one fails. `$present` is
+consulted inside the not-found branch, so a chapter that is BOTH present in the
+unit and resolvable from the registry is bundled a second time, under the quire
+the cite named, with every definition in it duplicated.
+
+That is the shape of both bundling bugs this ladder has been bitten by.
+`ListUtils` sat in eleven of our bundles for months and produced 108-plus
+CDX3006 warnings a sweep; `CCE` did the same and Update 46's CDX3001 made it
+fatal. Both were ours to fix, in the sense that our bundles hand-list thirty to
+fifty chapters where a depot plug lists two. Nobody upstream is doing that
+today, which is exactly why the change is cheap now.
+
+Hoisting the presence test above the registry lookup makes the rule the comment
+already describes. Measured 2026-08-18, on Update 46 plus the `__deck-set` fix:
+
+| what | result |
+|---|---|
+| ladder bundles, 14 rungs | byte-identical |
+| our other three bundles (irmem, min, zigc) | byte-identical |
+| **depot plug bundles, all 52 using `Build-TranspilerPlug`** | **byte-identical** |
+| the `cites Plug chapter Plug Types` path (arm64, riscv) | still resolves, no exit 3 |
+| a bundle that both lists and cites `ListUtils` | 96 duplicated lines gone, nothing else changed |
+
+The fleet numbers come from bundling every plug twice, with the compile step
+stubbed the way `cycle.sh` already stubs it. So the change is inert across the
+whole tree as it stands and only fires on the pattern that has cost us two
+debugging campaigns.
+
+`plug-build-lib.ps1` is generated, so the patch carries both
+`codex/build/plugbuildlibScript.codex` and the regenerated script. The generator
+was compiled and run to confirm it emits the shipped file: 230 of 230 lines
+identical before the change, and after it the emitted text differs from the
+shipped script by exactly the hoist. The 52-plug measurement above was then
+re-run against the GENERATED file, not a hand edit.
+
+Not verified: their gate.
+
+## 14. `check-generated-scripts.ps1` cannot run under Linux pwsh
+
+`build/compile.ps1` grew a QEMU fallback for hosts with no `codex-vm.exe` and
+it works: it compiled the generator above on Linux in 37 seconds, taking the
+`$script:UseCodexVm` false branch.
+
+`build/test-compile-batch.ps1` did not get the same treatment. Line 98 calls
+
+    Start-Process -FilePath $script:CodexVmBin ... -WindowStyle Hidden
+
+unconditionally, and PowerShell on Linux refuses the parameter outright:
+
+    Start-Process: The parameter '-WindowStyle' is not supported for the
+    cmdlet 'Start-Process' on this edition of PowerShell.
+
+It fails in under three seconds, before any compile, so `check-generated-scripts.ps1`
+is unavailable on a Linux host whatever else is installed. Anything else routed
+through the batch runner is unavailable with it.
+
+The workaround is what finding 13's verification did: `compile.ps1` per
+generator, then run the `.cdx`. That is one VM boot per generator instead of one
+for the set, which is the cost the batch runner exists to avoid, so it is a
+workaround and not a fix.

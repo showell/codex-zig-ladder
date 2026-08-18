@@ -1,0 +1,44 @@
+diff --git a/codex/build/plugbuildlibScript.codex b/codex/build/plugbuildlibScript.codex
+index a3aab076..97d86c2b 100644
+--- a/codex/build/plugbuildlibScript.codex
++++ b/codex/build/plugbuildlibScript.codex
+@@ -94,11 +94,16 @@ Section: S03 -- Resolve-PlugForewords
+      ScRaw "        if ($visited[$key]) { return }",
+      ScRaw "        if ($visiting[$key]) { return }",
+      ScRaw "        $visiting[$key] = $true",
++     ScRaw "        # Presence is asked FIRST, which is what makes the rule above a rule",
++     ScRaw "        # rather than a fallback. Asked last, a chapter that is both present",
++     ScRaw "        # in the unit AND resolvable from the registry is bundled a second",
++     ScRaw "        # time under the quire the cite named, and every definition in it is",
++     ScRaw "        # a CDX3006 duplicate.",
++     ScRaw "        if ($present[(Get-CiteKey $name)]) { [void]$visiting.Remove($key); $visited[$key] = $true; return }",
+      ScRaw "        $dir = $script:QuireDirs[$quire]",
+      ScRaw "        $fwPath = if ($dir) { Join-Path $script:PlugBuildRepo (Join-Path $dir \"$name.codex\") } else { $null }",
+      ScRaw "        if ((-not $fwPath) -or (-not (Test-Path -PathType Leaf $fwPath))) {",
+      ScRaw "            [void]$visiting.Remove($key)",
+-     ScRaw "            if ($present[(Get-CiteKey $name)]) { $visited[$key] = $true; return }",
+      ScRaw "            $why = if ($dir) { \"expected $fwPath\" } else { \"quire '$quire' is not registered in build/quire-map.ps1, and no chapter '$name' is present in the unit\" }",
+      ScRaw "            [Console]::Error.WriteLine(\"MISSING: cited $quire chapter '$name' ($why)\")",
+      ScRaw "            exit 3",
+diff --git a/codex/plugs/common/plug-build-lib.ps1 b/codex/plugs/common/plug-build-lib.ps1
+index 1b7f8758..2cf2eaa4 100644
+--- a/codex/plugs/common/plug-build-lib.ps1
++++ b/codex/plugs/common/plug-build-lib.ps1
+@@ -87,11 +87,16 @@ function Resolve-PlugForewords {
+         if ($visited[$key]) { return }
+         if ($visiting[$key]) { return }
+         $visiting[$key] = $true
++        # Presence is asked FIRST, which is what makes the rule above a rule
++        # rather than a fallback. Asked last, a chapter that is both present
++        # in the unit AND resolvable from the registry is bundled a second
++        # time under the quire the cite named, and every definition in it is
++        # a CDX3006 duplicate.
++        if ($present[(Get-CiteKey $name)]) { [void]$visiting.Remove($key); $visited[$key] = $true; return }
+         $dir = $script:QuireDirs[$quire]
+         $fwPath = if ($dir) { Join-Path $script:PlugBuildRepo (Join-Path $dir "$name.codex") } else { $null }
+         if ((-not $fwPath) -or (-not (Test-Path -PathType Leaf $fwPath))) {
+             [void]$visiting.Remove($key)
+-            if ($present[(Get-CiteKey $name)]) { $visited[$key] = $true; return }
+             $why = if ($dir) { "expected $fwPath" } else { "quire '$quire' is not registered in build/quire-map.ps1, and no chapter '$name' is present in the unit" }
+             [Console]::Error.WriteLine("MISSING: cited $quire chapter '$name' ($why)")
+             exit 3
