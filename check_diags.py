@@ -101,6 +101,20 @@ def judge(path, population=False):
         elif verdict == 'NOTE':
             notes.append((code, lines))
 
+    # A pinned population that vanishes is as much a change as one that grows,
+    # and the loop below only visits codes that are PRESENT -- so a class going
+    # to zero would have been silent. That is the same "cannot tell clean from
+    # never-ran" hole this file closes in two other places, and I put it in
+    # here. Only meaningful over a whole sweep, hence the population guard.
+    if population:
+        for code, entry in sorted(POLICY.items()):
+            expected = entry[2] if len(entry) > 2 else None
+            if expected and code not in census:
+                print(f'  NOTE {code} x0  {entry[1]}'
+                      f'  <-- POPULATION MOVED, was {expected}, now absent. '
+                      f'Either the sweep did not reach the source that emits it, '
+                      f'or something upstream changed; re-pin deliberately.')
+
     for code, lines in notes:
         entry = POLICY[code]
         expected = entry[2] if len(entry) > 2 else None
