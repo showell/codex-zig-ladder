@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Generate ClampHarness.codex: the whole compiler, compiling plug-oracle-arith.
+"""The clamp subject: the whole compiler, compiling plug-oracle-arith.
+
+This rung no longer has a harness of its own. It rides in the unit
+gen_whole_harness.py builds, as the second subject that unit's driver runs,
+so the 2.58 MB of compiler underneath it is compiled once instead of twice.
+What this file owns is the SUBJECT, which is the part that attributes the
+failure.
 
 This exists to attribute one failure. The hosted compiler (zigc) compiles
 codex/test/plug-oracle-arith.codex into a binary that agrees for seventeen
@@ -19,15 +25,12 @@ This rung is the same harness on both arms. If the arms agree, the
 transpilation is faithful and (b) holds; if they differ, (a) does, and the
 diff names the instruction.
 """
-import pathlib
-
-from emit_harness import harness_source
 from roots import CODEX
 
-HERE = pathlib.Path(__file__).parent
 SOURCE = CODEX / 'codex' / 'test' / 'plug-oracle-arith.codex'
+SUBJECT = SOURCE.read_text()
 
-out = harness_source('ClampHarness', 'clamp', SOURCE.read_text(), passes=True)
-dest = HERE / 'ClampHarness.codex'
-dest.write_text(out)
-print(f'{dest}: {len(out)} bytes')
+if __name__ == '__main__':
+    print(f'clamp is a subject, not a unit: {SOURCE.name}, '
+          f'{SUBJECT.count(chr(10))} lines.')
+    print('gen_whole_harness.py builds the unit that runs it.')

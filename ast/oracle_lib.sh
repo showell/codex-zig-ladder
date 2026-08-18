@@ -3,8 +3,12 @@
 # two ways -- seed-compiled bare metal as truth, and through the zig plug --
 # and required to agree byte for byte.
 #
-# Milestone <m> owns: gen_<m>_harness.py, bundle_<m>.ps1, and the artifacts
-# <m>-subject.codex, <m>.ir, <m>.truth, <m>.zig, <m>.zigout, <m>.diff.
+# A UNIT <u> owns: gen_<u>_harness.py, bundle_<u>.ps1, and the artifacts
+# <u>-subject.codex, <u>.ir, <u>.raw, <u>.zig, <u>.zigraw.
+# A RUNG <m> owns: <m>.truth, <m>.zigout, <m>.diff, and its entry in the bank.
+# Most units carry one rung and the two sets of names coincide; fibx and whole
+# carry two, and gen_scale_harness.py and gen_clamp_harness.py hold nothing but
+# the subject their unit runs second.
 T="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # ladder-root-bootstrap: reaches the LADDER only; the checkout comes from ladder_root
 REPO="$(python3 "$T/ladder_root.py" codex)"
 
@@ -13,6 +17,51 @@ REPO="$(python3 "$T/ladder_root.py" codex)"
 # missing from one is a rung whose truth is stale while its diff still
 # reports green.
 LADDER_RUNGS="lex parse desugar scope check lower text pingpong lir fib fibx scale whole clamp"
+
+# A rung is a CLAIM; a unit is a COMPILE. The ladder used one word for both
+# until 2026-08-18, and it cost real time: `scale` compiled the same 2.4 MB
+# bundle as `fibx` and `clamp` the same 2.58 MB bundle as `whole`, differing
+# only in a Text literal, so two thirds of a sweep went on compiling two
+# binaries twice. Now each unit's harness runs every one of its subjects and
+# marks the dumps, and the arms split the stream back into per-rung files.
+#
+# Everything downstream still reads <rung>.truth, <rung>.zigout, <rung>.diff,
+# and bank_truth.py still banks per rung. What changed is how many compiles
+# stand behind them.
+LADDER_UNITS="lex parse desugar scope check lower text pingpong lir fib fibx whole"
+
+# The subjects a unit runs, in the order its driver runs them. The order is
+# load-bearing: it is the order the marks appear in, so a unit that lists them
+# the other way round banks each dump under the other one's name.
+unit_rungs() {
+    case "$1" in
+        fibx)  echo "fibx scale" ;;
+        whole) echo "whole clamp" ;;
+        *)     echo "$1" ;;
+    esac
+}
+
+# Two lists, one ladder, and they are checked against each other HERE rather
+# than trusted. The comment on LADDER_RUNGS was written after allcycles.sh and
+# rebank_all.sh each kept their own copy and disagreed by one rung; splitting
+# rungs from units brings that hazard back in a new shape, where a rung listed
+# by nobody's unit silently stops being re-banked while its diff still reports
+# green against the truth from three Updates ago.
+_carried=""
+for _u in $LADDER_UNITS; do _carried="$_carried $(unit_rungs $_u)"; done
+for _r in $LADDER_RUNGS; do
+    case " $_carried " in
+        *" $_r "*) ;;
+        *) echo "LADDER MISMATCH: $_r is a rung no unit carries" >&2; exit 1 ;;
+    esac
+done
+for _r in $_carried; do
+    case " $LADDER_RUNGS " in
+        *" $_r "*) ;;
+        *) echo "LADDER MISMATCH: a unit carries $_r, which is not a rung" >&2; exit 1 ;;
+    esac
+done
+unset _carried _u _r
 
 # Extra mode flags appended to the command line of BOTH blobs, per milestone.
 # Empty wherever the seed's derived deck scale is enough, so a milestone that
@@ -27,15 +76,17 @@ mode_flags() {
     case "$1" in
         lower) echo " decks=100" ;;
         fib)   echo " decks=100" ;;
+        # Both these units now carry two subjects and run the pipeline twice
+        # in one process, so the reservation (demand-lift-floor, 104 MB) is
+        # taken twice and the deck sees two runs' worth of extents. These
+        # numbers were sized for one subject and are the likeliest thing to
+        # move first: too small shows up as CDX9002 or a fault, which is the
+        # honest direction to be wrong in.
         fibx)  echo " decks=160" ;;
-        # Same bundle as fibx -- the subject differs only by the 19KB of CCE
-        # riding in its Text literal -- so it needs the same deck scale.
-        scale) echo " decks=160" ;;
         # 160 scaled by unit length: whole is 2,578,233 bytes against fibx's
         # 2,398,065, so 160 * 2578233/2398065 = 172. Deck scale tracks the
         # unit, and guessing low here costs a ten-minute cycle to find out.
         whole) echo " decks=172" ;;
-        clamp) echo " decks=172" ;;
         # passes=text-plug drops the inline passes. Passes.codex says why in
         # so many words: "A plug that emits SOURCE resolves a call by its
         # name, so a pass that substitutes a body and deletes the call
@@ -122,9 +173,15 @@ m = sys.argv[1]
 out = codex_vm.run_cdx(f'ast/{m}-subject.cdx', timeout=5400, idle_timeout=600)
 lines = [l for l in out.decode(errors='replace').splitlines()
          if not l.startswith(("WD:", "HEAP:", "STACK:"))]
-open(f'ast/{m}.truth', 'w').write("\n".join(lines) + "\n")
-print(f"banked ast/{m}.truth: {len(lines)} lines")
+open(f'ast/{m}.raw', 'w').write("\n".join(lines) + "\n")
+print(f"ran ast/{m}-subject.cdx: {len(lines)} lines")
 PY
+
+    # One run, one truth file per subject in it. A unit carrying one subject
+    # prints no marks and passes through, so this is the same operation for
+    # every rung on the ladder rather than a special case for the big two.
+    (cd $T/ast && python3 split_truth.py ${m}.raw truth $(unit_rungs $m)) \
+        || { echo "SPLIT FAILED for $m -- see ast/${m}.raw"; return 1; }
 }
 
 # The pingpong rung's real claim, which the arm diff does not make.
@@ -184,19 +241,28 @@ zig_verdict() {
     plug_provenance || return 1
     cd $T/ast
     # program output goes to stderr (std.debug.print); truth was serial bytes
-    if timeout 600 zig run ${m}.zig 2> ${m}.zigout; then
-        if diff <(tr -d '\r' < ${m}.truth) ${m}.zigout > ${m}.diff 2>&1; then
-            echo "ORACLE PASS: zig $m output byte-identical to bare-metal truth"
-        else
-            echo "ORACLE DIFF (first 15 lines):"
-            head -15 ${m}.diff
-            return 1
-        fi
-    else
+    if ! timeout 600 zig run ${m}.zig 2> ${m}.zigraw; then
         echo "--- zig compile/run errors:"
-        head -40 ${m}.zigout
+        head -40 ${m}.zigraw
         return 1
     fi
+    # The unit ran once and answered for every subject it carries, exactly as
+    # the bare-metal side did. Split before diffing so each rung still gets its
+    # own verdict: a merged diff would name the unit and leave the reader to
+    # work out which subject moved.
+    python3 split_truth.py ${m}.zigraw zigout $(unit_rungs $m) \
+        || { echo "SPLIT FAILED for $m -- see ast/${m}.zigraw"; return 1; }
+    local rung rc=0
+    for rung in $(unit_rungs $m); do
+        if diff <(tr -d '\r' < ${rung}.truth) ${rung}.zigout > ${rung}.diff 2>&1; then
+            echo "ORACLE PASS: zig $rung output byte-identical to bare-metal truth"
+        else
+            echo "ORACLE DIFF for $rung (first 15 lines):"
+            head -15 ${rung}.diff
+            rc=1
+        fi
+    done
+    return $rc
 }
 
 # Push the IR through the plug over TCP (verified transfer -- see
@@ -243,7 +309,7 @@ ring_arm() {
 # asks here rather than carrying a list of its own.
 arm_for() {
     case "$1" in
-        fibx|scale|whole|clamp) echo ring_arm ;;
-        *)                echo zig_arm ;;
+        fibx|whole) echo ring_arm ;;
+        *)          echo zig_arm ;;
     esac
 }

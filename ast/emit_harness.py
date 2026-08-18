@@ -8,10 +8,25 @@ tail-bytes, 32 to a line. Nothing here decides anything about emission -- the
 whole point is that the rung runs the real thing, so a copied driver that
 could drift is exactly what this is not.
 
-Two rungs use it and they differ only in the subject they hand it:
-gen_fibx_harness.py compiles eighteen lines of fib, gen_scale_harness.py
-compiles a real compiler chapter. Same emitter surface, different size, which
-is what makes the second one cheap.
+**A harness takes a LIST of subjects and runs each one.** That is the fix for a
+conflation the ladder shipped with: a rung is a claim, a unit is a compile, and
+they were the same word. `scale` compiled the same 2.4 MB unit as `fibx` and
+`clamp` the same 2.58 MB unit as `whole`, differing only in a Text literal, so
+the ladder paid for four compiles to ask four questions of two binaries.
+Compiling the unit is 80-90 per cent of what a big rung costs (measured, sweep
+of 2026-08-17), so the second question was costing almost as much as the first
+and learning nothing new about the compiler.
+
+The pipeline therefore moves into `run-<prefix>`, a function of the subject
+text, called once per subject with a delimiter line between the dumps. That
+shape was not invented here: gen_zigc_harness.py has run pipeline_source over a
+bound `src` since the hosted compiler existed.
+
+What this costs is fault isolation, and it is worth naming. Two dumps from one
+process means a fault in the first subject takes the second down with it, where
+two rungs used to fail independently -- and that mattered exactly once, when
+clamp faulted and whole was still measured. The delimiter is what buys most of
+it back: a truncated run names the subject it died in.
 """
 
 
@@ -197,26 +212,62 @@ def pipeline_source(src, passes, scan=True):
     in let res = x86-64-emit-cdx ir sorted"""
 
 
-def harness_source(chapter, prefix, subject_text, passes=False, scan=True):
+# The line that separates one subject's dump from the next. The truth arm
+# splits on it, so it is a contract and not a decoration: change it here and
+# split_subjects in oracle_lib.sh stops finding anything, which is why both
+# sides read it from this one definition.
+SUBJECT_MARK = '=== subject'
+
+
+def subject_mark(rung):
+    return f'{SUBJECT_MARK} {rung} ==='
+
+
+def harness_source(chapter, prefix, subjects, passes=False, scan=True):
     """Render the harness chapter. `prefix` names the walkers so two harnesses
     can be bundled in one unit without colliding.
+
+    `subjects` is a list of (rung, text) pairs: the rung name the dump is
+    banked under, and the program that rung compiles. Every subject in one
+    call shares a unit, a compile and a process, which is the whole point --
+    see the module docstring.
 
     `passes` inserts the IR pipeline between lower and emit, the way
     compile-frontend-passes does. It is off by default because the rungs that
     predate it banked truth without it -- and it is not cosmetic: IR emission
     prunes to what the opening reaches, so a harness that never calls
     run-ir-pipeline prunes Simplify, Occurrence and LambdaLifting straight
-    back out of the unit however many chapters were bundled."""
+    back out of the unit however many chapters were bundled.
+
+    It is a per-UNIT flag, not a per-subject one, and the pairing respects
+    that: fibx and scale both run with the passes off, whole and clamp both
+    with them on. A unit whose subjects wanted different flags would need two
+    run functions and would not be one unit."""
+    if isinstance(subjects, str):
+        raise SystemExit('harness_source takes a list of (rung, text) pairs, '
+                         'not a single subject; name the rung it banks under')
+    seen = [r for r, _ in subjects]
+    if len(set(seen)) != len(seen):
+        raise SystemExit(f'duplicate rung name in {seen}; each dump is banked '
+                         f'under its own name and they cannot collide')
     # The pipeline's infos are the only evidence it did anything. Without
     # them "the passes ran" is inferred from a byte count, and a pipeline
     # that silently did nothing would look exactly like one that ran.
     info = ('\n      print-line-uni ("pass-infos " & show (list-length (passed.infos)))'
             if passes else '')
+    decls = '\n\n'.join(f'  subject-{rung} : Text\n'
+                        f'  subject-{rung} = "{codex_literal(text)}"'
+                        for rung, text in subjects)
+    # The mark is printed BEFORE the dump it introduces, so a run that dies
+    # inside a subject still names which one. A mark printed after would leave
+    # the last dump unattributed, which is the reading a fault most needs.
+    calls = '\n    '.join(f'print-line-uni "{subject_mark(rung)}"\n'
+                          f'    run-{prefix} subject-{rung}'
+                          for rung, _ in subjects)
     return f'''Chapter: {chapter}
 
-Section: Subject
-  subject-text : Text
-  subject-text = "{codex_literal(subject_text)}"
+Section: Subjects
+{decls}
 
 Section: Byte Dump
 
@@ -292,8 +343,9 @@ Section: Byte Dump
 
 Section: Driver
 
-  opening : [Console] Nothing = act
-    {pipeline_source("subject-text", passes, scan)}
+  run-{prefix} : Text -> [Console] Nothing
+  run-{prefix} (src) = act
+    {pipeline_source("src", passes, scan)}
     in act
       print-line-uni ("check-errors " & show ((cst.bag).error-count))
       print-line-uni ("ir-defs " & show (list-length (ir.defs))){info}
@@ -315,5 +367,9 @@ Section: Driver
         {prefix}-print-list (res.tail-bytes) 0
       end
     end
+  end
+
+  opening : [Console] Nothing = act
+    {calls}
   end
 '''

@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Generate WholeHarness.codex: the whole compiler, minus its driver.
+"""Generate WholeHarness.codex: the whole compiler, minus its driver, over two
+subjects.
+
+This is a UNIT and it carries two rungs: `whole`, the subject below, and
+`clamp`, which lives in gen_clamp_harness.py. One compile of 2.58 MB answers
+both, which is what they were always asking of the same binary.
 
 This is the dump-harness form of the DDC witness. The C# arm pushes the whole
 compiler through its plug and stops at "the emitted C# compiles"; this pushes
@@ -32,6 +37,7 @@ the program it compiles -- that is what the scale rung is for.
 """
 import pathlib
 
+import gen_clamp_harness
 from emit_harness import harness_source
 
 HERE = pathlib.Path(__file__).parent
@@ -59,7 +65,9 @@ SUBJECT = (
     '  end\n'
 )
 
-out = harness_source('WholeHarness', 'whole', SUBJECT, passes=True)
+out = harness_source('WholeHarness', 'whole',
+                     [('whole', SUBJECT), ('clamp', gen_clamp_harness.SUBJECT)],
+                     passes=True)
 dest = HERE / 'WholeHarness.codex'
 dest.write_text(out)
-print(f'{dest}: {len(out)} bytes')
+print(f'{dest}: {len(out)} bytes, subjects whole + clamp')

@@ -6,7 +6,11 @@
 # a stale bank compares a new plug to an old answer and means nothing, so
 # this runs first after any seed change.
 #
-# The rung list is LADDER_RUNGS in oracle_lib.sh, shared with allcycles.sh.
+# The list is LADDER_UNITS in oracle_lib.sh, shared with allcycles.sh: what
+# gets compiled is a unit, and a unit banks a truth file for every subject it
+# carries. LADDER_RUNGS is still what bank_truth.py checks it has, which is the
+# point of keeping both names -- twelve compiles have to produce fourteen
+# truths, and a unit that quietly ran one subject would be caught there.
 # This said `lex..pingpong` for a while after six more rungs existed, and
 # allcycles.sh had its own copy that was missing clamp: two lists, two
 # different ideas of what the ladder is, and a rung absent from one is a rung
@@ -19,8 +23,8 @@
 set -e
 . "$(dirname "$0")/oracle_lib.sh"
 
-for m in $LADDER_RUNGS; do
-    echo "############ re-banking $m"
+for m in $LADDER_UNITS; do
+    echo "############ re-banking $m ($(unit_rungs $m))"
     truth_arm "$m"
     echo "############ $m banked"
 done

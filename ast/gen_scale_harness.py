@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Generate ScaleHarness.codex: the same back end, a real chapter as subject.
+"""The scale subject: the same back end, a real chapter to compile.
+
+This rung no longer has a harness of its own. It rides in the unit
+gen_fibx_harness.py builds, as the second subject that unit's driver runs, so
+the 2.4 MB of compiler underneath it is compiled once instead of twice. What
+this file owns is the SUBJECT, which is what the rung was ever about.
 
 fibx compiles eighteen lines. This compiles codex/foreword/core/CCE.codex --
 526 lines of the compiler's own character-encoding chapter, verbatim, with a
@@ -17,14 +22,9 @@ The driver appended below stays deliberately dull -- integers in, integers
 out -- because a rung that also exercised new print paths would stop being a
 capacity test and start being two experiments at once.
 """
-import pathlib
-
-from emit_harness import harness_source
 from roots import CODEX
 
-HERE = pathlib.Path(__file__).parent
-REPO = CODEX
-SOURCE = REPO / 'codex' / 'foreword' / 'core' / 'CCE.codex'
+SOURCE = CODEX / 'codex' / 'foreword' / 'core' / 'CCE.codex'
 
 DRIVER = '''
 Section: Scale Driver
@@ -44,9 +44,9 @@ Section: Scale Driver
 chapter = SOURCE.read_text()
 if 'cites' in chapter:
     raise SystemExit(f'{SOURCE} has a cite; the subject compiler resolves none')
-subject = chapter.rstrip('\n') + '\n' + DRIVER
+SUBJECT = chapter.rstrip('\n') + '\n' + DRIVER
 
-out = harness_source('ScaleHarness', 'scale', subject)
-dest = HERE / 'ScaleHarness.codex'
-dest.write_text(out)
-print(f'{dest}: {len(out)} bytes ({subject.count(chr(10))} lines of subject)')
+if __name__ == '__main__':
+    print(f'scale is a subject, not a unit: {SOURCE.name} + driver, '
+          f'{SUBJECT.count(chr(10))} lines.')
+    print('gen_fibx_harness.py builds the unit that runs it.')

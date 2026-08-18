@@ -47,3 +47,8 @@ ast/*Stubs.codex
 
 # native_build.sh output; regenerates from the sources beside it.
 native/
+
+# Editor swap files: a session leaves these behind and one got committed.
+*.swp
+*.swo
+*~

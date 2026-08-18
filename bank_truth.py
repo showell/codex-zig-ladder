@@ -70,9 +70,14 @@ def main():
 
     # The harnesses and bundlers every truth is downstream of. A truth older
     # than any of them was measured on a subject nobody would build today.
+    # split_truth.py is in the list because since the units carry more than one
+    # subject a truth file is its output, not the run's: a splitter that cut
+    # the stream somewhere else would produce truths that are wrong in a way
+    # no diff of the run can see.
     watermark, witness = newest_input(
         list(ast.glob('gen_*_harness.py')) + list(ast.glob('bundle_*.ps1'))
-        + [ast / 'emit_harness.py', ast / 'oracle_lib.sh'])
+        + [ast / 'emit_harness.py', ast / 'oracle_lib.sh',
+           ast / 'split_truth.py'])
 
     rungs = ladder_rungs()
     missing, stale, ready = [], [], []

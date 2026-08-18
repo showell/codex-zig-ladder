@@ -218,6 +218,20 @@ real chapter instead of a toy, `clamp` gives it a subject that fails to compile
 units, not fourteen, and a reader counting rungs should know which number is
 which.
 
+**The machinery now says so too, for the two expensive pairs.** Written
+2026-08-18 and NOT YET VERIFIED BY A RUN: `fibx`/`scale` and `whole`/`clamp`
+are one harness each, running the pipeline over a list of subjects and marking
+each dump, so each pair costs one compile instead of two. `oracle_lib.sh`
+carries `LADDER_UNITS` (twelve) beside `LADDER_RUNGS` (fourteen) and checks
+them against each other; `split_truth.py` cuts each run back into the per-rung
+`.truth` and `.zigout` files everything downstream already reads.
+
+The measurement that decides whether this was worth doing is a diff against the
+u46 bank: every one of the fourteen truth files should come back byte-identical,
+because nothing about what each subject compiles has changed. Until that run
+happens, the numbers below describe the fourteen-compile ladder that produced
+them, and `text`/`pingpong` remain two compiles of one unit.
+
 Two provenance facts that bound all of it:
 
 **The plug is not an independent tool.** `zig-plug.cdx` is `ZigEmitter.codex`
@@ -325,8 +339,11 @@ because a subject with no `opening` cannot be run. Where a cell says
 "subject = X", read it as "X is what this rung compiles", not "X is the whole
 unit".
 
-`LADDER_RUNGS` in `ast/oracle_lib.sh` is the list, shared by the sweep and the
-re-bank so they cannot disagree about what the ladder is.
+`LADDER_RUNGS` in `ast/oracle_lib.sh` is the list of claims and `LADDER_UNITS`
+the list of compiles, shared by the sweep and the re-bank so they cannot
+disagree about what the ladder is. Sourcing the file checks one against the
+other: a rung no unit carries, or a subject no rung banks, refuses rather than
+going quietly stale.
 
 The subject column is cumulative: `+ parser` means everything above it plus the
 parser. Where a rung replaces the subject outright rather than extending it, the
@@ -388,8 +405,9 @@ rungs; the verdict never does.
   compiler's own serial-ring reader costs one. fibx's IR is 12.9 MB on the current seed, so it has no
   choice.
 
-`arm_for` in `ast/oracle_lib.sh` decides, because which transport a rung needs is
-a property of the rung. `fibx`, `scale`, `whole` and `clamp` take the ring.
+`arm_for` in `ast/oracle_lib.sh` decides, because which transport is needed is a
+property of the IR, and the IR belongs to the unit: the `fibx` and `whole` units
+take the ring, and the four rungs they carry ride in with them.
 
 There are two plugs, built from the same `ZigEmitter`: one fed over TCP, one fed
 through the serial ring. Both have to be rebuilt together, or a sweep reports

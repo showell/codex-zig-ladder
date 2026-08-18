@@ -12,12 +12,16 @@ set -e
 bash "$T/ast/ringplug_build.sh" > /dev/null
 echo "REBUILT"
 fail=0
-for m in $LADDER_RUNGS; do
-    echo "=== $m ==="
+for m in $LADDER_UNITS; do
+    echo "=== $m ($(unit_rungs $m)) ==="
     # NOT `arm | head`: under a pipe the exit status is head's, so a
     # failing rung reports nothing and the sweep still says it passed.
     out=$($(arm_for "$m") "$m" 2>&1) || fail=1
-    printf '%s\n' "$out" | head -14
+    # Sized for the worst case a unit can print: every subject it carries
+    # showing fifteen lines of diff plus its heading. A unit whose second
+    # subject's verdict fell off the end would read as a rung that never ran,
+    # which is the failure this bound was widened to avoid.
+    printf '%s\n' "$out" | head -34
     # A rung that says nothing is not a rung that passed. fibx once
     # exited 0 with its verdict truncated away, which reads identically
     # to a rung that never ran.
