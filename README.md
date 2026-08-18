@@ -66,9 +66,18 @@ host provides (the guest RAM size written at physical `0xFE8` before boot, the
 ring preload, the paced serial send) rather than calling `Start-VmRun` in
 `build/vm-config.ps1`. Every plug defect the ladder found was fixed in
 `ZigEmitter.codex` and carried upstream, so a checkout needs no patch to run
-this. That claim is checkable, and it should stay empty:
+this. That claim is checkable, and the command is the check:
 
     git -C <your Codex clone> diff upstream/master HEAD
+
+**It is not empty today, and that is the honest state of it.** On a public
+Update 46 checkout the ladder needs one patch: `ZigEmitter.codex` emitting
+`__deck-set` with its argument, which is finding 12. It is in Perforce main
+16627 and ships with Update 47, and the tree these numbers were measured on
+carries it locally. Until 47 is public, "no patch" describes the next release
+rather than the one you can clone, so a reader running the command above gets
+that hunk and should. Anything ELSE in that diff is a patch nobody has
+justified, which is what the check is for.
 
 Run it in the clone you patch the plug in, not here. Before the move this was
 the same command with `':(exclude)zig-ladder'` on the end, because the ladder
@@ -104,7 +113,9 @@ banks truth against a seed nobody named, which is the single failure this whole
 exercise exists to prevent. Pointing it at each Update in turn is the same
 variable and no other change.
 
-One known wart: three scripts hardcode `~/.local/pwsh/pwsh`.
+One known wart: six scripts hardcode `~/.local/pwsh/pwsh` -- `cycle.sh`,
+`recon.sh`, `native_build.sh`, `ast/oracle_lib.sh`, `ast/ringplug_build.sh` and
+`ast/irmemcycle.sh`.
 
 ## What this is
 
@@ -314,9 +325,14 @@ closest to the driver -- they run the same phases in the same order.
 
 ### The two arms
 
-Every rung has a **truth arm** (`ast/truthcycle_<m>.sh`), which is the seed on
-bare metal, and a **zig arm** (`ast/<m>cycle.sh`), which is the plug's output
-built and run natively.
+Every rung has a **truth arm**, which is the seed on bare metal, and a **zig
+arm**, which is the plug's output built and run natively. The per-rung wrappers
+are named `ast/truthcycle_<m>.sh` and `ast/<m>cycle.sh` where they exist, but
+they are conveniences and the set is incomplete: `lex`'s truth arm is
+`ast/truthcycle.sh`, `text` and `pingpong` have no `<m>cycle.sh` at all, and
+`scale` and `clamp` have wrappers that run the unit they ride in, because they
+have no compile of their own to run. The arms themselves are `truth_arm` and
+`arm_for` in `ast/oracle_lib.sh`; the wrappers are one line each on top.
 
 **Banking** is recording a truth arm's output as the golden file
 (`ast/<m>.truth`) that the zig arm is diffed against. **Re-banking** is doing it
@@ -444,13 +460,17 @@ first and stops on the first failure, because the failure modes are shared.
 
 Then the smaller pieces:
 
-- `ast/truthcycle_<m>.sh` / `ast/<m>cycle.sh` -- one rung, one arm.
+- `ast/truthcycle_<m>.sh` / `ast/<m>cycle.sh` -- one rung, one arm, where such a
+  wrapper exists (see the two-arms section: the set has holes, and `scale` and
+  `clamp` run the unit they ride in).
 - `ast/plugcycle.sh <m>` -- rebuild and run one rung, reporting markers grepped
   from the emitted zig. Error counts under-report: zig stops at the first
   `@compileError`.
-- `cycle.sh` -- rebundle the zig plug, ring-compile it, run the warmup oracles -- hello, recurse and fib, three small programs with
-  banked answers, which check the plug end to end before any rung is worth
-  running.
+- `cycle.sh [prog...]` -- rebundle the zig plug and ring-compile it, then run
+  whichever warmup oracles you NAME. `cycle.sh hello recurse fib` runs three
+  small programs with banked answers and checks the plug end to end before any
+  rung is worth running; `cycle.sh` with no arguments, which is how
+  `allcycles.sh` invokes it, rebuilds the plug and runs no warmups at all.
 - `ring_compile.py` -- compile through the seed under QEMU via the codex-vm ring
   contract. This is the compile path, not the transport of the same name. Blobs
   larger than the 1 MB ring stream through it: the host refills behind the
@@ -458,13 +478,16 @@ Then the smaller pieces:
   oracle.
 - `codex_vm.py` -- launch/READY/run helpers shared by the above.
 
-Costs, measured: the ten cheap rungs bank in one to four minutes each. The four
-ring rungs are the expensive ones, about twelve minutes to bank and about
-fourteen through the plug. The cheap rungs go through the plug in well under a
-minute each, so the four ring rungs dominate everything. Measured end to end:
-banking the last three rungs and then sweeping all fourteen took **110
-minutes**. Run them in the background and watch for the
-markers above.
+Costs, measured 2026-08-17 on the Update 46 sweep, before the units merged: the
+ten cheap rungs bank in one to five minutes each. The four ring rungs are the
+expensive ones, thirteen to sixteen minutes to bank and about the same through
+the plug. The cheap rungs go through the plug in well under a minute each, so
+the ring rungs dominate everything: a full `rebank_all.sh` was **2h21m**.
+Run them in the background and watch for the markers above.
+
+Those numbers describe FOUR ring compiles. The merge makes it two, and until a
+full sweep runs under it there is no measured replacement -- so read them as the
+cost of the ladder that produced the current bank, not as a forecast.
 
 ## Operating rules
 

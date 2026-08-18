@@ -19,15 +19,20 @@ Everything this refuses is a way the split could look like it worked:
   output before the first mark the run printed something the split would
                                silently drop
   an empty section             a subject that produced no output at all
+  a section with no END mark   the run stopped inside that dump
 
 A single-subject unit prints no marks and is passed through whole, which is
-how every front-end rung still works.
+how every front-end rung still works. Note what that means: for those ten
+rungs this file refuses NOTHING. They are covered by their own arm diff and by
+the front-end harnesses printing a count before every walker, not by anything
+here, and a claim that the splitter guards the ladder would be a claim about
+two units out of twelve.
 """
 
 import pathlib
 import sys
 
-from emit_harness import SUBJECT_MARK, subject_mark
+from emit_harness import SUBJECT_MARK, subject_end, subject_mark
 
 
 def split(text, rungs):
@@ -67,7 +72,18 @@ def split(text, rungs):
         if not body:
             raise SystemExit(f'subject {rung} printed nothing between its mark '
                              f'and the next; the run did not get that far')
-        out[rung] = '\n'.join(body) + '\n'
+        # The closing mark is the only evidence the dump finished. Without it a
+        # run cut short mid-dump -- which happens without an exception, since
+        # the guest reader returns what it has when the guest goes quiet --
+        # looks like a complete answer, and the LAST subject is where nothing
+        # else would notice.
+        if body[-1].strip() != subject_end(rung):
+            raise SystemExit(
+                f'subject {rung} has no closing mark: its dump stops at\n'
+                f'  {body[-1][:110]}\n'
+                f'The run ended inside this subject. Nothing here is bankable, '
+                f'and the truncation would be invisible in the file alone.')
+        out[rung] = '\n'.join(body[:-1]) + '\n'
         seen.append(rung)
 
     missing = [r for r in rungs if r not in out]

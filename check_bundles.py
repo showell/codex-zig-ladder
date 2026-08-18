@@ -62,12 +62,13 @@ def newest_input(ast, m):
     max meant editing the ad-hoc `bundle_min.ps1` -- a bisect tool no rung goes
     near -- reported all sixteen other subjects stale at once. A staleness
     warning that fires on subjects nothing touched is the cry-wolf this file
-    exists to avoid, so the walk follows delegation: `bundle_scale.ps1` invokes
-    `bundle_fibx.ps1`, so fibx's mtime is scale's too, and the depot's
+    exists to avoid, so the walk follows delegation: `bundle_whole.ps1` invokes
+    `bundle_fibx.ps1`, so fibx's stubs count as whole's too, and the depot's
     plug-build-lib.ps1 counts for every subject because every bundle is built
     through it.
     """
-    scripts, seen, inputs = [ast / f'bundle_{m}.ps1'], set(), []
+    top = ast / f'bundle_{m}.ps1'
+    scripts, seen, inputs = [top], set(), []
     while scripts:
         p = scripts.pop()
         if p in seen or not p.is_file():
@@ -77,6 +78,17 @@ def newest_input(ast, m):
         text = p.read_text(errors='replace')
         for name in re.findall(r'bundle_(\w+)\.ps1', text):
             scripts.append(ast / f'bundle_{name}.ps1')
+        # A DELEGATED bundler's parameter defaults are not this subject's
+        # inputs. bundle_whole.ps1 calls bundle_fibx.ps1 with -Harness
+        # 'WholeHarness.codex', overriding `[string]$Harness =
+        # 'FibxHarness.codex'`, a file the whole bundle never opens. Counting
+        # it reported `whole` stale every time fibx's harness was regenerated:
+        # the cry-wolf this walk was narrowed to avoid, reintroduced by
+        # widening it. The top script's defaults DO count -- that is where the
+        # fibx unit names its own harness.
+        if p != top:
+            text = '\n'.join(l for l in text.splitlines()
+                             if not re.match(r'\s*\[[\w\[\]]+\]\$\w+\s*=', l))
         # The generated harnesses and stubs a bundler names are inputs too, and
         # they are the ladder's own files rather than the depot's, so they move
         # whenever we change a rung. Only the ones in ast/ count: a bundler also
@@ -93,11 +105,12 @@ def main():
     names = sys.argv[1:] or sorted(
         p.name[:-len('-subject.codex')] for p in ast.glob('*-subject.codex'))
 
-    bad, stale = 0, 0
+    bad, stale, checked, absent = 0, 0, 0, 0
     for m in names:
         subject = ast / f'{m}-subject.codex'
         if not subject.is_file():
             print(f'{m:10s} no bundled subject; run bundle_{m}.ps1')
+            absent += 1
             continue
         newest, witness = newest_input(ast, m)
         if subject.stat().st_mtime < newest:
@@ -115,16 +128,26 @@ def main():
                       f'pulls it in, or keep it if the explicit copy is the only one')
         else:
             print(f'{m:10s} ok')
+            checked += 1
 
-    if stale:
-        print(f'\n{stale} bundled subject(s) were skipped as stale. They are '
-              f'regenerable: run the bundle script, or a rung that does.')
     if bad:
         print(f'\n{bad} bundle(s) carry a chapter twice. Check each bundled subject '
               f'rather than deleting every explicit listing: parse, desugar and irmem '
               f'name ListUtils and are RIGHT to, because nothing there cites it.')
+    # Stale and absent are failures, not asides. Skipping a subject and then
+    # printing OK is a positive claim about bundles nobody opened, which is the
+    # shape of green this file exists to refuse -- and it was in this file.
+    if stale:
+        print(f'\n{stale} bundled subject(s) are stale and were NOT checked. They '
+              f'are regenerable: run the bundle script, or a rung that does.')
+    if absent:
+        print(f'\n{absent} named subject(s) have no bundled file at all.')
+    if bad or stale or absent:
         return 1
-    print('\nOK: no chapter appears under two quires in any bundle')
+    if not checked:
+        print('\nnothing to check: no bundled subjects found')
+        return 1
+    print(f'\nOK: no chapter appears under two quires in any of {checked} bundles')
     return 0
 
 

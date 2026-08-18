@@ -52,3 +52,8 @@ native/
 *.swp
 *.swo
 *~
+
+# Run intermediates: one unit answers for several rungs, so the raw stream
+# lands here before split_truth cuts it up.
+*.raw
+*.zigraw

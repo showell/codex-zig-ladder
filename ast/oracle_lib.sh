@@ -30,9 +30,12 @@ LADDER_RUNGS="lex parse desugar scope check lower text pingpong lir fib fibx sca
 # stand behind them.
 LADDER_UNITS="lex parse desugar scope check lower text pingpong lir fib fibx whole"
 
-# The subjects a unit runs, in the order its driver runs them. The order is
-# load-bearing: it is the order the marks appear in, so a unit that lists them
-# the other way round banks each dump under the other one's name.
+# The subjects a unit runs. The order here is documentation and nothing else:
+# split_truth keys each section on the MARK TEXT, so listing them the other way
+# round attributes the dumps correctly anyway. This comment used to claim the
+# order was load-bearing, which was a safety property the code does not have and
+# the worst kind to assert -- a future reader reordering these would have
+# trusted it.
 unit_rungs() {
     case "$1" in
         fibx)  echo "fibx scale" ;;
@@ -164,7 +167,14 @@ PY
     fi
 
     echo "--- running the subject on bare metal"
-    python3 - "$m" <<'PY'
+    # Removed first, and the run's status checked, for the reason stated at the
+    # bundle step: an artifact left behind by an earlier run reads exactly like
+    # one this run produced. .raw is the newest intermediate here and it got
+    # neither guard, which mattered most under verify_merge.sh -- where the
+    # expected answer IS "identical to the bank", so splitting yesterday's .raw
+    # would have produced the very result the run was launched to see.
+    rm -f ast/${m}.raw
+    if ! python3 - "$m" <<'PY'
 import sys
 import codex_vm
 m = sys.argv[1]
@@ -176,6 +186,10 @@ lines = [l for l in out.decode(errors='replace').splitlines()
 open(f'ast/{m}.raw', 'w').write("\n".join(lines) + "\n")
 print(f"ran ast/{m}-subject.cdx: {len(lines)} lines")
 PY
+    then
+        echo "RUN FAILED for $m -- the guest did not finish"; return 1
+    fi
+    [ -s ast/${m}.raw ] || { echo "RUN FAILED: no ast/${m}.raw"; return 1; }
 
     # One run, one truth file per subject in it. A unit carrying one subject
     # prints no marks and passes through, so this is the same operation for

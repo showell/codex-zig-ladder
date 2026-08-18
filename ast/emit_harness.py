@@ -223,6 +223,19 @@ def subject_mark(rung):
     return f'{SUBJECT_MARK} {rung} ==='
 
 
+def subject_end(rung):
+    """The closing mark, which is what makes a truncated dump detectable.
+
+    An opening mark alone catches a subject that never started. It cannot catch
+    one that started and stopped halfway, and the LAST subject in a unit is
+    exactly where that is invisible: nothing follows it to be missing. The run
+    can end early without an exception -- codex_vm's reader returns what it has
+    when the guest goes quiet -- so a half-written dump would otherwise be
+    banked as the reference.
+    """
+    return f'=== end {rung} ==='
+
+
 def harness_source(chapter, prefix, subjects, passes=False, scan=True):
     """Render the harness chapter. `prefix` names the walkers so two harnesses
     can be bundled in one unit without colliding.
@@ -262,7 +275,8 @@ def harness_source(chapter, prefix, subjects, passes=False, scan=True):
     # inside a subject still names which one. A mark printed after would leave
     # the last dump unattributed, which is the reading a fault most needs.
     calls = '\n    '.join(f'print-line-uni "{subject_mark(rung)}"\n'
-                          f'    run-{prefix} subject-{rung}'
+                          f'    run-{prefix} subject-{rung}\n'
+                          f'    print-line-uni "{subject_end(rung)}"'
                           for rung, _ in subjects)
     return f'''Chapter: {chapter}
 

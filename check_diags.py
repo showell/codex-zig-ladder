@@ -59,6 +59,26 @@ POLICY = {
     'CDX6020': ('NOTE', '__record-set in a constructor field. All 37 read 2026-08-18 and '
                         'benign: no sibling field reads the mutated record. A change in '
                         'count means an instance nobody has read.', 37),
+    # One instance, X86-64 Boot Infrastructure, emit-ata-wait's retry loop:
+    #
+    #   in let st7 = st-append-code st6 (sub-ri reg-rcx 1)
+    #   in let st8 = st-append-code st7 (jcc cc-ne 0)
+    #   in let st9 = patch-jcc-at st8 (st7.code-len) loop-top
+    #
+    # patch-jcc-at's second argument is the START of the six-byte jcc, so the
+    # intent is the length BEFORE that append -- which is what the same
+    # function captures into a let two lines earlier for dec-pos and
+    # drdy-set-pos. Read inline after st8's append it is the length AFTER, so
+    # the patch lands six bytes late. That is finding 10's hazard with a real
+    # site attached and it is the depot's source, not ours; the ladder cannot
+    # fix it and must not pretend it is not there. Filed as a finding.
+    #
+    # NOTE with the count pinned rather than FAIL, because failing every rung
+    # on somebody else's warning trains us to pass -k. Pinned at 1 so a second
+    # instance stops the rung.
+    'CDX2064': ('NOTE', 'a field read from a record after an in-place update bound to '
+                        'another name. One instance, read 2026-08-18, and it looks like a '
+                        'real defect in emit-ata-wait rather than a false alarm.', 1),
     'CDX3006': ('FAIL', 'duplicate definition across chapters. Every instance we have ever '
                         'seen was a bundle including the same chapter twice, which is ours '
                         'to fix. This is the code whose noise hid the CharClass duplicate.'),
