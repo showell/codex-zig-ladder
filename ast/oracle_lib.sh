@@ -96,6 +96,16 @@ PY
     fi
     [ -s ast/${m}.ir ] || { echo "COMPILE FAILED: no ${m}.ir"; return 1; }
 
+    # Judge what the compiler said, not just whether it produced bytes. A
+    # compile can succeed and still be telling us something: CDX3006 meant a
+    # bundle carried a chapter twice for months, and nobody read it because
+    # warnings scroll. check_diags.py holds a table of every code we have
+    # looked at, with a reason, and refuses anything not in it -- so a code we
+    # have never seen stops the rung instead of joining the scroll.
+    if ! python3 "$T/check_diags.py" ast/${m}-subject.cdx.diags ast/${m}.ir.diags; then
+        echo "DIAGNOSTICS REFUSED for $m (see check_diags.py POLICY)"; return 1
+    fi
+
     echo "--- running the subject on bare metal"
     python3 - "$m" <<'PY'
 import sys
