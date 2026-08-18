@@ -36,6 +36,12 @@ measured on 2,798,031 and are recorded here as they were found.
 **Finding 12 is new and fixed in this PR.** Finding 11 was withdrawn as filed --
 the cause was ours -- and the one thing that survived it is closed in Update 46.
 
+**Finding 15 is filed upstream as issue 70** (2026-08-18): the compiler's own
+CDX2064 caught `emit-ata-wait-ready-bounded` patching its loop jcc six bytes
+late, which is finding 10's mutation hazard with a live site attached. Detail in
+`findings/cdx2064-ata-wait-ready.md`, including the eight sibling sites the
+checker cannot see and the open question about argument evaluation order.
+
 **Findings 13 and 14 were added 2026-08-18, against Update 46.** 13 is a
 proposal with a patch and a measurement rather than a defect report: the depot
 does not have the bug today and the change is inert across all 52 of its plug
