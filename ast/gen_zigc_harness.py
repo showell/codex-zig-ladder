@@ -27,10 +27,15 @@ out = f'''Chapter: ZigcHarness
 
 Section: Driver
 
- read-file-uni takes a path, and "/dev/stdin" is how a hosted process names
- the stream it was handed. The C# plug ignores the path and reads the stream
- unconditionally; reading the path as given costs nothing and keeps the
- builtin meaning what its signature says.
+ read-file-uni takes a path and the zig plug opens it: cx_read_file_uni is an
+ openat of the path it is given, read to EOF. So "/dev/stdin" is doing real
+ work here rather than standing in for something -- it is how a hosted process
+ names the stream it was handed.
+
+ The C# plug emits _Cce.ReadStream() and drops the argument, reading stdin
+ whatever it is passed. The same source therefore runs under both, and it does
+ so because this path names the stream C# would have read anyway, not because
+ the argument goes unread twice.
 
   opening : [Console, FileSystem] Nothing = act
     src <- read-file-uni "/dev/stdin"

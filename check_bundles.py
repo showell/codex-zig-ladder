@@ -45,8 +45,12 @@ def check(subject):
     return {n: q for n, q in seen.items() if len(q) > 1}
 
 
-def watermark(ast, m):
-    """Newest mtime among the scripts that actually produce m's subject.
+def newest_input(ast, m):
+    """(mtime, path) of the newest thing m's subject is built from.
+
+    The path comes back with the time because "stale" without a witness is a
+    line nobody can act on: the answer to "stale against what" is the whole
+    content of the report.
 
     A bundled subject older than the scripts that produce it describes a bundle
     nobody would build today. Reporting on one is reporting history as if it
@@ -63,19 +67,25 @@ def watermark(ast, m):
     plug-build-lib.ps1 counts for every subject because every bundle is built
     through it.
     """
-    stack, seen, stamps = [ast / f'bundle_{m}.ps1'], set(), []
-    while stack:
-        p = stack.pop()
+    scripts, seen, inputs = [ast / f'bundle_{m}.ps1'], set(), []
+    while scripts:
+        p = scripts.pop()
         if p in seen or not p.is_file():
             continue
         seen.add(p)
-        stamps.append(p.stat().st_mtime)
-        for name in re.findall(r'bundle_(\w+)\.ps1', p.read_text(errors='replace')):
-            stack.append(ast / f'bundle_{name}.ps1')
-    lib = CODEX / 'codex' / 'plugs' / 'common' / 'plug-build-lib.ps1'
-    if lib.is_file():
-        stamps.append(lib.stat().st_mtime)
-    return max(stamps, default=0)
+        inputs.append(p)
+        text = p.read_text(errors='replace')
+        for name in re.findall(r'bundle_(\w+)\.ps1', text):
+            scripts.append(ast / f'bundle_{name}.ps1')
+        # The generated harnesses and stubs a bundler names are inputs too, and
+        # they are the ladder's own files rather than the depot's, so they move
+        # whenever we change a rung. Only the ones in ast/ count: a bundler also
+        # names thirty compiler chapters, and treating those as inputs would
+        # report every subject stale whenever a checkout touched their mtimes.
+        inputs += [ast / name for name in re.findall(r'(\w+\.codex)', text)]
+    inputs.append(CODEX / 'codex' / 'plugs' / 'common' / 'plug-build-lib.ps1')
+    return max(((p.stat().st_mtime, p) for p in inputs if p.is_file()),
+               default=(0, None))
 
 
 def main():
@@ -89,9 +99,10 @@ def main():
         if not subject.is_file():
             print(f'{m:10s} no bundled subject; run bundle_{m}.ps1')
             continue
-        if subject.stat().st_mtime < watermark(ast, m):
-            print(f'{m:10s} STALE -- bundled before the current bundle scripts; '
-                  f'rebundle before trusting this')
+        newest, witness = newest_input(ast, m)
+        if subject.stat().st_mtime < newest:
+            print(f'{m:10s} STALE -- {witness.name} has changed since it was '
+                  f'bundled; rebundle before trusting this')
             stale += 1
             continue
         dupes = check(subject)
