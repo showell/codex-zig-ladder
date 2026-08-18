@@ -203,4 +203,38 @@ Section: Builtin Names
    else builtin-names-from bs (i + 1) len (list-push acc ((list-at bs i).bs-name))
 """
 (HERE / 'ScopeStubs.codex').write_text(stub)
+
+# Core/Collections.codex opens with
+#
+#   bsearch-text-pos : List TypeBinding, Text, Integer, Integer -> Integer
+#
+# and cites only Foreword ListUtils. TypeBinding lives in Types/TypeEnv.codex,
+# so the chapter borrows a type from a layer above it and the glob build always
+# happens to supply it. This rung needs Collections for bsearch-text-set, which
+# ChapterScoper uses, and bsearch-text-pos is reachable from nothing here.
+#
+# Carrying the real TypeBinding instead means TypeEnv, which borrows
+# copy-list-with-headroom from Unifier uncited, which is 1,416 lines of the type
+# system inside a rung that tests the scoper. Stripping the one definition
+# nobody calls is the smaller and truer answer: nothing is invented, and what
+# remains is the real chapter.
+#
+# Silent until Update 46 added CDX3008 for undefined type names, which is our
+# own finding 9 coming back around.
+COLLECTIONS = REPO / 'codex' / 'compiler' / 'Core' / 'Collections.codex'
+lines = COLLECTIONS.read_text().splitlines()
+keep, dropping, dropped = [], False, 0
+for line in lines:
+    if line.startswith('Section:'):
+        dropping = 'Text Keys' in line
+    if dropping:
+        dropped += 1
+        continue
+    keep.append(line)
+text = "\n".join(keep) + "\n"
+assert dropped > 0, 'the Text Keys section was not found; has Collections moved?'
+assert 'bsearch-text-pos' not in text, 'a bsearch-text-pos reference survived'
+assert 'bsearch-text-set' in text, 'the set search this rung actually needs was stripped'
+(HERE / 'ScopeCollectionsStubs.codex').write_text(text)
+print(f'{HERE / "ScopeCollectionsStubs.codex"}: real chapter minus {dropped} lines (bsearch-text-pos)')
 print(f'{HERE / "ScopeStubs.codex"}: {len(names)} builtin names')

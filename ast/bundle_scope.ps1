@@ -55,7 +55,6 @@ foreach ($ch in @('codex/foreword/core/ListUtils.codex',
                   'codex/compiler/Core/Name.codex',
                   'codex/compiler/Core/Diagnostic.codex',
                   'codex/compiler/Core/DiagnosticBag.codex',
-                  'codex/compiler/Core/Collections.codex',
                   'codex/compiler/Types/CodexType.codex',
                   'codex/compiler/Types/CodexTypeHelpers.codex',
                   'codex/compiler/IR/IRChapter.codex',
@@ -76,6 +75,7 @@ foreach ($ch in @('codex/foreword/core/ListUtils.codex',
 # names a chapter, so the unit has to carry one. See BootPaintStubs.codex for
 # why it is a stub and not the real 341-line screen painter.
 Add-PlugChapter -Lines $lines -Path (Join-Path $here 'BootPaintStubs.codex') -Quire 'Parsmi'
+Add-PlugChapter -Lines $lines -Path (Join-Path $here 'ScopeCollectionsStubs.codex') -Quire 'Parsmi'
 Add-PlugChapter -Lines $lines -Path (Join-Path $here 'ScopeStubs.codex') -Quire 'Parsmi'
 Add-PlugChapter -Lines $lines -Path (Join-Path $here $Harness) -Quire 'Parsmi'
 
