@@ -4,6 +4,11 @@
 *.ir
 *.ir.map
 *.truth
+# ...except a bank. A working truth beside the rung regenerates by rerunning
+# the rung, so it stays out; a bank under truth/<update>/ is the measurement
+# itself, taken deliberately by bank_truth.py, and is the only artifact that
+# can say what an Update changed in the emitted image.
+!truth/**/*.truth
 *.zig
 *.zigout
 *.diff
