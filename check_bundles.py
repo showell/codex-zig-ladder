@@ -32,7 +32,7 @@ import pathlib
 import re
 import sys
 
-from ladder_root import LADDER
+from ladder_root import CODEX, LADDER
 
 CHAPTER = re.compile(r'^Chapter:\s*(?:([^-\n]+(?:-[^-\n]+)*)--)?(.+?)\s*$', re.M)
 
@@ -45,16 +45,41 @@ def check(subject):
     return {n: q for n, q in seen.items() if len(q) > 1}
 
 
+def watermark(ast, m):
+    """Newest mtime among the scripts that actually produce m's subject.
+
+    A bundled subject older than the scripts that produce it describes a bundle
+    nobody would build today. Reporting on one is reporting history as if it
+    were current: the first run of this check flagged `zigc`, whose artifact
+    predated the ListUtils fix by two days. Same discipline as bank_truth's
+    refusal to bank a mixed set.
+
+    The set is per subject and not a global max, which is a correction. A global
+    max meant editing the ad-hoc `bundle_min.ps1` -- a bisect tool no rung goes
+    near -- reported all sixteen other subjects stale at once. A staleness
+    warning that fires on subjects nothing touched is the cry-wolf this file
+    exists to avoid, so the walk follows delegation: `bundle_scale.ps1` invokes
+    `bundle_fibx.ps1`, so fibx's mtime is scale's too, and the depot's
+    plug-build-lib.ps1 counts for every subject because every bundle is built
+    through it.
+    """
+    stack, seen, stamps = [ast / f'bundle_{m}.ps1'], set(), []
+    while stack:
+        p = stack.pop()
+        if p in seen or not p.is_file():
+            continue
+        seen.add(p)
+        stamps.append(p.stat().st_mtime)
+        for name in re.findall(r'bundle_(\w+)\.ps1', p.read_text(errors='replace')):
+            stack.append(ast / f'bundle_{name}.ps1')
+    lib = CODEX / 'codex' / 'plugs' / 'common' / 'plug-build-lib.ps1'
+    if lib.is_file():
+        stamps.append(lib.stat().st_mtime)
+    return max(stamps, default=0)
+
+
 def main():
     ast = LADDER / 'ast'
-    # A bundled subject older than the scripts that produce it describes a
-    # bundle nobody would build today. Reporting on one is reporting history as
-    # if it were current: the first run of this check flagged `zigc`, whose
-    # artifact predated the ListUtils fix by two days and whose bundle script
-    # delegates to one already fixed. Same discipline as bank_truth's refusal to
-    # bank a mixed set.
-    watermark = max((p.stat().st_mtime for p in ast.glob('bundle_*.ps1')),
-                    default=0)
     names = sys.argv[1:] or sorted(
         p.name[:-len('-subject.codex')] for p in ast.glob('*-subject.codex'))
 
@@ -64,7 +89,7 @@ def main():
         if not subject.is_file():
             print(f'{m:10s} no bundled subject; run bundle_{m}.ps1')
             continue
-        if subject.stat().st_mtime < watermark:
+        if subject.stat().st_mtime < watermark(ast, m):
             print(f'{m:10s} STALE -- bundled before the current bundle scripts; '
                   f'rebundle before trusting this')
             stale += 1
