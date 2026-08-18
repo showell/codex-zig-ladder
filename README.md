@@ -6,25 +6,42 @@
 |---|---|
 | Seed | `270227BE0202EDBB` (2,827,487 bytes) |
 | Update | 45 |
-| Rungs | **being re-measured -- see below** |
+| Rungs | **14 of 14 green** |
+| Banked | `truth/u45/` |
 
 This table is the point of the whole arrangement, so it is the first thing on
 the page and it is allowed to be unflattering. A ladder that cannot say which
 seed it agrees with is not evidence about anything.
 
-**The rung count is deliberately absent rather than guessed.** Four changes
-landed at once -- the harness now names `init-phase-allocator` so
-`deck-record-intrinsic` is finally on, lowering gets the driver's type table,
-the zig plug stopped dropping `__deck-set`'s argument, and the ladder moved to
-its own repository -- and a full re-bank is what says where that leaves things.
-`clamp`'s truth arm is green for the first time and `lower` passed both arms,
-but neither is the sweep. A number typed here from expectation is worth less
-than no number, since the only thing this table is for is being trusted.
+**All fourteen for the first time**, `clamp` included, swept 2026-08-17 in 2h21m
+from a cold bank (re-bank all fourteen truth arms, rebuild both plugs, then
+fourteen zig arms). `pingpong` also holds its own claim, which its arm
+diff cannot make: the text it emits from stage 1's text is byte-identical to
+stage 1's, so the round trip is a fixed point rather than two arms agreeing on
+the same drift.
 
-**Update 46 is public** (`adfae029`, seed `12B07296`) and the ladder is not
-banked against it yet. The plan is to finish this bank as `u45`, then re-bank
-against 46 as `u46`, which is the first real use of the thing the separate
-repository was for.
+The sweep that got here carried four changes at once, and three of them were
+defects on our side of the line rather than the depot's:
+
+- The bundler had been renaming `deck-record` out from under the seed, a
+  workaround for a finding Update 43 closed. The gate that decides whether
+  `deck-record` is the deck intrinsic runs in the SEED, so the rename turned the
+  deck discipline OFF in every bundle we ever built. Only `clamp` could notice,
+  because only a compile that records diagnostics needs a value to outlive
+  `emit-all-defs`'s per-function `__heap-restore`.
+- The harness never named `init-phase-allocator`, which is the other half of the
+  same gate. It does now, in `DECK_PROLOGUE`.
+- Lowering was handed `sort-bindings (cr.types)`, the inferred types of the
+  subject's defs. Everything the subject DECLARES is registered into the env
+  instead, so a record literal read in receiver position resolved to nothing.
+  It gets what `opening.codex` passes now.
+- And one that was the depot's: `ZigEmitter` emitted `__deck-set` as a bare
+  constant, dropping its argument, so a caller whose binding had no second
+  consumer would not compile. Fixed in the plug and filed as finding 12.
+
+**Update 46 is public** (`adfae029`, seed `12B07296`) and this bank is against
+45. Re-banking against 46 as `u46` is next, and the diff between the two banks
+is the first thing this arrangement can say that a single sweep cannot.
 
 The Update is not typed here by hand -- `seed_identity.py` derives it from the
 seed's own hash by finding the release note that names it, so the label cannot

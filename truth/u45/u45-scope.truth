@@ -1,0 +1,182 @@
+lex-tokens 5276
+lex-errors 0
+chapter |Name Resolution|
+defs 44
+def empty-scope params 0 anns 1 L22C3 slug Name Resolution
+def scope-has params 2 anns 1 L25C3 slug Name Resolution
+def scope-add params 2 anns 1 L31C3 slug Name Resolution
+def scope-add-local params 2 anns 1 L36C3 slug Name Resolution
+def scope-fork params 1 anns 1 L41C3 slug Name Resolution
+def builtin-names params 0 anns 1 L47C3 slug Name Resolution
+def is-type-name params 1 anns 1 L51C3 slug Name Resolution
+def is-upper-char params 1 anns 1 L56C3 slug Name Resolution
+def collect-top-level-names params 5 anns 1 L82C3 slug Name Resolution
+def collect-ctor-names params 6 anns 1 L99C3 slug Name Resolution
+def count-typecheck-units params 4 anns 1 L126C3 slug Name Resolution
+def check-type-name-dup params 4 anns 1 L141C3 slug Name Resolution
+def collect-variant-ctors params 5 anns 1 L157C3 slug Name Resolution
+def collect-effect-op-names params 7 anns 1 L172C3 slug Name Resolution
+def collect-ops-of-effect params 7 anns 1 L179C3 slug Name Resolution
+def build-all-names-scope params 3 anns 1 L191C3 slug Name Resolution
+def add-names-to-scope params 4 anns 1 L199C3 slug Name Resolution
+def resolve-expr params 2 anns 1 L205C3 slug Name Resolution
+def resolve-expr-at params 3 anns 1 L208C3 slug Name Resolution
+def resolve-try-region params 2 anns 1 L250C3 slug Name Resolution
+def resolve-handle-clauses params 5 anns 1 L254C3 slug Name Resolution
+def scope-add-clause-params params 7 anns 1 L265C3 slug Name Resolution
+def resolve-let-binds params 6 anns 1 L275C3 slug Name Resolution
+def resolve-let params 3 anns 1 L285C3 slug Name Resolution
+def add-lambda-params params 7 anns 1 L291C3 slug Name Resolution
+def resolve-match-arms params 5 anns 1 L300C3 slug Name Resolution
+def collect-pattern-names params 2 anns 1 L310C3 slug Name Resolution
+def collect-pattern-names-at params 5 anns 1 L315C3 slug Name Resolution
+def collect-ctor-pat-names params 7 anns 1 L327C3 slug Name Resolution
+def resolve-list-elems params 5 anns 1 L335C3 slug Name Resolution
+def resolve-record-fields params 5 anns 1 L342C3 slug Name Resolution
+def resolve-act-stmts params 6 anns 1 L350C3 slug Name Resolution
+def resolve-act-let params 8 anns 1 L367C3 slug Name Resolution
+def resolve-all-defs params 12 anns 1 L392C3 slug Name Resolution
+def add-forall-binders params 2 anns 1 L405C3 slug Name Resolution
+def add-forall-binder-names params 2 anns 1 L410C3 slug Name Resolution
+def add-def-params params 5 anns 1 L416C3 slug Name Resolution
+def resolve-chapter params 4 anns 1 L426C3 slug Name Resolution
+def resolve-chapter-with-citations params 5 anns 1 L430C3 slug Name Resolution
+def collect-cited-names params 4 anns 1 L450C3 slug Name Resolution
+def collect-class-method-names-nr params 4 anns 1 L458C3 slug Name Resolution
+def add-class-method-names-nr params 4 anns 1 L464C3 slug Name Resolution
+def collect-dict-placeholder-names-nr params 5 anns 1 L470C3 slug Name Resolution
+def count-instances-nr params 5 anns 1 L479C3 slug Name Resolution
+.
+parse-errors 0
+--- desugar ---
+dr-sat 0
+a-name |Name Resolution|
+a-chapter-title |Name Resolution|
+a-prose-len 0
+a-defs 44
+adef empty-scope params 0 dtype 1 L22C3 slug Name Resolution
+adef scope-has params 2 dtype 1 L25C3 slug Name Resolution
+adef scope-add params 2 dtype 1 L31C3 slug Name Resolution
+adef scope-add-local params 2 dtype 1 L36C3 slug Name Resolution
+adef scope-fork params 1 dtype 1 L41C3 slug Name Resolution
+adef builtin-names params 0 dtype 1 L47C3 slug Name Resolution
+adef is-type-name params 1 dtype 1 L51C3 slug Name Resolution
+adef is-upper-char params 1 dtype 1 L56C3 slug Name Resolution
+adef collect-top-level-names params 5 dtype 1 L82C3 slug Name Resolution
+adef collect-ctor-names params 6 dtype 1 L99C3 slug Name Resolution
+adef count-typecheck-units params 4 dtype 1 L126C3 slug Name Resolution
+adef check-type-name-dup params 4 dtype 1 L141C3 slug Name Resolution
+adef collect-variant-ctors params 5 dtype 1 L157C3 slug Name Resolution
+adef collect-effect-op-names params 7 dtype 1 L172C3 slug Name Resolution
+adef collect-ops-of-effect params 7 dtype 1 L179C3 slug Name Resolution
+adef build-all-names-scope params 3 dtype 1 L191C3 slug Name Resolution
+adef add-names-to-scope params 4 dtype 1 L199C3 slug Name Resolution
+adef resolve-expr params 2 dtype 1 L205C3 slug Name Resolution
+adef resolve-expr-at params 3 dtype 1 L208C3 slug Name Resolution
+adef resolve-try-region params 2 dtype 1 L250C3 slug Name Resolution
+adef resolve-handle-clauses params 5 dtype 1 L254C3 slug Name Resolution
+adef scope-add-clause-params params 7 dtype 1 L265C3 slug Name Resolution
+adef resolve-let-binds params 6 dtype 1 L275C3 slug Name Resolution
+adef resolve-let params 3 dtype 1 L285C3 slug Name Resolution
+adef add-lambda-params params 7 dtype 1 L291C3 slug Name Resolution
+adef resolve-match-arms params 5 dtype 1 L300C3 slug Name Resolution
+adef collect-pattern-names params 2 dtype 1 L310C3 slug Name Resolution
+adef collect-pattern-names-at params 5 dtype 1 L315C3 slug Name Resolution
+adef collect-ctor-pat-names params 7 dtype 1 L327C3 slug Name Resolution
+adef resolve-list-elems params 5 dtype 1 L335C3 slug Name Resolution
+adef resolve-record-fields params 5 dtype 1 L342C3 slug Name Resolution
+adef resolve-act-stmts params 6 dtype 1 L350C3 slug Name Resolution
+adef resolve-act-let params 8 dtype 1 L367C3 slug Name Resolution
+adef resolve-all-defs params 12 dtype 1 L392C3 slug Name Resolution
+adef add-forall-binders params 2 dtype 1 L405C3 slug Name Resolution
+adef add-forall-binder-names params 2 dtype 1 L410C3 slug Name Resolution
+adef add-def-params params 5 dtype 1 L416C3 slug Name Resolution
+adef resolve-chapter params 4 dtype 1 L426C3 slug Name Resolution
+adef resolve-chapter-with-citations params 5 dtype 1 L430C3 slug Name Resolution
+adef collect-cited-names params 4 dtype 1 L450C3 slug Name Resolution
+adef collect-class-method-names-nr params 4 dtype 1 L458C3 slug Name Resolution
+adef add-class-method-names-nr params 4 dtype 1 L464C3 slug Name Resolution
+adef collect-dict-placeholder-names-nr params 5 dtype 1 L470C3 slug Name Resolution
+adef count-instances-nr params 5 dtype 1 L479C3 slug Name Resolution
+.
+a-type-defs 9
+a-effect-defs 0
+a-class-defs 0
+a-instance-defs 0
+a-citations 2
+a-ground-effects 0
+a-prose-blocks 0
+a-annotations 0
+a-sections 17
+a-section Scope
+a-section Built-in Names
+a-section Name Classification
+a-section Resolution Result
+a-section Scope Results
+a-section Collect Names
+a-section Collect Effect Op Names
+a-section Build Initial Scope
+a-section Resolve Expressions
+a-section Resolve Let
+a-section Resolve Lambda Parameters
+a-section Resolve Match Arms
+a-section Resolve List Elements
+a-section Resolve Record Fields
+a-section Resolve Act Statements
+a-section Resolve All Definitions
+a-section Resolve Chapter
+.
+a-rt-names 0
+a-conversions 0
+--- scope ---
+resolve-errors 21
+top-level-names 44
+type-names 9
+ctor-names 0
+.
+top empty-scope
+top add-names-to-scope
+top add-def-params
+top add-lambda-params
+top add-class-method-names-nr
+top add-forall-binders
+top add-forall-binder-names
+top is-type-name
+top is-upper-char
+top scope-add
+top scope-add-local
+top scope-add-clause-params
+top scope-has
+top scope-fork
+top resolve-expr
+top resolve-expr-at
+top resolve-try-region
+top resolve-all-defs
+top resolve-act-stmts
+top resolve-act-let
+top resolve-handle-clauses
+top resolve-record-fields
+top resolve-let
+top resolve-let-binds
+top resolve-list-elems
+top resolve-chapter
+top resolve-chapter-with-citations
+top resolve-match-arms
+top collect-effect-op-names
+top collect-top-level-names
+top collect-ops-of-effect
+top collect-dict-placeholder-names-nr
+top collect-ctor-names
+top collect-ctor-pat-names
+top collect-cited-names
+top collect-class-method-names-nr
+top collect-pattern-names
+top collect-pattern-names-at
+top collect-variant-ctors
+top count-typecheck-units
+top count-instances-nr
+top check-type-name-dup
+top builtin-names
+top build-all-names-scope
+.
+---
