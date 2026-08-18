@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Seed | `270227BE0202EDBB` (2,827,487 bytes) |
-| Update | 45 |
+| Seed | `12B07296419847B2` (2,831,202 bytes) |
+| Update | 46 |
 | Rungs | **14 of 14 green** |
-| Banked | `truth/u45/` |
+| Banked | `truth/u46/`, and `truth/u45/` beside it |
 
 This table is the point of the whole arrangement, so it is the first thing on
 the page and it is allowed to be unflattering. A ladder that cannot say which
@@ -39,9 +39,18 @@ defects on our side of the line rather than the depot's:
   constant, dropping its argument, so a caller whose binding had no second
   consumer would not compile. Fixed in the plug and filed as finding 12.
 
-**Update 46 is public** (`adfae029`, seed `12B07296`) and this bank is against
-45. Re-banking against 46 as `u46` is next, and the diff between the two banks
-is the first thing this arrangement can say that a single sweep cannot.
+**Both Updates are banked, and every rung is byte-identical across them.**
+Fourteen subjects, two compilers a release apart, not one byte of emitted image
+different. That is the first thing this arrangement can say that a single sweep
+cannot: Update 46 changed the compiler and changed nothing we measure.
+
+It also settled two questions rather than arguing them. `u45-scope` was banked
+with `bsearch-text-pos` present and `u46-scope` without it, and they are
+identical, so the definition stripped out of that bundle really was unreachable.
+`u45-fibx` was banked with `CCE` bundled twice and `u46-fibx` with it once, and
+they are identical, so the second copy really was inert. Both were changes made
+to get Update 46 to compile at all, and both are now shown to be
+image-preserving instead of assumed to be.
 
 The Update is not typed here by hand -- `seed_identity.py` derives it from the
 seed's own hash by finding the release note that names it, so the label cannot
