@@ -274,9 +274,13 @@ def harness_source(chapter, prefix, subjects, passes=False, scan=True):
     # The mark is printed BEFORE the dump it introduces, so a run that dies
     # inside a subject still names which one. A mark printed after would leave
     # the last dump unattributed, which is the reading a fault most needs.
+    # The closing mark is printed by run-<prefix>, AFTER it releases the heap,
+    # which is why it is passed in rather than printed here. That ordering is
+    # the whole point: the mark now attests that the subject finished AND that
+    # its arena went back, so a run that fell over during the release cannot
+    # look complete.
     calls = '\n    '.join(f'print-line-uni "{subject_mark(rung)}"\n'
-                          f'    run-{prefix} subject-{rung}\n'
-                          f'    print-line-uni "{subject_end(rung)}"'
+                          f'    run-{prefix} subject-{rung} "{subject_end(rung)}"'
                           for rung, _ in subjects)
     return f'''Chapter: {chapter}
 
@@ -357,8 +361,8 @@ Section: Byte Dump
 
 Section: Driver
 
-  run-{prefix} : Text -> [Console] Nothing
-  run-{prefix} (src) = act
+  run-{prefix} : Text, Text -> [Console] Nothing
+  run-{prefix} (src) (endmark) = act
     {pipeline_source("src", passes, scan)}
     in act
       print-line-uni ("check-errors " & show ((cst.bag).error-count))
@@ -380,7 +384,27 @@ Section: Driver
         print-line-uni "--- tail ---"
         {prefix}-print-list (res.tail-bytes) 0
       end
+      {prefix}-release deck-base endmark
     end
+  end
+
+ A subject's arena goes back before the next one starts. Nothing here frees as
+ it goes -- bare metal and the zig prelude both bump a pointer and never
+ collect -- so two pipeline runs in one process is two peaks, and the second
+ one killed `zig run` on a 3 GB machine after the first subject had printed
+ its whole dump. deck-base is the heap top from the prologue, taken before the
+ demand-lift reservation, so restoring to it releases that reservation and
+ everything the run allocated on top of it.
+
+ The dump is already printed by the time this runs, so no output moves. The
+ closing mark is printed AFTER the release rather than before, which is what
+ makes it evidence: a mark in the stream means that subject finished and gave
+ its memory back.
+
+  {prefix}-release : Integer, Text -> [Console] Nothing
+  {prefix}-release (floor) (endmark) = act
+    let reclaimed = __heap-restore floor
+    in print-line-uni endmark
   end
 
   opening : [Console] Nothing = act
