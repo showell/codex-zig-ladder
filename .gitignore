@@ -23,6 +23,10 @@ ringplug-source.codex
 *.cce.map
 *.blob.stage1
 *.transport.log
+# Written by ring_compile.py: the full diagnostic list for a compile.
+# Regenerates with the rung, so it stays out of the tree; the point is
+# that it exists at all, not that it is versioned.
+*.diags
 .zig-cache/
 # Hand-written, not emitted: the *.zig rule above is about plug output, and
 # this is the program that runs it.

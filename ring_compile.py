@@ -11,6 +11,8 @@
 # 28712), so the host refills from behind the guest's read cursor and the
 # ring becomes a window. ring_refill_test.sh is the oracle for that path.
 import os
+import pathlib
+import re
 import socket
 import subprocess
 import sys
@@ -243,14 +245,36 @@ def compile_ring(blob_path, out_path, mem_mb=3072, timeout=1800, seed=None):
         print(f"stream: {len(out)} bytes in {time.time()-t1:.0f}s", flush=True)
         idx = out.find(b"SIZE:")
         header = out[:idx if idx >= 0 else len(out)].decode(errors="replace")
-        shown = 0
-        for line in header.splitlines():
-            if line.strip() and not line.startswith("WD:"):
+        # Every diagnostic goes to a file; the console gets a census and a
+        # sample. The console cap was a fair call -- a sweep that narrates
+        # thousands of lines is unreadable -- but capping at twelve and
+        # DISCARDING the rest cost us something real: 108-plus duplicate-
+        # definition warnings from one self-inflicted bundling bug filled
+        # those twelve slots for months, and while they did, CDX6020
+        # (`__record-set` mutates in place, which is finding 10's territory)
+        # and CDX2053 never reached the log at all. They were not new when
+        # they appeared; they were merely no longer displaced.
+        #
+        # A harness whose premise is that a disagreement is evidence does not
+        # get to throw evidence away because there is a lot of it.
+        diags = [l for l in header.splitlines()
+                 if l.strip() and not l.startswith("WD:")]
+        if diags:
+            dpath = pathlib.Path(str(out_path) + ".diags")
+            dpath.write_text("\n".join(diags) + "\n")
+            census = {}
+            for l in diags:
+                m = re.search(r"CDX\d{4}", l)
+                census[m.group(0) if m else "other"] = census.get(
+                    m.group(0) if m else "other", 0) + 1
+            summary = "  ".join(f"{k}x{v}" for k, v in sorted(census.items()))
+            print(f"  | {len(diags)} diagnostics -> {dpath.name}   {summary}",
+                  flush=True)
+            for line in diags[:12]:
                 print("  |", line, flush=True)
-                shown += 1
-                if shown > 12:
-                    print("  | ...", flush=True)
-                    break
+            if len(diags) > 12:
+                print(f"  | ... {len(diags) - 12} more in {dpath.name}",
+                      flush=True)
         if idx < 0:
             print("NO SIZE MARKER — compile failed or errored", flush=True)
             return False
