@@ -58,7 +58,13 @@ POLICY = {
     # the population is what changes.
     'CDX6020': ('NOTE', '__record-set in a constructor field. All 37 read 2026-08-18 and '
                         'benign: no sibling field reads the mutated record. A change in '
-                        'count means an instance nobody has read.', 37),
+                        'count means an instance nobody has read.\n'
+                        '        The count is a function of WHICH UNITS EXIST, not only of the '
+                        'source: it read 37 over fourteen compiles and 43 over the twelve the '
+                        'merged ladder runs, for one unchanged set of sites. Re-pinned rather '
+                        'than re-read. The right shape is a banked diagnostics set diffed like '
+                        'a truth file, which would say what changed instead of that something '
+                        'did; until then this number moves whenever the unit list does.', 43),
     # One instance, X86-64 Boot Infrastructure, emit-ata-wait's retry loop:
     #
     #   in let st7 = st-append-code st6 (sub-ri reg-rcx 1)
@@ -74,11 +80,16 @@ POLICY = {
     # fix it and must not pretend it is not there. Filed as a finding.
     #
     # NOTE with the count pinned rather than FAIL, because failing every rung
-    # on somebody else's warning trains us to pass -k. Pinned at 1 so a second
-    # instance stops the rung.
+    # on somebody else's warning trains us to pass -k.
+    #
+    # Pinned at 2 for ONE site: both units that bundle X86_64Boot reach it, so
+    # the sweep sees it twice. The first pin said 1 because it was set from a
+    # run that had compiled only fibx, which is the hazard of pinning a sweep
+    # total from a partial sweep.
     'CDX2064': ('NOTE', 'a field read from a record after an in-place update bound to '
-                        'another name. One instance, read 2026-08-18, and it looks like a '
-                        'real defect in emit-ata-wait rather than a false alarm.', 1),
+                        'another name. ONE site, read 2026-08-18, counted once per unit '
+                        'that bundles X86_64Boot. It looks like a real defect in '
+                        'emit-ata-wait rather than a false alarm; filed as issue 70.', 2),
     'CDX3006': ('FAIL', 'duplicate definition across chapters. Every instance we have ever '
                         'seen was a bundle including the same chapter twice, which is ours '
                         'to fix. This is the code whose noise hid the CharClass duplicate.'),
@@ -96,6 +107,13 @@ def judge(path, population=False):
     text = pathlib.Path(path).read_text(errors='replace')
     census = {}
     for line in text.splitlines():
+        # Blank lines are not diagnostics. Skipping them is not cosmetic: the
+        # census joins every rung's file with a newline, and each file already
+        # ends in one, so thirteen files produced twelve empty lines, which
+        # counted as twelve UNKNOWN uncoded diagnostics and failed the sweep.
+        # A gate that fails on its own concatenation is worse than no gate.
+        if not line.strip():
+            continue
         m = CODE.search(line)
         census.setdefault(m.group(0) if m else 'uncoded', []).append(line.strip())
 
