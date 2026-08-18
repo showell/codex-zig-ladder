@@ -15,25 +15,6 @@ $here = $PSScriptRoot
 . "$repo/codex/plugs/common/plug-build-lib.ps1"
 
 $lines = [System.Collections.Generic.List[string]]::new()
-# ListUtils is named here even though Core/Collections.codex cites Foreword
-# chapter ListUtils and Resolve-PlugForewords therefore pulls a copy in
-# already. The two copies are NOT redundant and the CDX3006 warning they
-# raise is not noise.
-#
-# The desugarer turns every `for` into a call to map-list
-# (Ast/Desugarer.codex, `is ForExpr`), a name that appears nowhere in the
-# sources and that no compiler chapter cites. With a Parsmi--ListUtils in
-# the unit those synthesized calls resolve inside their own quire. Drop it
-# and they resolve across quires instead, which CDX3006 warns about in so
-# many words: "in a chapter that defines neither it depends on the order
-# the build globs files".
-#
-# Measured, not theorised. Removing this line left ten map-list calls in
-# Desugarer and ChapterScoper with an unresolvable result type -- the plug
-# reported ten "unresolved type variable T27 of map-list" markers -- while
-# the check and lower subjects, whose chapter sets glob differently,
-# resolved the same calls and passed. Passing by glob order is not passing.
-#
 # This milestone swaps LexStubs for the real Core/PhaseAllocator.codex,
 # and the reason is the cite rather than the functions. Desugarer.codex
 # cites 'Codex chapter Phase Allocator', which LexStubs cannot satisfy
@@ -45,9 +26,10 @@ $lines = [System.Collections.Generic.List[string]]::new()
 # The real deck-short-of reads __deck-pos where the stub did not, and that
 # is harmless here: the harness passes a 0 ceiling, for which both answer
 # False.
-# ListUtils is NOT listed here. Resolve-CiteOrder walks it
-# unconditionally, so this bundle already carries Foreword--ListUtils, and
-# listing it again put a second copy in the Parsmi quire: two chapters
+# ListUtils is NOT listed here. Core/Collections.codex cites Foreword
+# chapter ListUtils and Resolve-PlugForewords resolves that cite, so this
+# bundle already carries Foreword--ListUtils; listing it again put a second
+# copy in the Parsmi quire: two chapters
 # defining list-map, fold-list, list-take and the rest, which is what every
 # CDX3006 in this rung's log was telling us. See bundle_parse.ps1, where the
 # explicit listing IS the only copy and stays.

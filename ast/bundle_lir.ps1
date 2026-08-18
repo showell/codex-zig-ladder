@@ -22,9 +22,10 @@ $lines = [System.Collections.Generic.List[string]]::new()
 # CCE is named outright because X86_64State reads cce-to-unicode-table
 # without citing the chapter -- the same uncited-foreword-dependency class
 # as finding 4 on PR 64, in a page his subset-cites gate does not cover.
-# ListUtils is NOT listed here. Resolve-CiteOrder walks it
-# unconditionally, so this bundle already carries Foreword--ListUtils, and
-# listing it again put a second copy in the Parsmi quire: two chapters
+# ListUtils is NOT listed here. Core/Collections.codex cites Foreword
+# chapter ListUtils and Resolve-PlugForewords resolves that cite, so this
+# bundle already carries Foreword--ListUtils; listing it again put a second
+# copy in the Parsmi quire: two chapters
 # defining list-map, fold-list, list-take and the rest, which is what every
 # CDX3006 in this rung's log was telling us. See bundle_parse.ps1, where the
 # explicit listing IS the only copy and stays.
