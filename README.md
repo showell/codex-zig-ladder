@@ -6,12 +6,25 @@
 |---|---|
 | Seed | `270227BE0202EDBB` (2,827,487 bytes) |
 | Update | 45 |
-| Rungs | 13 of 14 green |
-| Red | `clamp` -- page fault in `__list_snoc`; cause found, fix in test |
+| Rungs | **being re-measured -- see below** |
 
 This table is the point of the whole arrangement, so it is the first thing on
 the page and it is allowed to be unflattering. A ladder that cannot say which
 seed it agrees with is not evidence about anything.
+
+**The rung count is deliberately absent rather than guessed.** Four changes
+landed at once -- the harness now names `init-phase-allocator` so
+`deck-record-intrinsic` is finally on, lowering gets the driver's type table,
+the zig plug stopped dropping `__deck-set`'s argument, and the ladder moved to
+its own repository -- and a full re-bank is what says where that leaves things.
+`clamp`'s truth arm is green for the first time and `lower` passed both arms,
+but neither is the sweep. A number typed here from expectation is worth less
+than no number, since the only thing this table is for is being trusted.
+
+**Update 46 is public** (`adfae029`, seed `12B07296`) and the ladder is not
+banked against it yet. The plan is to finish this bank as `u45`, then re-bank
+against 46 as `u46`, which is the first real use of the thing the separate
+repository was for.
 
 The Update is not typed here by hand -- `seed_identity.py` derives it from the
 seed's own hash by finding the release note that names it, so the label cannot
@@ -28,7 +41,13 @@ ring preload, the paced serial send) rather than calling `Start-VmRun` in
 `ZigEmitter.codex` and carried upstream, so a checkout needs no patch to run
 this. That claim is checkable, and it should stay empty:
 
-    git diff upstream/master HEAD -- . ':(exclude)zig-ladder'
+    git -C <your Codex clone> diff upstream/master HEAD
+
+Run it in the clone you patch the plug in, not here. Before the move this was
+the same command with `':(exclude)zig-ladder'` on the end, because the ladder
+sat inside the tree it audits and had to be subtracted out. It does not any
+more, and not needing the exclusion is the plainest statement of the
+separation.
 
 **From the checkout, tracked and used unmodified:** `seed/Codex.cdx`,
 `build/concat-codex-self.ps1`, `codex/plugs/common/plug-build-lib.ps1`, the
@@ -45,13 +64,24 @@ them fail on a missing file. Run that build once before the first sweep.
 for the arm under test. `/dev/kvm` is optional: `CODEX_ACCEL` selects the
 accelerator and the default is `tcg`.
 
-Two known warts, both the same shape: three scripts hardcode
-`~/.local/pwsh/pwsh`, and until every call site moves to `ladder_root.py` some
-scripts still find the checkout by counting directories up from themselves.
+**Point it at a checkout with `CODEX_ROOT`.** The ladder no longer lives
+inside the tree it audits, so it cannot find one by looking upward, and it will
+not guess:
+
+    CodexRootError: no Codex checkout at or above /home/you/codex-zig-ladder
+    (looked for codex/compiler/opening.codex); set CODEX_ROOT to the checkout
+    you mean
+
+That refusal is the feature. A ladder silently pointed at the wrong checkout
+banks truth against a seed nobody named, which is the single failure this whole
+exercise exists to prevent. Pointing it at each Update in turn is the same
+variable and no other change.
+
+One known wart: three scripts hardcode `~/.local/pwsh/pwsh`.
 
 ## What this is
 
-This directory holds a Diverse Double-Compiling check, in Wheeler's sense:
+This repository holds a Diverse Double-Compiling check, in Wheeler's sense:
 take one piece of source, compile it two ways through toolchains of unrelated
 lineage, and require the two results to agree byte for byte. If they disagree,
 one of the two toolchains is wrong. The check here is built in fourteen steps,
@@ -235,6 +265,14 @@ built and run natively.
 again because something upstream moved -- most often a new seed, which
 invalidates both arms at once.
 
+Those working copies are unversioned, because a rung rewrites them on every run.
+`bank_truth.py` copies a complete set into `truth/<update>/` under the seed that
+produced it, and those are tracked. That is what makes two Updates comparable:
+`truth/u45/u45-lower.truth` against `truth/u46/u46-lower.truth` is one rung
+measured under two compilers, and the diff is the only artifact that says what
+an Update changed in the emitted image. A bank is a set, so it refuses to write
+one from a tree where some rungs ran under an older harness than others.
+
 ## The fourteen rungs
 
 Every rung carries a generated harness, including the ones whose subject cell
@@ -315,8 +353,11 @@ yesterday's emitter for whichever rungs use the other one.
 
 ## Running it
 
-Paths below are relative to this directory; the bundlers and rung scripts live
-in `ast/`, the transports and VM helpers at the top level.
+Paths below are relative to this repository; the bundlers and rung scripts
+live in `ast/`, the transports and VM helpers at the top level. Everything wants
+`CODEX_ROOT` in the environment:
+
+    export CODEX_ROOT=/path/to/your/Codex/clone
 
     ast/truthcycle.sh         # one rung's truth arm: bundle, compile, bank
     ast/lexcycle.sh           # the same rung through the plug, diffed
@@ -461,8 +502,11 @@ scripts are the record.
 
 ## Requirements
 
-qemu-system-x86_64, pwsh, python3, zig 0.16. Paths derive from script locations;
-nothing assumes a checkout directory.
+qemu-system-x86_64, pwsh, python3, zig 0.16, and `CODEX_ROOT` naming a Codex
+checkout. `ladder_root.py` resolves both roots and is the only thing that knows
+where the checkout is; `check_paths.py` asserts every path the ladder opens
+resolves, without running a rung, so a bad setup is a five-second answer rather
+than an hour-two surprise.
 
 ## Open questions
 
