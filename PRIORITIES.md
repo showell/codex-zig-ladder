@@ -33,6 +33,18 @@ per-Update only). Its blocking prerequisite -- multi-byte CCE +
 text-to-double-bits, which poisoned the denominator -- landed 2026-08-19;
 next is the baseline bank, then the sentinel set from that run's IRs.
 
+**State 2026-08-19 evening (Steve's call): paused at 194/299 verdicts;
+the subset is the proof of concept, findings triage is the follow-up.**
+`corpus/run.jsonl` holds 94 match / 72 refused / 23 no-expected /
+3 differ / 2 crashed. Finishing is ONE unattended ~40-minute command --
+`corpus_run.py --run --bank` (resume carries the 194; --bank refuses
+until all 299 have verdicts) -- the natural tonight.sh slot. Until it
+runs there is no census.json, so no --changed loop and no sentinel set;
+the char migration's before/after measurement falls back to the probes.
+Known since the pause: codexir is ~0.74s/program (was ~0.15s) after the
+multi-byte CCE tier tables reached its lexer, so the transpile stage is
+~25 min, not ~4; the run stage numbers above are already honest.
+
 The known gap family is coherent: `poke-byte`, `peek/poke-16/32`, `bit-not` --
 the memory-access builtins; implementing the family unblocks a large slice at
 once. Explore before asking Damian for anything; if it pays off, the ask is

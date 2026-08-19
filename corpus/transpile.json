@@ -1,6 +1,7 @@
 [
  {
   "name": "acpi-parse",
+  "zig_sha": "849bd91737f526ea",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -34,11 +35,13 @@
  },
  {
   "name": "act-let-scope",
+  "zig_sha": "73d3776396631438",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "act-tco-loop",
+  "zig_sha": "539e9141653fb3d0",
   "stage": "markers",
   "markers": [
    "no emitter for port-in-byte"
@@ -46,46 +49,55 @@
  },
  {
   "name": "aesgcm256",
+  "zig_sha": "663e8cc911904596",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "amp-after-call",
+  "zig_sha": "356694880b2f094b",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "approx-eq",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "79584da78702e7f2",
+  "stage": "clean",
+  "markers": []
  },
  {
   "name": "arith-narrow-proven",
+  "zig_sha": "ee0b6c6b4a9faa7a",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "arith-operand-order",
+  "zig_sha": "035b2a452aaa5abc",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "arithmetic",
+  "zig_sha": "febde5637d9be64d",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "arm64-boot-test",
+  "zig_sha": "3952c4ccf2401929",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "arm64-encoder",
+  "zig_sha": "d327f6c189d74332",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "arm64-http-test",
+  "zig_sha": "59ce133941d4d93b",
   "stage": "markers",
   "markers": [
    "no emitter for text-to-unicode-bytes",
@@ -94,6 +106,7 @@
  },
  {
   "name": "arm64-net-gate",
+  "zig_sha": "0a7f51334ba4cf5b",
   "stage": "markers",
   "markers": [
    "no emitter for process-get-pid",
@@ -109,6 +122,7 @@
  },
  {
   "name": "arm64-proc-cells",
+  "zig_sha": "850a0a4fe7d50ab6",
   "stage": "markers",
   "markers": [
    "no emitter for process-get-pid",
@@ -125,6 +139,7 @@
  },
  {
   "name": "arm64-send-refusal",
+  "zig_sha": "cb13fb4d27465cd2",
   "stage": "markers",
   "markers": [
    "no emitter for poke-32",
@@ -138,6 +153,7 @@
    "no emitter for peek-16",
    "no emitter for peek-32",
    "no emitter for poke-byte",
+   "no emitter for peek-32",
    "no emitter for poke-byte",
    "no emitter for peek-16",
    "no emitter for peek-32",
@@ -146,6 +162,7 @@
  },
  {
   "name": "arm64-virtio-blk-probe",
+  "zig_sha": "450ce79e9c1f1d80",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -179,6 +196,7 @@
    "no emitter for peek-16",
    "no emitter for peek-32",
    "no emitter for poke-byte",
+   "no emitter for peek-32",
    "no emitter for poke-32",
    "no emitter for poke-32",
    "no emitter for poke-byte",
@@ -197,6 +215,7 @@
  },
  {
   "name": "arm64-virtio-tx-probe",
+  "zig_sha": "e8cae710171b1e89",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -235,6 +254,7 @@
    "no emitter for poke-16",
    "no emitter for poke-16",
    "no emitter for poke-byte",
+   "no emitter for peek-32",
    "no emitter for poke-byte",
    "no emitter for poke-32",
    "no emitter for poke-byte",
@@ -282,6 +302,7 @@
  },
  {
   "name": "arm64-web-server",
+  "zig_sha": "2558e5ee47341f2d",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -323,6 +344,7 @@
    "no emitter for peek-16",
    "no emitter for peek-32",
    "no emitter for poke-byte",
+   "no emitter for peek-32",
    "no emitter for poke-byte",
    "no emitter for peek-16",
    "no emitter for peek-32",
@@ -333,11 +355,13 @@
  },
  {
   "name": "arp-cache-bound",
+  "zig_sha": "3ef796cc6343275f",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "asn1-der",
+  "zig_sha": "c6a88104c4731158",
   "stage": "markers",
   "markers": [
    "no emitter for bit-not"
@@ -345,6 +369,7 @@
  },
  {
   "name": "atomic-smoke",
+  "zig_sha": "31c01c5b7f8c8239",
   "stage": "markers",
   "markers": [
    "no emitter for memory-fence",
@@ -360,36 +385,46 @@
  },
  {
   "name": "audio-diffusion-test",
+  "zig_sha": "d608a4a564d6e9ed",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "av-codec-test",
+  "zig_sha": "678c904b44099beb",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "bacnet-encode",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "a17da8e2dc7b3429",
+  "stage": "markers",
+  "markers": [
+   "no emitter for real-approx-to-bits",
+   "no emitter for to-real-approx"
+  ]
  },
  {
   "name": "bezier-identity",
+  "zig_sha": "9530bd84719bbd8f",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "bitop-if-cond",
+  "zig_sha": "7ee8fd04d7547e17",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "ble-att-encode",
+  "zig_sha": "46f03d653cd72ee1",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "block-gate-restrict",
+  "zig_sha": "58bc341f02bdea8f",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -415,6 +450,7 @@
  },
  {
   "name": "block-sector-count",
+  "zig_sha": "88ec880628fccf38",
   "stage": "markers",
   "markers": [
    "no emitter for block-sector-count"
@@ -422,6 +458,7 @@
  },
  {
   "name": "block-select-drives",
+  "zig_sha": "28a02da9edb128cb",
   "stage": "markers",
   "markers": [
    "no emitter for block-select",
@@ -431,66 +468,79 @@
  },
  {
   "name": "bloom-spread",
+  "zig_sha": "3bc3be0ec0e21d81",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "board-types",
+  "zig_sha": "039dea252892f745",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "bounded-integer-ops",
+  "zig_sha": "25e82c72381a9a5e",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "bounded-param-trap",
+  "zig_sha": "04d6a9943e610d65",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "bounded-return-trap",
+  "zig_sha": "34318cee26820b14",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "bounded-sig-runtime",
+  "zig_sha": "2bd52d2e1e767cf6",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "bounded-sig-static",
+  "zig_sha": "b00271570b7e3256",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "bounds-proof",
+  "zig_sha": "6fba9551beeffc3d",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "bounds-prover",
+  "zig_sha": "d813608c16f1059a",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "brotli-interop",
+  "zig_sha": "83eb9962c814e337",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "bs3-smoke",
+  "zig_sha": "f50c564b299c3b91",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "builtin-narrow-proven",
+  "zig_sha": "06eace3a248bd316",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "bytes-to-text-2f",
+  "zig_sha": "dc52bcd68b3ab41a",
   "stage": "markers",
   "markers": [
    "no emitter for unicode-bytes-to-text",
@@ -499,16 +549,19 @@
  },
  {
   "name": "call-clobber",
+  "zig_sha": "d8b8e86b0220e7b4",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "canopen-encode",
+  "zig_sha": "ec248fa62ab9f393",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "cap-audio",
+  "zig_sha": "05e45832b00a621e",
   "stage": "markers",
   "markers": [
    "no emitter for process-get-cap",
@@ -519,6 +572,7 @@
  },
  {
   "name": "cap-block-denied",
+  "zig_sha": "170807fa3ecaf677",
   "stage": "markers",
   "markers": [
    "no emitter for poke-32",
@@ -529,11 +583,13 @@
  },
  {
   "name": "cap-device-declared",
+  "zig_sha": "3ffeb1cb9984f994",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "cap-direction",
+  "zig_sha": "287dda02e53868de",
   "stage": "markers",
   "markers": [
    "no emitter for process-get-cap",
@@ -544,6 +600,7 @@
  },
  {
   "name": "cap-gpu-byte-denied",
+  "zig_sha": "11f56f9833f2d52b",
   "stage": "markers",
   "markers": [
    "no emitter for poke-32",
@@ -556,6 +613,7 @@
  },
  {
   "name": "cap-gpu-family",
+  "zig_sha": "faac4f9a6b0511f2",
   "stage": "markers",
   "markers": [
    "no emitter for gpu-mem-write",
@@ -564,6 +622,7 @@
  },
  {
   "name": "cap-gpu-mem-denied",
+  "zig_sha": "584060edd142cc08",
   "stage": "markers",
   "markers": [
    "no emitter for poke-32",
@@ -577,6 +636,7 @@
  },
  {
   "name": "cap-heap-poke-pure",
+  "zig_sha": "10240bdbe041e09c",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte"
@@ -584,6 +644,7 @@
  },
  {
   "name": "cap-identity-denied",
+  "zig_sha": "095f41695a6c1ff7",
   "stage": "markers",
   "markers": [
    "no emitter for poke-32",
@@ -597,11 +658,13 @@
  },
  {
   "name": "cap-manifest-derived",
+  "zig_sha": "dede03333b86dfec",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "cap-media-families",
+  "zig_sha": "37f1d6f1d409fa75",
   "stage": "markers",
   "markers": [
    "no emitter for process-get-cap",
@@ -613,6 +676,7 @@
  },
  {
   "name": "cap-network-denied",
+  "zig_sha": "c2e764d45118fed6",
   "stage": "markers",
   "markers": [
    "no emitter for poke-32",
@@ -623,6 +687,7 @@
  },
  {
   "name": "cap-process-family",
+  "zig_sha": "a99379642fa07aa2",
   "stage": "markers",
   "markers": [
    "no emitter for process-get-cap"
@@ -630,26 +695,31 @@
  },
  {
   "name": "capability-doors",
+  "zig_sha": "2ebe16a2fc42ca92",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "carddeck-shuffle",
+  "zig_sha": "c2db7811afa8ea4b",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "cce-roundtrip",
+  "zig_sha": "69d49a3cde27d4c5",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "cce-tier1",
+  "zig_sha": "e0bc0999e4e03c35",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "cdx2053-range",
+  "zig_sha": "f846d4eccd38654b",
   "stage": "clean",
   "markers": []
  },
@@ -660,21 +730,25 @@
  },
  {
   "name": "chapter-pages",
+  "zig_sha": "90320966cd78520a",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "char-at-negative",
+  "zig_sha": "140e943867c5ae46",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "char-at-past-end",
+  "zig_sha": "45c737a9e8ec79d7",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "circbuf-test",
+  "zig_sha": "fea847ed67062b71",
   "stage": "clean",
   "markers": []
  },
@@ -685,41 +759,49 @@
  },
  {
   "name": "class-op-no-instance",
+  "zig_sha": "df21d46df69994f5",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "cmac-test",
+  "zig_sha": "d4f1d17b6c6379a6",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "cms-spread",
+  "zig_sha": "34735963f6f30060",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "coap-block",
+  "zig_sha": "11dd83958749bd39",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "coap-packet",
+  "zig_sha": "406b7c99393aedb7",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "coap-parse",
+  "zig_sha": "89d7cca56cd332b8",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "collide-chapters",
+  "zig_sha": "8851f71f2ce461f4",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "color-test",
+  "zig_sha": "775ce703fbfa1aaa",
   "stage": "clean",
   "markers": []
  },
@@ -740,11 +822,13 @@
  },
  {
   "name": "consistent-hash-balance",
+  "zig_sha": "dc63124f31d07760",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "console-readline-cite",
+  "zig_sha": "620d4aa2f1f50fe7",
   "stage": "markers",
   "markers": [
    "no emitter for read-line"
@@ -752,16 +836,19 @@
  },
  {
   "name": "const-narrow-proven",
+  "zig_sha": "5b5de5218d0cc593",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "convolution-identity",
+  "zig_sha": "015c3efae825b777",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "cross-port-refused",
+  "zig_sha": "e0b9f72faf91f1d8",
   "stage": "markers",
   "markers": [
    "no emitter for port-out-byte",
@@ -770,6 +857,7 @@
  },
  {
   "name": "cross-unsupported-probe",
+  "zig_sha": "a1e6d441deebbc05",
   "stage": "markers",
   "markers": [
    "no emitter for read-file-raw"
@@ -777,26 +865,31 @@
  },
  {
   "name": "crypto-test",
+  "zig_sha": "f06a036688115c6d",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "crypto-vectors",
+  "zig_sha": "57fb9b3a1e25a173",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "cryptobig",
+  "zig_sha": "326c74153351118e",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "ctor-narrow-warn",
+  "zig_sha": "ba20ef409491d352",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "db-csv-roundtrip",
+  "zig_sha": "a0e19d10b89a0099",
   "stage": "markers",
   "markers": [
    "no emitter for alloc-bytes",
@@ -826,6 +919,7 @@
  },
  {
   "name": "db-row-update",
+  "zig_sha": "935f5259fd9052f5",
   "stage": "markers",
   "markers": [
    "no emitter for alloc-bytes",
@@ -843,6 +937,27 @@
  },
  {
   "name": "dce-reach",
+  "zig_sha": "3b72e998b3cd1737",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "deck-bracket-contract",
+  "zig_sha": "b40494f774d66039",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "deck-cell-contract",
+  "zig_sha": "2fdd21b607882c02",
+  "stage": "markers",
+  "markers": [
+   "no emitter for __deck-alloc"
+  ]
+ },
+ {
+  "name": "deck-record-contract",
+  "zig_sha": "308944ab5c0a4386",
   "stage": "clean",
   "markers": []
  },
@@ -853,6 +968,7 @@
  },
  {
   "name": "device-buffer-alloc",
+  "zig_sha": "600a8321cb9afce9",
   "stage": "markers",
   "markers": [
    "no emitter for gpu-mem-read",
@@ -864,6 +980,7 @@
  },
  {
   "name": "dhcp-acquire-e1000",
+  "zig_sha": "a980f148fc5f8879",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -910,6 +1027,7 @@
  },
  {
   "name": "dhcp-acquire",
+  "zig_sha": "a980f148fc5f8879",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -956,6 +1074,7 @@
  },
  {
   "name": "dhcp-renew",
+  "zig_sha": "ecff53af7ada63d4",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -1001,7 +1120,14 @@
   ]
  },
  {
+  "name": "diag-pci-map-judge",
+  "zig_sha": "1020bdde075cf17f",
+  "stage": "clean",
+  "markers": []
+ },
+ {
   "name": "disk-enum-parse",
+  "zig_sha": "25f60294cbb74a48",
   "stage": "markers",
   "markers": [
    "no emitter for poke-32",
@@ -1032,6 +1158,7 @@
  },
  {
   "name": "diskfacts-unpack-large",
+  "zig_sha": "aa5920f9b55d76ed",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -1040,31 +1167,37 @@
  },
  {
   "name": "dnp3-encode",
+  "zig_sha": "b690b1ed933217f5",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "dns-answer-count",
+  "zig_sha": "7d47ac646db9aab6",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "dtls-fragment",
+  "zig_sha": "f40da73fff10923a",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "dtls-handshake",
+  "zig_sha": "5c3dc2611140e825",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "dtls-hello",
+  "zig_sha": "71dd7d8462833eff",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "dtls-message",
+  "zig_sha": "7d4f8cf78d6cc9e1",
   "stage": "clean",
   "markers": []
  },
@@ -1080,11 +1213,13 @@
  },
  {
   "name": "e1000-aneg-budget",
+  "zig_sha": "5d06bbc221fbb6d6",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "e1000-asde-arms",
+  "zig_sha": "388c1ea574a30eff",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1099,6 +1234,7 @@
  },
  {
   "name": "e1000-asde-nolink",
+  "zig_sha": "9172cac1d50b358a",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1113,6 +1249,7 @@
  },
  {
   "name": "e1000-asde-speed",
+  "zig_sha": "cd6f0a75e4bed366",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1127,6 +1264,7 @@
  },
  {
   "name": "e1000-bringup",
+  "zig_sha": "2170136c14609203",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1160,6 +1298,7 @@
  },
  {
   "name": "e1000-ctrl-ro",
+  "zig_sha": "82bed44bd3b97b69",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1174,11 +1313,13 @@
  },
  {
   "name": "e1000-link-budget",
+  "zig_sha": "30b5ede20ef76654",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "e1000-link-deadline",
+  "zig_sha": "1dabe3f4b880fcf5",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1201,6 +1342,7 @@
  },
  {
   "name": "e1000-match",
+  "zig_sha": "d2a9db5d8d42f0b2",
   "stage": "markers",
   "markers": [
    "no emitter for poke-32",
@@ -1212,6 +1354,7 @@
  },
  {
   "name": "e1000-mdio-slow",
+  "zig_sha": "35fe8d83eae8a3f4",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1226,6 +1369,7 @@
  },
  {
   "name": "e1000-mdio-window",
+  "zig_sha": "9b90fb802e2571f7",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1248,6 +1392,7 @@
  },
  {
   "name": "e1000-phy-absent",
+  "zig_sha": "c69b9d4795cfe58b",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1270,6 +1415,7 @@
  },
  {
   "name": "e1000-phy",
+  "zig_sha": "0f0924be3bd4fa9b",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1292,6 +1438,7 @@
  },
  {
   "name": "e1000-reset-wedged",
+  "zig_sha": "dacc0a03c3eb5734",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1316,6 +1463,7 @@
  },
  {
   "name": "e1000-ring-wrap",
+  "zig_sha": "9c4d34efbd36b84a",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1349,6 +1497,7 @@
  },
  {
   "name": "e1000-tx-deadline",
+  "zig_sha": "613734b99529ab24",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1359,6 +1508,7 @@
  },
  {
   "name": "e1000-unresettable",
+  "zig_sha": "9677b43106001de5",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1385,6 +1535,7 @@
  },
  {
   "name": "ecdsa-cert",
+  "zig_sha": "862cd53861060331",
   "stage": "markers",
   "markers": [
    "no emitter for bit-not"
@@ -1392,16 +1543,19 @@
  },
  {
   "name": "ecdsa-p256",
+  "zig_sha": "93aad39f0431630a",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "ecdsa-p384",
+  "zig_sha": "1441bb2a1368e14d",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "ecdsa-sha384",
+  "zig_sha": "58669150b9b24c7f",
   "stage": "markers",
   "markers": [
    "no emitter for bit-not"
@@ -1409,21 +1563,25 @@
  },
  {
   "name": "edalias",
+  "zig_sha": "9fb8075dfd7607c0",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "edcurve",
+  "zig_sha": "913ff8ccdd435a70",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "edit-distance-test",
+  "zig_sha": "88aad257691f3e71",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "edvector",
+  "zig_sha": "78db2bd082ece2a0",
   "stage": "markers",
   "markers": [
    "no emitter for bit-not"
@@ -1431,11 +1589,13 @@
  },
  {
   "name": "effect-dotted-allow",
+  "zig_sha": "1c176c7c0e3466da",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "effect-handler-clause",
+  "zig_sha": "1890fdeed8321791",
   "stage": "markers",
   "markers": [
    "effect handlers not supported"
@@ -1443,6 +1603,7 @@
  },
  {
   "name": "effect-handler-nested-same",
+  "zig_sha": "08fd11534b04b488",
   "stage": "markers",
   "markers": [
    "effect handlers not supported",
@@ -1451,11 +1612,13 @@
  },
  {
   "name": "effect-launder-fork",
+  "zig_sha": "ee471bffd96418e2",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "effect-launder-lazy",
+  "zig_sha": "1e12a3bd078162c4",
   "stage": "markers",
   "markers": [
    "no zig type for this codex type",
@@ -1464,31 +1627,37 @@
  },
  {
   "name": "effect-launder-map",
+  "zig_sha": "c89a84e5c7cc86e5",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "effect-launder-record",
+  "zig_sha": "eb76a2fe29dd9dd4",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "effect-map-effctx",
+  "zig_sha": "9bf74e13c041901e",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "effect-positive",
+  "zig_sha": "9b94624e3027ae3a",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "effect-row-var-syntax",
+  "zig_sha": "c586440f95d4d377",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "effect-smoke",
+  "zig_sha": "431dfc6075bfc4d2",
   "stage": "markers",
   "markers": [
    "effect handlers not supported",
@@ -1498,16 +1667,19 @@
  },
  {
   "name": "effect-value-poly",
+  "zig_sha": "b2b63c9f0c29c457",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "effect-widen-arg",
+  "zig_sha": "2ca5f1e61dda438e",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "effect-widen-scope-narrow",
+  "zig_sha": "d82ea980c85fa1cd",
   "stage": "markers",
   "markers": [
    "no emitter for block-read-sector",
@@ -1539,100 +1711,701 @@
  },
  {
   "name": "effect-widen-scope",
+  "zig_sha": "fc104f391b8d82d5",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "engine-animation",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "1e3ee636cbe912ad",
+  "stage": "markers",
+  "markers": [
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int"
+  ]
  },
  {
   "name": "engine-culling",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "76c6030de8bd8c36",
+  "stage": "markers",
+  "markers": [
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes"
+  ]
  },
  {
   "name": "engine-mesh-gen",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "ee1b5d1381784453",
+  "stage": "markers",
+  "markers": [
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int"
+  ]
  },
  {
   "name": "engine-near-clip",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "97f3bcef8a7db039",
+  "stage": "markers",
+  "markers": [
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int"
+  ]
  },
  {
   "name": "engine-render-heap",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "3843175f36809c3b",
+  "stage": "markers",
+  "markers": [
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes"
+  ]
  },
  {
   "name": "engine-shading",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "00dc2223a03a1514",
+  "stage": "markers",
+  "markers": [
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes"
+  ]
  },
  {
   "name": "engine-shadow",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "37069b35853723a9",
+  "stage": "markers",
+  "markers": [
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes"
+  ]
  },
  {
   "name": "engine-software-render",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "f1dd91c45e93010a",
+  "stage": "markers",
+  "markers": [
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int"
+  ]
  },
  {
   "name": "engine-texture",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "3ccef661887ffeea",
+  "stage": "markers",
+  "markers": [
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes"
+  ]
  },
  {
   "name": "enip-encode",
+  "zig_sha": "4857c7149bb909f5",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "esp32c6-drivers",
+  "zig_sha": "4878faa487f8e765",
   "stage": "markers",
   "markers": [
    "no emitter for read-mmio-32",
    "no emitter for poke-mmio-32",
-   "no emitter for poke-mmio"
+   "no emitter for poke-mmio",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2"
   ]
  },
  {
   "name": "eventbus-test",
+  "zig_sha": "6c205f26a194f846",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "exc-deep-frames",
+  "zig_sha": "cfaf02ff203dd403",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "exc-div-zero",
+  "zig_sha": "b66b438316700b31",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "exc-gpf",
+  "zig_sha": "41079c756ae730ef",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "exc-null-read",
+  "zig_sha": "1ad34d631eaef628",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "exc-stack-heap",
+  "zig_sha": "62e63d88d1d3483d",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "expr-calculator",
+  "zig_sha": "24bd885cefb037f5",
   "stage": "markers",
   "markers": [
    "no emitter for is-whitespace"
@@ -1640,6 +2413,7 @@
  },
  {
   "name": "factlog-layout",
+  "zig_sha": "18716fca23c25cc5",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -1668,11 +2442,13 @@
  },
  {
   "name": "factorial",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "29e95a57f33e9e3f",
+  "stage": "clean",
+  "markers": []
  },
  {
   "name": "fat16-alloc",
+  "zig_sha": "64ac48aa6a624d55",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1702,6 +2478,7 @@
  },
  {
   "name": "fat16-cluster-guard",
+  "zig_sha": "707d739c3dfe9129",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1726,6 +2503,7 @@
  },
  {
   "name": "fat16-cycle-guard",
+  "zig_sha": "ab4a9714a32bed2c",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -1751,6 +2529,7 @@
  },
  {
   "name": "fat16-dirgrow",
+  "zig_sha": "d1e44b01f92a1ba7",
   "stage": "markers",
   "markers": [
    "no emitter for block-read-sector",
@@ -1801,6 +2580,7 @@
  },
  {
   "name": "fat16-list",
+  "zig_sha": "282da0c8116f0119",
   "stage": "markers",
   "markers": [
    "no emitter for block-read-sector",
@@ -1834,6 +2614,7 @@
  },
  {
   "name": "fat16-mkdir",
+  "zig_sha": "308627d727950ed4",
   "stage": "markers",
   "markers": [
    "no emitter for block-read-sector",
@@ -1892,6 +2673,7 @@
  },
  {
   "name": "fat16-overwrite",
+  "zig_sha": "04dfb17ef24ba577",
   "stage": "markers",
   "markers": [
    "no emitter for block-read-sector",
@@ -1951,6 +2733,7 @@
  },
  {
   "name": "fat16-source-cr",
+  "zig_sha": "b1f40d8facca396d",
   "stage": "markers",
   "markers": [
    "no emitter for block-read-sector",
@@ -2001,6 +2784,7 @@
  },
  {
   "name": "fat16-subdir",
+  "zig_sha": "7aba28babc3bc55a",
   "stage": "markers",
   "markers": [
    "no emitter for block-read-sector",
@@ -2051,6 +2835,7 @@
  },
  {
   "name": "fat16-write",
+  "zig_sha": "27125d5d73f7b22d",
   "stage": "markers",
   "markers": [
    "no emitter for block-read-sector",
@@ -2101,6 +2886,7 @@
  },
  {
   "name": "fat32-cluster-guard",
+  "zig_sha": "223e4debb18a8bb0",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -2130,6 +2916,7 @@
  },
  {
   "name": "fat32-parse",
+  "zig_sha": "e00a25cc70c544c9",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -2166,34 +2953,43 @@
  },
  {
   "name": "fe310-drivers",
+  "zig_sha": "ccf3bb7536b1450f",
   "stage": "markers",
   "markers": [
    "no emitter for read-mmio-32",
-   "no emitter for poke-mmio-32"
+   "no emitter for poke-mmio-32",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2"
   ]
  },
  {
   "name": "field-cache-shape",
+  "zig_sha": "3cfc669b1dc37ce5",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "field-cache-text-lit",
+  "zig_sha": "0d2ad5d4d5cf4f34",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "field-guard-refine",
+  "zig_sha": "3fab3434f5086a12",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "field-range-proven",
+  "zig_sha": "fe6dcf36a33691e8",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "files-parse",
+  "zig_sha": "48e4fd9c823bf3c5",
   "stage": "markers",
   "markers": [
    "no emitter for poke-32",
@@ -2223,41 +3019,49 @@
  },
  {
   "name": "final-batch-test",
+  "zig_sha": "1b5407d9d625834f",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "fins-encode",
+  "zig_sha": "4b33aaa31483fbb2",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "fork-nested",
+  "zig_sha": "41e06f2c5a1df8fa",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "fork-reclaim",
+  "zig_sha": "83b1a0d21af9fc28",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "frame-short-buffer",
+  "zig_sha": "0b562c48fe16af18",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "frameless-leaf-probe",
+  "zig_sha": "adadbb0a97305820",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "fresh-alloc-narrow",
+  "zig_sha": "f7d58877549b3a19",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "fs-deny-runtime",
+  "zig_sha": "20f6babb546d5bdd",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -2282,11 +3086,14 @@
    "no emitter for process-restrict-cap",
    "no emitter for process-get-cap",
    "no emitter for write-file",
+   "no emitter for read-text",
+   "no emitter for process-restrict-cap",
    "no emitter for read-text"
   ]
  },
  {
   "name": "fs-handler-install",
+  "zig_sha": "59952f09a1f9ff6d",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -2310,6 +3117,7 @@
  },
  {
   "name": "fs-layer",
+  "zig_sha": "fd97c8d4c02785c9",
   "stage": "markers",
   "markers": [
    "no emitter for block-read-sector",
@@ -2364,6 +3172,7 @@
  },
  {
   "name": "fs-servicer",
+  "zig_sha": "4731195720816b08",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -2388,6 +3197,7 @@
  },
  {
   "name": "fs-spawn-inherits",
+  "zig_sha": "66e780a5652c4b7d",
   "stage": "markers",
   "markers": [
    "no emitter for peek-32",
@@ -2412,16 +3222,19 @@
  },
  {
   "name": "ga-core",
+  "zig_sha": "477d19e5a3ff55aa",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "geometry-test",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "1022ad758817b977",
+  "stage": "clean",
+  "markers": []
  },
  {
   "name": "goose-encode",
+  "zig_sha": "6a93d0c5a3a8ef6c",
   "stage": "clean",
   "markers": []
  },
@@ -2447,21 +3260,134 @@
  },
  {
   "name": "gop-padded-stride",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "13b96dbbebe4aea1",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for peek-32"
+  ]
  },
  {
   "name": "gop-scene-backbuffer",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "10b13459a50ed6d4",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes"
+  ]
  },
  {
   "name": "gop-scene-viewport",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "6282ba8b63dcc147",
+  "stage": "markers",
+  "markers": [
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for peek-32",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for alloc-bytes"
+  ]
  },
  {
   "name": "gop-stride",
+  "zig_sha": "5417888f180ec555",
   "stage": "markers",
   "markers": [
    "no emitter for poke-32",
@@ -2471,6 +3397,7 @@
  },
  {
   "name": "gop-text-field",
+  "zig_sha": "4e0208f71dff12fd",
   "stage": "markers",
   "markers": [
    "no emitter for alloc-bytes",
@@ -2505,6 +3432,7 @@
  },
  {
   "name": "gpu-doorbell",
+  "zig_sha": "a8de30696bd4e4f1",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -2562,6 +3490,7 @@
  },
  {
   "name": "grounds-port",
+  "zig_sha": "508f937107c6aff4",
   "stage": "markers",
   "markers": [
    "no emitter for port-out-byte"
@@ -2569,11 +3498,13 @@
  },
  {
   "name": "hal-device-declared",
+  "zig_sha": "62b1843fca89e382",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "hal-flash-linear",
+  "zig_sha": "f675377deac06c09",
   "stage": "markers",
   "markers": [
    "no emitter for read-mmio-32",
@@ -2582,7 +3513,31 @@
   ]
  },
  {
+  "name": "hal-gpio-linear",
+  "zig_sha": "7c4a55f2c79aa62a",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-mmio-32",
+   "no emitter for poke-mmio-32"
+  ]
+ },
+ {
+  "name": "hal-i2c-adc-linear",
+  "zig_sha": "d3afbf9771c70ce6",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-mmio-32",
+   "no emitter for poke-mmio-32",
+   "no emitter for read-mmio",
+   "no emitter for poke-mmio",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2"
+  ]
+ },
+ {
   "name": "hal-peripheral-linear",
+  "zig_sha": "880a1e4e181dc726",
   "stage": "markers",
   "markers": [
    "no emitter for poke-mmio-32",
@@ -2590,7 +3545,30 @@
   ]
  },
  {
+  "name": "hal-spi-linear",
+  "zig_sha": "a4c4f07847e47ade",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-mmio-32"
+  ]
+ },
+ {
+  "name": "hal-tuple-linear",
+  "zig_sha": "c696a8725a86e4ed",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-mmio-32",
+   "no emitter for poke-mmio-32",
+   "no emitter for read-mmio",
+   "no emitter for poke-mmio",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2"
+  ]
+ },
+ {
   "name": "hamt-test",
+  "zig_sha": "2b9f21175444bfa5",
   "stage": "markers",
   "markers": [
    "unresolved type variable T45 of hamt-node-get",
@@ -2628,6 +3606,7 @@
  },
  {
   "name": "handler-dotted-discharge",
+  "zig_sha": "867b1be244fb7fb9",
   "stage": "markers",
   "markers": [
    "effect handlers not supported"
@@ -2635,6 +3614,7 @@
  },
  {
   "name": "handler-nested-ops",
+  "zig_sha": "f55c8710507e0aba",
   "stage": "markers",
   "markers": [
    "effect handlers not supported",
@@ -2645,6 +3625,7 @@
  },
  {
   "name": "handler-smoke",
+  "zig_sha": "758f81404f923ccb",
   "stage": "markers",
   "markers": [
    "no emitter for get-value",
@@ -2657,11 +3638,13 @@
  },
  {
   "name": "hart-encode",
+  "zig_sha": "2d484c4b6bbaef24",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "heap-bracket-shape",
+  "zig_sha": "deead1b115d1b979",
   "stage": "markers",
   "markers": [
    "no emitter for port-out-byte",
@@ -2679,8 +3662,19 @@
  },
  {
   "name": "heap-frame-reclaim",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "2bc49567ebe18fc7",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "heap-scrub",
+  "zig_sha": "c506eaab7f924209",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for poke-32",
+   "no emitter for poke-32"
+  ]
  },
  {
   "name": "helm-full-test",
@@ -2689,6 +3683,7 @@
  },
  {
   "name": "hid-decode",
+  "zig_sha": "1cedde7d0a22c44e",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -2701,11 +3696,13 @@
  },
  {
   "name": "history-test",
+  "zig_sha": "06755785cbbc2ccd",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "hpet-interrupt",
+  "zig_sha": "e9b08a47a4e0e6b7",
   "stage": "markers",
   "markers": [
    "no emitter for read-mmio-32",
@@ -2714,6 +3711,7 @@
  },
  {
   "name": "ident-letters",
+  "zig_sha": "31b7c0e3345f117d",
   "stage": "markers",
   "markers": [
    "no emitter for o",
@@ -2722,6 +3720,7 @@
  },
  {
   "name": "idm-key-tests",
+  "zig_sha": "52f091a52f1a70a8",
   "stage": "markers",
   "markers": [
    "no emitter for bit-not"
@@ -2729,6 +3728,7 @@
  },
  {
   "name": "idm-read-line",
+  "zig_sha": "4c4ae4ff67c4ca29",
   "stage": "markers",
   "markers": [
    "no emitter for uefi-read-key-ex",
@@ -2743,72 +3743,83 @@
  },
  {
   "name": "idm-salt-iv-distinct",
+  "zig_sha": "8ff0bc11b40fa363",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "iec104-encode",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "b16f6cf780ed4560",
+  "stage": "markers",
+  "markers": [
+   "no emitter for real-approx-to-bits",
+   "no emitter for to-real-approx",
+   "no emitter for to-real-approx"
+  ]
  },
  {
   "name": "ieee802154-encode",
+  "zig_sha": "c5b056f523d88f59",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "if-in-arith",
+  "zig_sha": "b119fbdedf34ada4",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "if-let-join",
+  "zig_sha": "4f816abb69132e6f",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "image-codec-test",
+  "zig_sha": "821dff58cbd659f4",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "imap-wire",
+  "zig_sha": "ba149a9dd40e3274",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "implicit-convert",
-  "stage": "markers",
-  "markers": [
-   "no emitter for Kelvin",
-   "no emitter for Celsius",
-   "no emitter for Celsius",
-   "no emitter for Celsius",
-   "no emitter for Kelvin"
-  ]
+  "zig_sha": "152da96f739a21be",
+  "stage": "clean",
+  "markers": []
  },
  {
   "name": "induction-assoc",
+  "zig_sha": "b522eb0f08b3e5aa",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "induction-list",
+  "zig_sha": "db94adaa4d03445d",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "induction-param",
+  "zig_sha": "56074503ad62bbb0",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "induction-parse",
+  "zig_sha": "0eeaad752d0c932a",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "inductive-list",
+  "zig_sha": "a7646280112a64e5",
   "stage": "markers",
   "markers": [
    "unresolved type variable T4 of ilist-append",
@@ -2822,16 +3833,19 @@
  },
  {
   "name": "infra-test",
+  "zig_sha": "622a9056e105a307",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "inline-cost-based",
+  "zig_sha": "db27da44612889e0",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "inline-single-caller",
+  "zig_sha": "d23bd6cf192b9332",
   "stage": "clean",
   "markers": []
  },
@@ -2842,21 +3856,25 @@
  },
  {
   "name": "int-literal-underscore",
+  "zig_sha": "53410e2e60bd4d23",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "interval-exhaustive",
+  "zig_sha": "6c2acf66a654cc05",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "ip-checksum-odd",
+  "zig_sha": "4ea57793c32a9ce7",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "ir-check-clean",
+  "zig_sha": "c834dc7335e5a555",
   "stage": "markers",
   "markers": [
    "no zig type for this codex type",
@@ -2871,21 +3889,25 @@
  },
  {
   "name": "iterate-test",
+  "zig_sha": "5488f16d12e7d7c2",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "iterate-zip-test",
+  "zig_sha": "ec2fd16c0a9f26c6",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "j1939-encode",
+  "zig_sha": "91b34116683fa1cd",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "keyboard-layout-test",
+  "zig_sha": "f411d61f47a9a6a3",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -2940,6 +3962,7 @@
  },
  {
   "name": "keys-collision",
+  "zig_sha": "cfb8af3c2117dc86",
   "stage": "markers",
   "markers": [
    "no emitter for uefi-read-key-ex",
@@ -2954,6 +3977,7 @@
  },
  {
   "name": "keys-mods",
+  "zig_sha": "021cc5b86fe034f9",
   "stage": "markers",
   "markers": [
    "no emitter for uefi-read-key-ex",
@@ -2969,6 +3993,7 @@
  },
  {
   "name": "keys-numpad",
+  "zig_sha": "50b014c8b20cfd68",
   "stage": "markers",
   "markers": [
    "no emitter for uefi-read-key-ex",
@@ -2983,6 +4008,7 @@
  },
  {
   "name": "keys-shift",
+  "zig_sha": "ea7031ffa003abe7",
   "stage": "markers",
   "markers": [
    "no emitter for uefi-read-key-ex",
@@ -2997,6 +4023,7 @@
  },
  {
   "name": "keys-sidecar",
+  "zig_sha": "426d31ef105744b9",
   "stage": "markers",
   "markers": [
    "no emitter for uefi-read-key-ex",
@@ -3011,6 +4038,7 @@
  },
  {
   "name": "kleene-tribool",
+  "zig_sha": "6786d8d7c5307a58",
   "stage": "clean",
   "markers": []
  },
@@ -3021,11 +4049,13 @@
  },
  {
   "name": "knx-encode",
+  "zig_sha": "c704b4ef29a35de9",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "kvstore-test",
+  "zig_sha": "0f1467413adda696",
   "stage": "markers",
   "markers": [
    "unresolved type variable T45 of hamt-node-get",
@@ -3047,6 +4077,7 @@
  },
  {
   "name": "lang-smoke",
+  "zig_sha": "637de21e0d3e6a2a",
   "stage": "markers",
   "markers": [
    "no emitter for map-list",
@@ -3056,6 +4087,7 @@
  },
  {
   "name": "lapic-regs",
+  "zig_sha": "9ac5055075b9569a",
   "stage": "markers",
   "markers": [
    "no emitter for read-mmio-32",
@@ -3064,6 +4096,7 @@
  },
  {
   "name": "lazy-smoke",
+  "zig_sha": "9bc80a5bd3b0cbd1",
   "stage": "markers",
   "markers": [
    "no zig type for this codex type",
@@ -3094,46 +4127,55 @@
  },
  {
   "name": "leaf-let-if",
+  "zig_sha": "04259e56b7bc0d0e",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "leaf-mispredict",
+  "zig_sha": "8aed3cd0cd520b20",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "lease-handoff",
+  "zig_sha": "a5fecee3a99e9d4d",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "let-dest-scope",
+  "zig_sha": "309bf3607a16a535",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "let-effectful-bug",
+  "zig_sha": "7fdf93b2f93e1eb8",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "let-else-scope",
+  "zig_sha": "d5195ca957271ba4",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "let-shadow-scope",
+  "zig_sha": "070e5dbc13b4143b",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "linear-branch",
+  "zig_sha": "0d5f03d7c5b646a9",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "linear-capture-once",
+  "zig_sha": "7119cb8997a372fe",
   "stage": "markers",
   "markers": [
    "no zig type for this codex type",
@@ -3144,36 +4186,43 @@
  },
  {
   "name": "linear-mint-container",
+  "zig_sha": "c7790621d28e2d5c",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "linear-poly-freeze",
+  "zig_sha": "3169da5ec5babb28",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "linear-smoke",
+  "zig_sha": "8ba4d0a156d4e09d",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "lir-binop-cross",
+  "zig_sha": "45cf905644c701cf",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "lir-branch-cross",
+  "zig_sha": "cdf6e8bafb241fc1",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "lir-call-cross",
+  "zig_sha": "1fa0987c534abe81",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "lir-check",
+  "zig_sha": "b2c738ca8d9e43a6",
   "stage": "markers",
   "markers": [
    "no emitter for x"
@@ -3181,68 +4230,87 @@
  },
  {
   "name": "lir-frame-cross",
+  "zig_sha": "687158b7df8616e2",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "lir-join-cross",
+  "zig_sha": "afe2900f6f51c845",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "lir-load-cross",
+  "zig_sha": "f8205f686fe1ad71",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "lir-nullary-cross",
+  "zig_sha": "72a1e3f957205eb6",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "lir-selector-smoke",
+  "zig_sha": "b66458b2318d8c40",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "lir-test-cross",
+  "zig_sha": "8ae718ad0783f730",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "list-comprehension-copy",
+  "zig_sha": "e29feb3859fd4cea",
   "stage": "markers",
   "markers": [
    "no emitter for map-list"
   ]
  },
  {
+  "name": "list-cons-tail",
+  "zig_sha": "9b28257f329b0c9b",
+  "stage": "clean",
+  "markers": []
+ },
+ {
   "name": "list-induction",
+  "zig_sha": "c4abdad68ea01005",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "list-literal-o1",
+  "zig_sha": "396a1ebaabc65b6d",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "list-oob-negative",
+  "zig_sha": "9a54112da00c284a",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "list-oob-read",
+  "zig_sha": "efe3eabebc244927",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "list-oob-write",
+  "zig_sha": "75f8984af7d56a71",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "list-pattern",
+  "zig_sha": "63ed6b606839cb95",
   "stage": "markers",
   "markers": [
    "no emitter for __list-len",
@@ -3258,11 +4326,13 @@
  },
  {
   "name": "list-tail-empty",
+  "zig_sha": "bb5d0f1173e6b668",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "list-test",
+  "zig_sha": "583cfa5acb8d6ced",
   "stage": "markers",
   "markers": [
    "unresolved type variable T10 of cl-length-acc",
@@ -3288,31 +4358,37 @@
  },
  {
   "name": "literal-subpattern",
+  "zig_sha": "18c02ff433b46d03",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "local-narrow-proven",
+  "zig_sha": "850296c8e780350d",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "location-sensors-stub",
+  "zig_sha": "a82402b80c9fc3c0",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "lorawan-encode",
+  "zig_sha": "8b37f84f9d1c91a3",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "lwm2m-encode",
+  "zig_sha": "2f1421799010729a",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "manifest-pin",
+  "zig_sha": "40c06ebd2e9d2e8f",
   "stage": "markers",
   "markers": [
    "no emitter for block-read-sector"
@@ -3320,111 +4396,151 @@
  },
  {
   "name": "manifest-subject",
+  "zig_sha": "e6f4ac837c387c46",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "mask-ops",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "e37761f28cd6b74a",
+  "stage": "markers",
+  "markers": [
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for mask-any",
+   "no emitter for mask-all",
+   "no emitter for mask-none",
+   "no emitter for mask-count",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for mask-any",
+   "no emitter for mask-all",
+   "no emitter for mask-none",
+   "no emitter for mask-count"
+  ]
  },
  {
   "name": "match-arms-per-line",
+  "zig_sha": "b89a966b3ad5acf4",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "matrix3-test",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "ac8b7deb92797457",
+  "stage": "markers",
+  "markers": [
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int"
+  ]
  },
  {
   "name": "mbus-encode",
+  "zig_sha": "f9940fa17b54298d",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "media-codec-test",
+  "zig_sha": "243c3d71375ced7a",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "melsec-encode",
+  "zig_sha": "bdcf4e568731178d",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "mini-bootstrap",
+  "zig_sha": "06ce9e5c21292272",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "mix-bits",
+  "zig_sha": "239532797ae2c211",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "mod-bound-return",
+  "zig_sha": "f413897ab3843204",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "modbus-encode",
+  "zig_sha": "c1958217bf0b3063",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "modprobe",
+  "zig_sha": "1d46e05a225a2186",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "mouse-decode",
+  "zig_sha": "375cf0f5c0cfd980",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "mqtt-encode",
+  "zig_sha": "06f899ea8a1f5794",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "mqttsn-encode",
+  "zig_sha": "0afba2be77d27a4e",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "mut-borrow-transitive",
+  "zig_sha": "e443075790238734",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "mutable-alias",
+  "zig_sha": "190377748345454b",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "mutable-smoke",
+  "zig_sha": "05e38df0ebc813e1",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "neg-int-parse",
+  "zig_sha": "547f46c0a7717f19",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "neg-real-repro",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "ab6b27fffb2312e9",
+  "stage": "clean",
+  "markers": []
  },
  {
   "name": "negation-abutment",
+  "zig_sha": "7edd8842f9ed16cd",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "nested-spawn",
+  "zig_sha": "027737e2e0155e09",
   "stage": "markers",
   "markers": [
    "no emitter for process-wait",
@@ -3434,6 +4550,7 @@
  },
  {
   "name": "net-driver-seam-bound",
+  "zig_sha": "934c9ca56d2d170b",
   "stage": "markers",
   "markers": [
    "no emitter for net-recv-raw",
@@ -3470,6 +4587,7 @@
  },
  {
   "name": "net-driver-seam-no-av",
+  "zig_sha": "934c9ca56d2d170b",
   "stage": "markers",
   "markers": [
    "no emitter for net-recv-raw",
@@ -3506,6 +4624,7 @@
  },
  {
   "name": "net-io-clock",
+  "zig_sha": "bd8144640b9affa6",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -3532,6 +4651,7 @@
  },
  {
   "name": "net-poll-calibrated",
+  "zig_sha": "7bbfc45ec375b5df",
   "stage": "markers",
   "markers": [
    "no emitter for net-recv-raw",
@@ -3569,6 +4689,7 @@
  },
  {
   "name": "network-effect",
+  "zig_sha": "e7e7333769b3f704",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -3596,6 +4717,7 @@
  },
  {
   "name": "network-scope-deny",
+  "zig_sha": "52c17dac235e8a5c",
   "stage": "markers",
   "markers": [
    "no emitter for process-get-network-scope"
@@ -3603,6 +4725,7 @@
  },
  {
   "name": "network-scope-open",
+  "zig_sha": "938a56419ef4f3ef",
   "stage": "markers",
   "markers": [
    "no emitter for process-get-network-scope"
@@ -3610,6 +4733,7 @@
  },
  {
   "name": "network-scope-spawn",
+  "zig_sha": "1af241ca086808a4",
   "stage": "markers",
   "markers": [
    "no emitter for process-get-network-scope",
@@ -3619,37 +4743,47 @@
  },
  {
   "name": "noalias-linear-param",
+  "zig_sha": "438af8070643740c",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "noise-test",
+  "zig_sha": "1869a55d54c4fb27",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "normalize-eq",
+  "zig_sha": "f8ce2907cf31b622",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "nrf52840-drivers",
+  "zig_sha": "21f019ab10a1726f",
   "stage": "markers",
   "markers": [
    "no emitter for read-mmio-32",
-   "no emitter for poke-mmio-32"
+   "no emitter for poke-mmio-32",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2"
   ]
  },
  {
   "name": "nrf9160-drivers",
+  "zig_sha": "2ac75ce16da62364",
   "stage": "markers",
   "markers": [
    "no emitter for read-mmio-32",
-   "no emitter for poke-mmio-32"
+   "no emitter for poke-mmio-32",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2"
   ]
  },
  {
   "name": "nvme-encode",
+  "zig_sha": "e95f88cd3aa29bd3",
   "stage": "markers",
   "markers": [
    "no emitter for poke-32",
@@ -3677,26 +4811,31 @@
  },
  {
   "name": "occurrence-check",
+  "zig_sha": "2e16a6a21c937fd4",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "opcua-encode",
+  "zig_sha": "761af593fcd327aa",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "osc-noise",
+  "zig_sha": "7d23578a78125255",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "ota-gate-block",
+  "zig_sha": "c7d0797625c8442e",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "ota-gate-real",
+  "zig_sha": "ee89a80a6b6a8f2e",
   "stage": "markers",
   "markers": [
    "no zig type for this codex type"
@@ -3704,46 +4843,64 @@
  },
  {
   "name": "ota-state-machine",
+  "zig_sha": "9247d72d276970ae",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "ota-update",
+  "zig_sha": "8534a2813400e66c",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "par-map",
+  "zig_sha": "386221859bd788dd",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "par-nested",
+  "zig_sha": "418dc99ddadad030",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "parse-test",
+  "zig_sha": "e81ff53ddeff8b6b",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "parser-resync",
+  "zig_sha": "03ec09deb3342797",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "particle-spread",
+  "zig_sha": "7685ff94ba18ca19",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "path-real",
+  "zig_sha": "4347747cd277e73b",
   "stage": "clean",
   "markers": []
  },
  {
+  "name": "pci-bridge-scan",
+  "zig_sha": "9475a315edd91a68",
+  "stage": "markers",
+  "markers": [
+   "no emitter for port-out-32",
+   "no emitter for port-in-32"
+  ]
+ },
+ {
   "name": "pci-bus-master",
+  "zig_sha": "5105233c363cbae6",
   "stage": "markers",
   "markers": [
    "no emitter for port-out-32",
@@ -3754,6 +4911,7 @@
  },
  {
   "name": "peek32-sign",
+  "zig_sha": "192ae2d66d613d99",
   "stage": "markers",
   "markers": [
    "no emitter for alloc-bytes",
@@ -3768,19 +4926,27 @@
  },
  {
   "name": "pi4-drivers",
+  "zig_sha": "9178552aee38eaa0",
   "stage": "markers",
   "markers": [
    "no emitter for read-mmio-32",
-   "no emitter for poke-mmio-32"
+   "no emitter for poke-mmio-32",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2"
   ]
  },
  {
   "name": "pipe-unique-test",
+  "zig_sha": "3449e1bbb95fee95",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "pit-latch",
+  "zig_sha": "5667365550a8f4c5",
   "stage": "markers",
   "markers": [
    "no emitter for read-mmio-32",
@@ -3801,11 +4967,13 @@
  },
  {
   "name": "plug-oracle-arith",
+  "zig_sha": "0daec052ba545978",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "poke16-width",
+  "zig_sha": "23dfbdf843adc698",
   "stage": "markers",
   "markers": [
    "no emitter for alloc-bytes",
@@ -3826,6 +4994,7 @@
  },
  {
   "name": "port-in-32-width",
+  "zig_sha": "819af239ea6b4d8e",
   "stage": "markers",
   "markers": [
    "no emitter for port-out-32",
@@ -3834,6 +5003,7 @@
  },
  {
   "name": "proc-state-running",
+  "zig_sha": "22db3a3ce6638c26",
   "stage": "markers",
   "markers": [
    "no emitter for process-spawn",
@@ -3842,6 +5012,7 @@
  },
  {
   "name": "process-exit-status",
+  "zig_sha": "829b041681853098",
   "stage": "markers",
   "markers": [
    "no emitter for process-exit",
@@ -3853,26 +5024,31 @@
  },
  {
   "name": "proof-assume-axiom",
+  "zig_sha": "1b46161c16592191",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "proof-smoke",
+  "zig_sha": "4b4c94cb7333d8d0",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "prop-arith",
+  "zig_sha": "aae64cfbed456dc1",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "prose-anchor",
+  "zig_sha": "f4d089a6639d0541",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "prose-consistency",
+  "zig_sha": "42a91d73a1bac0b9",
   "stage": "clean",
   "markers": []
  },
@@ -3883,16 +5059,19 @@
  },
  {
   "name": "punctual-fastmath",
+  "zig_sha": "e6836186a0cdb2cf",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "punctual-iot",
+  "zig_sha": "35906b53a4614c41",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "punctual-quire",
+  "zig_sha": "71813d594d2edeb8",
   "stage": "markers",
   "markers": [
    "no emitter for bit-not"
@@ -3900,11 +5079,13 @@
  },
  {
   "name": "punctual-smoke",
+  "zig_sha": "41a09e998651d8a5",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "qemu-virt-board",
+  "zig_sha": "f60081b45c4fff66",
   "stage": "markers",
   "markers": [
    "no emitter for poke-mmio"
@@ -3912,6 +5093,7 @@
  },
  {
   "name": "qr-encode",
+  "zig_sha": "7532b52d4d0768ea",
   "stage": "markers",
   "markers": [
    "no emitter for poke-32",
@@ -3971,6 +5153,7 @@
  },
  {
   "name": "quote-from-peer",
+  "zig_sha": "b1353b798eba2931",
   "stage": "markers",
   "markers": [
    "no emitter for sort-ascending"
@@ -3978,6 +5161,7 @@
  },
  {
   "name": "quote-from-store",
+  "zig_sha": "b1353b798eba2931",
   "stage": "markers",
   "markers": [
    "no emitter for sort-ascending"
@@ -3985,36 +5169,62 @@
  },
  {
   "name": "quotes-gate",
+  "zig_sha": "c79d6d77202e2733",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "quotes-parse",
+  "zig_sha": "aa000b6b167afee4",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "range-let-carry",
+  "zig_sha": "d8e71b965c01bb83",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "range-refine-if",
+  "zig_sha": "c5b8b46054978fd7",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "rasterizer-test",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "f19b2e163a0121d6",
+  "stage": "markers",
+  "markers": [
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int",
+   "no emitter for real-to-int"
+  ]
  },
  {
   "name": "raytracer-test",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "0f97d34bb1ce197c",
+  "stage": "markers",
+  "markers": [
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-to-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int",
+   "no emitter for real-from-int"
+  ]
  },
  {
   "name": "real-cert",
+  "zig_sha": "cb7f12bc94bbeb1e",
   "stage": "markers",
   "markers": [
    "no emitter for bit-not"
@@ -4022,81 +5232,106 @@
  },
  {
   "name": "record-smoke",
+  "zig_sha": "69c9d1c0e2bb6ac4",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "reservoir-uniform",
+  "zig_sha": "781d7906b089864f",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "return-narrow-proven",
+  "zig_sha": "99096573eca71de2",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "reverse-reverse",
+  "zig_sha": "2e18ad8a43da298a",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "revised-narrow",
+  "zig_sha": "eef21ea1188aaeca",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "riscv-encoder",
+  "zig_sha": "63c95cdc95697841",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "riscv32c-encoder",
+  "zig_sha": "564af75876b66eec",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "rp2040-drivers",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "376f3070c5018f9e",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-mmio-32",
+   "no emitter for poke-mmio-32",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2"
+  ]
  },
  {
   "name": "rsa-pss",
+  "zig_sha": "c341ef4c81d0a43c",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "rsa-verify",
+  "zig_sha": "72e6ddf05ce03545",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "rv-arg-order",
+  "zig_sha": "e2d619d596b111ea",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "rv-frameless-imm",
+  "zig_sha": "67db4e83ffa3ee98",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "rv-param-bind",
+  "zig_sha": "4238276586262125",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "rv-param-order",
+  "zig_sha": "56dd211ecbbb3212",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "s7comm-encode",
+  "zig_sha": "43ad3e411f7eb911",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "scope-allow",
+  "zig_sha": "afcdd610cc059d15",
   "stage": "markers",
   "markers": [
    "no emitter for block-read-sector",
@@ -4128,11 +5363,13 @@
  },
  {
   "name": "scope-console",
+  "zig_sha": "d8c53a7443d35878",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "scope-handler-clause",
+  "zig_sha": "6a3e7a5fb154e222",
   "stage": "markers",
   "markers": [
    "effect handlers not supported"
@@ -4140,11 +5377,13 @@
  },
  {
   "name": "scope-let-arm-global",
+  "zig_sha": "ffc34a7b7e59c796",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "scope-runtime-deny",
+  "zig_sha": "6878b086f8bde3cc",
   "stage": "markers",
   "markers": [
    "no emitter for block-read-sector",
@@ -4196,6 +5435,7 @@
  },
  {
   "name": "scope-runtime-open",
+  "zig_sha": "378e9c134ce064a0",
   "stage": "markers",
   "markers": [
    "no emitter for block-read-sector",
@@ -4247,6 +5487,7 @@
  },
  {
   "name": "scope-runtime-spawn",
+  "zig_sha": "6d2d386895cd18fc",
   "stage": "markers",
   "markers": [
    "no emitter for block-read-sector",
@@ -4298,6 +5539,7 @@
  },
  {
   "name": "scope-try-region",
+  "zig_sha": "a0da5a8ee861a9f6",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte"
@@ -4305,6 +5547,7 @@
  },
  {
   "name": "sector-read-list-growth",
+  "zig_sha": "26be786296e01e13",
   "stage": "markers",
   "markers": [
    "no emitter for block-read-sector"
@@ -4312,21 +5555,25 @@
  },
  {
   "name": "sensor-data",
+  "zig_sha": "0aae952d7fec41c6",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "serial-line",
+  "zig_sha": "fdf3784fea385cfe",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "shadow-builtin-fold",
+  "zig_sha": "45865885114bd41b",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "shadow-builtin",
+  "zig_sha": "0dfd4611c881594c",
   "stage": "clean",
   "markers": []
  },
@@ -4337,16 +5584,19 @@
  },
  {
   "name": "simplify-check",
+  "zig_sha": "a1c46fc9d86205f7",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "sixlowpan-encode",
+  "zig_sha": "3ab8e454fe60881e",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "smp-affinity",
+  "zig_sha": "ae98a757348d92fd",
   "stage": "markers",
   "markers": [
    "no emitter for process-get-pid",
@@ -4360,11 +5610,13 @@
  },
  {
   "name": "smp-arm64-boot",
+  "zig_sha": "99b993535dfd013a",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "smp-cores",
+  "zig_sha": "575c491bbe6d0648",
   "stage": "markers",
   "markers": [
    "no emitter for atomic-load",
@@ -4375,6 +5627,7 @@
  },
  {
   "name": "smp-dispatch",
+  "zig_sha": "5c1f9af279a92c2d",
   "stage": "markers",
   "markers": [
    "no emitter for process-spawn",
@@ -4395,6 +5648,7 @@
  },
  {
   "name": "smp-halt",
+  "zig_sha": "612e733f5c6265b6",
   "stage": "markers",
   "markers": [
    "no emitter for process-spawn",
@@ -4417,6 +5671,7 @@
  },
  {
   "name": "smp-preempt",
+  "zig_sha": "3c5bd8bc4f4d303b",
   "stage": "markers",
   "markers": [
    "no emitter for process-spawn",
@@ -4437,6 +5692,7 @@
  },
  {
   "name": "smp-proc0-pinned",
+  "zig_sha": "4480f4d379c0cc75",
   "stage": "markers",
   "markers": [
    "no emitter for atomic-load",
@@ -4459,11 +5715,13 @@
  },
  {
   "name": "smp-riscv-boot",
+  "zig_sha": "32685d0cf90e29bf",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "smp-tss",
+  "zig_sha": "456fd6eeb6d4a8df",
   "stage": "markers",
   "markers": [
    "no emitter for atomic-load",
@@ -4477,26 +5735,44 @@
  },
  {
   "name": "sntp-encode",
+  "zig_sha": "d11aa14cc4182fbb",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "sort-test",
+  "zig_sha": "8df2b8ce696451b7",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "sound-test",
+  "zig_sha": "92382a1bd8bd3af7",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "sparkplug-encode",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "edbebe846e3e33a7",
+  "stage": "markers",
+  "markers": [
+   "no emitter for real-approx-to-bits",
+   "no emitter for real-to-bits",
+   "no emitter for to-real-approx"
+  ]
+ },
+ {
+  "name": "spawn-memo-table",
+  "zig_sha": "a54c5590db4ff5ef",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-spawn",
+   "no emitter for process-yield"
+  ]
  },
  {
   "name": "spawn-reuse",
+  "zig_sha": "af853c91b224abff",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -4509,11 +5785,13 @@
  },
  {
   "name": "sprite-test",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "e471748f7750d144",
+  "stage": "clean",
+  "markers": []
  },
  {
   "name": "stale-read-warning",
+  "zig_sha": "9f7181f2ec53f16e",
   "stage": "clean",
   "markers": []
  },
@@ -4524,24 +5802,41 @@
  },
  {
   "name": "stm32f4-drivers",
+  "zig_sha": "b70b535411824efb",
   "stage": "markers",
   "markers": [
    "no emitter for read-mmio-32",
-   "no emitter for poke-mmio-32"
+   "no emitter for poke-mmio-32",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2"
   ]
  },
  {
   "name": "stm32l4-drivers",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "314cb577e174375f",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-mmio-32",
+   "no emitter for poke-mmio-32",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2",
+   "no emitter for MkTup2"
+  ]
  },
  {
   "name": "string-escape-quote",
+  "zig_sha": "47ccd418c8ba061e",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "stringbuilder-independence",
+  "zig_sha": "75cd2f77f04c8d94",
   "stage": "clean",
   "markers": []
  },
@@ -4552,26 +5847,35 @@
  },
  {
   "name": "stringutils-test",
+  "zig_sha": "3c8e3d56256ae5ef",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "substring-over-read",
+  "zig_sha": "f2662ce08cec9514",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "suggested-width",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "8f1acbea22205f1b",
+  "stage": "markers",
+  "markers": [
+   "no emitter for suggested-vector-width",
+   "no emitter for suggested-vector-width",
+   "no emitter for suggested-vector-width"
+  ]
  },
  {
   "name": "synth-test",
+  "zig_sha": "bd537f85d66eff79",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "tag-equal",
+  "zig_sha": "a4a0199823228d0b",
   "stage": "markers",
   "markers": [
    "no emitter for tag-equal",
@@ -4584,6 +5888,7 @@
  },
  {
   "name": "tco-bitop-loop",
+  "zig_sha": "744da6aa1f3d19ff",
   "stage": "markers",
   "markers": [
    "no emitter for bit-not"
@@ -4591,61 +5896,79 @@
  },
  {
   "name": "tco-direct-arg-reads",
+  "zig_sha": "231409211ceffca3",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "tco-framed-append",
+  "zig_sha": "41a8d2ecb39a81f4",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "tco-nested-if",
+  "zig_sha": "0ca25e2753819917",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "tco-shuffle-spill",
+  "zig_sha": "1cc72ea0afefe416",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "tcp-checksum-refuse",
+  "zig_sha": "18f9475b80c7ad07",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "tcp-listen-reclaim",
+  "zig_sha": "b6397b753ad3d9fe",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "tcp-reliability",
+  "zig_sha": "b971fb6448525dd1",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "tcp-seqwrap",
+  "zig_sha": "4050394ce91e1278",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "text-append-alias",
+  "zig_sha": "5f26dee8ab8016ba",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "text-eq-branches",
+  "zig_sha": "bada67c44aad98b0",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "text-fold-indexed",
+  "zig_sha": "32421ccbf71c9f56",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "text-helper-native",
+  "zig_sha": "12d158a38ffd2a5d",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "text-helper-spec",
+  "zig_sha": "f0d7bab15e2821fe",
   "stage": "clean",
   "markers": []
  },
@@ -4656,21 +5979,25 @@
  },
  {
   "name": "textscan-test",
+  "zig_sha": "5d0f22c4f857b5b0",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "textsearch-test",
+  "zig_sha": "6d005b19ecd4c67f",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "thumb2-encoder",
+  "zig_sha": "cb1e323e171b8ff6",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "timer-registers",
+  "zig_sha": "02327b942946e6c1",
   "stage": "markers",
   "markers": [
    "no emitter for read-mmio-32",
@@ -4686,6 +6013,7 @@
  },
  {
   "name": "tls-cert",
+  "zig_sha": "2edb890aed1ac24e",
   "stage": "markers",
   "markers": [
    "no emitter for bit-not"
@@ -4693,6 +6021,7 @@
  },
  {
   "name": "tls-cv-schemes",
+  "zig_sha": "a5ca455e8f0b14fd",
   "stage": "markers",
   "markers": [
    "no emitter for bit-not"
@@ -4700,31 +6029,37 @@
  },
  {
   "name": "tls-record-framing",
+  "zig_sha": "8104eed4ae674dfb",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "tls-test",
+  "zig_sha": "711a3b2285851bc4",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "tls13-record",
+  "zig_sha": "7567d3fc6da86776",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "tls13-schedule",
+  "zig_sha": "f59487a70dd22c08",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "transport-cocite",
+  "zig_sha": "54a912050f079269",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "trie-prefix-test",
+  "zig_sha": "dfef0b29859989a1",
   "stage": "clean",
   "markers": []
  },
@@ -4745,6 +6080,7 @@
  },
  {
   "name": "try-smoke",
+  "zig_sha": "d3ca641b3caeed97",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -4753,26 +6089,31 @@
  },
  {
   "name": "ttf-debug",
+  "zig_sha": "165485e534c04e7e",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "ttt-perfect",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "8b5536dbdbd95298",
+  "stage": "clean",
+  "markers": []
  },
  {
   "name": "tuple-syntax",
+  "zig_sha": "8869b619462857b0",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "type-checker-test",
+  "zig_sha": "fd44e6542b2e25b8",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "type-class-no-instance-gen",
+  "zig_sha": "79fdfbc177b9793a",
   "stage": "markers",
   "markers": [
    "no emitter for __no-instance-Showable-Boolean"
@@ -4780,6 +6121,7 @@
  },
  {
   "name": "type-class-no-instance",
+  "zig_sha": "ee606503d820af1d",
   "stage": "markers",
   "markers": [
    "no emitter for __no-instance-to-text-Boolean"
@@ -4787,6 +6129,7 @@
  },
  {
   "name": "type-name-existence",
+  "zig_sha": "1aa2f3c46ccd583b",
   "stage": "markers",
   "markers": [
    "no zig type for this applied type"
@@ -4794,21 +6137,25 @@
  },
  {
   "name": "typeclass-poly",
+  "zig_sha": "ccafe4e7fa2cf881",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "typeclass-smoke",
+  "zig_sha": "b412d71ae7eb5376",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "udp-frame-guard",
+  "zig_sha": "9a8f4c59a9f8d8c0",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "uefi-read-key-nofirmware",
+  "zig_sha": "de8cf75ef1b566f1",
   "stage": "markers",
   "markers": [
    "no emitter for uefi-read-key"
@@ -4816,8 +6163,9 @@
  },
  {
   "name": "ui-anim-test",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "77625c04ad5eceb3",
+  "stage": "clean",
+  "markers": []
  },
  {
   "name": "ui-dialog-test",
@@ -4836,18 +6184,21 @@
  },
  {
   "name": "ui-font-cce-order",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "c2461606d26304a5",
+  "stage": "clean",
+  "markers": []
  },
  {
   "name": "ui-font-test",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "06b95617f7e9d96b",
+  "stage": "clean",
+  "markers": []
  },
  {
   "name": "ui-icon-test",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "f1d09b087b57f994",
+  "stage": "clean",
+  "markers": []
  },
  {
   "name": "ui-layout-test",
@@ -4861,11 +6212,13 @@
  },
  {
   "name": "ui-scroll-test",
+  "zig_sha": "4342f2f0246de200",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "ui-sound-test",
+  "zig_sha": "4bfa24e415b08c57",
   "stage": "clean",
   "markers": []
  },
@@ -4876,66 +6229,37 @@
  },
  {
   "name": "ui-theme-test",
+  "zig_sha": "bf6cff9f573eb6e3",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "unit-family-mixed",
-  "stage": "markers",
-  "markers": [
-   "no emitter for Length",
-   "no emitter for Length",
-   "no emitter for Length",
-   "no emitter for Length",
-   "no emitter for Length"
-  ]
+  "zig_sha": "768e77209ea0a4fe",
+  "stage": "clean",
+  "markers": []
  },
  {
   "name": "unit-family",
-  "stage": "markers",
-  "markers": [
-   "no emitter for Length",
-   "no emitter for Length",
-   "no emitter for Length"
-  ]
+  "zig_sha": "d8b9ae28cec6765c",
+  "stage": "clean",
+  "markers": []
  },
  {
   "name": "unit-smoke",
-  "stage": "markers",
-  "markers": [
-   "no emitter for Second",
-   "no emitter for Second",
-   "no emitter for Meter",
-   "no emitter for Minute",
-   "no emitter for Second",
-   "no emitter for Second"
-  ]
+  "zig_sha": "5594524a952540fa",
+  "stage": "clean",
+  "markers": []
  },
  {
   "name": "units-foreword",
-  "stage": "markers",
-  "markers": [
-   "no emitter for Celsius",
-   "no emitter for Duration",
-   "no emitter for Duration",
-   "no emitter for Length",
-   "no emitter for Length",
-   "no emitter for AstroDistance",
-   "no emitter for AstroDistance",
-   "no emitter for DataSize",
-   "no emitter for Celsius",
-   "no emitter for Kelvin",
-   "no emitter for Fahrenheit",
-   "no emitter for Fahrenheit",
-   "no emitter for Angle",
-   "no emitter for Speed",
-   "no emitter for Energy",
-   "no emitter for Force",
-   "no emitter for Power"
-  ]
+  "zig_sha": "a50eb848b1699bf2",
+  "stage": "clean",
+  "markers": []
  },
  {
   "name": "uri-encode",
+  "zig_sha": "6cec30a7f88aa6f8",
   "stage": "markers",
   "markers": [
    "no emitter for text-to-unicode-bytes"
@@ -4943,11 +6267,13 @@
  },
  {
   "name": "usb-desc-guard",
+  "zig_sha": "c724b5db09006a2a",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "usb-test",
+  "zig_sha": "a4f16204386533ac",
   "stage": "clean",
   "markers": []
  },
@@ -4958,11 +6284,13 @@
  },
  {
   "name": "value-eq",
+  "zig_sha": "e05f23ccd6680d3e",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "vbe-mode-set",
+  "zig_sha": "bc87e8477cc3eeda",
   "stage": "markers",
   "markers": [
    "no emitter for port-out-16",
@@ -4974,41 +6302,146 @@
  },
  {
   "name": "vec-arith-hazards",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "c4808ff88d757337",
+  "stage": "markers",
+  "markers": [
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-add",
+   "no emitter for vec-extract",
+   "no emitter for vec-sub",
+   "no emitter for vec-extract",
+   "no emitter for vec-mul",
+   "no emitter for vec-extract",
+   "no emitter for vec-div",
+   "no emitter for vec-extract"
+  ]
  },
  {
   "name": "vec-array",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "17164962b3a20676",
+  "stage": "markers",
+  "markers": [
+   "no emitter for alloc-bytes",
+   "no emitter for vec-load-at",
+   "no emitter for vec-store-at",
+   "no emitter for alloc-bytes",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for alloc-bytes",
+   "no emitter for real-to-bits",
+   "no emitter for real-to-bits",
+   "no emitter for real-to-bits",
+   "no emitter for real-to-bits",
+   "no emitter for real-to-bits",
+   "no emitter for real-to-bits",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract"
+  ]
  },
  {
   "name": "vec-extract-hazards",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "859799b1eb921e36",
+  "stage": "markers",
+  "markers": [
+   "no emitter for vec-splat",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec4-splat",
+   "no emitter for vec4-extract"
+  ]
  },
  {
   "name": "vec-lane-computed-oob",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "31fda46b900067d9",
+  "stage": "markers",
+  "markers": [
+   "no emitter for vec-extract"
+  ]
  },
  {
   "name": "vec-mask-hazards",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "81f9fba694dbd902",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for alloc-bytes",
+   "no emitter for real-to-bits",
+   "no emitter for real-to-bits",
+   "no emitter for vec-load-at",
+   "no emitter for mask-any",
+   "no emitter for mask-all",
+   "no emitter for mask-none",
+   "no emitter for mask-none",
+   "no emitter for mask-none",
+   "no emitter for mask-none",
+   "no emitter for mask-any",
+   "no emitter for mask-all",
+   "no emitter for mask-none",
+   "no emitter for mask-count",
+   "no emitter for mask-count",
+   "no emitter for mask-count",
+   "no emitter for mask-count",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for mask-any",
+   "no emitter for mask-all",
+   "no emitter for mask-none",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for mask-any",
+   "no emitter for mask-all",
+   "no emitter for mask-none",
+   "no emitter for mask-count"
+  ]
  },
  {
   "name": "vec-nest-probe",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "715a6cf878a1dfd0",
+  "stage": "markers",
+  "markers": [
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract"
+  ]
  },
  {
   "name": "vec-nested-binop",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "d521a63ada552721",
+  "stage": "markers",
+  "markers": [
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract"
+  ]
  },
  {
   "name": "vec-pattern",
+  "zig_sha": "fc311c144d9ae0a7",
   "stage": "markers",
   "markers": [
    "vector patterns not supported",
@@ -5020,26 +6453,60 @@
  },
  {
   "name": "vec-reduce-add",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "c17d0bd4a91108d9",
+  "stage": "markers",
+  "markers": [
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-reduce-add",
+   "no emitter for vec-reduce-add",
+   "no emitter for vec-reduce-add",
+   "no emitter for vec-reduce-add"
+  ]
  },
  {
   "name": "vec-select",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "f997de047e41ff4c",
+  "stage": "markers",
+  "markers": [
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-select",
+   "no emitter for vec-extract",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-select",
+   "no emitter for vec-extract"
+  ]
  },
  {
   "name": "vector-basic",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "e24e633393f71c39",
+  "stage": "markers",
+  "markers": [
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract"
+  ]
  },
  {
   "name": "vector-f32",
-  "stage": "codexir",
-  "detail": "rc=-6 signal=6"
+  "zig_sha": "892b22179d5088c6",
+  "stage": "markers",
+  "markers": [
+   "no emitter for vec4-splat",
+   "no emitter for vec4-splat",
+   "no emitter for from-real-approx",
+   "no emitter for from-real-approx",
+   "no emitter for from-real-approx"
+  ]
  },
  {
   "name": "vector-int",
+  "zig_sha": "def0b0a60aa1333f",
   "stage": "markers",
   "markers": [
    "no emitter for vec-splat",
@@ -5077,26 +6544,31 @@
  },
  {
   "name": "watchdog-panic-probe",
+  "zig_sha": "9ad644d3a91ef791",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "wavelet-sort-aliasing",
+  "zig_sha": "b2b8afeee63aae24",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "wcet-budget-unchecked",
+  "zig_sha": "245227b1378a2de7",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "wcet-probe",
+  "zig_sha": "56b34d75184b7d5a",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "web-chain",
+  "zig_sha": "e56e498a6656e5dc",
   "stage": "markers",
   "markers": [
    "no emitter for bit-not"
@@ -5104,6 +6576,7 @@
  },
  {
   "name": "web-mux-concurrent",
+  "zig_sha": "e1dd6d524ebb07a1",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -5133,6 +6606,7 @@
  },
  {
   "name": "web-mux-idle-reap",
+  "zig_sha": "d9f7b4e17df4e7d4",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -5162,6 +6636,7 @@
  },
  {
   "name": "web-mux-lifecycle",
+  "zig_sha": "bf13d9485dc542d7",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -5191,6 +6666,7 @@
  },
  {
   "name": "web-mux-reassembly",
+  "zig_sha": "772e2eb595818d6d",
   "stage": "markers",
   "markers": [
    "no emitter for poke-byte",
@@ -5220,41 +6696,49 @@
  },
  {
   "name": "when-arm-nontail",
+  "zig_sha": "8762ca2a9998a7e5",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "when-arm-tail-call",
+  "zig_sha": "cdbc064b83e66ec7",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "when-bool-cross",
+  "zig_sha": "48986f4bb3094055",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "when-bool-pattern",
+  "zig_sha": "046afe7ad9f11e47",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "when-generic-field",
+  "zig_sha": "c9912fa0762ab1f4",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "with-timeout-test",
+  "zig_sha": "26f5964d45670324",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "workflow-parse-int",
+  "zig_sha": "9a8d4b4a25688c96",
   "stage": "clean",
   "markers": []
  },
  {
   "name": "x509-chain",
+  "zig_sha": "71ff40ba43bf4aac",
   "stage": "markers",
   "markers": [
    "no emitter for bit-not"
@@ -5262,6 +6746,7 @@
  },
  {
   "name": "x509-parse",
+  "zig_sha": "86918939e6e18ecd",
   "stage": "markers",
   "markers": [
    "no emitter for bit-not"
@@ -5269,6 +6754,7 @@
  },
  {
   "name": "zigbee-encode",
+  "zig_sha": "29847959a7934eac",
   "stage": "clean",
   "markers": []
  }

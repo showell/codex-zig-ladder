@@ -1,356 +1,16 @@
 {
  "tally": {
-  "match": 117,
-  "differ": 33,
-  "refused": 95,
-  "crashed": 5,
-  "no-expected": 28
+  "match": 94,
+  "differ": 3,
+  "refused": 72,
+  "crashed": 2,
+  "no-expected": 23
  },
  "detail": [
   [
-   "arith-narrow-proven",
-   "differ",
-   "want '28992\\n69997\\n16383\\nmark-ok' got '28992\\n69997\\n16383\\nmark-zero'"
-  ],
-  [
-   "arithmetic",
-   "refused",
-   "corpus/arithmetic.zig:404:251: error: expected 0 argument(s), found 1"
-  ],
-  [
-   "arm64-encoder",
-   "differ",
-   "want '\\x01add x0,x1,x2=8B020020\\nsub x3,x4,x5=CB050083\\nmul x6,x7,x8=9B' got 'add x0,x1,x2=8B020020\\nsub x3,x4,x5=CB050083\\nmul x6,x7,x8=9B0'"
-  ],
-  [
-   "arp-cache-bound",
-   "refused",
-   "corpus/arp-cache-bound.zig:883:399: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "audio-diffusion-test",
-   "refused",
-   "corpus/audio-diffusion-test.zig:397:18: error: use of undeclared identifier 'Frequency'"
-  ],
-  [
-   "av-codec-test",
-   "refused",
-   "corpus/av-codec-test.zig:419:22: error: use of undeclared identifier 'Frequency'"
-  ],
-  [
-   "ble-att-encode",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "bloom-spread",
-   "crashed",
-   "thread 3401 panic: integer overflow"
-  ],
-  [
-   "call-clobber",
-   "refused",
-   "corpus/call-clobber.zig:383:168: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "canopen-encode",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "cap-device-declared",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "capability-doors",
-   "differ",
-   "want '\\x01agree=54/54\\ngranting=54/54\\nunion=18/18 refines=18/18\\nunknow' got 'agree=54/54\\ngranting=54/54\\nunion=18/18 refines=18/18\\nunknown'"
-  ],
-  [
-   "carddeck-shuffle",
-   "refused",
-   "corpus/carddeck-shuffle.zig:444:709: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "cce-roundtrip",
-   "differ",
-   "want '\\x01ascii-mapped=97\\nascii-rt-fail=0\\nlow1k-mapped=481\\nlow1k-rt-f' got 'ascii-mapped=97\\nascii-rt-fail=0\\nlow1k-mapped=481\\nlow1k-rt-fa'"
-  ],
-  [
-   "cce-tier1",
-   "refused",
-   "corpus/cce-tier1.zig:499:67: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "circbuf-test",
-   "refused",
-   "corpus/circbuf-test.zig:423:354: error: switch must handle all possibilities"
-  ],
-  [
-   "cmac-test",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "cms-spread",
-   "refused",
-   "corpus/cms-spread.zig:455:1323: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "coap-block",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "coap-parse",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "consistent-hash-balance",
-   "crashed",
-   "thread 3475 panic: integer overflow"
-  ],
-  [
-   "crypto-vectors",
-   "differ",
-   "want '\\x01aes256-ct= 142 162 183 202 81 103 69 191 234 252 73 144 75 ' got 'aes256-ct= 142 162 183 202 81 103 69 191 234 252 73 144 75 7'"
-  ],
-  [
-   "cryptobig",
-   "refused",
-   "corpus/cryptobig.zig:575:590: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "dnp3-encode",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "dns-answer-count",
-   "refused",
-   "corpus/dns-answer-count.zig:39:11: error: local constant shadows declaration of 'l'"
-  ],
-  [
-   "dtls-handshake",
-   "refused",
-   "corpus/dtls-handshake.zig:800:163: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "dtls-hello",
-   "refused",
-   "corpus/dtls-hello.zig:675:228: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "dtls-message",
-   "refused",
-   "corpus/dtls-message.zig:848:124: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "e1000-aneg-budget",
-   "refused",
-   "corpus/e1000-aneg-budget.zig:447:710: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "e1000-link-budget",
-   "refused",
-   "corpus/e1000-link-budget.zig:459:717: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "ecdsa-p256",
-   "refused",
-   "corpus/ecdsa-p256.zig:1115:185: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "ecdsa-p384",
-   "refused",
-   "corpus/ecdsa-p384.zig:1047:81: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "effect-dotted-allow",
-   "differ",
-   "want '\\x01result 42' got 'result 42'"
-  ],
-  [
-   "effect-map-effctx",
-   "differ",
-   "want '\\x01shout 4\\nshout 5\\nlen 2' got 'shout 4\\nshout 5\\nlen 2'"
-  ],
-  [
-   "effect-row-var-syntax",
-   "differ",
-   "want '\\x01pure 42\\nshout 21\\nlogged 42' got 'pure 42\\nshout 21\\nlogged 42'"
-  ],
-  [
-   "effect-value-poly",
-   "refused",
-   "corpus/effect-value-poly.zig:390:29: error: expected 1 argument(s), found 0"
-  ],
-  [
-   "enip-encode",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "final-batch-test",
-   "refused",
-   "corpus/final-batch-test.zig:481:21: error: use of undeclared identifier 'Timestamp'"
-  ],
-  [
-   "fins-encode",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "fork-nested",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "fork-reclaim",
-   "refused",
-   "corpus/fork-reclaim.zig:385:346: error: expected type 'i64', found 'fork-reclaim.CxFn1(void,i64)'"
-  ],
-  [
-   "frame-short-buffer",
-   "refused",
-   "corpus/frame-short-buffer.zig:465:1756: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "ga-core",
-   "refused",
-   "corpus/ga-core.zig:571:2477: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "goose-encode",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "hal-device-declared",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "hart-encode",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "ieee802154-encode",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "imap-wire",
-   "differ",
-   "want '\\x01capability 15 : 65 49 32 67 65 80 65 66 73 76 73 84 89 13 1' got 'capability 15 : 65 49 32 67 65 80 65 66 73 76 73 84 89 13 10'"
-  ],
-  [
-   "infra-test",
-   "refused",
-   "corpus/infra-test.zig:400:20: error: use of undeclared identifier 'Duration'"
-  ],
-  [
-   "inline-single-caller",
-   "differ",
-   "want '\\x01wide 5\\narity4 10\\nfree 101\\nshadowed 101' got 'wide 5\\narity4 10\\nfree 101\\nshadowed 101'"
-  ],
-  [
-   "ip-checksum-odd",
-   "refused",
-   "corpus/ip-checksum-odd.zig:433:110: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "iterate-zip-test",
-   "refused",
-   "corpus/iterate-zip-test.zig:395:1506: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "j1939-encode",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "knx-encode",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "lease-handoff",
-   "differ",
-   "want '\\x01refused: sender holds no active lease for capability Files\\n' got 'refused: sender holds no active lease for capability Files\\nr'"
-  ],
-  [
-   "let-dest-scope",
-   "refused",
-   "corpus/let-dest-scope.zig:398:103: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "linear-branch",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "linear-poly-freeze",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "linear-smoke",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "lir-binop-cross",
-   "differ",
-   "want '\\x01diff: 5\\ndiff-neg: -5\\naddup: 6\\nchain-sub: 12\\nscale: 21\\noffse' got 'diff: 5\\ndiff-neg: -5\\naddup: 6\\nchain-sub: 12\\nscale: 21\\noffset'"
-  ],
-  [
-   "lir-branch-cross",
-   "differ",
-   "want '\\x01mn: 3\\nmn-rev: 3\\nmn-eq: 5\\nmx: 9\\nmx-eq: 5\\nle-lt: 10\\nle-eq: 10' got 'mn: 3\\nmn-rev: 3\\nmn-eq: 5\\nmx: 9\\nmx-eq: 5\\nle-lt: 10\\nle-eq: 10\\n'"
-  ],
-  [
-   "lir-frame-cross",
-   "differ",
-   "want '\\x01regs-only: 6\\nsaved: -52\\nsaved-perm: 52\\nspilled: 20\\nspilled-' got 'regs-only: 6\\nsaved: -52\\nsaved-perm: 52\\nspilled: 20\\nspilled-p'"
-  ],
-  [
-   "lir-join-cross",
-   "differ",
-   "want '\\x013\\n4\\n11\\n21\\n60\\n80\\n11\\n12\\n13\\n57\\n58\\n68' got '3\\n4\\n11\\n21\\n60\\n80\\n11\\n12\\n13\\n57\\n58\\n68'"
-  ],
-  [
-   "lir-load-cross",
-   "differ",
-   "want '\\x0175\\n42\\n0\\n5\\n6\\n0\\n7\\n0\\n10\\n1\\n607\\n2\\n7\\n3\\n41' got '75\\n42\\n0\\n5\\n6\\n0\\n7\\n0\\n10\\n1\\n607\\n2\\n7\\n3\\n41'"
-  ],
-  [
-   "lir-nullary-cross",
-   "differ",
-   "want '\\x01ident: 7\\nkonst: 42\\nneg-konst: -7\\nbig-konst: 123456789\\npick2' got 'ident: 7\\nkonst: 42\\nneg-konst: -7\\nbig-konst: 123456789\\npick2:'"
-  ],
-  [
-   "lir-test-cross",
-   "differ",
-   "want '\\x011\\n0\\n1\\n0\\n1\\n0\\n100\\n200\\n1\\n0\\n1\\n0\\n1\\n0\\n1' got '1\\n0\\n1\\n0\\n1\\n0\\n100\\n200\\n1\\n0\\n1\\n0\\n1\\n0\\n1'"
-  ],
-  [
-   "list-literal-o1",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "literal-subpattern",
-   "refused",
-   "corpus/literal-subpattern.zig:399:34: error: use of undeclared identifier 'sin'"
-  ],
-  [
    "location-sensors-stub",
    "refused",
-   "corpus/location-sensors-stub.zig:440:340: error: expected type 'i64', found 'bool'"
+   "corpus/location-sensors-stub.zig:552:340: error: expected type 'i64', found 'bool'"
   ],
   [
    "lorawan-encode",
@@ -370,7 +30,7 @@
   [
    "media-codec-test",
    "refused",
-   "corpus/media-codec-test.zig:695:164: error: expected type 'void', found 'comptime_int'"
+   "corpus/media-codec-test.zig:807:164: error: expected type 'void', found 'comptime_int'"
   ],
   [
    "melsec-encode",
@@ -380,17 +40,12 @@
   [
    "mix-bits",
    "refused",
-   "corpus/mix-bits.zig:399:480: error: expected type 'i64', found 'bool'"
+   "corpus/mix-bits.zig:511:500: error: expected type 'i64', found 'bool'"
   ],
   [
    "modbus-encode",
    "refused",
    "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "modprobe",
-   "differ",
-   "want '\\x01pp 7,3 div=2 mod=1\\nnp -7,3 div=-2 mod=2\\npn 7,-3 div=-2 mod=' got 'pp 7,3 div=2 mod=1\\nnp -7,3 div=-2 mod=2\\npn 7,-3 div=-2 mod=1'"
   ],
   [
    "mqtt-encode",
@@ -413,9 +68,14 @@
    "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
   ],
   [
+   "neg-real-repro",
+   "refused",
+   "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
+  ],
+  [
    "noise-test",
    "refused",
-   "corpus/noise-test.zig:483:374: error: expected type 'i64', found 'bool'"
+   "corpus/noise-test.zig:595:399: error: expected type 'i64', found 'bool'"
   ],
   [
    "opcua-encode",
@@ -425,22 +85,22 @@
   [
    "osc-noise",
    "refused",
-   "corpus/osc-noise.zig:373:21: error: use of undeclared identifier 'Frequency'"
+   "corpus/osc-noise.zig:485:21: error: use of undeclared identifier 'Frequency'"
   ],
   [
    "ota-gate-block",
    "refused",
-   "corpus/ota-gate-block.zig:501:16: error: use of undeclared identifier 'Timestamp'"
+   "corpus/ota-gate-block.zig:613:16: error: use of undeclared identifier 'Timestamp'"
   ],
   [
    "ota-state-machine",
    "refused",
-   "corpus/ota-state-machine.zig:501:16: error: use of undeclared identifier 'Timestamp'"
+   "corpus/ota-state-machine.zig:613:16: error: use of undeclared identifier 'Timestamp'"
   ],
   [
    "ota-update",
    "refused",
-   "corpus/ota-update.zig:501:16: error: use of undeclared identifier 'Timestamp'"
+   "corpus/ota-update.zig:613:16: error: use of undeclared identifier 'Timestamp'"
   ],
   [
    "par-map",
@@ -449,226 +109,6 @@
   ],
   [
    "par-nested",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "particle-spread",
-   "crashed",
-   "thread 4025 panic: integer overflow"
-  ],
-  [
-   "pipe-unique-test",
-   "refused",
-   "corpus/pipe-unique-test.zig:421:295: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "prose-anchor",
-   "differ",
-   "want '\\x01first=42\\nsecond=15\\nthird=10' got 'first=42\\nsecond=15\\nthird=10'"
-  ],
-  [
-   "punctual-fastmath",
-   "refused",
-   "corpus/punctual-fastmath.zig:371:178: error: value with comptime-only type 'comptime_int' depends on runtime control flow"
-  ],
-  [
-   "reservoir-uniform",
-   "refused",
-   "corpus/reservoir-uniform.zig:439:1080: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "riscv-encoder",
-   "differ",
-   "want '\\x01add a0,a1,a2=00C58533\\nsub a0,a1,a2=40C58533\\nmul a0,a1,a2=02' got 'add a0,a1,a2=00C58533\\nsub a0,a1,a2=40C58533\\nmul a0,a1,a2=02C'"
-  ],
-  [
-   "riscv32c-encoder",
-   "differ",
-   "want '\\x01c.nop=0001\\nc.li a0,42=5529\\nc.mv a0,a1=052E\\nc.add a0,a1=152E' got 'c.nop=0001\\nc.li a0,42=5529\\nc.mv a0,a1=052E\\nc.add a0,a1=152E\\n'"
-  ],
-  [
-   "rsa-pss",
-   "refused",
-   "corpus/rsa-pss.zig:939:201: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "rsa-verify",
-   "refused",
-   "corpus/rsa-verify.zig:756:185: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "rv-frameless-imm",
-   "differ",
-   "want '\\x01254\\n65024\\n65253\\n42496\\n399\\n254\\n1278\\n241' got '254\\n65024\\n65253\\n42496\\n399\\n254\\n1278\\n241'"
-  ],
-  [
-   "s7comm-encode",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "scope-console",
-   "differ",
-   "want '\\x01console scope holds\\na bare Console grant still covers Conso' got 'console scope holds\\na bare Console grant still covers Consol'"
-  ],
-  [
-   "serial-line",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "shadow-builtin-fold",
-   "differ",
-   "want 'lit 99\\nvar 99\\nabs 77' got 'lit 3\\nvar 3\\nabs 5'"
-  ],
-  [
-   "sixlowpan-encode",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "smp-arm64-boot",
-   "crashed",
-   "thread 4197 panic: oom"
-  ],
-  [
-   "smp-riscv-boot",
-   "crashed",
-   "thread 4202 panic: oom"
-  ],
-  [
-   "sntp-encode",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "sound-test",
-   "refused",
-   "corpus/sound-test.zig:373:21: error: use of undeclared identifier 'Frequency'"
-  ],
-  [
-   "stringutils-test",
-   "refused",
-   "corpus/stringutils-test.zig:474:89: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "synth-test",
-   "refused",
-   "corpus/synth-test.zig:392:16: error: use of undeclared identifier 'Frequency'"
-  ],
-  [
-   "tcp-checksum-refuse",
-   "refused",
-   "corpus/tcp-checksum-refuse.zig:931:1282: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "tcp-listen-reclaim",
-   "differ",
-   "want '\\x01fresh-listener-admits=True\\nclaimed-remote-port=49152\\nclaime' got 'fresh-listener-admits=True\\nclaimed-remote-port=49152\\nclaimed'"
-  ],
-  [
-   "tcp-reliability",
-   "refused",
-   "corpus/tcp-reliability.zig:959:5712: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "text-eq-branches",
-   "differ",
-   "want '\\x01eq-int same    1\\neq-int differ  0\\nne-int same    0\\nne-int d' got 'eq-int same    1\\neq-int differ  0\\nne-int same    0\\nne-int di'"
-  ],
-  [
-   "text-fold-indexed",
-   "differ",
-   "want '3\\n01234\\n3\\n4' got '3\\n01234\\n0\\n4'"
-  ],
-  [
-   "textscan-test",
-   "refused",
-   "corpus/textscan-test.zig:414:941: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "textsearch-test",
-   "refused",
-   "corpus/textsearch-test.zig:477:64: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "thumb2-encoder",
-   "differ",
-   "want '\\x01nop=BF00\\nmov r0,r1=1C08\\nmov r0,#42=202A\\nadd r0,r1,r2=1888\\ns' got 'nop=BF00\\nmov r0,r1=1C08\\nmov r0,#42=202A\\nadd r0,r1,r2=1888\\nsu'"
-  ],
-  [
-   "tls-record-framing",
-   "refused",
-   "corpus/tls-record-framing.zig:1118:130: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "tls-test",
-   "refused",
-   "corpus/tls-test.zig:840:674: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "tls13-record",
-   "refused",
-   "corpus/tls13-record.zig:732:308: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "tls13-schedule",
-   "refused",
-   "corpus/tls13-schedule.zig:831:192: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "transport-cocite",
-   "differ",
-   "want '\\x01tcp 3\\ndtls 7' got 'tcp 3\\ndtls 7'"
-  ],
-  [
-   "type-checker-test",
-   "refused",
-   "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
-  ],
-  [
-   "typeclass-poly",
-   "refused",
-   "corpus/typeclass-poly.zig:415:34: error: use of undeclared identifier 'T2'"
-  ],
-  [
-   "typeclass-smoke",
-   "refused",
-   "corpus/typeclass-smoke.zig:500:121: error: use of undeclared identifier 'T2'"
-  ],
-  [
-   "udp-frame-guard",
-   "refused",
-   "corpus/udp-frame-guard.zig:631:223: error: expected type 'i64', found 'bool'"
-  ],
-  [
-   "usb-desc-guard",
-   "differ",
-   "want '\\x01device vendor=4660 product=22136 class=9 configs=1\\ndevice-s' got 'device vendor=4660 product=22136 class=9 configs=1\\ndevice-sh'"
-  ],
-  [
-   "wcet-probe",
-   "differ",
-   "want '\\x01ca1: 1000\\nca2: -1000\\nca3: 12\\ncl1: 3\\ncl2: 2\\ncl3: 1\\ncl4: 0\\nt1' got 'ca1: 1000\\nca2: -1000\\nca3: 12\\ncl1: 3\\ncl2: 2\\ncl3: 1\\ncl4: 0\\nt1:'"
-  ],
-  [
-   "when-arm-tail-call",
-   "differ",
-   "want '\\x0101 start\\n02 if-tail 10\\n03 when-nontail 10\\n04 when-tail 10\\n0' got '01 start\\n02 if-tail 10\\n03 when-nontail 10\\n04 when-tail 10\\n05'"
-  ],
-  [
-   "when-bool-cross",
-   "refused",
-   "corpus/when-bool-cross.zig:383:32: error: use of undeclared identifier 'True'"
-  ],
-  [
-   "when-bool-pattern",
-   "refused",
-   "corpus/when-bool-pattern.zig:371:37: error: use of undeclared identifier 'True'"
-  ],
-  [
-   "zigbee-encode",
    "refused",
    "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"
   ]
