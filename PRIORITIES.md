@@ -26,15 +26,11 @@ whole compiler survive transpilation". Everything below is the cheap loop.
 
 `codex/test/` holds 553 programs at the top level, most beside a hand-verified
 `.expected` file: an oracle per program, written by someone with no knowledge
-of this plug, which is the property our own probes cannot have. Cites are
-resolved (`cite_resolve.py`), so the whole set is in scope. Staged cheap-first:
-
-1. transpile all 553 and histogram the `@compileError` markers -- native,
-   minutes, a coverage census ranked by how often each missing arm bites.
-2. compile and run what transpiles clean, diffing against `.expected` --
-   the conformance gate.
-3. the `.failing` cases are a different question -- does the plug reproduce
-   a refusal. No code path yet.
+of this plug, which is the property our own probes cannot have. **The design
+is `corpus/README.md`** (banked census diffed like a truth file, changed-only
+reruns keyed on emitted-zig hashes, a set-cover sentinel gate, full census
+per-Update only); its sequencing starts with item 4 below, which poisons the
+denominator until fixed.
 
 The known gap family is coherent: `poke-byte`, `peek/poke-16/32`, `bit-not` --
 the memory-access builtins; implementing the family unblocks a large slice at
