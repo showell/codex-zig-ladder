@@ -1,66 +1,234 @@
 [
  [
-  "no emitter for poke-byte",
-  6
+  "no emitter for poke-32",
+  69
  ],
  [
   "no emitter for peek-32",
-  5
+  62
+ ],
+ [
+  "no emitter for poke-byte",
+  55
  ],
  [
   "no emitter for poke-16",
-  5
+  30
  ],
  [
-  "no emitter for poke-32",
+  "no emitter for alloc-bytes",
+  24
+ ],
+ [
+  "no emitter for port-in-32",
+  22
+ ],
+ [
+  "no emitter for port-out-32",
+  22
+ ],
+ [
+  "no emitter for block-read-sector",
+  20
+ ],
+ [
+  "no emitter for bit-not",
+  15
+ ],
+ [
+  "no emitter for process-get-scope",
+  14
+ ],
+ [
+  "no emitter for net-recv-raw",
+  13
+ ],
+ [
+  "no emitter for atomic-load",
+  13
+ ],
+ [
+  "no emitter for poke-mmio-32",
+  12
+ ],
+ [
+  "no emitter for read-mmio-32",
+  11
+ ],
+ [
+  "no emitter for block-write-sector",
+  11
+ ],
+ [
+  "no emitter for process-spawn",
+  11
+ ],
+ [
+  "no emitter for net-send-raw",
+  10
+ ],
+ [
+  "no emitter for process-wait",
+  9
+ ],
+ [
+  "no emitter for text-to-unicode-bytes",
+  8
+ ],
+ [
+  "no emitter for atomic-store",
+  8
+ ],
+ [
+  "effect handlers not supported",
+  8
+ ],
+ [
+  "no emitter for unicode-bytes-to-text",
+  7
+ ],
+ [
+  "no emitter for uefi-read-key",
+  7
+ ],
+ [
+  "no emitter for process-get-cap",
+  6
+ ],
+ [
+  "no emitter for uefi-read-key-ex",
+  6
+ ],
+ [
+  "no emitter for process-get-network-scope",
   5
  ],
  [
   "no emitter for peek-16",
+  5
+ ],
+ [
+  "no emitter for port-out-byte",
+  5
+ ],
+ [
+  "no zig type for this codex type",
+  5
+ ],
+ [
+  "no emitter for port-in-byte",
   4
  ],
  [
   "no emitter for process-restrict-cap",
-  3
- ],
- [
-  "no emitter for bit-not",
-  3
+  4
  ],
  [
   "no emitter for block-sector-count",
-  3
+  4
  ],
  [
-  "no emitter for text-to-unicode-bytes",
-  2
+  "no emitter for gpu-mem-write",
+  4
  ],
  [
-  "no emitter for unicode-bytes-to-text",
-  2
+  "no emitter for poke-mmio",
+  4
+ ],
+ [
+  "no emitter for read-text",
+  4
  ],
  [
   "no emitter for process-get-pid",
-  2
+  3
  ],
  [
-  "no emitter for port-in-byte",
-  1
+  "no emitter for gpu-mem-read",
+  3
+ ],
+ [
+  "no emitter for write-file",
+  3
+ ],
+ [
+  "no emitter for process-yield",
+  3
+ ],
+ [
+  "no emitter for Length",
+  3
  ],
  [
   "no emitter for net-status",
-  1
+  2
+ ],
+ [
+  "unresolved type variable T74 of collision-find",
+  2
+ ],
+ [
+  "unresolved type variable T73 of hamt-node-get",
+  2
+ ],
+ [
+  "unresolved type variable T77 of make-single-branch",
+  2
+ ],
+ [
+  "unresolved type variable T72 of hamt-get",
+  2
+ ],
+ [
+  "unresolved type variable T45 of hamt-node-get",
+  2
+ ],
+ [
+  "unresolved type variable T55 of collision-remove",
+  2
+ ],
+ [
+  "unresolved type variable T53 of hamt-remove",
+  2
+ ],
+ [
+  "unresolved type variable T46 of collision-find",
+  2
+ ],
+ [
+  "unresolved type variable T54 of hamt-node-remove",
+  2
+ ],
+ [
+  "unresolved type variable T49 of make-single-branch",
+  2
+ ],
+ [
+  "unresolved type variable T44 of hamt-get",
+  2
+ ],
+ [
+  "no emitter for Kelvin",
+  2
+ ],
+ [
+  "no emitter for Celsius",
+  2
+ ],
+ [
+  "no emitter for map-list",
+  2
+ ],
+ [
+  "no emitter for sort-ascending",
+  2
+ ],
+ [
+  "no emitter for vec-splat",
+  2
  ],
  [
   "no emitter for net-get-hwaddr",
-  1
- ],
- [
-  "no emitter for net-send-raw",
-  1
- ],
- [
-  "no emitter for net-recv-raw",
   1
  ],
  [
@@ -68,23 +236,7 @@
   1
  ],
  [
-  "no emitter for process-get-cap",
-  1
- ],
- [
-  "no emitter for process-get-scope",
-  1
- ],
- [
-  "no emitter for process-get-network-scope",
-  1
- ],
- [
-  "no emitter for atomic-add",
-  1
- ],
- [
-  "no emitter for atomic-load",
+  "no emitter for atomic-exchange",
   1
  ],
  [
@@ -92,15 +244,11 @@
   1
  ],
  [
-  "no emitter for atomic-exchange",
-  1
- ],
- [
-  "no emitter for atomic-store",
-  1
- ],
- [
   "no emitter for atomic-cas",
+  1
+ ],
+ [
+  "no emitter for atomic-add",
   1
  ],
  [
@@ -108,7 +256,215 @@
   1
  ],
  [
-  "no emitter for block-read-sector",
+  "no emitter for key-zero",
+  1
+ ],
+ [
+  "no emitter for key-status",
+  1
+ ],
+ [
+  "no emitter for key-load",
+  1
+ ],
+ [
+  "no emitter for read-line",
+  1
+ ],
+ [
+  "no emitter for gpu-out",
+  1
+ ],
+ [
+  "no emitter for read-file-raw",
+  1
+ ],
+ [
+  "unresolved type variable T81 of hamt-remove",
+  1
+ ],
+ [
+  "unresolved type variable T83 of collision-remove",
+  1
+ ],
+ [
+  "unresolved type variable T82 of hamt-node-remove",
+  1
+ ],
+ [
+  "no emitter for is-whitespace",
+  1
+ ],
+ [
+  "unresolved type variable T56 of hamt-contains",
+  1
+ ],
+ [
+  "unresolved type variable T57 of hamt-size",
+  1
+ ],
+ [
+  "no emitter for get-value",
+  1
+ ],
+ [
+  "no emitter for o",
+  1
+ ],
+ [
+  "unresolved type variable T4 of ilist-append",
+  1
+ ],
+ [
+  "unresolved type variable T6 of ilist-length",
+  1
+ ],
+ [
+  "unresolved type variable T5 of ilist-reverse",
+  1
+ ],
+ [
+  "unresolved type variable T54 of swap-tup",
+  1
+ ],
+ [
+  "unresolved type variable T53 of swap-tup",
+  1
+ ],
+ [
+  "no emitter for x",
+  1
+ ],
+ [
+  "no emitter for __list-head",
+  1
+ ],
+ [
+  "no emitter for __list-len",
+  1
+ ],
+ [
+  "no emitter for __list-tail",
+  1
+ ],
+ [
+  "unresolved type variable T10 of cl-length-acc",
+  1
+ ],
+ [
+  "unresolved type variable T9 of cl-length",
+  1
+ ],
+ [
+  "unresolved type variable T8 of cl-tail",
+  1
+ ],
+ [
+  "unresolved type variable T20 of cl-append",
+  1
+ ],
+ [
+  "unresolved type variable T6 of cl-is-empty",
+  1
+ ],
+ [
+  "unresolved type variable T23 of cl-take",
+  1
+ ],
+ [
+  "unresolved type variable T24 of cl-drop",
+  1
+ ],
+ [
+  "no emitter for process-exit",
+  1
+ ],
+ [
+  "no emitter for process-spawn-on-core",
+  1
+ ],
+ [
+  "no emitter for process-spawn-with-heap",
+  1
+ ],
+ [
+  "no emitter for tag-equal",
+  1
+ ],
+ [
+  "no emitter for __no-instance-Showable-Boolean",
+  1
+ ],
+ [
+  "no emitter for __no-instance-to-text-Boolean",
+  1
+ ],
+ [
+  "no zig type for this applied type",
+  1
+ ],
+ [
+  "no emitter for Second",
+  1
+ ],
+ [
+  "no emitter for Meter",
+  1
+ ],
+ [
+  "no emitter for Minute",
+  1
+ ],
+ [
+  "no emitter for Angle",
+  1
+ ],
+ [
+  "no emitter for Speed",
+  1
+ ],
+ [
+  "no emitter for Force",
+  1
+ ],
+ [
+  "no emitter for DataSize",
+  1
+ ],
+ [
+  "no emitter for AstroDistance",
+  1
+ ],
+ [
+  "no emitter for Energy",
+  1
+ ],
+ [
+  "no emitter for Power",
+  1
+ ],
+ [
+  "no emitter for Duration",
+  1
+ ],
+ [
+  "no emitter for Fahrenheit",
+  1
+ ],
+ [
+  "no emitter for port-in-16",
+  1
+ ],
+ [
+  "no emitter for port-out-16",
+  1
+ ],
+ [
+  "vector patterns not supported",
+  1
+ ],
+ [
+  "no emitter for vec-extract",
   1
  ]
 ]

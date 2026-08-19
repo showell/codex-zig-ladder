@@ -478,5 +478,4798 @@
   "name": "brotli-interop",
   "stage": "clean",
   "markers": []
+ },
+ {
+  "name": "bs3-smoke",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "builtin-narrow-proven",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "bytes-to-text-2f",
+  "stage": "markers",
+  "markers": [
+   "no emitter for unicode-bytes-to-text",
+   "no emitter for text-to-unicode-bytes"
+  ]
+ },
+ {
+  "name": "call-clobber",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "canopen-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "cap-audio",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap"
+  ]
+ },
+ {
+  "name": "cap-block-denied",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for block-sector-count",
+   "no emitter for block-sector-count"
+  ]
+ },
+ {
+  "name": "cap-device-declared",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "cap-direction",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap"
+  ]
+ },
+ {
+  "name": "cap-gpu-byte-denied",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-32",
+   "no emitter for gpu-mem-write"
+  ]
+ },
+ {
+  "name": "cap-gpu-family",
+  "stage": "markers",
+  "markers": [
+   "no emitter for gpu-mem-write",
+   "no emitter for gpu-mem-read"
+  ]
+ },
+ {
+  "name": "cap-gpu-mem-denied",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for gpu-mem-write",
+   "no emitter for gpu-mem-read",
+   "no emitter for gpu-mem-write",
+   "no emitter for poke-32",
+   "no emitter for gpu-mem-read"
+  ]
+ },
+ {
+  "name": "cap-heap-poke-pure",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte"
+  ]
+ },
+ {
+  "name": "cap-identity-denied",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for key-load",
+   "no emitter for key-status",
+   "no emitter for key-zero",
+   "no emitter for key-status",
+   "no emitter for key-status"
+  ]
+ },
+ {
+  "name": "cap-manifest-derived",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "cap-media-families",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap"
+  ]
+ },
+ {
+  "name": "cap-network-denied",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for net-status",
+   "no emitter for net-status"
+  ]
+ },
+ {
+  "name": "cap-process-family",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-get-cap"
+  ]
+ },
+ {
+  "name": "capability-doors",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "carddeck-shuffle",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "cce-roundtrip",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "cce-tier1",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "cdx2053-range",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "chacha20poly1305",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "chapter-pages",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "char-at-negative",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "char-at-past-end",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "circbuf-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "cite-override-quire",
+  "stage": "unresolved",
+  "detail": "Codex chapter CiteOverrideAlpha"
+ },
+ {
+  "name": "class-op-no-instance",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "cmac-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "cms-spread",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "coap-block",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "coap-packet",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "coap-parse",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "collide-chapters",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "color-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "compliance-evidence",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "compliance-report",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "concurrent-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "consistent-hash-balance",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "console-readline-cite",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-line"
+  ]
+ },
+ {
+  "name": "const-narrow-proven",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "convolution-identity",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "cross-port-refused",
+  "stage": "markers",
+  "markers": [
+   "no emitter for port-out-byte",
+   "no emitter for gpu-out"
+  ]
+ },
+ {
+  "name": "cross-unsupported-probe",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-file-raw"
+  ]
+ },
+ {
+  "name": "crypto-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "crypto-vectors",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "cryptobig",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "ctor-narrow-warn",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "db-csv-roundtrip",
+  "stage": "markers",
+  "markers": [
+   "no emitter for alloc-bytes",
+   "no emitter for poke-byte",
+   "unresolved type variable T73 of hamt-node-get",
+   "unresolved type variable T74 of collision-find",
+   "unresolved type variable T73 of hamt-node-get",
+   "unresolved type variable T74 of collision-find",
+   "unresolved type variable T77 of make-single-branch",
+   "unresolved type variable T82 of hamt-node-remove",
+   "unresolved type variable T83 of collision-remove",
+   "unresolved type variable T82 of hamt-node-remove",
+   "unresolved type variable T83 of collision-remove",
+   "unresolved type variable T72 of hamt-get",
+   "unresolved type variable T72 of hamt-get",
+   "unresolved type variable T72 of hamt-get",
+   "unresolved type variable T72 of hamt-get",
+   "unresolved type variable T72 of hamt-get",
+   "unresolved type variable T81 of hamt-remove",
+   "unresolved type variable T72 of hamt-get"
+  ]
+ },
+ {
+  "name": "db-full-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "db-row-update",
+  "stage": "markers",
+  "markers": [
+   "no emitter for alloc-bytes",
+   "no emitter for poke-byte",
+   "unresolved type variable T73 of hamt-node-get",
+   "unresolved type variable T74 of collision-find",
+   "unresolved type variable T73 of hamt-node-get",
+   "unresolved type variable T74 of collision-find",
+   "unresolved type variable T77 of make-single-branch",
+   "unresolved type variable T72 of hamt-get",
+   "unresolved type variable T72 of hamt-get",
+   "unresolved type variable T72 of hamt-get",
+   "unresolved type variable T72 of hamt-get"
+  ]
+ },
+ {
+  "name": "dce-reach",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "desk-parse",
+  "stage": "unresolved",
+  "detail": "Ui chapter GlyphRasterizer"
+ },
+ {
+  "name": "device-buffer-alloc",
+  "stage": "markers",
+  "markers": [
+   "no emitter for gpu-mem-read",
+   "no emitter for gpu-mem-write",
+   "no emitter for gpu-mem-write",
+   "no emitter for gpu-mem-read",
+   "no emitter for gpu-mem-write"
+  ]
+ },
+ {
+  "name": "dhcp-acquire-e1000",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for net-send-raw",
+   "no emitter for net-recv-raw",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-byte",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "dhcp-acquire",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for net-send-raw",
+   "no emitter for net-recv-raw",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-byte",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "dhcp-renew",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for net-send-raw",
+   "no emitter for net-recv-raw",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-byte",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "disk-enum-parse",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "diskfacts-unpack-large",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for alloc-bytes"
+  ]
+ },
+ {
+  "name": "dnp3-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "dns-answer-count",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "dtls-fragment",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "dtls-handshake",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "dtls-hello",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "dtls-message",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "dtls-openssl-fragments",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "dtls-record",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "e1000-aneg-budget",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "e1000-asde-arms",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "e1000-asde-nolink",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "e1000-asde-speed",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "e1000-bringup",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-byte"
+  ]
+ },
+ {
+  "name": "e1000-ctrl-ro",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "e1000-link-budget",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "e1000-link-deadline",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "e1000-match",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "e1000-mdio-slow",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "e1000-mdio-window",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "e1000-phy-absent",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "e1000-phy",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "e1000-reset-wedged",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes"
+  ]
+ },
+ {
+  "name": "e1000-ring-wrap",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-byte"
+  ]
+ },
+ {
+  "name": "e1000-tx-deadline",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "e1000-unresettable",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "ecdsa-cert",
+  "stage": "markers",
+  "markers": [
+   "no emitter for bit-not"
+  ]
+ },
+ {
+  "name": "ecdsa-p256",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "ecdsa-p384",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "ecdsa-sha384",
+  "stage": "markers",
+  "markers": [
+   "no emitter for bit-not"
+  ]
+ },
+ {
+  "name": "edalias",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "edcurve",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "edit-distance-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "edvector",
+  "stage": "markers",
+  "markers": [
+   "no emitter for bit-not"
+  ]
+ },
+ {
+  "name": "effect-dotted-allow",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "effect-handler-clause",
+  "stage": "markers",
+  "markers": [
+   "effect handlers not supported"
+  ]
+ },
+ {
+  "name": "effect-handler-nested-same",
+  "stage": "markers",
+  "markers": [
+   "effect handlers not supported",
+   "effect handlers not supported"
+  ]
+ },
+ {
+  "name": "effect-launder-fork",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "effect-launder-lazy",
+  "stage": "markers",
+  "markers": [
+   "no zig type for this codex type",
+   "no zig type for this codex type"
+  ]
+ },
+ {
+  "name": "effect-launder-map",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "effect-launder-record",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "effect-map-effctx",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "effect-positive",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "effect-row-var-syntax",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "effect-smoke",
+  "stage": "markers",
+  "markers": [
+   "effect handlers not supported",
+   "effect handlers not supported",
+   "effect handlers not supported"
+  ]
+ },
+ {
+  "name": "effect-value-poly",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "effect-widen-arg",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "effect-widen-scope-narrow",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for process-get-scope",
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "effect-widen-scope",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "engine-animation",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "engine-culling",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "engine-mesh-gen",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "engine-near-clip",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "engine-render-heap",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "engine-shading",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "engine-shadow",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "engine-software-render",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "engine-texture",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "enip-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "esp32c6-drivers",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-mmio-32",
+   "no emitter for poke-mmio-32",
+   "no emitter for poke-mmio"
+  ]
+ },
+ {
+  "name": "eventbus-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "exc-deep-frames",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "exc-div-zero",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "exc-gpf",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "exc-null-read",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "exc-stack-heap",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "expr-calculator",
+  "stage": "markers",
+  "markers": [
+   "no emitter for is-whitespace"
+  ]
+ },
+ {
+  "name": "factlog-layout",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-byte",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte"
+  ]
+ },
+ {
+  "name": "factorial",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "fat16-alloc",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "fat16-cluster-guard",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "fat16-cycle-guard",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "fat16-dirgrow",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for process-get-scope",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "fat16-list",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for process-get-scope",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "fat16-mkdir",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for process-get-scope",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "fat16-overwrite",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for process-get-scope",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "fat16-source-cr",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for process-get-scope",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "fat16-subdir",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for process-get-scope",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "fat16-write",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for process-get-scope",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "fat32-cluster-guard",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte"
+  ]
+ },
+ {
+  "name": "fat32-parse",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte"
+  ]
+ },
+ {
+  "name": "fe310-drivers",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-mmio-32",
+   "no emitter for poke-mmio-32"
+  ]
+ },
+ {
+  "name": "field-cache-shape",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "field-cache-text-lit",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "field-guard-refine",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "field-range-proven",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "files-parse",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte"
+  ]
+ },
+ {
+  "name": "final-batch-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "fins-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "fork-nested",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "fork-reclaim",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "frame-short-buffer",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "frameless-leaf-probe",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "fresh-alloc-narrow",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "fs-deny-runtime",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for write-file",
+   "no emitter for read-text",
+   "no emitter for process-get-cap",
+   "no emitter for process-restrict-cap",
+   "no emitter for process-get-cap",
+   "no emitter for write-file",
+   "no emitter for read-text"
+  ]
+ },
+ {
+  "name": "fs-handler-install",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for read-text"
+  ]
+ },
+ {
+  "name": "fs-layer",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for process-get-scope",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "effect handlers not supported",
+   "no emitter for write-file",
+   "no emitter for read-text",
+   "no emitter for read-text"
+  ]
+ },
+ {
+  "name": "fs-servicer",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for write-file",
+   "no emitter for read-text"
+  ]
+ },
+ {
+  "name": "fs-spawn-inherits",
+  "stage": "markers",
+  "markers": [
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for process-spawn",
+   "no emitter for process-yield"
+  ]
+ },
+ {
+  "name": "ga-core",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "geometry-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "goose-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "gop-composite-clamp",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "gop-composite-clip",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "gop-composite-kinds",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "gop-composite-stride",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "gop-padded-stride",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "gop-scene-backbuffer",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "gop-scene-viewport",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "gop-stride",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32"
+  ]
+ },
+ {
+  "name": "gop-text-field",
+  "stage": "markers",
+  "markers": [
+   "no emitter for alloc-bytes",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-32",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for peek-32"
+  ]
+ },
+ {
+  "name": "gpu-depth-tree",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "gpu-doorbell",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32"
+  ]
+ },
+ {
+  "name": "gpu-gauge-clamp",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "gpu-input-cursor",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "gpu-panel-border",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "gpu-ptx",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "grounds-port",
+  "stage": "markers",
+  "markers": [
+   "no emitter for port-out-byte"
+  ]
+ },
+ {
+  "name": "hal-device-declared",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "hal-flash-linear",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-mmio-32",
+   "no emitter for poke-mmio-32",
+   "no emitter for poke-mmio"
+  ]
+ },
+ {
+  "name": "hal-peripheral-linear",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-mmio-32",
+   "no emitter for poke-mmio"
+  ]
+ },
+ {
+  "name": "hamt-test",
+  "stage": "markers",
+  "markers": [
+   "unresolved type variable T45 of hamt-node-get",
+   "unresolved type variable T46 of collision-find",
+   "unresolved type variable T45 of hamt-node-get",
+   "unresolved type variable T46 of collision-find",
+   "unresolved type variable T49 of make-single-branch",
+   "unresolved type variable T54 of hamt-node-remove",
+   "unresolved type variable T55 of collision-remove",
+   "unresolved type variable T54 of hamt-node-remove",
+   "unresolved type variable T55 of collision-remove",
+   "unresolved type variable T44 of hamt-get",
+   "unresolved type variable T44 of hamt-get",
+   "unresolved type variable T44 of hamt-get",
+   "unresolved type variable T44 of hamt-get",
+   "unresolved type variable T44 of hamt-get",
+   "unresolved type variable T44 of hamt-get",
+   "unresolved type variable T57 of hamt-size",
+   "unresolved type variable T53 of hamt-remove",
+   "unresolved type variable T44 of hamt-get",
+   "unresolved type variable T44 of hamt-get",
+   "unresolved type variable T44 of hamt-get",
+   "unresolved type variable T57 of hamt-size",
+   "unresolved type variable T56 of hamt-contains",
+   "unresolved type variable T56 of hamt-contains",
+   "unresolved type variable T44 of hamt-get",
+   "unresolved type variable T44 of hamt-get",
+   "unresolved type variable T44 of hamt-get",
+   "unresolved type variable T57 of hamt-size",
+   "unresolved type variable T56 of hamt-contains",
+   "unresolved type variable T56 of hamt-contains",
+   "unresolved type variable T57 of hamt-size",
+   "unresolved type variable T57 of hamt-size"
+  ]
+ },
+ {
+  "name": "handler-dotted-discharge",
+  "stage": "markers",
+  "markers": [
+   "effect handlers not supported"
+  ]
+ },
+ {
+  "name": "handler-nested-ops",
+  "stage": "markers",
+  "markers": [
+   "effect handlers not supported",
+   "effect handlers not supported",
+   "effect handlers not supported",
+   "effect handlers not supported"
+  ]
+ },
+ {
+  "name": "handler-smoke",
+  "stage": "markers",
+  "markers": [
+   "no emitter for get-value",
+   "effect handlers not supported",
+   "effect handlers not supported",
+   "effect handlers not supported",
+   "effect handlers not supported",
+   "effect handlers not supported"
+  ]
+ },
+ {
+  "name": "hart-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "heap-bracket-shape",
+  "stage": "markers",
+  "markers": [
+   "no emitter for port-out-byte",
+   "no emitter for port-in-byte",
+   "no emitter for port-out-byte",
+   "no emitter for port-in-byte",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes"
+  ]
+ },
+ {
+  "name": "heap-frame-reclaim",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "helm-full-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "hid-decode",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte"
+  ]
+ },
+ {
+  "name": "history-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "hpet-interrupt",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-mmio-32",
+   "no emitter for poke-mmio-32"
+  ]
+ },
+ {
+  "name": "ident-letters",
+  "stage": "markers",
+  "markers": [
+   "no emitter for o",
+   "no emitter for o"
+  ]
+ },
+ {
+  "name": "idm-key-tests",
+  "stage": "markers",
+  "markers": [
+   "no emitter for bit-not"
+  ]
+ },
+ {
+  "name": "idm-read-line",
+  "stage": "markers",
+  "markers": [
+   "no emitter for uefi-read-key-ex",
+   "no emitter for uefi-read-key",
+   "no emitter for atomic-load",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store"
+  ]
+ },
+ {
+  "name": "idm-salt-iv-distinct",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "iec104-encode",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "ieee802154-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "if-in-arith",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "if-let-join",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "image-codec-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "imap-wire",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "implicit-convert",
+  "stage": "markers",
+  "markers": [
+   "no emitter for Kelvin",
+   "no emitter for Celsius",
+   "no emitter for Celsius",
+   "no emitter for Celsius",
+   "no emitter for Kelvin"
+  ]
+ },
+ {
+  "name": "induction-assoc",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "induction-list",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "induction-param",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "induction-parse",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "inductive-list",
+  "stage": "markers",
+  "markers": [
+   "unresolved type variable T4 of ilist-append",
+   "unresolved type variable T4 of ilist-append",
+   "unresolved type variable T5 of ilist-reverse",
+   "unresolved type variable T6 of ilist-length",
+   "unresolved type variable T5 of ilist-reverse",
+   "unresolved type variable T5 of ilist-reverse",
+   "unresolved type variable T6 of ilist-length"
+  ]
+ },
+ {
+  "name": "infra-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "inline-cost-based",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "inline-single-caller",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "input-metal",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "int-literal-underscore",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "interval-exhaustive",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "ip-checksum-odd",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "ir-check-clean",
+  "stage": "markers",
+  "markers": [
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type"
+  ]
+ },
+ {
+  "name": "iterate-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "iterate-zip-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "j1939-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "keyboard-layout-test",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes",
+   "no emitter for alloc-bytes"
+  ]
+ },
+ {
+  "name": "keys-collision",
+  "stage": "markers",
+  "markers": [
+   "no emitter for uefi-read-key-ex",
+   "no emitter for uefi-read-key",
+   "no emitter for atomic-load",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store"
+  ]
+ },
+ {
+  "name": "keys-mods",
+  "stage": "markers",
+  "markers": [
+   "no emitter for uefi-read-key-ex",
+   "no emitter for uefi-read-key",
+   "no emitter for atomic-load",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-load",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store"
+  ]
+ },
+ {
+  "name": "keys-numpad",
+  "stage": "markers",
+  "markers": [
+   "no emitter for uefi-read-key-ex",
+   "no emitter for uefi-read-key",
+   "no emitter for atomic-load",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store"
+  ]
+ },
+ {
+  "name": "keys-shift",
+  "stage": "markers",
+  "markers": [
+   "no emitter for uefi-read-key-ex",
+   "no emitter for uefi-read-key",
+   "no emitter for atomic-load",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store"
+  ]
+ },
+ {
+  "name": "keys-sidecar",
+  "stage": "markers",
+  "markers": [
+   "no emitter for uefi-read-key-ex",
+   "no emitter for uefi-read-key",
+   "no emitter for atomic-load",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store",
+   "no emitter for atomic-store"
+  ]
+ },
+ {
+  "name": "kleene-tribool",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "klondike-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "knx-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "kvstore-test",
+  "stage": "markers",
+  "markers": [
+   "unresolved type variable T45 of hamt-node-get",
+   "unresolved type variable T46 of collision-find",
+   "unresolved type variable T45 of hamt-node-get",
+   "unresolved type variable T46 of collision-find",
+   "unresolved type variable T49 of make-single-branch",
+   "unresolved type variable T54 of hamt-node-remove",
+   "unresolved type variable T55 of collision-remove",
+   "unresolved type variable T54 of hamt-node-remove",
+   "unresolved type variable T55 of collision-remove",
+   "unresolved type variable T44 of hamt-get",
+   "unresolved type variable T44 of hamt-get",
+   "unresolved type variable T53 of hamt-remove",
+   "unresolved type variable T44 of hamt-get",
+   "unresolved type variable T44 of hamt-get",
+   "unresolved type variable T44 of hamt-get"
+  ]
+ },
+ {
+  "name": "lang-smoke",
+  "stage": "markers",
+  "markers": [
+   "no emitter for map-list",
+   "unresolved type variable T53 of swap-tup",
+   "unresolved type variable T54 of swap-tup"
+  ]
+ },
+ {
+  "name": "lapic-regs",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-mmio-32",
+   "no emitter for poke-mmio-32"
+  ]
+ },
+ {
+  "name": "lazy-smoke",
+  "stage": "markers",
+  "markers": [
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type"
+  ]
+ },
+ {
+  "name": "leaf-let-if",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "leaf-mispredict",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "lease-handoff",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "let-dest-scope",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "let-effectful-bug",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "let-else-scope",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "let-shadow-scope",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "linear-branch",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "linear-capture-once",
+  "stage": "markers",
+  "markers": [
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type",
+   "no zig type for this codex type"
+  ]
+ },
+ {
+  "name": "linear-mint-container",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "linear-poly-freeze",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "linear-smoke",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "lir-binop-cross",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "lir-branch-cross",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "lir-call-cross",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "lir-check",
+  "stage": "markers",
+  "markers": [
+   "no emitter for x"
+  ]
+ },
+ {
+  "name": "lir-frame-cross",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "lir-join-cross",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "lir-load-cross",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "lir-nullary-cross",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "lir-selector-smoke",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "lir-test-cross",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "list-comprehension-copy",
+  "stage": "markers",
+  "markers": [
+   "no emitter for map-list"
+  ]
+ },
+ {
+  "name": "list-induction",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "list-literal-o1",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "list-oob-negative",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "list-oob-read",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "list-oob-write",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "list-pattern",
+  "stage": "markers",
+  "markers": [
+   "no emitter for __list-len",
+   "no emitter for __list-head",
+   "no emitter for __list-tail",
+   "no emitter for __list-len",
+   "no emitter for __list-tail",
+   "no emitter for __list-len",
+   "no emitter for __list-head",
+   "no emitter for __list-len",
+   "no emitter for __list-tail"
+  ]
+ },
+ {
+  "name": "list-tail-empty",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "list-test",
+  "stage": "markers",
+  "markers": [
+   "unresolved type variable T10 of cl-length-acc",
+   "unresolved type variable T10 of cl-length-acc",
+   "unresolved type variable T20 of cl-append",
+   "unresolved type variable T23 of cl-take",
+   "unresolved type variable T24 of cl-drop",
+   "unresolved type variable T6 of cl-is-empty",
+   "unresolved type variable T9 of cl-length",
+   "unresolved type variable T9 of cl-length",
+   "unresolved type variable T8 of cl-tail",
+   "unresolved type variable T20 of cl-append",
+   "unresolved type variable T23 of cl-take",
+   "unresolved type variable T24 of cl-drop",
+   "unresolved type variable T6 of cl-is-empty",
+   "unresolved type variable T6 of cl-is-empty"
+  ]
+ },
+ {
+  "name": "list-view-probe",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "literal-subpattern",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "local-narrow-proven",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "location-sensors-stub",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "lorawan-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "lwm2m-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "manifest-pin",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "manifest-subject",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "mask-ops",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "match-arms-per-line",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "matrix3-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "mbus-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "media-codec-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "melsec-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "mini-bootstrap",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "mix-bits",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "mod-bound-return",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "modbus-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "modprobe",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "mouse-decode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "mqtt-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "mqttsn-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "mut-borrow-transitive",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "mutable-alias",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "mutable-smoke",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "neg-int-parse",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "neg-real-repro",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "negation-abutment",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "nested-spawn",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-wait",
+   "no emitter for process-wait",
+   "no emitter for process-spawn"
+  ]
+ },
+ {
+  "name": "net-driver-seam-bound",
+  "stage": "markers",
+  "markers": [
+   "no emitter for net-recv-raw",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "net-driver-seam-no-av",
+  "stage": "markers",
+  "markers": [
+   "no emitter for net-recv-raw",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "net-io-clock",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for net-send-raw",
+   "no emitter for net-recv-raw",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-byte",
+   "no emitter for peek-32",
+   "no emitter for peek-32"
+  ]
+ },
+ {
+  "name": "net-poll-calibrated",
+  "stage": "markers",
+  "markers": [
+   "no emitter for net-recv-raw",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32"
+  ]
+ },
+ {
+  "name": "network-effect",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for net-send-raw",
+   "no emitter for net-recv-raw",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-byte",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for process-get-network-scope"
+  ]
+ },
+ {
+  "name": "network-scope-deny",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-get-network-scope"
+  ]
+ },
+ {
+  "name": "network-scope-open",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-get-network-scope"
+  ]
+ },
+ {
+  "name": "network-scope-spawn",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-get-network-scope",
+   "no emitter for process-spawn",
+   "no emitter for process-yield"
+  ]
+ },
+ {
+  "name": "noalias-linear-param",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "noise-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "normalize-eq",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "nrf52840-drivers",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-mmio-32",
+   "no emitter for poke-mmio-32"
+  ]
+ },
+ {
+  "name": "nrf9160-drivers",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-mmio-32",
+   "no emitter for poke-mmio-32"
+  ]
+ },
+ {
+  "name": "nvme-encode",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32"
+  ]
+ },
+ {
+  "name": "oauth-island",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "occurrence-check",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "opcua-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "osc-noise",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "ota-gate-block",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "ota-gate-real",
+  "stage": "markers",
+  "markers": [
+   "no zig type for this codex type"
+  ]
+ },
+ {
+  "name": "ota-state-machine",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "ota-update",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "par-map",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "par-nested",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "parse-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "parser-resync",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "particle-spread",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "path-real",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "pci-bus-master",
+  "stage": "markers",
+  "markers": [
+   "no emitter for port-out-32",
+   "no emitter for port-in-32",
+   "no emitter for port-out-32",
+   "no emitter for port-out-32"
+  ]
+ },
+ {
+  "name": "peek32-sign",
+  "stage": "markers",
+  "markers": [
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for peek-32"
+  ]
+ },
+ {
+  "name": "pi4-drivers",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-mmio-32",
+   "no emitter for poke-mmio-32"
+  ]
+ },
+ {
+  "name": "pipe-unique-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "pit-latch",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-mmio-32",
+   "no emitter for poke-mmio-32",
+   "no emitter for port-out-byte",
+   "no emitter for port-out-byte",
+   "no emitter for port-out-byte",
+   "no emitter for port-out-byte",
+   "no emitter for port-in-byte",
+   "no emitter for port-in-byte",
+   "no emitter for port-in-byte",
+   "no emitter for port-in-byte",
+   "no emitter for port-out-byte",
+   "no emitter for port-out-byte",
+   "no emitter for port-out-byte",
+   "no emitter for port-in-byte"
+  ]
+ },
+ {
+  "name": "plug-oracle-arith",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "poke16-width",
+  "stage": "markers",
+  "markers": [
+   "no emitter for alloc-bytes",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for peek-16",
+   "no emitter for peek-16"
+  ]
+ },
+ {
+  "name": "poly1305",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "port-in-32-width",
+  "stage": "markers",
+  "markers": [
+   "no emitter for port-out-32",
+   "no emitter for port-in-32"
+  ]
+ },
+ {
+  "name": "proc-state-running",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-spawn",
+   "no emitter for process-wait"
+  ]
+ },
+ {
+  "name": "process-exit-status",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-exit",
+   "no emitter for process-spawn",
+   "no emitter for process-wait",
+   "no emitter for process-spawn",
+   "no emitter for process-wait"
+  ]
+ },
+ {
+  "name": "proof-assume-axiom",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "proof-smoke",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "prop-arith",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "prose-anchor",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "prose-consistency",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "prose-smoke",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "punctual-fastmath",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "punctual-iot",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "punctual-quire",
+  "stage": "markers",
+  "markers": [
+   "no emitter for bit-not"
+  ]
+ },
+ {
+  "name": "punctual-smoke",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "qemu-virt-board",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-mmio"
+  ]
+ },
+ {
+  "name": "qr-encode",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-32",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte"
+  ]
+ },
+ {
+  "name": "queue-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "quote-from-peer",
+  "stage": "markers",
+  "markers": [
+   "no emitter for sort-ascending"
+  ]
+ },
+ {
+  "name": "quote-from-store",
+  "stage": "markers",
+  "markers": [
+   "no emitter for sort-ascending"
+  ]
+ },
+ {
+  "name": "quotes-gate",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "quotes-parse",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "range-let-carry",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "range-refine-if",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "rasterizer-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "raytracer-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "real-cert",
+  "stage": "markers",
+  "markers": [
+   "no emitter for bit-not"
+  ]
+ },
+ {
+  "name": "record-smoke",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "reservoir-uniform",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "return-narrow-proven",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "reverse-reverse",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "revised-narrow",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "riscv-encoder",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "riscv32c-encoder",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "rp2040-drivers",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "rsa-pss",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "rsa-verify",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "rv-arg-order",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "rv-frameless-imm",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "rv-param-bind",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "rv-param-order",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "s7comm-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "scope-allow",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for process-get-scope",
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "scope-console",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "scope-handler-clause",
+  "stage": "markers",
+  "markers": [
+   "effect handlers not supported"
+  ]
+ },
+ {
+  "name": "scope-let-arm-global",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "scope-runtime-deny",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for process-get-scope",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "scope-runtime-open",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for process-get-scope",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "scope-runtime-spawn",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-16",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-write-sector",
+   "no emitter for block-read-sector",
+   "no emitter for block-read-sector",
+   "no emitter for process-get-scope",
+   "no emitter for block-read-sector",
+   "no emitter for process-spawn",
+   "no emitter for process-yield"
+  ]
+ },
+ {
+  "name": "scope-try-region",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte"
+  ]
+ },
+ {
+  "name": "sector-read-list-growth",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "sensor-data",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "serial-line",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "shadow-builtin-fold",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "shadow-builtin",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "shell-build-keep",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "simplify-check",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "sixlowpan-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "smp-affinity",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-get-pid",
+   "no emitter for atomic-load",
+   "no emitter for atomic-store",
+   "no emitter for process-spawn-on-core",
+   "no emitter for process-wait",
+   "no emitter for atomic-load",
+   "no emitter for atomic-load"
+  ]
+ },
+ {
+  "name": "smp-arm64-boot",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "smp-cores",
+  "stage": "markers",
+  "markers": [
+   "no emitter for atomic-load",
+   "no emitter for atomic-load",
+   "no emitter for atomic-load",
+   "no emitter for atomic-load"
+  ]
+ },
+ {
+  "name": "smp-dispatch",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-spawn",
+   "no emitter for process-spawn",
+   "no emitter for process-spawn",
+   "no emitter for process-spawn",
+   "no emitter for process-spawn",
+   "no emitter for process-spawn",
+   "no emitter for process-wait",
+   "no emitter for process-wait",
+   "no emitter for process-wait",
+   "no emitter for process-wait",
+   "no emitter for process-wait",
+   "no emitter for process-wait",
+   "no emitter for atomic-load",
+   "no emitter for atomic-load"
+  ]
+ },
+ {
+  "name": "smp-halt",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-spawn",
+   "no emitter for process-wait",
+   "no emitter for process-spawn",
+   "no emitter for process-wait",
+   "no emitter for process-spawn",
+   "no emitter for process-wait",
+   "no emitter for process-spawn",
+   "no emitter for process-wait",
+   "no emitter for process-spawn",
+   "no emitter for process-wait",
+   "no emitter for process-spawn",
+   "no emitter for process-wait",
+   "no emitter for process-spawn",
+   "no emitter for process-wait",
+   "no emitter for process-spawn",
+   "no emitter for process-wait"
+  ]
+ },
+ {
+  "name": "smp-preempt",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-spawn",
+   "no emitter for process-spawn",
+   "no emitter for process-spawn",
+   "no emitter for process-spawn",
+   "no emitter for process-spawn",
+   "no emitter for process-spawn",
+   "no emitter for process-wait",
+   "no emitter for process-wait",
+   "no emitter for process-wait",
+   "no emitter for process-wait",
+   "no emitter for process-wait",
+   "no emitter for process-wait",
+   "no emitter for atomic-load",
+   "no emitter for atomic-load"
+  ]
+ },
+ {
+  "name": "smp-proc0-pinned",
+  "stage": "markers",
+  "markers": [
+   "no emitter for atomic-load",
+   "no emitter for process-spawn",
+   "no emitter for process-spawn",
+   "no emitter for process-spawn",
+   "no emitter for process-spawn",
+   "no emitter for process-spawn",
+   "no emitter for process-spawn",
+   "no emitter for process-wait",
+   "no emitter for process-wait",
+   "no emitter for process-wait",
+   "no emitter for process-wait",
+   "no emitter for process-wait",
+   "no emitter for process-wait",
+   "no emitter for atomic-load",
+   "no emitter for atomic-load",
+   "no emitter for atomic-load"
+  ]
+ },
+ {
+  "name": "smp-riscv-boot",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "smp-tss",
+  "stage": "markers",
+  "markers": [
+   "no emitter for atomic-load",
+   "no emitter for atomic-load"
+  ]
+ },
+ {
+  "name": "smtp-md-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "sntp-encode",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "sort-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "sound-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "sparkplug-encode",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "spawn-reuse",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for process-spawn",
+   "no emitter for process-wait",
+   "no emitter for process-spawn",
+   "no emitter for process-wait",
+   "no emitter for process-spawn-with-heap"
+  ]
+ },
+ {
+  "name": "sprite-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "stale-read-warning",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "stats-wrap-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "stm32f4-drivers",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-mmio-32",
+   "no emitter for poke-mmio-32"
+  ]
+ },
+ {
+  "name": "stm32l4-drivers",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "string-escape-quote",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "stringbuilder-independence",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "stringbuilder-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "stringutils-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "substring-over-read",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "suggested-width",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "synth-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "tag-equal",
+  "stage": "markers",
+  "markers": [
+   "no emitter for tag-equal",
+   "no emitter for tag-equal",
+   "no emitter for tag-equal",
+   "no emitter for tag-equal",
+   "no emitter for tag-equal",
+   "no emitter for tag-equal"
+  ]
+ },
+ {
+  "name": "tco-bitop-loop",
+  "stage": "markers",
+  "markers": [
+   "no emitter for bit-not"
+  ]
+ },
+ {
+  "name": "tco-direct-arg-reads",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "tco-nested-if",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "tco-shuffle-spill",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "tcp-checksum-refuse",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "tcp-listen-reclaim",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "tcp-reliability",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "tcp-seqwrap",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "text-append-alias",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "text-eq-branches",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "text-fold-indexed",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "text-helper-native",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "text-helper-spec",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "textfield-typing",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "textscan-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "textsearch-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "thumb2-encoder",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "timer-registers",
+  "stage": "markers",
+  "markers": [
+   "no emitter for read-mmio-32",
+   "no emitter for poke-mmio-32",
+   "no emitter for port-out-byte",
+   "no emitter for port-out-byte",
+   "no emitter for port-out-byte",
+   "no emitter for port-in-byte",
+   "no emitter for port-in-byte",
+   "no emitter for port-in-byte",
+   "no emitter for port-in-byte"
+  ]
+ },
+ {
+  "name": "tls-cert",
+  "stage": "markers",
+  "markers": [
+   "no emitter for bit-not"
+  ]
+ },
+ {
+  "name": "tls-cv-schemes",
+  "stage": "markers",
+  "markers": [
+   "no emitter for bit-not"
+  ]
+ },
+ {
+  "name": "tls-record-framing",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "tls-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "tls13-record",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "tls13-schedule",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "transport-cocite",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "trie-prefix-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "truetype-bridge-test",
+  "stage": "unresolved",
+  "detail": "Ui chapter GlyphRasterizer; Ui chapter FontAtlas; Ui chapter TrueTypeFont"
+ },
+ {
+  "name": "truetype-render-test",
+  "stage": "unresolved",
+  "detail": "Ui chapter GlyphRasterizer"
+ },
+ {
+  "name": "truetype-test",
+  "stage": "unresolved",
+  "detail": "Ui chapter GlyphRasterizer; Ui chapter FontAtlas"
+ },
+ {
+  "name": "try-smoke",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for poke-byte"
+  ]
+ },
+ {
+  "name": "ttf-debug",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "ttt-perfect",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "tuple-syntax",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "type-checker-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "type-class-no-instance-gen",
+  "stage": "markers",
+  "markers": [
+   "no emitter for __no-instance-Showable-Boolean"
+  ]
+ },
+ {
+  "name": "type-class-no-instance",
+  "stage": "markers",
+  "markers": [
+   "no emitter for __no-instance-to-text-Boolean"
+  ]
+ },
+ {
+  "name": "type-name-existence",
+  "stage": "markers",
+  "markers": [
+   "no zig type for this applied type"
+  ]
+ },
+ {
+  "name": "typeclass-poly",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "typeclass-smoke",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "udp-frame-guard",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "uefi-read-key-nofirmware",
+  "stage": "markers",
+  "markers": [
+   "no emitter for uefi-read-key"
+  ]
+ },
+ {
+  "name": "ui-anim-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "ui-dialog-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "ui-event-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "ui-focus-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "ui-font-cce-order",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "ui-font-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "ui-icon-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "ui-layout-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "ui-orchestrator-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "ui-scroll-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "ui-sound-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "ui-surface-test",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "ui-theme-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "unit-family-mixed",
+  "stage": "markers",
+  "markers": [
+   "no emitter for Length",
+   "no emitter for Length",
+   "no emitter for Length",
+   "no emitter for Length",
+   "no emitter for Length"
+  ]
+ },
+ {
+  "name": "unit-family",
+  "stage": "markers",
+  "markers": [
+   "no emitter for Length",
+   "no emitter for Length",
+   "no emitter for Length"
+  ]
+ },
+ {
+  "name": "unit-smoke",
+  "stage": "markers",
+  "markers": [
+   "no emitter for Second",
+   "no emitter for Second",
+   "no emitter for Meter",
+   "no emitter for Minute",
+   "no emitter for Second",
+   "no emitter for Second"
+  ]
+ },
+ {
+  "name": "units-foreword",
+  "stage": "markers",
+  "markers": [
+   "no emitter for Celsius",
+   "no emitter for Duration",
+   "no emitter for Duration",
+   "no emitter for Length",
+   "no emitter for Length",
+   "no emitter for AstroDistance",
+   "no emitter for AstroDistance",
+   "no emitter for DataSize",
+   "no emitter for Celsius",
+   "no emitter for Kelvin",
+   "no emitter for Fahrenheit",
+   "no emitter for Fahrenheit",
+   "no emitter for Angle",
+   "no emitter for Speed",
+   "no emitter for Energy",
+   "no emitter for Force",
+   "no emitter for Power"
+  ]
+ },
+ {
+  "name": "uri-encode",
+  "stage": "markers",
+  "markers": [
+   "no emitter for text-to-unicode-bytes"
+  ]
+ },
+ {
+  "name": "usb-desc-guard",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "usb-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "validation-rules",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "value-eq",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "vbe-mode-set",
+  "stage": "markers",
+  "markers": [
+   "no emitter for port-out-16",
+   "no emitter for port-out-16",
+   "no emitter for port-out-16",
+   "no emitter for port-in-16",
+   "no emitter for poke-32"
+  ]
+ },
+ {
+  "name": "vec-arith-hazards",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "vec-array",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "vec-extract-hazards",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "vec-lane-computed-oob",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "vec-mask-hazards",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "vec-nest-probe",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "vec-nested-binop",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "vec-pattern",
+  "stage": "markers",
+  "markers": [
+   "vector patterns not supported",
+   "vector patterns not supported",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-splat"
+  ]
+ },
+ {
+  "name": "vec-reduce-add",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "vec-select",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "vector-basic",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "vector-f32",
+  "stage": "codexir",
+  "detail": "rc=-6 signal=6"
+ },
+ {
+  "name": "vector-int",
+  "stage": "markers",
+  "markers": [
+   "no emitter for vec-splat",
+   "no emitter for vec-splat",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract",
+   "no emitter for vec-extract"
+  ]
+ },
+ {
+  "name": "wademo-bulk",
+  "stage": "unresolved",
+  "detail": "WaDemo chapter WaBulk; WaDemo chapter WaSchema"
+ },
+ {
+  "name": "wademo-codebook",
+  "stage": "unresolved",
+  "detail": "WaDemo chapter NhgisCodebook"
+ },
+ {
+  "name": "wademo-pivot",
+  "stage": "unresolved",
+  "detail": "WaDemo chapter WaLoad; WaDemo chapter WaBulk; WaDemo chapter NhgisCodebook"
+ },
+ {
+  "name": "wademo-pyramid",
+  "stage": "unresolved",
+  "detail": "WaDemo chapter WaBulk; WaDemo chapter WaSchema"
+ },
+ {
+  "name": "wademo-schema",
+  "stage": "unresolved",
+  "detail": "WaDemo chapter WaSchema"
+ },
+ {
+  "name": "watchdog-panic-probe",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "wavelet-sort-aliasing",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "wcet-budget-unchecked",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "wcet-probe",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "web-chain",
+  "stage": "markers",
+  "markers": [
+   "no emitter for bit-not"
+  ]
+ },
+ {
+  "name": "web-mux-concurrent",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for net-send-raw",
+   "no emitter for net-recv-raw",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-byte",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for text-to-unicode-bytes",
+   "no emitter for unicode-bytes-to-text"
+  ]
+ },
+ {
+  "name": "web-mux-idle-reap",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for net-send-raw",
+   "no emitter for net-recv-raw",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-byte",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for text-to-unicode-bytes",
+   "no emitter for unicode-bytes-to-text"
+  ]
+ },
+ {
+  "name": "web-mux-lifecycle",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for net-send-raw",
+   "no emitter for net-recv-raw",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-byte",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for text-to-unicode-bytes",
+   "no emitter for unicode-bytes-to-text"
+  ]
+ },
+ {
+  "name": "web-mux-reassembly",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte",
+   "no emitter for poke-byte",
+   "no emitter for net-send-raw",
+   "no emitter for net-recv-raw",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for peek-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for poke-byte",
+   "no emitter for peek-32",
+   "no emitter for peek-32",
+   "no emitter for text-to-unicode-bytes",
+   "no emitter for unicode-bytes-to-text"
+  ]
+ },
+ {
+  "name": "when-arm-nontail",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "when-arm-tail-call",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "when-bool-cross",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "when-bool-pattern",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "when-generic-field",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "with-timeout-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "workflow-parse-int",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "x509-chain",
+  "stage": "markers",
+  "markers": [
+   "no emitter for bit-not"
+  ]
+ },
+ {
+  "name": "x509-parse",
+  "stage": "markers",
+  "markers": [
+   "no emitter for bit-not"
+  ]
+ },
+ {
+  "name": "zigbee-encode",
+  "stage": "clean",
+  "markers": []
  }
 ]
