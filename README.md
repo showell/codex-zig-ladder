@@ -571,13 +571,16 @@ diff.
 - **The tree must not move while the ladder reads it.** `CODEX_ROOT` names a
   working tree, and a checkout mid-sweep rebuilt the plug from the wrong
   emitter once and reproduced an already-fixed defect (2026-08-18, 90
-  minutes). Know what is actually guarded: the fingerprint covers ONLY the
-  plug source (`ZigEmitter.codex` and `ZigPlug.codex`, `plug_provenance` in
-  `oracle_lib.sh`) -- nothing detects the seed or anything else moving
-  mid-run (`seed_identity.require_match` exists for exactly that and nothing
-  calls it yet). Everything beyond the plug source is operator discipline:
-  do not touch the clone until the run finishes or is killed. The clone is
-  not PR scratch space during a sweep -- build PRs in a worktree elsewhere.
+  minutes). Know what is actually guarded: the fingerprint covers the plug
+  source (`ZigEmitter.codex` and `ZigPlug.codex`, `plug_provenance` in
+  `oracle_lib.sh`), and the seed is covered by its stamp -- `truth_arm`
+  writes `<rung>.truth.seed` beside every truth, and both `zig_verdict` and
+  `bank_truth.py` call `seed_identity.require_match` against it, so a truth
+  produced under one seed refuses to be diffed or banked under another.
+  Anything else moving mid-run (bundlers, harnesses, the net stack) is
+  still operator discipline: do not touch the clone until the run finishes
+  or is killed. The clone is not PR scratch space during a sweep -- build
+  PRs in a worktree elsewhere.
 - **`seed_identity.py` says the right thing** (seed hash, Update number,
   `truth/uNN` target) and **`check_paths.py` passes.** Five seconds, versus
   discovering a broken path an hour into the truth arms.

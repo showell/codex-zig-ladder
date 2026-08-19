@@ -80,13 +80,22 @@ def main():
            ast / 'split_truth.py'])
 
     rungs = ladder_rungs()
-    missing, stale, ready = [], [], []
+    missing, stale, wrong_seed, unstamped, ready = [], [], [], [], []
     for m in rungs:
         src = ast / f'{m}.truth'
+        seedfile = ast / f'{m}.truth.seed'
         if not src.is_file() or src.stat().st_size == 0:
             missing.append(m)
         elif src.stat().st_mtime < watermark:
             stale.append(m)
+        elif not seedfile.is_file():
+            # truth_arm stamps every truth with the seed that produced it; a
+            # truth without one predates stamping and cannot say which seed
+            # it measures. Banking it would launder that ignorance into the
+            # seed-named directory below.
+            unstamped.append(m)
+        elif seedfile.read_text().strip() != s['sha256']:
+            wrong_seed.append(m)
         else:
             ready.append((m, src))
 
@@ -94,7 +103,11 @@ def main():
         print(f'NOT BANKED: {len(missing)} rung(s) have no truth: {" ".join(missing)}')
     if stale:
         print(f'NOT BANKED: {len(stale)} rung(s) older than {witness.name}: {" ".join(stale)}')
-    if (missing or stale) and not args.force:
+    if unstamped:
+        print(f'NOT BANKED: {len(unstamped)} rung(s) carry no seed stamp: {" ".join(unstamped)}')
+    if wrong_seed:
+        print(f'NOT BANKED: {len(wrong_seed)} rung(s) were produced by a different seed: {" ".join(wrong_seed)}')
+    if (missing or stale or unstamped or wrong_seed) and not args.force:
         print('\nA partial bank reads as a whole one. Run rebank_all.sh, or pass '
               '--force if you mean to bank an incomplete set.')
         return 1

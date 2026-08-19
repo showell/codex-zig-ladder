@@ -196,6 +196,17 @@ PY
     # every rung on the ladder rather than a special case for the big two.
     (cd $T/ast && python3 split_truth.py ${m}.raw truth $(unit_rungs $m)) \
         || { echo "SPLIT FAILED for $m -- see ast/${m}.raw"; return 1; }
+
+    # A truth is a claim about one seed. Stamp each one with the seed that
+    # produced it, so zig_verdict and bank_truth.py can refuse a truth from
+    # any other seed instead of diffing against it. seed_identity is the one
+    # authority for the hash; nothing here compares, only records.
+    local stamp rung
+    stamp=$(python3 -c "import sys; sys.path.insert(0, '$T'); from seed_identity import seed_sha256; print(seed_sha256())") \
+        || { echo "SEED STAMP FAILED for $m"; return 1; }
+    for rung in $(unit_rungs $m); do
+        printf '%s\n' "$stamp" > "$T/ast/${rung}.truth.seed"
+    done
 }
 
 # The pingpong rung's real claim, which the arm diff does not make.
@@ -254,6 +265,24 @@ zig_verdict() {
     local m=$1
     plug_provenance || return 1
     cd $T/ast
+    # The guard above covers the plug source; this covers the other moving
+    # part. Every truth this arm is about to diff against must have been
+    # produced by the seed on disk right now -- truth_arm stamps them, and
+    # seed_identity.require_match is the one place that refuses a mismatch.
+    # An unstamped truth predates stamping and is refused the same way: an
+    # arm must not guess which seed an unlabeled measurement came from.
+    python3 - "$T" $(unit_rungs $m) <<'PY' || return 1
+import pathlib
+import sys
+sys.path.insert(0, sys.argv[1])
+from seed_identity import require_match
+for rung in sys.argv[2:]:
+    p = pathlib.Path(f'{rung}.truth.seed')
+    if not p.is_file():
+        raise SystemExit(f'NO SEED STAMP for {rung}.truth -- '
+                         're-run its truth arm to stamp it')
+    require_match(p.read_text().strip())
+PY
     # program output goes to stderr (std.debug.print); truth was serial bytes
     if ! timeout 600 zig run ${m}.zig 2> ${m}.zigraw; then
         echo "--- zig compile/run errors:"
