@@ -181,7 +181,16 @@ def stage_run(results, out_dir, persist=True):
             verdict(name, kind, first[:160])
             continue
         got = p.stderr.decode('utf-8', 'replace')
-        want = exp.read_text(errors='replace')
+        # Compare program text, not capture-channel bytes. 76 of the depot's
+        # .expected files open with one 0x01 the console capture wrote, and a
+        # subset of exactly those use CRLF -- every CRLF file is 0x01-marked,
+        # no unmarked file holds a CR, and marked/unmarked siblings (vec-array
+        # vs vec-pattern) have identical prints and openings, so both bytes
+        # are the capture path's line discipline, not output. The depot's own
+        # adjudicator (build/test.ps1 phase 2) already strips every CR before
+        # comparing; the zig arm has no serial console to write either byte.
+        want = exp.read_text(errors='replace').replace('\r', '')
+        want = want[1:] if want.startswith('\x01') else want
         if got.strip() == want.strip():
             verdict(name, 'match')
         else:
