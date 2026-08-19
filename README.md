@@ -32,9 +32,10 @@ Update 46 changed the compiler and changed nothing we measure. The same
 bank-to-bank diff is what proves a bundle edit image-preserving before it is
 trusted; the ones already proven are recorded in `JUSTIFICATIONS.md`.
 
-The Update is not typed here by hand -- `seed_identity.py` derives it from the
-seed's own hash by finding the release note that names it, so the label cannot
-drift from the binary. Run it to see what a checkout is actually holding.
+The table above is maintained by hand; what cannot drift is the BANK's label,
+because `seed_identity.py` derives it from the seed's own hash by finding the
+release note that names it. Run it to see what a checkout is actually holding,
+and correct the table against it.
 
 ## What this needs, and what it does not
 
@@ -69,10 +70,14 @@ regenerates both -- it runs the author's bundler with the compile step
 stubbed out (`Build-PlugCdx` is replaced, since that step needs the author's
 Windows host) to write `plug-source.codex`, then compiles that through the
 seed with `ring_compile.py` to produce `zig-plug.cdx` and its fingerprint.
-`ast/allcycles.sh` runs `cycle.sh` first, so the sweep works on a fresh
-clone with no prior step, and `cycle.sh` is the only producer of these
-artifacts here (it alone writes the fingerprint `plug_provenance` demands;
-the author's own plug build is Windows-only and never runs on this host).
+`ast/allcycles.sh` runs `cycle.sh` first, so a fresh CODEX clone needs no
+prior build step, and `cycle.sh` is the only producer of these artifacts
+here (it alone writes the fingerprint `plug_provenance` demands; the
+author's own plug build is Windows-only and never runs on this host). A
+fresh LADDER clone is a different matter: the banks are tracked, but the
+working `ast/*.truth` and `ast/*.ir` files the arms consume are not, so its
+first act is `ast/rebank_all.sh` -- `allcycles.sh` alone has nothing to
+diff against.
 
 **From the host:** `qemu-system-x86_64` (6.2.0), `python3` (3.10.12), PowerShell
 (7.5.4, for the bundlers, which are the author's tooling), and `zig` (0.16.0)
@@ -92,9 +97,14 @@ banks truth against a seed nobody named, which is the single failure this whole
 exercise exists to prevent. Pointing it at each Update in turn is the same
 variable and no other change.
 
-One known wart: six scripts hardcode `~/.local/pwsh/pwsh` -- `cycle.sh`,
-`recon.sh`, `native_build.sh`, `ast/oracle_lib.sh`, `ast/ringplug_build.sh` and
-`ast/irmemcycle.sh`.
+One known wart: six scripts hardcode `~/.local/pwsh/pwsh` (a user-local
+install; any pwsh 7 works, but a pwsh elsewhere means editing all six) --
+`cycle.sh`, `recon.sh`, `native_build.sh`, `ast/oracle_lib.sh`,
+`ast/ringplug_build.sh` and `ast/irmemcycle.sh`.
+
+The ladder repo itself clones from
+`git@github.com:showell/codex-zig-ladder.git`; see the NOT-tracked
+paragraph above for what a fresh ladder clone must regenerate first.
 
 ## The checkout: cloning and branching
 
@@ -460,12 +470,14 @@ rungs; the verdict never does.
 
 - **TCP** (`plug_run_checked.py`) is the default. It exercises the Codex-written
   network stack on every run, which is itself an oracle surface -- it is where
-  the odd-frame defect was caught. Two transfers at different chunk sizes must
-  agree byte-for-byte before an output is trusted.
+  the odd-frame defect was caught. An output is trusted when the pcap parity
+  proof holds (`pcap_parity.py`: frame parity follows TCP payload parity);
+  when the proof cannot be established, the fallback is two transfers at
+  different chunk sizes agreeing byte-for-byte.
 - **The ring** (`plug_run_ring.py`) is for subjects past the TCP intake ceiling.
   The TCP receive path costs ~130 bytes of guest heap per byte of IR; the
-  compiler's own serial-ring reader costs one. fibx's IR is 12.9 MB on the current seed, so it has no
-  choice.
+  compiler's own serial-ring reader costs one. fibx's IR is 13.1 MB on the
+  u47 seed, so it has no choice.
 
 `arm_for` in `ast/oracle_lib.sh` decides, because which transport is needed is a
 property of the IR, and the IR belongs to the unit: the `fibx` and `whole` units
@@ -493,7 +505,7 @@ A passing rung prints one line:
     ORACLE PASS: zig lex output byte-identical to bare-metal truth
 
 **`ast/allcycles.sh`** rebuilds both plugs and then sweeps every rung. It is the
-guard against fixing one rung and breaking four. A rung whose output contains
+guard against fixing one rung and breaking four. A unit whose output contains
 neither `ORACLE` nor `TRANSPORT FAILED` is failed. `ORACLE` matches both
 `ORACLE PASS` and `ORACLE DIFF`, so the rule is not catching failure -- it is
 catching **silence**, a rung that produced no verdict at all. One did once, and
@@ -544,8 +556,8 @@ cost of the ladder that produced the current bank, not as a forecast.
 2. **Re-bank after any seed change.** `ast/rebank_all.sh`, before any diff means
    anything. The full procedure, prerequisites included, is the next section.
 3. **Validate a new subject standalone first.** Compile it through the seed on
-   its own (about a minute) before spending a full cycle -- twelve minutes to
-   bank plus fourteen through the plug, for the expensive rungs -- discovering
+   its own (about a minute) before spending a full cycle -- a quarter-hour to
+   bank plus the same through the plug, for the expensive rungs -- discovering
    it does not compile.
 4. **Never lift the 2.5 GB address-space cap on `zig_verdict`'s `zig run`.**
    An emitted binary from any emitter that predates the arena balloons past
@@ -787,9 +799,12 @@ Two things it is not:
 
 ## Generated files
 
-`ast/gen_<m>_harness.py` writes `ast/<M>Harness.codex`. The four rungs that run
-the back end all the way to a CDX -- `fibx`, `scale`, `whole` and `clamp` --
-share `ast/emit_harness.py`, as do `zigc` and `codexir`. It holds the compile
+`ast/gen_<m>_harness.py` writes `ast/<M>Harness.codex` -- except
+`gen_scale_harness.py` and `gen_clamp_harness.py`, which own only their
+unit's second subject; the harness itself comes from the fibx and whole
+generators. The four rungs that run the back end all the way to a CDX --
+`fibx`, `scale`, `whole` and `clamp` -- share `ast/emit_harness.py`, as do
+`zigc` and `codexir`. It holds the compile
 pipeline once -- `frontend_source` (source text to a lowered IR) and
 `pipeline_source` (that plus the x86 emission) -- because six generators run
 that sequence and it must not drift between them.
@@ -811,7 +826,7 @@ than an hour-two surprise.
 
 ## Open questions
 
-- The `zigc` transcript below elides its middle step ("...then compile that
+- The `zigc` transcript above elides its middle step ("...then compile that
   subject to IR with the seed and push it through the plug"). `native_build.sh`
   does that for `codexir` and `zigemit`; `zigc` has no such script, so the
   transcript is not reproducible as written.

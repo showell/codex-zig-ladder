@@ -26,8 +26,8 @@ compile needs ~130 MB, so the cap only ever bites a runaway.
 Update 47's emitter predates PR 71's arena; without it `fibx` and `whole`
 cannot execute on this machine (measurement above), so the arena is
 cherry-picked onto `u47-rebank`. This is the capacity carve-out in
-"Processing a new Update" step 4: capacity prerequisites already landed
-upstream may ride the pin, correctness fixes may not.
+"Processing a new Update" step 4: capacity prerequisites already landed or
+filed upstream may ride the pin, correctness fixes may not.
 
 ## fibx and whole use the ring transport; the small rungs keep TCP (2026-08-16)
 
@@ -38,9 +38,11 @@ costs 1 byte per byte. The TCP arm stays for the rungs that fit because it
 exercises the Codex network stack on every sweep -- it is the surface that
 caught the odd-frame DMA defect.
 
-## Two-different-chunk-sizes rule for TCP transfers (2026-08-14)
+## TCP transfer acceptance: parity proof first, two-chunk agreement as fallback
 
-A transfer is accepted only when two runs at different chunk sizes agree:
-identical-size reruns reproduced the identical corrupted byte 10 times in a
-row, so same-size agreement proves nothing. Full record:
-`ast/TRANSPORT_CORRUPTION.md`.
+`plug_run_checked.py` accepts a transfer when the pcap parity proof holds
+(frame parity follows TCP payload parity, `pcap_parity.py`); when the proof
+cannot be established it falls back to requiring two transfers at DIFFERENT
+chunk sizes to agree. Different sizes because identical-size reruns
+reproduced the identical corrupted byte 10 times in a row -- same-size
+agreement proves nothing. Full record: `findings/PLUG_IR_TRANSPORT.md`.

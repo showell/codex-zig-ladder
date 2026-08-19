@@ -1,9 +1,10 @@
 # Moved
 
 This described the transport corruption while it was still a mystery. It
-is solved, and the full write-up now lives with the repro fleet:
+is solved, and the full write-up lives with the findings register in this
+repository:
 
-`~/showell_repos/NewRepository/deck-record-repro/PLUG_IR_TRANSPORT.md`
+`findings/PLUG_IR_TRANSPORT.md`
 
 The short version: `net-recv-raw` derives its `rep insw` word count with
 `shr rcx, 1`, which rounds down, so an odd-length frame loses its last
