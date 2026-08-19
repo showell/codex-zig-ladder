@@ -714,3 +714,39 @@ A fix cannot put a bare `if` inside the prong, because a zig switch prong
 cannot re-dispatch to the arms below it. The direct shape is an if-else chain
 (pattern test and guard as one condition) for a `when` that contains any
 guarded arm.
+
+## 16. The hosted heap starts at 0 and the deck is a no-op; three corpus oracles observe both
+
+**Found 2026-08-19 by the corpus census (the first differ-class verdicts of
+the run); zig arm measured by `corpus_run.py`, bare-metal arm is the depot's
+hand-verified `.expected` oracles. Not yet filed; fix is ours to propose.**
+
+One passage of ZigEmitter (the prose above `zig-name-map`) makes two
+semantic choices and documents them as checked-not-assumed. The corpus is
+the check, and it caught both:
+
+- **`__heap-save` answers 0 on first call.** Bare metal boots with
+  `mov r10, 6291456` (bare-metal-heap-base, 6 MB; essay random848), so a
+  heap address is never 0 there. `codex/test/arith-narrow-proven` asserts
+  exactly that ("__heap-save proves as a structural heap-address fact"):
+  expected `mark-ok`, zig arm prints `mark-zero`.
+  **The C# plug shares this defect verbatim** (`static long _ptr = 0;
+  heap_save() => _ptr;`, CSharpEmitter.codex:637) and can never catch it
+  itself -- its witness path stops at "compiles". Source-read only, not
+  yet run.
+- **`__deck-enter` / `__deck-exit` / `__deck-pos` are mapped to literal 0.**
+  The C# runtime implements the real rule (deck_enter swaps _ptr with
+  _dptr saving _bivy; deck_exit restores), and the depot tests observe it:
+  `deck-bracket-contract` expects "enter switches to the mark : yes", the
+  zig arm answers "no"; `deck-record-contract` likewise for "argument
+  evaluates on the deck". The prose's claim "this target has no deck"
+  conflates having no memory pressure with having no observable
+  semantics; deck position is observable.
+
+Fix directions (not yet applied; both are prelude/emitter changes, so the
+allcycles sweep and a census rerun follow either): init `cx_hp` at
+6291456 to mirror the boot value -- cx_buf_want then zero-fills a 6 MB
+prefix on first heap touch, which is the guest's own boot behavior -- and
+port the C# deck rule (~4 small functions) with the three name-map
+entries pointed at them. C# is gold for the deck RULE; the heap base is
+bare metal's own number, not C#'s.
