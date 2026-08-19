@@ -46,8 +46,31 @@ def ladder_rungs():
 
 
 def newest_input(paths):
-    """The most recent mtime among the things a truth is downstream of."""
-    times = [(p.stat().st_mtime, p) for p in paths if p.is_file()]
+    """When the things a truth is downstream of last CHANGED.
+
+    Asked of git, not the filesystem: the question is whether a truth was
+    measured under the harness content that exists now, and mtime answers a
+    different question -- a `git checkout --` that changes nothing still
+    refreshes it, which blocked two clean banks in one day. A watched file
+    with uncommitted changes has no commit time that describes it, so that
+    refuses outright.
+    """
+    import subprocess
+    existing = [p for p in paths if p.is_file()]
+    rels = [str(p.relative_to(LADDER)) for p in existing]
+    dirty = subprocess.run(
+        ['git', '-C', str(LADDER), 'status', '--porcelain', '--'] + rels,
+        capture_output=True, text=True).stdout.strip()
+    if dirty:
+        raise SystemExit('REFUSED: uncommitted changes in files truths depend on:\n'
+                         + dirty + '\ncommit them, rerun the truth arms, then bank')
+    times = []
+    for p, rel in zip(existing, rels):
+        out = subprocess.run(['git', '-C', str(LADDER), 'log', '-1',
+                              '--format=%ct', '--', rel],
+                             capture_output=True, text=True).stdout.strip()
+        if out:
+            times.append((int(out), p))
     return max(times) if times else (0, None)
 
 

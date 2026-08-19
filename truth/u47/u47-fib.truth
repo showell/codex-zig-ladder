@@ -1,0 +1,11 @@
+lex-tokens 85
+lex-errors 0
+parse-errors 0
+resolve-errors 0
+check-errors 0
+ir-defs 3
+--- ir-text ---
+(def "fib" "Fib" (params (param "n" int-default)) (fn int-default int-default) (if (binary le (name "n" int-default) (int-lit 1) boolean) (name "n" int-default) (binary add-int (apply (name "fib" (fn int-default int-default)) (binary sub-int (name "n" int-default) (int-lit 1) int-default) int-default) (apply (name "fib" (fn int-default int-default)) (binary sub-int (name "n" int-default) (int-lit 2) int-default) int-default) int-default) int-default) 0 0)
+(def "double" "Fib" (params (param "n" int-default)) (fn int-default int-default) (binary add-int (name "n" int-default) (name "n" int-default) int-default) 0 0)
+(def "opening" "Fib" (params) (effectful (effs "Console") (scopes "") nothing) (act (stmts (do-exec (apply (name "print-line-uni" (fn text nothing (row (labels (label "Console.Write" "")) "" 6))) (apply (name "show" (fn int-default text)) (apply (name "fib" (fn int-default int-default)) (int-lit 20) int-default) text) nothing))) nothing) 0 0)
+.
