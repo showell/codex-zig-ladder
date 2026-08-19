@@ -610,6 +610,15 @@ working.
 - Re-pin the diagnostics populations (`check_diags.py`) from the first clean
   sweep -- the counts are a function of the unit list and the seed, and a
   stale pin cries wolf.
+- **Re-measure the timings and put them in this README, every rebank.** The
+  log has the wall time per phase (truth arms, plug builds, arms); refresh
+  the numbers in "Running it" in the same commit that updates the
+  banked-against table, so the cost quoted is always the cost under the
+  CURRENT seed. Stale timings misprice every scheduling decision made from
+  them, and the timings are also the check on a release's own throughput
+  claims: Update 47's FIFO-burst output showed up as roughly 10 percent on a
+  mid-size unit, and the rebank is where such a claim gets measured at full
+  scale rather than assumed.
 - Update the banked-against table at the top of this file, tag
   (`uNN-14of14`), push.
 
