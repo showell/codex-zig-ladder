@@ -46,3 +46,22 @@ cannot be established it falls back to requiring two transfers at DIFFERENT
 chunk sizes to agree. Different sizes because identical-size reruns
 reproduced the identical corrupted byte 10 times in a row -- same-size
 agreement proves nothing. Full record: `findings/PLUG_IR_TRANSPORT.md`.
+
+## Corpus run memory cap: 800 MB address space (2026-08-19)
+
+After the second corpus-run livelock, the entire 299-program clean set was
+replayed serially under `ulimit -v 819200` (800 MB RLIMIT_AS) with a 60s
+timeout: zero cap hits, zero timeouts, max RSS 145 MB (`ttt-perfect`),
+everything else at or under ~128 MB, max wall 4s. The only failures were
+the five deterministic ~1s SIGABRT panics, which are recorded verdicts,
+not hazards. `RUN_MEM_CAP` is therefore 800 MB -- the largest value the
+corpus was actually measured under, not a guess from RSS (RLIMIT_AS caps
+address space, and the compile stage's address-space use was not measured
+separately). A runaway now dies by cap with ~3 GB of guest free, below
+swap territory. Raise only on the evidence of a legitimate program hitting
+the cap.
+
+Root cause of the livelocks themselves was never a corpus program: the
+Windows C: drive at 98% left `swap.vhdx` unable to expand, so paging
+stalled writeback and reclaim (forensics: claude-steve random887). Fixed
+on the Windows side 2026-08-19; the cap is defense in depth.

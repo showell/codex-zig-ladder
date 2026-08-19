@@ -157,9 +157,11 @@ def stage_transpile(names, out_dir):
 # binaries have ballooned to 3 GB anon RSS on a 3.8 GB guest, and on 2026-08-19
 # one such run livelocked the whole WSL VM instead of drawing a clean OOM kill.
 # Under the cap the allocation fails inside the child, the arena's
-# @panic("oom") fires, and the balloon becomes a recorded verdict. A compile
-# needs ~130 MB, so the cap only ever bites the runaway.
-RUN_MEM_CAP = 2_560 * 1024 * 1024
+# @panic("oom") fires, and the balloon becomes a recorded verdict. 800 MB is
+# the value the full corpus was replayed under with zero cap hits and a max
+# RSS of 145 MB (JUSTIFICATIONS.md); a runaway dies by cap with ~3 GB of
+# guest still free, never reaching swap.
+RUN_MEM_CAP = 800 * 1024 * 1024
 
 
 def _cap_memory():
