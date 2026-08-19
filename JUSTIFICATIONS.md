@@ -65,3 +65,29 @@ Root cause of the livelocks themselves was never a corpus program: the
 Windows C: drive at 98% left `swap.vhdx` unable to expand, so paging
 stalled writeback and reclaim (forensics: claude-steve random887). Fixed
 on the Windows side 2026-08-19; the cap is defense in depth.
+
+## The host has been ~5x slow since 2026-08-19 14:53; measure it before blaming code
+
+`ring_compile` prints a `stream:` line timing the seed compiling the zig-plug
+bundle inside QEMU -- same workload, same code path, every sweep. It is a free
+dynamometer for this box:
+
+    12:30  413138 -> 410689 bytes   29s
+    12:50            410689 bytes   29s
+    13:30  399854 -> 411273 bytes   29s
+    18:27  401344 -> 413138 bytes  149s
+    19:20            413138 bytes  145s
+    19:40            411273 bytes  146s
+
+0.37% more input, 5.1x the wall clock, with `ring_compile.py` byte-identical
+across the interval (`git diff 8a74c94..HEAD` touches only the READY wait and
+the diags sidecar) and `-accel tcg` hardcoded, so this is not an accel flip.
+`READY at` moved 0.3-0.4s -> 0.8-0.9s the same way. The intervening events are
+the 14:53 WSL livelock, a Windows reboot, a large C: cleanup and a VHD sparse
+conversion.
+
+This matters because a 5x host makes healthy code look defective, and it did:
+the `check` rung's 175s think time failed a 120s stall window and was
+diagnosed as a transport ceiling and then as an emitter regression. 175 / 5 is
+~35s, which is where it sat when it passed. **Read the `stream:` line before
+attributing a slowdown to a commit.**

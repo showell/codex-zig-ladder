@@ -41,9 +41,15 @@ the subset is the proof of concept, findings triage is the follow-up.**
 until all 299 have verdicts) -- the natural tonight.sh slot. Until it
 runs there is no census.json, so no --changed loop and no sentinel set;
 the char migration's before/after measurement falls back to the probes.
-Known since the pause: codexir is ~0.74s/program (was ~0.15s) after the
-multi-byte CCE tier tables reached its lexer, so the transpile stage is
-~25 min, not ~4; the run stage numbers above are already honest.
+Known since the pause: codexir measured ~0.74s/program against a recorded
+~0.15s, so the transpile stage ran ~25 min rather than ~4. **That was first
+attributed to the multi-byte CCE tier tables; the attribution is withdrawn.**
+The box itself is running ~5x slow since the 14:53 livelock and reboot --
+`ring_compile`'s `stream:` line reads 29s on 2026-08-19 at 12:30, 12:50 and
+13:30, then 149s at 18:27 and 145/146s at 19:20 and 19:40, on the same
+~400 KB workload with byte-identical code. 0.15 x 5 = 0.75, so the emitter
+owes nothing here. Re-measure codexir once the host is well before quoting
+any per-program figure.
 
 The known gap family is coherent: `poke-byte`, `peek/poke-16/32`, `bit-not` --
 the memory-access builtins; implementing the family unblocks a large slice at
