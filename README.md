@@ -66,124 +66,6 @@ contracts, and so their de facto written spec; and the corpus harness is
 plug-agnostic, so a future plug in another language could be graded against
 the same banked IR and truths on day one.
 
-## What this needs, and what it does not
-
-**It needs almost no changes to the Codex repository.** Everything Linux and
-QEMU specific lives here. The driver that boots the guest, `codex_vm.py`, is
-ours: it launches QEMU directly and re-implements the contracts the author's
-`codex-vm` host provides (the guest RAM size written at physical `0xFE8`
-before boot, the ring preload, the paced serial send) rather than calling
-`Start-VmRun` in `build/vm-config.ps1`. Every plug defect the ladder found
-was fixed in `ZigEmitter.codex` and carried upstream, so the checkout needs
-at most the fixes that have landed upstream but postdate the Update being
-banked. That claim is checkable, and the command is the check:
-
-    git -C <your Codex clone> log --oneline <release-commit>..HEAD
-
-The baseline is the release commit of the Update being banked, never
-`upstream/master` -- the mirror moves mid-cycle (the author's Perforce main
-runs ahead of the public releases, and landings of our own PRs appear
-between them), so a moving baseline cannot anchor a claim. What may sit on
-top of the release commit is defined under "The checkout" below; anything
-else is a patch nobody has justified, which is what the check is for.
-
-**From the checkout, tracked and used unmodified:** `seed/Codex.cdx`,
-`build/concat-codex-self.ps1`, `codex/plugs/common/plug-build-lib.ps1`, the
-chapters under `codex/compiler/`, and `codex/test/plug-oracle-arith.codex` with
-its `.expected`.
-
-**From the checkout, NOT tracked, and self-regenerating:**
-`codex/plugs/zig/build-output/zig-plug.cdx` and `plug-source.codex`. A fresh
-clone does not have them, and nothing needs building to get them: `cycle.sh`
-regenerates both -- it runs the author's bundler with the compile step
-stubbed out (`Build-PlugCdx` is replaced, since that step needs the author's
-Windows host) to write `plug-source.codex`, then compiles that through the
-seed with `ring_compile.py` to produce `zig-plug.cdx` and its fingerprint.
-`ast/allcycles.sh` runs `cycle.sh` first, so a fresh CODEX clone needs no
-prior build step, and `cycle.sh` is the only producer of these artifacts
-here (it alone writes the fingerprint `plug_provenance` demands; the
-author's own plug build is Windows-only and never runs on this host). A
-fresh LADDER clone is a different matter: the banks are tracked, but the
-working `ast/*.truth` and `ast/*.ir` files the arms consume are not, so its
-first act is `ast/rebank_all.sh` -- `allcycles.sh` alone has nothing to
-diff against.
-
-**From the host:** `qemu-system-x86_64` (6.2.0), `python3` (3.10.12),
-PowerShell 7 installed at `~/.local/pwsh/pwsh` (the bundling scripts invoke
-that path directly; 7.5.4 here), and `zig` (0.16.0) for the arm under test.
-`/dev/kvm` is optional: `CODEX_ACCEL` selects the accelerator and the
-default is `tcg`.
-
-**Point it at a checkout with `CODEX_ROOT`.** The ladder lives outside the
-tree it audits, so it cannot find one by looking upward, and it will not
-guess:
-
-    CodexRootError: no Codex checkout at or above /home/you/codex-zig-ladder
-    (looked for codex/compiler/opening.codex); set CODEX_ROOT to the checkout
-    you mean
-
-That refusal is the feature. A ladder silently pointed at the wrong checkout
-banks truth against a seed nobody named, which is the single failure this whole
-exercise exists to prevent. Pointing it at each Update in turn is the same
-variable and no other change.
-
-The ladder repo itself clones from
-`git@github.com:showell/codex-zig-ladder.git`; see the NOT-tracked
-paragraph above for what a fresh ladder clone must regenerate first.
-
-## The checkout: cloning and branching
-
-How the Codex clone `CODEX_ROOT` points at is managed. This lived in nobody's
-head for a while and the head it lived in got confused, so, written down:
-
-**Two remotes, with different jobs.** `upstream` is `damiant3/NewRepository`
-and is read-only in practice: the mirror is downstream of the author's
-Perforce, so nothing merges there and PRs are landed by being re-applied on
-their side. `origin` is the `showell/NewRepository` fork, and it exists to
-hold pushed branches: PR branches, and the pin branch below. A local `master`
-has no job in this model: reference `upstream/master` directly and keep no
-local `master` -- a branch nobody advances only goes stale and then reads as
-if it means something.
-
-**The ladder runs against a pin branch, one per Update.** When an Update is
-being banked, the checkout sits on a branch named for it (`u47-rebank`),
-created at the Update's release commit and never rebased. On top of the
-release commit it carries the fewest cherry-picks the ladder cannot run
-without, and each must already be landed or filed upstream -- the pin is a
-delivery vehicle for nothing. At Update 47 that is exactly one, the arena
-(PR 71, since landed upstream at `a061c173`, so the next pin starts clean).
-`git log <release-commit>..HEAD` is the whole statement of what we changed,
-and the ideal length is zero.
-
-**The working tree parks on the pin for the entire banking cycle.**
-`CODEX_ROOT` names a working tree, not a commit: a `git checkout` there
-mid-sweep rebuilds the plug from whatever the tree now holds, and that cost a
-90-minute sweep once (2026-08-18). The fingerprint guard in `oracle_lib.sh`
-now refuses to run arms when `ZigEmitter.codex` or `ZigPlug.codex` moved
-under a built plug, but the guard is a tripwire, not a workflow. PR work
-therefore never happens in this tree: branch in a disposable `git worktree`
-somewhere else (the session scratchpad), off `upstream/master`, push to the
-fork, and delete the worktree after the PR lands; `git worktree prune` in the
-main clone clears the stubs.
-
-**Pulling an Update:** `git fetch upstream`, read the release commit (its
-message names the seeds and what moved), create `u<NN>-rebank` at it,
-cherry-pick only what the ladder still needs, push the pin to the fork, then
-follow "Processing a new Update" below. The register of "what the ladder
-still needs" is `findings/README.md` plus the "Filed and waiting" list in
-`PRIORITIES.md`: anything there marked filed-but-not-landed is a candidate,
-and the first check is always whether the Update just landed it. The pin
-being on the fork means no clone is precious.
-
-**Re-cloning from scratch** is therefore cheap and occasionally worth doing,
-since a long-lived clone accumulates branches from work that has since
-landed. `git clone git@github.com:showell/NewRepository.git`, then
-`git remote add upstream git@github.com:damiant3/NewRepository.git`, then
-`git switch u<NN>-rebank` (the pin is on the fork). Git carries everything
-else: point `CODEX_ROOT` at the new clone, let `check_paths.py` prove the
-wiring in five seconds, and the first `cycle.sh` (or the sweep, which runs
-it) regenerates the untracked plug artifacts from the seed.
-
 ## What this is
 
 This repository holds a Diverse Double-Compiling check, in Wheeler's sense:
@@ -265,6 +147,127 @@ exactly, symbol extents that tile with no gaps, a debug map whose 722 names
 all match the symbol map, and `pingpong.truth` byte-identical to
 `text.truth`). Two arms drifting into the same nonsense would have to keep a
 hash the emitting compiler computed for its own reasons while doing it.
+
+## What this needs, and what it does not
+
+**It needs almost no changes to the Codex repository.** Everything Linux and
+QEMU specific lives here. The driver that boots the guest, `codex_vm.py`, is
+ours: it launches QEMU directly and re-implements the contracts the author's
+`codex-vm` host provides (the guest RAM size written at physical `0xFE8`
+before boot, the ring preload, the paced serial send) rather than calling
+`Start-VmRun` in `build/vm-config.ps1`. Every plug defect the ladder found
+was fixed in `ZigEmitter.codex` and carried upstream, so the checkout needs
+at most the fixes that have landed upstream but postdate the Update being
+banked. That claim is checkable, and the command is the check:
+
+    git -C <your Codex clone> log --oneline <release-commit>..HEAD
+
+The baseline is the release commit of the Update being banked, never
+`upstream/master` -- the mirror moves mid-cycle (the author's Perforce main
+runs ahead of the public releases, and landings of our own PRs appear
+between them), so a moving baseline cannot anchor a claim. What may sit on
+top of the release commit is defined under "The checkout" below; anything
+else is a patch nobody has justified, which is what the check is for.
+
+**From the checkout, tracked and used unmodified:** `seed/Codex.cdx`,
+`build/concat-codex-self.ps1`, `codex/plugs/common/plug-build-lib.ps1`, the
+chapters under `codex/compiler/`, and `codex/test/plug-oracle-arith.codex` with
+its `.expected`.
+
+**From the checkout, NOT tracked, and self-regenerating:**
+`codex/plugs/zig/build-output/zig-plug.cdx` and `plug-source.codex`. A fresh
+clone does not have them, and nothing needs building to get them: `cycle.sh`
+regenerates both -- it runs the author's bundler with the compile step
+stubbed out (`Build-PlugCdx` is replaced, since that step needs the author's
+Windows host) to write `plug-source.codex`, then compiles that through the
+seed with `ring_compile.py` to produce `zig-plug.cdx` and its fingerprint.
+`ast/allcycles.sh` runs `cycle.sh` first, so a fresh CODEX clone needs no
+prior build step, and `cycle.sh` is the only producer of these artifacts
+here (it alone writes the fingerprint `plug_provenance` demands; the
+author's own plug build is Windows-only and never runs on this host). A
+fresh LADDER clone is a different matter: the banks are tracked, but the
+working `ast/*.truth` and `ast/*.ir` files the arms consume are not, so its
+first act is `ast/rebank_all.sh` -- `allcycles.sh` alone has nothing to
+diff against.
+
+**From the host:** `qemu-system-x86_64` (6.2.0), `python3` (3.10.12),
+PowerShell 7 installed at `~/.local/pwsh/pwsh` (the bundling scripts invoke
+that path directly; 7.5.4 here), and `zig` (0.16.0) for the arm under test.
+`/dev/kvm` is optional: `CODEX_ACCEL` selects the accelerator and the
+default is `tcg`.
+
+**Point it at a checkout with `CODEX_ROOT`.** The ladder lives outside the
+tree it audits, so it cannot find one by looking upward, and it will not
+guess:
+
+    CodexRootError: no Codex checkout at or above /home/you/codex-zig-ladder
+    (looked for codex/compiler/opening.codex); set CODEX_ROOT to the checkout
+    you mean
+
+That refusal is the feature. A ladder silently pointed at the wrong checkout
+banks truth against a seed nobody named, which is the single failure this whole
+exercise exists to prevent. Pointing it at each Update in turn is the same
+variable and no other change. `ladder_root.py` resolves both roots and is the
+only thing that knows where the checkout is; `check_paths.py` asserts every
+path the ladder opens resolves, without running a rung, so a bad setup is a
+five-second answer rather than an hour-two surprise.
+
+The ladder repo itself clones from
+`git@github.com:showell/codex-zig-ladder.git`; see the NOT-tracked
+paragraph above for what a fresh ladder clone must regenerate first.
+
+## The checkout: cloning and branching
+
+How the Codex clone `CODEX_ROOT` points at is managed. This lived in nobody's
+head for a while and the head it lived in got confused, so, written down:
+
+**Two remotes, with different jobs.** `upstream` is `damiant3/NewRepository`
+and is read-only in practice: the mirror is downstream of the author's
+Perforce, so nothing merges there and PRs are landed by being re-applied on
+their side. `origin` is the `showell/NewRepository` fork, and it exists to
+hold pushed branches: PR branches, and the pin branch below. A local `master`
+has no job in this model: reference `upstream/master` directly and keep no
+local `master` -- a branch nobody advances only goes stale and then reads as
+if it means something.
+
+**The ladder runs against a pin branch, one per Update.** When an Update is
+being banked, the checkout sits on a branch named for it (`u47-rebank`),
+created at the Update's release commit and never rebased. On top of the
+release commit it carries the fewest cherry-picks the ladder cannot run
+without, and each must already be landed or filed upstream -- the pin is a
+delivery vehicle for nothing. At Update 47 that is exactly one, the arena
+(PR 71, since landed upstream at `a061c173`, so the next pin starts clean).
+`git log <release-commit>..HEAD` is the whole statement of what we changed,
+and the ideal length is zero.
+
+**The working tree parks on the pin for the entire banking cycle.**
+`CODEX_ROOT` names a working tree, not a commit: a `git checkout` there
+mid-sweep rebuilds the plug from whatever the tree now holds, and that cost a
+90-minute sweep once (2026-08-18). The fingerprint guard in `oracle_lib.sh`
+now refuses to run arms when `ZigEmitter.codex` or `ZigPlug.codex` moved
+under a built plug, but the guard is a tripwire, not a workflow. PR work
+therefore never happens in this tree: branch in a disposable `git worktree`
+somewhere else (the session scratchpad), off `upstream/master`, push to the
+fork, and delete the worktree after the PR lands; `git worktree prune` in the
+main clone clears the stubs.
+
+**Pulling an Update:** `git fetch upstream`, read the release commit (its
+message names the seeds and what moved), create `u<NN>-rebank` at it,
+cherry-pick only what the ladder still needs, push the pin to the fork, then
+follow "Processing a new Update" below. The register of "what the ladder
+still needs" is `findings/README.md` plus the "Filed and waiting" list in
+`PRIORITIES.md`: anything there marked filed-but-not-landed is a candidate,
+and the first check is always whether the Update just landed it. The pin
+being on the fork means no clone is precious.
+
+**Re-cloning from scratch** is therefore cheap and occasionally worth doing,
+since a long-lived clone accumulates branches from work that has since
+landed. `git clone git@github.com:showell/NewRepository.git`, then
+`git remote add upstream git@github.com:damiant3/NewRepository.git`, then
+`git switch u<NN>-rebank` (the pin is on the fork). Git carries everything
+else: point `CODEX_ROOT` at the new clone, let `check_paths.py` prove the
+wiring in five seconds, and the first `cycle.sh` (or the sweep, which runs
+it) regenerates the untracked plug artifacts from the seed.
 
 ## Closing arguments: what each rung is worth
 
@@ -840,14 +843,6 @@ is a requirement here.
 
 Everything generated is ignored and regenerates from a script beside it. The
 scripts are the record.
-
-## Requirements
-
-qemu-system-x86_64, pwsh, python3, zig 0.16, and `CODEX_ROOT` naming a Codex
-checkout. `ladder_root.py` resolves both roots and is the only thing that knows
-where the checkout is; `check_paths.py` asserts every path the ladder opens
-resolves, without running a rung, so a bad setup is a five-second answer rather
-than an hour-two surprise.
 
 ## Open questions
 
