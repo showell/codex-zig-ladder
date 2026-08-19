@@ -18,6 +18,7 @@ import subprocess
 import sys
 import time
 
+import codex_vm
 from ladder_root import CODEX
 
 REPO = str(CODEX)
@@ -147,11 +148,13 @@ def compile_ring(blob_path, out_path, mem_mb=3072, timeout=1800, seed=None):
                     time.sleep(0.25)
             raise RuntimeError(f"no connect {port}")
         data, ctrl = connect(dp), connect(cp)
-        ctrl.settimeout(120)
         t0 = time.time()
-        buf = b""
-        while b"READY\n" not in buf:
-            buf += ctrl.recv(4096)
+        # codex_vm.wait_ready, not a local loop: the local copy lacked the
+        # EOF check, so once QEMU died the ctrl socket returned b"" instantly
+        # and forever -- a 100% spin with a frozen log until killed by hand
+        # (PRIORITIES 7; the timeout only ever covered a live-but-silent
+        # guest).
+        codex_vm.wait_ready(ctrl, timeout=120)
         print(f"READY at {time.time()-t0:.1f}s; injecting wpos={staged} via gdbstub", flush=True)
 
         gdb = Gdb(gp)

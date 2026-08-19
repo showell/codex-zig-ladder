@@ -149,9 +149,11 @@ def run_plug(plug_cdx, ir_path, out_path, port=9145, mem_mb=3072, timeout=180,
             print("      resolve the RIP against <plug>.cdx.map for a stack trace")
             return False
 
-        # Serial console carries the plug's own status line ("OK defs=N").
+        # Serial console carries the plug's own status line ("OK defs=N"),
+        # asserted below rather than just printed.
         status = codex_vm.recv_all(data, idle_timeout=3, overall_timeout=10)
-        for line in status.decode(errors="replace").splitlines():
+        stext = status.decode(errors="replace")
+        for line in stext.splitlines():
             if line.strip() and not line.startswith(("WD:", "HEAP:", "STACK:")):
                 print("  serial |", line)
 
@@ -163,6 +165,17 @@ def run_plug(plug_cdx, ir_path, out_path, port=9145, mem_mb=3072, timeout=180,
                    else f"hard cap {timeout}s with data still flowing")
             print(f"FAIL: plug never closed the socket ({len(out)} bytes; "
                   f"{why}); output would be truncated, discarding it")
+            return False
+        # A QEMU death mid-emission (OOM kill, abort) FINs the slirp socket
+        # exactly like the plug's clean close. The one thing a dead guest
+        # cannot do is report success AFTERWARDS, so the OK line is the
+        # closed-vs-died discriminator, not decoration.
+        if "OK defs=" not in stext:
+            dead = proc.poll()
+            state = f"qemu exited {dead}" if dead is not None else "qemu still up"
+            print(f"FAIL: socket closed without the plug's 'OK defs=' status "
+                  f"({state}); a guest death FINs like a clean close; "
+                  f"discarding {len(out)} bytes")
             return False
         open(out_path, "wb").write(out)
         print(f"wrote {out_path} ({len(out)} bytes)")

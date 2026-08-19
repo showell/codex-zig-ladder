@@ -63,7 +63,15 @@ def launch(kernel, mem_mb=3072, nic=False):
                 time.sleep(0.25)
         raise RuntimeError(f"no connection on {port}")
 
-    data, ctrl = connect(data_port), connect(ctrl_port)
+    # A failed connect must take QEMU with it: with wait=on chardevs a
+    # half-connected guest (data attached, ctrl refused) blocks forever
+    # holding its full RAM, and the caller's finally has no proc yet to kill.
+    try:
+        data, ctrl = connect(data_port), connect(ctrl_port)
+    except BaseException:
+        proc.kill()
+        proc.wait()
+        raise
     return proc, data, ctrl
 
 def wait_ready(ctrl, timeout=180):
