@@ -255,7 +255,15 @@ zig_verdict() {
     plug_provenance || return 1
     cd $T/ast
     # program output goes to stderr (std.debug.print); truth was serial bytes
-    if ! timeout 600 zig run ${m}.zig 2> ${m}.zigraw; then
+    #
+    # The address-space cap is the same 2.5 GB corpus_run.py puts on its zig
+    # runs, and for the same incident: an emitted binary with no arena
+    # balloons past 3 GB and livelocks the whole WSL VM (twice now -- the
+    # second time was this very line, fibx under the Update 47 emitter, which
+    # lacks PR 71's arena). Under the cap the allocation fails in the child,
+    # @panic("oom") fires, and the balloon is a recorded rung failure instead
+    # of a dead VM. ulimit is per-subshell, so nothing else inherits it.
+    if ! (ulimit -v $((2560 * 1024)) && timeout 600 zig run ${m}.zig 2> ${m}.zigraw); then
         echo "--- zig compile/run errors:"
         head -40 ${m}.zigraw
         return 1
