@@ -38,6 +38,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # ladder-root-bootstrap
+from cite_resolve import resolve
 from ladder_root import CODEX, LADDER
 
 TESTS = CODEX / 'codex' / 'test'
@@ -56,7 +57,16 @@ def need_tools():
 def transpile(src, out_dir):
     """One program from Codex source to zig. Returns a verdict dict."""
     r = {'name': src.stem}
-    ir = subprocess.run([str(CODEXIR)], stdin=src.open('rb'),
+    # Resolve cites first. A test is usually a driver and the function it calls
+    # lives in a cited chapter; codexir resolves nothing, so without this the
+    # call arrives as an undefined name and the plug's fallback fires, which
+    # looks exactly like an emitter gap and is not one.
+    unit, missing = resolve(src)
+    if missing:
+        r['stage'] = 'unresolved'
+        r['detail'] = '; '.join(f'{q} chapter {n}' for _, q, n in missing[:3])
+        return r
+    ir = subprocess.run([str(CODEXIR)], input=unit.encode(),
                         capture_output=True, timeout=120)
     # Output lands on stderr because print-text is std.debug.print in the
     # emitted runtime. That is a wart the plug should fix, not a design.
@@ -91,7 +101,10 @@ def stage_transpile(names, out_dir):
         except Exception as e:                      # a crash here is data too
             r = {'name': src.stem, 'stage': 'error', 'detail': repr(e)[:120]}
         results.append(r)
-        for m in r.get('markers', ()):
+        # Count PROGRAMS, not occurrences. A builtin used 76 times in one
+        # program and one used once in 76 programs are very different facts,
+        # and the second is the one that says what to implement first.
+        for m in set(r.get('markers', ())):
             hist[m] += 1
         if i % 100 == 0:
             print(f'  {i}/{len(names)}', flush=True)
@@ -158,9 +171,8 @@ def main():
     ap.add_argument('--transpile', action='store_true')
     ap.add_argument('--run', action='store_true')
     ap.add_argument('--limit', type=int, default=0, help='first N programs only')
-    ap.add_argument('--all', action='store_true',
-                    help='include programs with cites, which codexir cannot resolve '
-                         'and which therefore report undefined names as emitter gaps')
+    ap.add_argument('--all', action='store_true', help='(kept for the runner scripts; '
+                    'cites are resolved now, so every program is in scope)')
     a = ap.parse_args()
     if not (a.transpile or a.run):
         a.transpile = True
@@ -174,10 +186,6 @@ def main():
     # histogram over this corpus was 64 markers of that shape and none of them
     # was an emitter gap. Until there is a resolver, the honest corpus is the
     # self-contained programs.
-    if not a.all:
-        names = [n for n in names
-                 if not any(l.strip().startswith('cites ')
-                            for l in n.read_text(errors='replace').splitlines())]
     if a.limit:
         names = names[:a.limit]
     print(f'corpus: {len(names)} programs from {TESTS}')

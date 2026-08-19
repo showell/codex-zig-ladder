@@ -1,42 +1,46 @@
 [
  [
-  "no emitter for process-get-cap",
-  17
+  "no emitter for poke-byte",
+  6
+ ],
+ [
+  "no emitter for peek-32",
+  5
+ ],
+ [
+  "no emitter for poke-16",
+  5
  ],
  [
   "no emitter for poke-32",
-  7
+  5
+ ],
+ [
+  "no emitter for peek-16",
+  4
  ],
  [
   "no emitter for process-restrict-cap",
-  4
- ],
- [
-  "no emitter for block-sector-count",
-  4
- ],
- [
-  "no emitter for key-status",
   3
  ],
  [
+  "no emitter for bit-not",
+  3
+ ],
+ [
+  "no emitter for block-sector-count",
+  3
+ ],
+ [
+  "no emitter for text-to-unicode-bytes",
+  2
+ ],
+ [
+  "no emitter for unicode-bytes-to-text",
+  2
+ ],
+ [
   "no emitter for process-get-pid",
-  2
- ],
- [
-  "no emitter for net-status",
-  2
- ],
- [
-  "no emitter for net-get-hwaddr",
-  2
- ],
- [
-  "no emitter for gpu-mem-write",
-  2
- ],
- [
-  "no emitter for gpu-mem-read",
   2
  ],
  [
@@ -44,7 +48,11 @@
   1
  ],
  [
-  "no emitter for net-recv-raw",
+  "no emitter for net-status",
+  1
+ ],
+ [
+  "no emitter for net-get-hwaddr",
   1
  ],
  [
@@ -52,7 +60,15 @@
   1
  ],
  [
+  "no emitter for net-recv-raw",
+  1
+ ],
+ [
   "no emitter for process-set-scope",
+  1
+ ],
+ [
+  "no emitter for process-get-cap",
   1
  ],
  [
@@ -64,31 +80,35 @@
   1
  ],
  [
+  "no emitter for atomic-add",
+  1
+ ],
+ [
+  "no emitter for atomic-load",
+  1
+ ],
+ [
+  "no emitter for memory-fence",
+  1
+ ],
+ [
+  "no emitter for atomic-exchange",
+  1
+ ],
+ [
+  "no emitter for atomic-store",
+  1
+ ],
+ [
+  "no emitter for atomic-cas",
+  1
+ ],
+ [
   "no emitter for block-select",
   1
  ],
  [
   "no emitter for block-read-sector",
-  1
- ],
- [
-  "no emitter for unicode-bytes-to-text",
-  1
- ],
- [
-  "no emitter for text-to-unicode-bytes",
-  1
- ],
- [
-  "no emitter for poke-byte",
-  1
- ],
- [
-  "no emitter for key-load",
-  1
- ],
- [
-  "no emitter for key-zero",
   1
  ]
 ]

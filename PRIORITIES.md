@@ -38,8 +38,18 @@ Staged so the cheap half comes first:
 3. the 190 `.failing` cases are a second, different question: does the plug
    reproduce a refusal.
 
-Pilot, 20 programs: 6 clean, 13 with markers (64 total), 1 core-dumped
-`codexir`.
+**Cites are resolved now** (`cite_resolve.py`, 2026-08-18), so the whole
+corpus is in scope rather than the 120 self-contained programs. That mattered:
+the first histogram was 64 markers and not one was an emitter gap -- every test
+is a driver whose function lives in a cited chapter, and an unresolved call
+looks exactly like a missing arm.
+
+Pilot on 40 resolved programs: **24 clean, 14 with markers, 2 crashed
+codexir**. The gaps are one coherent family -- `poke-byte`, `peek-32`,
+`peek-16`, `poke-16`, `poke-32`, `bit-not` -- the memory-access builtins.
+Implementing that family unblocks a large slice in one go. `poke-byte` is
+already a known hole: `emit_harness.py` steps around it in a comment rather
+than citing the chapter that reaches it.
 
 Explore this before asking Damian for anything. If it pays off, the ask is not
 "persist your IR" but "would you want this as a signal on your side".
