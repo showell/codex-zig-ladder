@@ -186,6 +186,16 @@ reproduce that faithfully and the diff would be empty. That is what
 `ast/f4_boot.py` (below) is for: booting the emitted binary asks a third party
 with no stake in the argument.
 
+One shape of the shared-mistake worry is closed for the content section, and
+by the compiler's own hand: the CDX header carries a SHA-256 that
+`cdx-build-header` computes over the content bytes, and recomputing it from
+the decimal bytes the four back-end truths print reproduces it in all four
+(audited 2026-08-18, no violations -- alongside header offsets that tile
+exactly, symbol extents that tile with no gaps, a debug map whose 722 names
+all match the symbol map, and `pingpong.truth` byte-identical to
+`text.truth`). Two arms drifting into the same nonsense would have to keep a
+hash the emitting compiler computed for its own reasons while doing it.
+
 ## Closing arguments: what each rung is worth
 
 The ladder's names invite a reading it does not support. `lex` does not test the
@@ -500,6 +510,16 @@ cost of the ladder that produced the current bank, not as a forecast.
    its own (about a minute) before spending a full cycle -- twelve minutes to
    bank plus fourteen through the plug, for the expensive rungs -- discovering
    it does not compile.
+4. **The zig arm's memory is the emitter's arena, and the run is capped.**
+   The emitted prelude allocates every object from one arena (upstream since
+   a061c173; before it, `std.heap.page_allocator` rounded a ~40-byte record
+   up to a 4096-byte page and the big rungs peaked past 3 GB -- OOM-killed on
+   a good day, and twice a WSL VM livelocked instead, which no log survives).
+   With the arena, `fibx` and `whole` run in about 240 MB. `zig_verdict`
+   still wraps `zig run` in a 2.5 GB address-space cap, because the balloon
+   comes back whenever `CODEX_ROOT` names a checkout whose emitter predates
+   the arena -- the Update 47 rebank proved that -- and under the cap that is
+   a recorded rung failure instead of a dead VM.
 
 ## Processing a new Update
 
