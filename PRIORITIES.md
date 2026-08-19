@@ -112,6 +112,29 @@ depot's emitter changes every zig arm's output. Item 3's PR and PR 71's arena
 both need replaying onto 47's emitter. Ownership also settled: the zig plug is
 ordinary fleet code now, so unlanded emitter work rots faster.
 
+**The read and the one-unit timing are DONE (2026-08-19, ~02:00):**
+
+- **`codex_vm.py` needs NO adaptation.** The bulk path is codex-vm-only: the
+  guest probes port 0x510, codex-vm answers 0xB7 and takes a doorbell; under
+  QEMU the port floats 0xFF and the guest falls to the UART loop. That loop
+  is what changed for us: FCR=0xC7 turns the 16550 FIFO on, LSR bit 5 now
+  means the whole FIFO is empty, and the guest sends `rep outsb` bursts of
+  16. Same bytes on the wire, better pacing. Input side (0xFE8 RAM cell,
+  ring at 0x500000, wpos/rpos cells) is untouched by the whole diff.
+- **Measured on the check unit (945 KB blob, 4.79 MB IR out), ring path,
+  TCG, one run each: seed 12B07296 128.1s -> seed 90646EEB 115.3s**, about
+  10 percent. The guardprobe (88 KB out) is timing-identical at 5.7s, so the
+  win is the output phase, as the design says. Single runs; the real
+  measurement rides the rebank.
+- **Two free findings from the same runs:** the u47 seed's IR for the check
+  unit is BYTE-IDENTICAL to u46's (first rebank data point; u45->u46 diffed
+  clean too), and the u46 arm reproduced banked `ast/check.ir` exactly. The
+  guardprobe binary grew 88,693 -> 89,053 bytes: the ATA guards and the
+  burst helper, the first visible image change of the Update.
+
+What remains of the sequence is the rebank itself, plus the ZigEmitter
+replay decision above.
+
 Original entry:
 
 Steve reports on depot `main`, ahead of the release:
