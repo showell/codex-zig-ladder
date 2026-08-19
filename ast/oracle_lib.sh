@@ -107,7 +107,14 @@ mode_flags() {
 truth_arm() {
     local m=$1
     cd $T/ast
-    python3 gen_${m}_harness.py
+    # Guarded, and the old harness removed first, because this function is
+    # called with `truth_arm "$u" || ...` from verify_merge.sh -- which
+    # disables errexit inside the function body, so an unguarded generator
+    # crash would bundle YESTERDAY'S harness and reproduce the bank, the
+    # exact wrong-PASS that script exists to rule out.
+    rm -f ${m^}Harness.codex
+    python3 gen_${m}_harness.py || { echo "HARNESS GEN FAILED for $m"; return 1; }
+    [ -s ${m^}Harness.codex ] || { echo "HARNESS GEN FAILED: no ${m^}Harness.codex"; return 1; }
 
     # NOT `pwsh ... | tail -1`: under a pipe the status is tail's, and
     # plug-build-lib exits 3 on an unresolvable cite. Update 42 added a
@@ -131,7 +138,7 @@ truth_arm() {
     # the next day.
     python3 "$T/check_bundles.py" "$m" || { echo "BUNDLE REFUSED for $m"; return 1; }
 
-    python3 - "$m" "$(mode_flags $m)" <<'PY'
+    python3 - "$m" "$(mode_flags $m)" <<'PY' || { echo "BLOB WRITE FAILED for $m"; return 1; }
 import sys
 m, flags = sys.argv[1], sys.argv[2]
 src = open(f'{m}-subject.codex', 'rb').read()

@@ -14,12 +14,16 @@ m=${1:?usage: plugcycle.sh <milestone>}
 "$T/cycle.sh"
 echo "REBUILT"
 
-zig_arm "$m" && exit 0
+# arm_for, not zig_arm: fibx and whole go over the ring, and pushing their
+# 13 MB IRs through the TCP arm is a different (slower, capped) measurement.
+$(arm_for "$m") "$m" && exit 0
 
 cd "$T/ast"
-echo "errors: $(grep -c ': error: ' ${m}.zigout || true)  markers-in-source: $(grep -o 'zig plug: [^\"]*' ${m}.zig | wc -l)"
+# zig's own errors land in ${m}.zigraw (zig_verdict's stderr capture);
+# ${m}.zigout is the split program output and never held them.
+echo "errors: $(grep -c ': error: ' ${m}.zigraw || true)  markers-in-source: $(grep -o 'zig plug: [^\"]*' ${m}.zig | wc -l)"
 echo "--- what zig rejected"
-grep -o 'error: .*' ${m}.zigout | sed 's/^error: //' | cut -c1-64 | sort | uniq -c | sort -rn
+grep -o 'error: .*' ${m}.zigraw | sed 's/^error: //' | cut -c1-64 | sort | uniq -c | sort -rn
 echo "--- markers the emitter left in ${m}.zig"
 grep -o 'zig plug: [^\"]*' ${m}.zig | sort | uniq -c | sort -rn
 exit 1
