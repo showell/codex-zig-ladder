@@ -57,3 +57,6 @@ native/
 # lands here before split_truth cuts it up.
 *.raw
 *.zigraw
+
+# Nightly console logs; tonight.sh rewrites them every run.
+logs/

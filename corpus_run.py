@@ -34,6 +34,7 @@ import collections
 import json
 import pathlib
 import re
+import resource
 import subprocess
 import sys
 
@@ -124,44 +125,72 @@ def stage_transpile(names, out_dir):
     return results, hist
 
 
-def stage_run(results, out_dir):
+# Address-space cap for each `zig run` and the program it executes. Emitted
+# binaries have ballooned to 3 GB anon RSS on a 3.8 GB guest, and on 2026-08-19
+# one such run livelocked the whole WSL VM instead of drawing a clean OOM kill.
+# Under the cap the allocation fails inside the child, the arena's
+# @panic("oom") fires, and the balloon becomes a recorded verdict. A compile
+# needs ~130 MB, so the cap only ever bites the runaway.
+RUN_MEM_CAP = 2_560 * 1024 * 1024
+
+
+def _cap_memory():
+    resource.setrlimit(resource.RLIMIT_AS, (RUN_MEM_CAP, RUN_MEM_CAP))
+
+
+def stage_run(results, out_dir, persist=True):
     """Build and run what transpiled clean, diff against the depot's .expected."""
     clean = [r for r in results if r['stage'] == 'clean']
     print(f'\n{len(clean)} clean programs; building and running')
     tally = collections.Counter()
     detail = []
+    # One line per verdict, flushed as it lands: run.json at the end of the
+    # loop kept nothing when the 2026-08-19 run died at program 101 of 250.
+    jsonl = (out_dir / 'run.jsonl').open('w') if persist else None
+
+    def verdict(name, kind, note=''):
+        tally[kind] += 1
+        if kind not in ('match', 'no-expected'):
+            detail.append((name, kind, note))
+        if jsonl:
+            jsonl.write(json.dumps({'name': name, 'verdict': kind, 'detail': note}) + '\n')
+            jsonl.flush()
+
     for i, r in enumerate(clean, 1):
         name = r['name']
         exp = TESTS / f'{name}.expected'
         zig = out_dir / f'{name}.zig'
         if not exp.is_file():
-            tally['no-expected'] += 1
+            verdict(name, 'no-expected')
             continue
         try:
             p = subprocess.run(['zig', 'run', str(zig)],
-                               capture_output=True, timeout=300)
+                               capture_output=True, timeout=300,
+                               preexec_fn=_cap_memory)
         except subprocess.TimeoutExpired:
-            tally['timeout'] += 1
-            detail.append((name, 'timeout', ''))
+            verdict(name, 'timeout')
             continue
         if p.returncode != 0:
             # A zig compile error here is a real finding: the plug emitted
-            # something it believed in and zig refused it.
-            tally['refused'] += 1
-            first = next((l for l in p.stderr.decode('utf-8', 'replace').splitlines()
-                          if 'error:' in l), '')
-            detail.append((name, 'refused', first[:160]))
+            # something it believed in and zig refused it. A panic is a
+            # different finding: zig accepted it and the program died running.
+            stderr = p.stderr.decode('utf-8', 'replace')
+            kind = 'crashed' if 'panic:' in stderr else 'refused'
+            first = next((l for l in stderr.splitlines()
+                          if 'error:' in l or 'panic:' in l), '')
+            verdict(name, kind, first[:160])
             continue
         got = p.stderr.decode('utf-8', 'replace')
         want = exp.read_text(errors='replace')
         if got.strip() == want.strip():
-            tally['match'] += 1
+            verdict(name, 'match')
         else:
-            tally['differ'] += 1
-            detail.append((name, 'differ', f'want {want.strip()[:60]!r} got {got.strip()[:60]!r}'))
+            verdict(name, 'differ', f'want {want.strip()[:60]!r} got {got.strip()[:60]!r}')
         if i % 50 == 0:
             print(f'  {i}/{len(clean)}  {dict(tally)}', flush=True)
 
+    if jsonl:
+        jsonl.close()
     print('\n' + ', '.join(f'{k} {v}' for k, v in tally.most_common()))
     return tally, detail
 
@@ -190,14 +219,21 @@ def main():
         names = names[:a.limit]
     print(f'corpus: {len(names)} programs from {TESTS}')
 
+    # A limited run is a smoke test; the json files are the full-corpus census
+    # and a slice must not overwrite them (one did, 2026-08-19).
+    persist = not a.limit
     results, hist = stage_transpile(names, WORK)
-    (WORK / 'transpile.json').write_text(json.dumps(results, indent=1))
-    (WORK / 'gaps.json').write_text(json.dumps(hist.most_common(), indent=1))
+    if persist:
+        (WORK / 'transpile.json').write_text(json.dumps(results, indent=1))
+        (WORK / 'gaps.json').write_text(json.dumps(hist.most_common(), indent=1))
+    else:
+        print('\n--limit run: census json left untouched')
 
     if a.run:
-        tally, detail = stage_run(results, WORK)
-        (WORK / 'run.json').write_text(json.dumps(
-            {'tally': dict(tally), 'detail': detail}, indent=1))
+        tally, detail = stage_run(results, WORK, persist=persist)
+        if persist:
+            (WORK / 'run.json').write_text(json.dumps(
+                {'tally': dict(tally), 'detail': detail}, indent=1))
         print('\nfindings worth reading first:')
         for name, kind, why in detail[:25]:
             print(f'  {kind:8s} {name:32s} {why}')

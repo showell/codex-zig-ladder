@@ -15,6 +15,11 @@ set -u
 T="$(cd "$(dirname "$0")" && pwd)"
 export CODEX_ROOT="${CODEX_ROOT:-$HOME/showell_repos/NewRepository}"
 
+# Logs live in the repo, not /tmp: WSL wipes /tmp on VM restart, and the
+# 2026-08-19 hang took step 1's only copy of the bare-metal verdict with it.
+L="$T/logs"
+mkdir -p "$L"
+
 echo "=== waiting for any sweep in flight"
 while ps -eo args | grep -q '[a]llcycles.sh'; do sleep 30; done
 echo "=== clear at $(date +%H:%M)"
@@ -43,13 +48,13 @@ print()
 print("ZIG SAID:            guard-taken 1 / guard-taken 1 / otherwise 0")
 print("THE LANGUAGE SAYS:   guard-taken 0 / guard-taken 1 / otherwise 0")
 PY
-} > /tmp/guardprobe.log 2>&1
-tail -12 /tmp/guardprobe.log
+} > $L/guardprobe.log 2>&1
+tail -12 $L/guardprobe.log
 
 echo
 echo "=== 2. corpus: the depot's self-contained tests, native, against its .expected"
-python3 "$T/corpus_run.py" --run > /tmp/corpus.log 2>&1
-tail -30 /tmp/corpus.log
+python3 "$T/corpus_run.py" --run > $L/corpus.log 2>&1
+tail -30 $L/corpus.log
 
 echo
 echo "=== 3. does the HOSTED compiler reproduce the SEED's IR, byte for byte?"
@@ -77,7 +82,7 @@ echo "=== 3. does the HOSTED compiler reproduce the SEED's IR, byte for byte?"
             echo "  $m: DIFFERS  seed $(stat -c%s "ast/$m.ir")  hosted $(stat -c%s "corpus/$m.hosted.ir")"
         fi
     done
-} 2>&1 | tee /tmp/iridentity.log
+} 2>&1 | tee $L/iridentity.log
 
 echo
-echo "=== done at $(date +%H:%M). logs: /tmp/guardprobe.log /tmp/corpus.log /tmp/iridentity.log"
+echo "=== done at $(date +%H:%M). logs: $L/{guardprobe,corpus,iridentity}.log"
