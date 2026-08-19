@@ -326,11 +326,7 @@ rungs; the verdict never does.
 
 `arm_for` in `ast/oracle_lib.sh` decides, because which transport is needed is a
 property of the IR, and the IR belongs to the unit: the `fibx` and `whole` units
-take the ring, and the four rungs they carry ride in with them. `check` joined
-them 2026-08-19 at only 4.83 MB, which is the useful lesson about the ceiling:
-it is guest heap live at once, not wire size, so `text` at 5.67 MB still rides
-TCP and a rung's shape decides. A rung that starts returning nothing while the
-guest burns its whole cap has crossed it (measurement in `JUSTIFICATIONS.md`).
+take the ring, and the four rungs they carry ride in with them.
 
 There are two plugs, built from the same `ZigEmitter`: one fed over TCP, one fed
 through the serial ring. Both have to be rebuilt together, or a sweep reports

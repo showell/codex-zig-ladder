@@ -29,7 +29,7 @@ cherry-picked onto `u47-rebank`. This is the capacity carve-out in
 "Processing a new Update" step 4: capacity prerequisites already landed or
 filed upstream may ride the pin, correctness fixes may not.
 
-## check, fibx and whole use the ring transport; the small rungs keep TCP (2026-08-16, check added 2026-08-19)
+## fibx and whole use the ring transport; the small rungs keep TCP (2026-08-16)
 
 The TCP receive path costs ~130 bytes of guest heap per IR byte (measured
 per-stage: frame sim 45, bytes-to-text 34.5, byte-list build 11, buf-read
@@ -37,15 +37,6 @@ per-stage: frame sim 45, bytes-to-text 34.5, byte-list build 11, buf-read
 costs 1 byte per byte. The TCP arm stays for the rungs that fit because it
 exercises the Codex network stack on every sweep -- it is the surface that
 caught the odd-frame DMA defect.
-
-`check` (4.83 MB IR) joined them 2026-08-19 after failing seven consecutive
-TCP transfers across four chunk sizes: all bytes delivered, zero returned,
-no `OK` line and no `!EXC`, each attempt burning the full 180s cap at 100%
-CPU with guest RSS climbing past 750 MB -- a guest still receiving when the
-cap arrived, not a crash. The ceiling is not wire size: `text` at 5.67 MB
-still rides TCP. What crosses it is heap live at once, so a rung's shape
-decides, and the honest answer is the cheaper transport rather than a
-longer timeout.
 
 ## TCP transfer acceptance: parity proof first, two-chunk agreement as fallback
 
