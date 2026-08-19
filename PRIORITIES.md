@@ -61,9 +61,13 @@ Explore this before asking Damian for anything. If it pays off, the ask is not
 
 ## 2. The four emitter defects: probe, then file
 
-- ~~Match guards dropped~~ **FILED 2026-08-19 as issue 72** after tonight.sh
-  confirmed the bare-metal arm (seed answers `guard-taken 0`, plug answers
-  `1`). Finding 15 in the register. Still unfixed at Update 47.
+- ~~Match guards dropped~~ **FIXED UPSTREAM at a061c173** (2026-08-19, issue
+  72 closed): a guarded match emits a labeled if-chain, an unguarded one
+  keeps the switch, our probe shape is now guard rows in
+  plug-oracle-arith.codex (49/49). The same rows graded the other plugs:
+  python/wasm answer wrong values, csharp fails to build, typescript drops
+  guards AND miscloses a variant type -- registered as plugs-backlog 1.46,
+  the plugs lane's problem now, not ours.
 - **Char literals** are CCE codes while every other Char is a codepoint, so
   `char-at s i == 'x'` is always false and compiles clean. **Zig arm
   MEASURED 2026-08-19** through the native loop
@@ -78,15 +82,18 @@ Explore this before asking Damian for anything. If it pays off, the ask is not
   native codexir aborts on ANY real literal.
 - ~~`__linked-list-empty` drops its argument~~ FIXED (`cx_ll_empty_n`).
 
-## 3. Upstream the two emitter fixes -- UNBLOCKED, do this first
+## 3. Upstream the two emitter fixes -- SHRUNK to a 2-line PR, prepared
 
-`zig-pin-arms` and `cx_ll_empty_n`. **The regression sweep went 14/14 on
-2026-08-18**, all four merged-unit truths still byte-identical to the bank, so
-the precondition is met. Do this BEFORE the seed change in item 8 lands: the
-evidence above is a statement about seed 5B2DE4E6, and once we are on FAD4F1E2
-it costs a full rebank to say the same thing again. The pin
-fires on about 1% of switches (7 of 629 in `check`, 8 of 805 in `text`) with
-zero output change across ten programs. Small PR, same shape as PR 71.
+a061c173 changed the shape of this: upstream now pins literal arms itself
+(`zig-pin-lit-arms`, arrived with the guard fix) but applies it only on the
+guarded chain -- the plain switch path is still unpinned -- and
+`__linked-list-empty` still drops its argument. Their own
+`__list-with-capacity` row already answers the second with
+`cx_ll_with_capacity`, so the whole PR is two lines: reuse their pin at the
+switch site, reuse their capacity fn at the ll-empty row. Branch
+`zig-plug-switch-pin-ll-empty` (commit f7dd755b) is committed in a scratchpad
+worktree off a061c173, NOT pushed: verify through the ladder after the u47
+sweep frees QEMU, then send.
 
 ## 4. The heap unification
 
@@ -154,15 +161,21 @@ enough to thrash forever instead of dying, so headroom widens the livelock
 window rather than closing it. The 2.5GB RLIMIT_AS from commit 20ff529 wraps
 corpus stage_run children only; the rebank path has no cap at all.
 
-Plan, agreed with Steve 2026-08-19 morning:
+Plan, agreed with Steve 2026-08-19 morning, EXECUTED later that morning:
 
-1. Cap the rebank path the way stage_run got capped: RLIMIT_AS / `ulimit -v`
-   around the rung subject binaries, so a balloon becomes a recorded failure
-   instead of a dead VM. Do this BEFORE any fibx attempt.
-2. Rerun just fibx + whole under the cap, foregrounded and watched. If fibx
-   dies at the cap, the balloon is reproducible under u47 -- itself a data
-   point (did 47 fatten the emitted binary, or did fibx always only survive
-   on an idle VM?). Thirteen rungs were green on seed 45, so something moved.
+1. ~~Cap the rebank path~~ DONE (commit a300448): zig_verdict's `zig run` now
+   carries the same 2.5 GB address-space cap corpus_run.py uses.
+2. ~~Rerun fibx under the cap, watched~~ DONE: clean abort at the cap, VM
+   untouched. **The question this step existed to answer is answered, and it
+   is neither of the two guesses: the u47-rebank branch took the depot's
+   ZigEmitter verbatim, and PR 71's arena is not in Update 47's emitter**, so
+   fibx.zig came out with 22 page_allocator sites and ballooned exactly as
+   the pre-arena plug did. The 13-green sweep on seed 45 ran with OUR
+   arena'd plug. The redundant `whole` rerun was skipped (fifteen minutes of
+   QEMU to record the same predictable abort); instead the arena commit
+   7094128c was cherry-picked onto u47-rebank (clean merge beside their
+   cx_deck_set and zig-let-annot) and the full 14-rung sweep is running
+   against the already-complete u47 truths. Bank on green.
 
 Original entry:
 
@@ -225,11 +238,24 @@ from step 1's bare-metal confirmation. What it left behind, cheapest first:
 
 ## Filed and waiting
 
-- **PR 69** the `$present` hoist (bundling)
-- **PR 71** the arena (12.5x memory, byte-identical)
+NOTHING IS WAITING as of 2026-08-19 morning: everything filed has landed,
+all at mirror commit **a061c173** (Perforce 17251-17254, **seed 800A7683** --
+more churn past u47's release seed 90646EEB; a bank against 90646EEB is a
+statement about the Update 47 release, a061c173 is post-release).
+
+- ~~PR 69~~ LANDED at a061c173 (plug-build-lib.ps1 + its generator).
+- ~~PR 71~~ LANDED at a061c173, re-applied by hand (their comment cut to
+  three lines, house style). Measured on their side: 23 cx_gpa in the
+  emitted subject. **Heap unification (item 4) is pre-approved in shape:**
+  "send it as its own PR when the hunt settles and it will be reviewed on
+  its own." Same invitation for cx_show_int's double allocation and the
+  per-instruction throwaway list.
 - ~~Issue 70~~ CLOSED by Update 47 ("ATA jcc + absent-drive guards"). Retire
   any workaround of ours and re-pin the CDX2064 population at the u47 rebank.
-- **Issue 72** match guards dropped by the zig emitter (filed 2026-08-19).
+- ~~Issue 72~~ FIXED at a061c173 (see item 2).
+- **Invited, not yet sent:** finding 14 as its own PR
+  (test-compile-batch.ps1:98's unconditional -WindowStyle, which no gate on
+  their side can see) -- "yes, send it as its own PR if you have the cycle."
 
 
 ---
