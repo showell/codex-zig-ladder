@@ -73,8 +73,10 @@ echo "=== 3. does the HOSTED compiler reproduce the SEED's IR, byte for byte?"
     for m in lex parse desugar scope check lower text pingpong lir fib fibx whole; do
         [ -s "ast/$m.ir" ] || { echo "  $m: no banked ir, skipped"; continue; }
         [ -s "ast/$m-subject.codex" ] || { echo "  $m: no subject, skipped"; continue; }
-        if ! timeout 900 ./native/codexir < "ast/$m-subject.codex" 2> "corpus/$m.hosted.ir" > /dev/null; then
-            echo "  $m: codexir FAILED (rc=$?)"; continue
+        timeout 900 ./native/codexir < "ast/$m-subject.codex" 2> "corpus/$m.hosted.ir" > /dev/null
+        rc=$?
+        if [ $rc -ne 0 ]; then
+            echo "  $m: codexir FAILED (rc=$rc)"; continue
         fi
         if cmp -s "ast/$m.ir" "corpus/$m.hosted.ir"; then
             echo "  $m: IDENTICAL to the seed's IR ($(stat -c%s "ast/$m.ir") bytes)"
