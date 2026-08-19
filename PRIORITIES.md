@@ -4,6 +4,10 @@ Kept here rather than in anybody's head or memory file, because there are now
 several threads and they were drifting apart. If a memory or an essay disagrees
 with this file, this file wins. Dated entries so staleness is visible.
 
+**Clock on the list, 2026-08-18:** a new seed is coming (item 8). Everything
+that rests on "byte-identical to `truth/u46`" is evidence about the OLD seed and
+gets cheaper to establish now than after. Item 3 is the one that cares.
+
 ## The native loop, which changes what is cheap
 
 Built 2026-08-18 by `native_build.sh`:
@@ -70,7 +74,9 @@ Explore this before asking Damian for anything. If it pays off, the ask is not
 
 `zig-pin-arms` and `cx_ll_empty_n`. **The regression sweep went 14/14 on
 2026-08-18**, all four merged-unit truths still byte-identical to the bank, so
-the precondition is met. The pin
+the precondition is met. Do this BEFORE the seed change in item 8 lands: the
+evidence above is a statement about seed 5B2DE4E6, and once we are on FAD4F1E2
+it costs a full rebank to say the same thing again. The pin
 fires on about 1% of switches (7 of 629 in `check`, 8 of 805 in `text`) with
 zero output change across ten programs. Small PR, same shape as PR 71.
 
@@ -97,10 +103,35 @@ hosted-compiler crash is its own finding; identify and reduce.
 Diffed like a truth file, retiring the CDX6020 and CDX2064 count pins that move
 whenever the unit list changes rather than when the source does.
 
-## 8. Update 47, when it ships
+## 8. Update 47, when it ships -- TWO COMMITS ALREADY LANDED (2026-08-18)
 
-Rebank as `u47`. Read `codex_vm.py` against Fable's QEMU throughput work first,
-since we re-implement the host contracts rather than inherit them.
+Steve reports on depot `main`, ahead of the release:
+
+- **17213, the QEMU bulk-output path. SEED CHANGED: 5B2DE4E6 -> FAD4F1E2.**
+- **17221, a gdb-watchpoint QEMU switch. Non-seed**, so it cannot move a truth.
+
+Two consequences, and the first is the one that bites:
+
+**A new seed invalidates every banked truth.** `truth/u46` is a claim about
+what 5B2DE4E6 produces. Nothing under FAD4F1E2 may be diffed against it and
+called a regression until the whole ladder is re-banked, or we will read a
+legitimate upstream change as our own breakage. Rebank first, compare second.
+That also means the 59-minute merged sweep gets spent on the rebank itself.
+
+**17213 touches the layer we re-implement rather than inherit.** `codex_vm.py`
+speaks the host contract to QEMU on our side; a bulk-output path is exactly the
+kind of change that alters how output arrives, not just how fast. Read the diff
+against `codex_vm.py` BEFORE running anything, because a silent truncation or a
+reframed chunk boundary would show up as a diff in every truth at once and look
+like a compiler change. If our reader needs to learn the new path, that is the
+first work item, not a footnote to the rebank.
+
+The upside is real: bulk output is plausibly a large cut in the four minutes an
+outer compile costs, and the whole ladder is output-bound through a serial port.
+Time one unit before and after so the claim is measured rather than assumed.
+
+Sequence when the build lands: read 17213 -> adapt `codex_vm.py` if it needs it
+-> time one unit -> full rebank as `u47` -> only then diff anything.
 
 ---
 
