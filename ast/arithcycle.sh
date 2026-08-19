@@ -51,7 +51,7 @@ python3 -u plug_run_checked.py \
     $REPO/codex/plugs/zig/build-output/zig-plug.cdx \
     ast/arith.ir ast/arith.zig
 cd ast
-if timeout 600 zig run arith.zig 2> arith.zigout; then
+if ( ulimit -v $((2560 * 1024)) && timeout 600 zig run arith.zig 2> arith.zigout ); then
     if diff <(tr -d '\r' < arith.truth) arith.zigout > arith.diff 2>&1; then
         echo "ORACLE PASS: zig arith output byte-identical to bare-metal truth"
     else

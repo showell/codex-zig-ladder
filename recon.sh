@@ -7,7 +7,7 @@
 # typecheck here is parity with the C# witness's bar.
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
-REPO="$(cd "$T/.." && pwd)"
+REPO="$(python3 "$T/ladder_root.py" codex)"
 R=$T/recon
 mkdir -p "$R"
 

@@ -10,11 +10,20 @@ REPO="$(python3 "$T/ladder_root.py" codex)"
 S=$T/warmups
 mkdir -p "$S"
 
+# The bundle is removed first and checked after, the same discipline the
+# compile step below explains: a bundler that fails without stopping pwsh
+# would otherwise leave yesterday's bundle for the blob step to compile,
+# and the fingerprint stamped afterwards would describe a plug that was
+# never rebuilt.
+PLUG_SRC="$REPO/codex/plugs/zig/build-output/plug-source.codex"
+rm -f "$PLUG_SRC"
 ~/.local/pwsh/pwsh -NoProfile -Command "
+\$ErrorActionPreference = 'Stop'
 . $REPO/codex/plugs/common/plug-build-lib.ps1
 function Build-PlugCdx { Write-Host '[bundle only, compile skipped]' }
 Build-TranspilerPlug -PlugDir $REPO/codex/plugs/zig -PlugName zig -Chapters @('ZigEmitter', 'ZigPlug')
 "
+[ -s "$PLUG_SRC" ] || { echo "BUNDLE FAILED: no plug-source.codex"; exit 1; }
 
 python3 - <<PY
 src = open('$REPO/codex/plugs/zig/build-output/plug-source.codex','rb').read()
@@ -54,7 +63,10 @@ cat "$REPO/codex/plugs/zig/ZigEmitter.codex" "$REPO/codex/plugs/zig/ZigPlug.code
 echo "plug fingerprint: $(cut -c1-16 "$(dirname "$PLUG_CDX")/zig-plug.fingerprint")"
 
 # Each warmup diffs against its banked bare-metal truth (see
-# warmups/regen.sh), so a pass is an oracle match, not an eyeball.
+# warmups/regen.sh), so a pass is an oracle match, not an eyeball -- and a
+# diff FAILS the cycle. This is the check the README calls the one worth
+# running before any rung; a checker that reports without refusing is scroll.
+warmup_fail=0
 for prog in "$@"; do
     echo "=== $prog ==="
     python3 -u plug_run.py "$REPO/codex/plugs/zig/build-output/zig-plug.cdx" "$S/$prog.ir" "$S/$prog.zig" 2>&1 | tail -2
@@ -64,5 +76,7 @@ for prog in "$@"; do
     else
         echo "WARMUP DIFF for $prog:"
         diff "$S/$prog.truth" "$S/$prog.zigout" | head -10 || true
+        warmup_fail=1
     fi
 done
+exit $warmup_fail

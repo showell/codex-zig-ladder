@@ -6,7 +6,7 @@
 # divergence convicts the transport, not the subject.
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
-REPO="$(cd "$T/.." && pwd)"
+REPO="$(python3 "$T/ladder_root.py" codex)"
 S="${TMPDIR:-/tmp}/ring-refill-test"
 mkdir -p "$S"
 

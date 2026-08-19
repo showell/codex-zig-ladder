@@ -13,7 +13,11 @@
 # because a failure in step 2 is itself a result worth having in the morning.
 set -u
 T="$(cd "$(dirname "$0")" && pwd)"
+# A baked default rather than ladder_root's refusal, because this is the
+# top of the unattended stack: a 10pm launch that dies asking for an env
+# var loses the night. Said out loud so a log never hides which tree ran.
 export CODEX_ROOT="${CODEX_ROOT:-$HOME/showell_repos/NewRepository}"
+echo "=== CODEX_ROOT $CODEX_ROOT"
 
 # Logs live in the repo, not /tmp: WSL wipes /tmp on VM restart, and the
 # 2026-08-19 hang took step 1's only copy of the bare-metal verdict with it.
@@ -35,8 +39,13 @@ pathlib.Path('guardprobe-cdx.blob').write_bytes(b"CDX map\n" + src + b"\x04")
 print(f"blob written, {len(src)} bytes of source")
 PY
     cd "$T"
+    # rm first and checked after: the pipe's status is tail's, so a failed
+    # compile would otherwise run yesterday's binary and print BARE METAL
+    # SAYS from it.
+    rm -f ast/guardprobe.cdx
     python3 -u ring_compile.py ast/guardprobe-cdx.blob ast/guardprobe.cdx 2>&1 | tail -3
-    python3 - <<'PY'
+    [ -s ast/guardprobe.cdx ] || echo "GUARDPROBE COMPILE FAILED -- probe not run"
+    [ -s ast/guardprobe.cdx ] && python3 - <<'PY'
 import codex_vm
 out = codex_vm.run_cdx('ast/guardprobe.cdx', timeout=300, idle_timeout=60)
 lines = [l for l in out.decode(errors='replace').splitlines()
