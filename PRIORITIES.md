@@ -61,10 +61,9 @@ Explore this before asking Damian for anything. If it pays off, the ask is not
 
 ## 2. The four emitter defects: probe, then file
 
-- **Match guards dropped.** DEMONSTRATED end to end 2026-08-18:
-  `findings/probe-match-guard.codex` prints `guard-taken 1` under the plug where
-  the language says `0`, because `IRBranch.guard` is never read. Owed: confirm
-  the bare-metal side with the seed, then file.
+- ~~Match guards dropped~~ **FILED 2026-08-19 as issue 72** after tonight.sh
+  confirmed the bare-metal arm (seed answers `guard-taken 0`, plug answers
+  `1`). Finding 15 in the register. Still unfixed at Update 47.
 - **Char literals** are CCE codes while every other Char is a codepoint, so
   `char-at s i == 'x'` is always false and compiles clean.
 - **`IrApproxEq` emits `==`**, dropping a 4-ULP tolerance.
@@ -103,7 +102,17 @@ hosted-compiler crash is its own finding; identify and reduce.
 Diffed like a truth file, retiring the CDX6020 and CDX2064 count pins that move
 whenever the unit list changes rather than when the source does.
 
-## 8. Update 47, when it ships -- TWO COMMITS ALREADY LANDED (2026-08-18)
+## 8. Update 47 -- PUBLIC as of 2026-08-19 (`69cd9ce8`, seed 90646EEB)
+
+The release seed is 90646EEB, not the FAD4F1E2 this entry anticipated from
+main 17213: more seed churn followed (the release names six). The sequence
+below stands, with one addition: **ZigEmitter moved too** (their own
+`cx_deck_set`, plus `zig-let-annot` typing scalar let bindings), so taking the
+depot's emitter changes every zig arm's output. Item 3's PR and PR 71's arena
+both need replaying onto 47's emitter. Ownership also settled: the zig plug is
+ordinary fleet code now, so unlanded emitter work rots faster.
+
+Original entry:
 
 Steve reports on depot `main`, ahead of the release:
 
@@ -133,14 +142,42 @@ Time one unit before and after so the claim is measured rather than assumed.
 Sequence when the build lands: read 17213 -> adapt `codex_vm.py` if it needs it
 -> time one unit -> full rebank as `u47` -> only then diff anything.
 
+## 9. tonight.sh's first full run: the fallout (2026-08-19, random883)
+
+The run finished in 13 minutes; census 278 units -> 117 match / 95 refused /
+33 differ / 28 no-expected / 5 crashed (`corpus/run.json`). Issue 72 filed
+from step 1's bare-metal confirmation. What it left behind, cheapest first:
+
+1. **The `\x01` expected-file artifact.** Several `.expected` begin with a
+   `\x01` byte the zig arm never prints, so the 33 differs are an overcount;
+   the eyeballed ones are byte-identical after it. One corpus_run.py fix
+   deflates the differ column to its honest value. Cheap, do before reading
+   any differ as a finding.
+2. **Multi-byte CCE in the zig prelude.** Step 3 (hosted codexir vs seed IR)
+   went 0 for 11 on one cause: decode-escapes -> cx_char_to_text ->
+   cx_cp_to_cce panics on any codepoint outside the 97-entry single-byte
+   table, and cx_cce_to_utf8 refuses bytes >= 128 symmetrically. The ladder
+   rungs never hit it (subjects arrive as compiled-in CCE literals); codexir
+   converts raw stdin then lexes. The honest fix is multi-byte CCE encode and
+   decode in the prelude; it unblocks the seed-independence experiment and
+   plausibly some census units.
+3. **Two census refusal classes that are one fix each:** bool passed where
+   i64 is expected (the ip-checksum-odd shape, now a large family), and
+   zig 0.16's Thread `startFn` signature (prelude-level, every
+   thread-spawning unit). Together they cover most of the 95 refusals.
+4. **Five runtime crashes on integer overflow** (bloom-spread,
+   consistent-hash-balance, ...) -- candidate findings, since bare metal
+   evidently does not trap there. Wants the probe treatment.
+
 ---
 
 ## Filed and waiting
 
 - **PR 69** the `$present` hoist (bundling)
 - **PR 71** the arena (12.5x memory, byte-identical)
-- **Issue 70** CDX2064, the ATA wait loop patching six bytes late. Damian is
-  acting on it.
+- ~~Issue 70~~ CLOSED by Update 47 ("ATA jcc + absent-drive guards"). Retire
+  any workaround of ours and re-pin the CDX2064 population at the u47 rebank.
+- **Issue 72** match guards dropped by the zig emitter (filed 2026-08-19).
 
 
 ---
