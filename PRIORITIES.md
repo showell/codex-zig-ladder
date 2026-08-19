@@ -144,6 +144,26 @@ ordinary fleet code now, so unlanded emitter work rots faster.
 What remains of the sequence is the rebank itself, plus the ZigEmitter
 replay decision above.
 
+**Rebank attempt 1 (2026-08-19, 02:07-03:12, `logs/rebank-u47.log`): 11 of 13
+rungs green, then the fibx rung livelocked the whole WSL VM** -- second
+livelock, same signature as random881 (clock-drift spam from 03:10, no OOM
+kill, hv_storvsc write failures at 03:27, VM dead). lex through fib all
+ORACLE PASS byte-identical under seed 90646EEB; **fibx and whole are NOT
+banked for u47.** The 4GB swap was live and did not help -- RAM+swap is just
+enough to thrash forever instead of dying, so headroom widens the livelock
+window rather than closing it. The 2.5GB RLIMIT_AS from commit 20ff529 wraps
+corpus stage_run children only; the rebank path has no cap at all.
+
+Plan, agreed with Steve 2026-08-19 morning:
+
+1. Cap the rebank path the way stage_run got capped: RLIMIT_AS / `ulimit -v`
+   around the rung subject binaries, so a balloon becomes a recorded failure
+   instead of a dead VM. Do this BEFORE any fibx attempt.
+2. Rerun just fibx + whole under the cap, foregrounded and watched. If fibx
+   dies at the cap, the balloon is reproducible under u47 -- itself a data
+   point (did 47 fatten the emitted binary, or did fibx always only survive
+   on an idle VM?). Thirteen rungs were green on seed 45, so something moved.
+
 Original entry:
 
 Steve reports on depot `main`, ahead of the release:
