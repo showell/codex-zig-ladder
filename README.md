@@ -59,28 +59,32 @@ drift from the binary. Run it to see what a checkout is actually holding.
 
 ## What this needs, and what it does not
 
-**It needs no changes to the Codex repository.** Everything Linux and QEMU
-specific lives here. The driver that boots the guest, `codex_vm.py`, is ours: it
-launches QEMU directly and re-implements the contracts the author's `codex-vm`
-host provides (the guest RAM size written at physical `0xFE8` before boot, the
-ring preload, the paced serial send) rather than calling `Start-VmRun` in
-`build/vm-config.ps1`. Every plug defect the ladder found was fixed in
-`ZigEmitter.codex` and carried upstream, so a checkout needs no patch to run
-this. That claim is checkable, and the command is the check:
+**It needs almost no changes to the Codex repository.** Everything Linux and
+QEMU specific lives here. The driver that boots the guest, `codex_vm.py`, is
+ours: it launches QEMU directly and re-implements the contracts the author's
+`codex-vm` host provides (the guest RAM size written at physical `0xFE8`
+before boot, the ring preload, the paced serial send) rather than calling
+`Start-VmRun` in `build/vm-config.ps1`. Every plug defect the ladder found
+was fixed in `ZigEmitter.codex` and carried upstream, so the checkout needs
+at most the fixes that have landed upstream but postdate the Update being
+banked. That claim is checkable, and the command is the check:
 
-    git -C <your Codex clone> diff upstream/master HEAD
+    git -C <your Codex clone> log --oneline <release-commit>..HEAD
 
-**Update 47 closed the one required patch.** On a public Update 46 checkout
-the ladder needed `ZigEmitter.codex` emitting `__deck-set` with its argument
-(finding 12); Update 47 ships that fix, so on a 47 checkout the diff above
-should be empty. Anything in it is a patch nobody has justified, which is
+An earlier version of this section said to diff against `upstream/master`
+and expect nothing. That was true for exactly the week when the newest
+public commit WAS the release; upstream moves between Updates (their
+Perforce main runs ahead of the public releases, and landings of our own
+PRs appear on the mirror mid-cycle), so the honest baseline is the release
+commit of the Update you are banking, and the honest statement is the log
+of what sits on top of it. What may sit there is defined under "The
+checkout" below; anything else is a patch nobody has justified, which is
 what the check is for.
 
-Run it in the clone you patch the plug in, not here. Before the move this was
-the same command with `':(exclude)zig-ladder'` on the end, because the ladder
-sat inside the tree it audits and had to be subtracted out. It does not any
-more, and not needing the exclusion is the plainest statement of the
-separation.
+Before the move to its own repository this check needed
+`':(exclude)zig-ladder'` appended, because the ladder sat inside the tree it
+audits and had to be subtracted out. It does not any more, and not needing
+the exclusion is the plainest statement of the separation.
 
 **From the checkout, tracked and used unmodified:** `seed/Codex.cdx`,
 `build/concat-codex-self.ps1`, `codex/plugs/common/plug-build-lib.ps1`, the
@@ -113,6 +117,56 @@ variable and no other change.
 One known wart: six scripts hardcode `~/.local/pwsh/pwsh` -- `cycle.sh`,
 `recon.sh`, `native_build.sh`, `ast/oracle_lib.sh`, `ast/ringplug_build.sh` and
 `ast/irmemcycle.sh`.
+
+## The checkout: cloning and branching
+
+How the Codex clone `CODEX_ROOT` points at is managed. This lived in nobody's
+head for a while and the head it lived in got confused, so, written down:
+
+**Two remotes, with different jobs.** `upstream` is `damiant3/NewRepository`
+and is read-only in practice: the mirror is downstream of the author's
+Perforce, so nothing merges there and PRs are landed by being re-applied on
+their side. `origin` is the `showell/NewRepository` fork, and it exists to
+hold pushed branches: PR branches, and the pin branch below. A local `master`
+has no job in this model -- ours sat two Updates stale for weeks, confusing
+every reader who expected it to mean something. Reference `upstream/master`
+directly and let local `master` go.
+
+**The ladder runs against a pin branch, one per Update.** When an Update is
+being banked, the checkout sits on a branch named for it (`u47-rebank`),
+created at the Update's release commit and never rebased. On top of the
+release commit it carries the fewest cherry-picks the ladder cannot run
+without, and each must already be landed or filed upstream -- the pin is a
+delivery vehicle for nothing. At Update 47 that is exactly one: the arena
+(PR 71), which the release's emitter predates and whose absence balloons the
+big rungs' zig arms past 3 GB; it landed upstream at `a061c173`, so the next
+pin starts clean. `git log <release-commit>..HEAD` is the whole statement of
+what we changed, it is one commit today, and the ideal length is zero.
+
+**The working tree parks on the pin for the entire banking cycle.**
+`CODEX_ROOT` names a working tree, not a commit: a `git checkout` there
+mid-sweep rebuilds the plug from whatever the tree now holds, and that cost a
+90-minute sweep once (2026-08-18). The fingerprint guard in `oracle_lib.sh`
+now refuses to run arms when `ZigEmitter.codex` or `ZigPlug.codex` moved
+under a built plug, but the guard is a tripwire, not a workflow. PR work
+therefore never happens in this tree: branch in a disposable `git worktree`
+somewhere else (the session scratchpad), off `upstream/master`, push to the
+fork, and delete the worktree after the PR lands; `git worktree prune` in the
+main clone clears the stubs.
+
+**Pulling an Update:** `git fetch upstream`, read the release commit (its
+message names the seeds and what moved), create `u<NN>-rebank` at it,
+cherry-pick only what the ladder still needs (check first whether the Update
+landed it), push the pin to the fork, then follow "Processing a new Update"
+below. The pin being on the fork means no clone is precious.
+
+**Re-cloning from scratch** is therefore cheap and occasionally worth doing,
+since a long-lived clone accumulates branches from work that has since
+landed. `git clone git@github.com:showell/NewRepository.git`, add `upstream`,
+`git switch u<NN>-rebank`, then the two things git does not carry: the gated
+plug build once (the NOT-tracked artifacts above), and `CODEX_ROOT` pointed
+at the new clone -- `check_paths.py` proves the wiring in five seconds
+without spending a rung.
 
 ## What this is
 
@@ -628,6 +682,17 @@ faster -- measures a compiler nobody ships. If the fleet's emitter and ours
 diverge far enough that verbatim sweeps are mostly red, the right response
 is landing the fixes, not softening the rule; revisit it if that flow stops
 working.
+
+One carve-out, established at the Update 47 rebank: a fix the big arms
+cannot RUN without on this machine may ride the pin branch, provided it is
+already landed or filed upstream. 47's emitter predates the arena, so its
+`fibx`/`whole` arms balloon past 3 GB -- under the 2.5 GB cap that is a
+recorded failure, and before the cap it was twice a dead VM -- and a bank
+whose two biggest rungs can never execute here measures less, not more
+honestly. The arena (PR 71, upstream at `a061c173`) was cherry-picked onto
+`u47-rebank` and the sweep went 14 of 14. The line being drawn: a capacity
+prerequisite already accepted upstream may ride the pin; a correctness fix
+may not, because a wrong answer IS the measurement.
 
 ### 5. Run, bank, retire
 

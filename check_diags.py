@@ -82,14 +82,15 @@ POLICY = {
     # NOTE with the count pinned rather than FAIL, because failing every rung
     # on somebody else's warning trains us to pass -k.
     #
-    # Pinned at 2 for ONE site: both units that bundle X86_64Boot reach it, so
-    # the sweep sees it twice. The first pin said 1 because it was set from a
-    # run that had compiled only fibx, which is the hazard of pinning a sweep
-    # total from a partial sweep.
+    # Pinned at 0: Update 47 closed issue 70 (the ATA jcc fix), and the
+    # 2026-08-19 u47 rebank sweep confirmed the diagnostic is gone. The pin
+    # stays in the table so a reappearance is a stopped rung, not scroll.
+    # History: pinned at 2 under Update 46 for ONE site, counted once per
+    # unit that bundles X86_64Boot; the first pin said 1 because it was set
+    # from a partial sweep, which is the hazard this table exists to catch.
     'CDX2064': ('NOTE', 'a field read from a record after an in-place update bound to '
-                        'another name. ONE site, read 2026-08-18, counted once per unit '
-                        'that bundles X86_64Boot. It looks like a real defect in '
-                        'emit-ata-wait rather than a false alarm; filed as issue 70.', 2),
+                        'another name. Was one emit-ata-wait site, filed as issue 70, '
+                        'FIXED by Update 47; any instance now is new.', 0),
     'CDX3006': ('FAIL', 'duplicate definition across chapters. Every instance we have ever '
                         'seen was a bundle including the same chapter twice, which is ours '
                         'to fix. This is the code whose noise hid the CharClass duplicate.'),
