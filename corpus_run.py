@@ -31,6 +31,8 @@ way the ladder banks.
 
 import argparse
 import collections
+import datetime
+import hashlib
 import json
 import pathlib
 import re
@@ -46,6 +48,7 @@ TESTS = CODEX / 'codex' / 'test'
 CODEXIR = LADDER / 'native' / 'codexir'
 ZIGEMIT = LADDER / 'native' / 'zigemit'
 WORK = LADDER / 'corpus'
+CENSUS = WORK / 'census.json'
 MARKER = re.compile(r'@compileError\("zig plug: ([^"]*)"\)')
 
 
@@ -85,6 +88,9 @@ def transpile(src, out_dir):
         return r
     zig = zg.stderr.decode('utf-8', 'replace')
     (out_dir / f'{src.stem}.zig').write_text(zig)
+    # A program's verdict is a pure function of (this file) x (zig toolchain),
+    # so the hash is the cache key --changed compares against the bank.
+    r['zig_sha'] = hashlib.sha256(zig.encode()).hexdigest()[:16]
 
     marks = MARKER.findall(zig)
     r['stage'] = 'markers' if marks else 'clean'
@@ -144,12 +150,14 @@ def stage_run(results, out_dir, persist=True):
     print(f'\n{len(clean)} clean programs; building and running')
     tally = collections.Counter()
     detail = []
+    verdicts = {}
     # One line per verdict, flushed as it lands: run.json at the end of the
     # loop kept nothing when the 2026-08-19 run died at program 101 of 250.
     jsonl = (out_dir / 'run.jsonl').open('w') if persist else None
 
     def verdict(name, kind, note=''):
         tally[kind] += 1
+        verdicts[name] = (kind, note)
         if kind not in ('match', 'no-expected'):
             detail.append((name, kind, note))
         if jsonl:
@@ -201,21 +209,103 @@ def stage_run(results, out_dir, persist=True):
     if jsonl:
         jsonl.close()
     print('\n' + ', '.join(f'{k} {v}' for k, v in tally.most_common()))
-    return tally, detail
+    return tally, detail, verdicts
+
+
+# The banked census: name -> {stage, zig_sha, markers, verdict}, written only
+# by --bank and diffed like a truth file. Day to day the interesting output is
+# the DIFF against it -- which programs flipped match->differ (a regression),
+# differ->match (a fix landed), refused->match -- not the wholesale tally.
+# The design behind it: corpus/README.md.
+
+def load_bank():
+    return json.loads(CENSUS.read_text()) if CENSUS.is_file() else None
+
+
+def write_bank(programs):
+    meta = {
+        'date': datetime.date.today().isoformat(),
+        'zig': zig_version(),
+        'tools': {t.name: hashlib.sha256(t.read_bytes()).hexdigest()[:16]
+                  for t in (CODEXIR, ZIGEMIT)},
+    }
+    CENSUS.write_text(json.dumps({'meta': meta, 'programs': programs},
+                                 indent=1, sort_keys=True))
+
+
+def zig_version():
+    return subprocess.run(['zig', 'version'], capture_output=True,
+                          text=True).stdout.strip()
+
+
+def census_key(entry):
+    """The one word a program's row answers with: its run verdict when it has
+    one, its transpile stage when it never ran."""
+    return entry.get('verdict') or entry['stage']
+
+
+def assemble_census(results, carried, verdicts):
+    programs = {}
+    for r in results:
+        e = {'stage': r['stage']}
+        if r.get('zig_sha'):
+            e['zig_sha'] = r['zig_sha']
+        marks = sorted(set(r.get('markers') or ()))
+        if marks:
+            e['markers'] = marks
+        n = r['name']
+        if n in carried:
+            e['verdict'] = carried[n]['verdict']
+        elif n in verdicts:
+            e['verdict'] = verdicts[n][0]
+        programs[n] = e
+    return programs
+
+
+def print_bank_diff(bank, programs):
+    old = bank['programs']
+    flips = []
+    for n, e in programs.items():
+        o = old.get(n)
+        if o is None:
+            flips.append((n, '(new)', census_key(e)))
+        elif census_key(o) != census_key(e):
+            flips.append((n, census_key(o), census_key(e)))
+    if flips:
+        print(f'\nverdict diff vs bank {bank["meta"]["date"]} ({len(flips)} moved):')
+        for n, was, now in sorted(flips):
+            print(f'  {n:36s} {was} -> {now}')
+    else:
+        print(f'\nno verdict moved vs bank {bank["meta"]["date"]}')
+    gone = [n for n in old if n not in programs]
+    if gone:
+        print(f'  ({len(gone)} banked programs no longer in the corpus)')
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--transpile', action='store_true')
     ap.add_argument('--run', action='store_true')
+    ap.add_argument('--changed', action='store_true',
+                    help='re-emit everything, run only programs whose emitted '
+                         'zig moved since the bank, report the verdict diff')
+    ap.add_argument('--bank', action='store_true',
+                    help='after a full --run or --changed: write census.json')
     ap.add_argument('--limit', type=int, default=0, help='first N programs only')
     ap.add_argument('--all', action='store_true', help='(kept for the runner scripts; '
                     'cites are resolved now, so every program is in scope)')
     a = ap.parse_args()
-    if not (a.transpile or a.run):
+    if not (a.transpile or a.run or a.changed):
         a.transpile = True
+    if a.limit and (a.changed or a.bank):
+        raise SystemExit('--changed and --bank are full-corpus operations; drop --limit')
+    if a.bank and not (a.run or a.changed):
+        raise SystemExit('--bank wants run verdicts; pair it with --run or --changed')
 
     need_tools()
+    bank = load_bank()
+    if a.changed and bank is None:
+        raise SystemExit('--changed needs a bank; run --run once, then --bank')
     WORK.mkdir(exist_ok=True)
     names = sorted(TESTS.glob('*.codex'))
     # A test that cites another chapter is a DRIVER: the function it calls lives
@@ -238,14 +328,49 @@ def main():
     else:
         print('\n--limit run: census json left untouched')
 
-    if a.run:
-        tally, detail = stage_run(results, WORK, persist=persist)
+    carried, verdicts = {}, {}
+
+    if a.changed:
+        # A verdict carries only while both halves of its cache key hold: the
+        # emitted zig is byte-identical to the banked hash AND the toolchain
+        # that produced the banked verdict is the toolchain that would rerun
+        # it. Anything else reruns -- a stale verdict served fast is worse
+        # than a fresh one served slow.
+        same_zig = bank['meta']['zig'] == zig_version()
+        if not same_zig:
+            print(f'\nzig toolchain moved ({bank["meta"]["zig"]} -> '
+                  f'{zig_version()}); no verdict carries, everything reruns')
+        to_run = []
+        for r in results:
+            if r['stage'] != 'clean':
+                continue
+            old = bank['programs'].get(r['name'])
+            if (same_zig and old and old.get('verdict')
+                    and old.get('zig_sha') == r.get('zig_sha')):
+                carried[r['name']] = old
+            else:
+                to_run.append(r)
+        # Saying what was NOT run is load-bearing: an unchanged-but-broken
+        # assumption must never read as green silence.
+        print(f'\n--changed: {len(carried)} clean programs byte-identical to '
+              f'bank {bank["meta"]["date"]}, not rerun; {len(to_run)} to run')
+        tally, detail, verdicts = stage_run(to_run, WORK, persist=persist)
+    elif a.run:
+        tally, detail, verdicts = stage_run(results, WORK, persist=persist)
         if persist:
             (WORK / 'run.json').write_text(json.dumps(
                 {'tally': dict(tally), 'detail': detail}, indent=1))
+
+    if a.run or a.changed:
         print('\nfindings worth reading first:')
         for name, kind, why in detail[:25]:
             print(f'  {kind:8s} {name:32s} {why}')
+        programs = assemble_census(results, carried, verdicts)
+        if bank:
+            print_bank_diff(bank, programs)
+        if a.bank:
+            write_bank(programs)
+            print(f'\nbanked {len(programs)} programs to {CENSUS}')
     return 0
 
 
