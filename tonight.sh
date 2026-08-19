@@ -52,4 +52,32 @@ python3 "$T/corpus_run.py" --run > /tmp/corpus.log 2>&1
 tail -30 /tmp/corpus.log
 
 echo
-echo "=== done at $(date +%H:%M). logs: /tmp/guardprobe.log /tmp/corpus.log"
+echo "=== 3. does the HOSTED compiler reproduce the SEED's IR, byte for byte?"
+# The README's own closing open question: nothing yet establishes that a
+# seed-independent chain produces the same IR. Every unit's seed-produced .ir is
+# on disk from today's rebank, and native/codexir produces the same artifact
+# with no QEMU, so the experiment is a diff. Green means the seed is one step
+# closer to out of the loop. Red is a finding, which is the point of the
+# project -- though a framing difference between the two IR writers would also
+# show as red, so a mismatch wants reading before it is believed.
+#
+# This is also the memory stress case the heap work exists to serve: whole and
+# clamp are 14 MB of IR from a 2.5 MB unit.
+{
+    cd "$T"
+    for m in lex parse desugar scope check lower text pingpong lir fib fibx whole; do
+        [ -s "ast/$m.ir" ] || { echo "  $m: no banked ir, skipped"; continue; }
+        [ -s "ast/$m-subject.codex" ] || { echo "  $m: no subject, skipped"; continue; }
+        if ! timeout 900 ./native/codexir < "ast/$m-subject.codex" 2> "corpus/$m.hosted.ir" > /dev/null; then
+            echo "  $m: codexir FAILED (rc=$?)"; continue
+        fi
+        if cmp -s "ast/$m.ir" "corpus/$m.hosted.ir"; then
+            echo "  $m: IDENTICAL to the seed's IR ($(stat -c%s "ast/$m.ir") bytes)"
+        else
+            echo "  $m: DIFFERS  seed $(stat -c%s "ast/$m.ir")  hosted $(stat -c%s "corpus/$m.hosted.ir")"
+        fi
+    done
+} 2>&1 | tee /tmp/iridentity.log
+
+echo
+echo "=== done at $(date +%H:%M). logs: /tmp/guardprobe.log /tmp/corpus.log /tmp/iridentity.log"
