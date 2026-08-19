@@ -1,0 +1,44 @@
+Chapter: ProbeCharOps
+
+ The char operations the Char = CCE-code migration flips, measured on both
+ arms before and after (agreed, Steve + Claude, 2026-08-19: the zig plug
+ converges on the C#/bare-metal identity model). probe-char-literal covers
+ literals and char-at; this covers the rest of the family.
+
+ On bare metal char-code and code-to-char are identity and classification
+ is BANDED: letters are 13..64 and 97..127 with punctuation 65..96 between,
+ digits are 3..12. The zig plug's codepoint Char happens to agree wherever
+ the tier-0 table is bijective (all of 0..127), so the identity round-trip
+ and the digit band agree everywhere and the divergence is exactly the
+ SECOND letter band: accented and Cyrillic codes classify as letters on
+ bare metal and as non-letters through zig's a-z/A-Z test. After the
+ migration every line must match bare metal.
+
+ Expected on bare metal:
+
+   rt15 15
+   letter-a 1
+   letter-punct 0
+   letter-accent 1
+   letter-cyrillic 1
+   digit-0 1
+   digit-e 0
+   c2t-len 1
+   c2t-byte 15
+
+ The zig arm before the migration prints letter-accent 0 and
+ letter-cyrillic 0 and matches everywhere else.
+
+Section: Main
+
+  opening : [Console] Nothing = act
+    print-line-uni ("rt15 " & show (char-code (code-to-char 15)))
+    print-line-uni ("letter-a " & show (if is-letter (code-to-char 15) then 1 else 0))
+    print-line-uni ("letter-punct " & show (if is-letter (code-to-char 70) then 1 else 0))
+    print-line-uni ("letter-accent " & show (if is-letter (code-to-char 100) then 1 else 0))
+    print-line-uni ("letter-cyrillic " & show (if is-letter (code-to-char 115) then 1 else 0))
+    print-line-uni ("digit-0 " & show (if is-digit (code-to-char 3) then 1 else 0))
+    print-line-uni ("digit-e " & show (if is-digit (code-to-char 13) then 1 else 0))
+    print-line-uni ("c2t-len " & show (text-length (char-to-text (code-to-char 15))))
+    print-line-uni ("c2t-byte " & show (char-code-at (char-to-text (code-to-char 15)) 0))
+  end

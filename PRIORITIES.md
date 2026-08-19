@@ -47,8 +47,19 @@ once. Explore before asking Damian for anything; if it pays off, the ask is
   (`findings/probe-approx-eq.codex`); its two blockers
   (`bits-to-real-approx` emitter, `text-to-double-bits` prelude) landed
   2026-08-19 with the multi-byte CCE work. Run the probe both arms, file.
-- **The CCE alias limit of Char-as-codepoint (2026-08-19, DISCUSS before
-  acting).** CCE has aliases: é is tier-0 code 97 AND tier-1 code 233, and
+- **Char = CCE code migration (DECIDED 2026-08-19, Steve + Claude; full
+  analysis random886).** The zig plug converges on the C#/bare-metal
+  identity model, as ONE coherent commit, sequenced AFTER the census
+  baseline banks so the full-rerun diff names what moved. Probe first:
+  `findings/probe-char-ops.codex` + probe-char-literal, both
+  arms, before and after. Flip together: char-code / code-to-char to
+  identity, is-letter / is-digit to the CCE bands (13..64 and 97..127
+  letters, 3..12 digits), and every prelude site comparing a zig char
+  literal. The char-literal finding then files as resolved-by-convergence
+  with before/after evidence. Background on why the codepoint model is
+  structurally lossy:
+- **The CCE alias limit of Char-as-codepoint (2026-08-19).** CCE has
+  aliases: é is tier-0 code 97 AND tier-1 code 233, and
   the canonical encoder always answers 97. Bare metal never notices --
   char-code / code-to-char are identity there, and byte-wise text rebuilds
   (the compiler's own ir-quote) pass frame bytes through untouched. The
