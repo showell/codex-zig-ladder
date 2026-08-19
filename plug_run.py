@@ -115,6 +115,7 @@ def run_plug(plug_cdx, ir_path, out_path, port=9145, mem_mb=3072, timeout=180,
         # full-compiler IR emitted for seven minutes and was cut off
         # mid-flow. Progress resets the stall window; only silence ends it.
         last_progress = time.time()
+        first_byte = None
         while time.time() - t0 < timeout:
             if time.time() - last_progress > stall:
                 stalled = True
@@ -137,6 +138,13 @@ def run_plug(plug_cdx, ir_path, out_path, port=9145, mem_mb=3072, timeout=180,
             if not chunk:
                 closed = True
                 break
+            if not out:
+                # Time to first byte is the plug's THINK time -- receive
+                # processing plus whatever it does before it writes. It is
+                # the number the stall window has to cover, and the only one
+                # that compares across emitter versions, so it is recorded
+                # on success as well as failure.
+                first_byte = time.time() - t0
             out += chunk
             last_progress = time.time()
         conn.close()
@@ -192,7 +200,8 @@ def run_plug(plug_cdx, ir_path, out_path, port=9145, mem_mb=3072, timeout=180,
                   f"discarding {len(out)} bytes")
             return False
         open(out_path, "wb").write(out)
-        print(f"wrote {out_path} ({len(out)} bytes)")
+        print(f"wrote {out_path} ({len(out)} bytes; think {first_byte:.0f}s, "
+              f"total {time.time() - t0:.0f}s)")
         return True
     finally:
         proc.kill()
