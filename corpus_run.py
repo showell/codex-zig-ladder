@@ -166,16 +166,71 @@ def _cap_memory():
     resource.setrlimit(resource.RLIMIT_AS, (RUN_MEM_CAP, RUN_MEM_CAP))
 
 
-def stage_run(results, out_dir, persist=True):
+def load_run_carry(results, prev):
+    """Verdicts from an earlier interrupted or batched --run that still hold.
+
+    `prev` maps name -> zig_sha from the transpile.json the earlier run
+    actually compiled, captured before this invocation overwrote it. A
+    verdict carries iff the program's freshly emitted zig is byte-identical
+    to that and the zig toolchain has not moved. run.jsonl lines written
+    before the zig field existed carry on the sha alone, once; the baseline
+    bank retires them.
+    """
+    jsonl = WORK / 'run.jsonl'
+    if not jsonl.is_file() or prev is None:
+        return {}
+    lines = []
+    raw = jsonl.read_text().splitlines()
+    for i, l in enumerate(raw):
+        try:
+            lines.append(json.loads(l))
+        except json.JSONDecodeError:
+            if i == len(raw) - 1:
+                print(f'  dropping torn final line of {jsonl}')
+                continue
+            raise SystemExit(f'{jsonl} line {i + 1} is corrupt; inspect it')
+    zv = zig_version()
+    now = {r['name']: r.get('zig_sha') for r in results}
+    carry, dropped = {}, 0
+    for e in lines:
+        n = e['name']
+        if (prev.get(n) and prev[n] == now.get(n)
+                and e.get('zig', zv) == zv):
+            carry[n] = e
+        else:
+            dropped += 1
+    print(f'\nresume: {len(carry)} verdicts carried from run.jsonl '
+          f'(emitted zig byte-identical, toolchain unmoved)'
+          + (f'; {dropped} dropped as stale' if dropped else ''))
+    return carry
+
+
+def stage_run(results, out_dir, persist=True, batch=0, prior=None):
     """Build and run what transpiled clean, diff against the depot's .expected."""
+    prior = prior or {}
     clean = [r for r in results if r['stage'] == 'clean']
-    print(f'\n{len(clean)} clean programs; building and running')
+    todo = [r for r in clean if r['name'] not in prior]
+    if batch and batch < len(todo):
+        print(f'\nbatch: running {batch} of {len(todo)} outstanding; '
+              f'{len(todo) - batch} left for the next invocation')
+        todo = todo[:batch]
+    print(f'\n{len(clean)} clean programs; building and running {len(todo)}')
     tally = collections.Counter()
     detail = []
     verdicts = {}
     # One line per verdict, flushed as it lands: run.json at the end of the
     # loop kept nothing when the 2026-08-19 run died at program 101 of 250.
+    # Carried lines are rewritten first, so the file is always exactly the
+    # currently-valid verdict set -- stale lines do not linger.
     jsonl = (out_dir / 'run.jsonl').open('w') if persist else None
+    zv = zig_version()
+    for e in prior.values():
+        tally[e['verdict']] += 1
+        verdicts[e['name']] = (e['verdict'], e.get('detail', ''))
+        if jsonl:
+            jsonl.write(json.dumps(e) + '\n')
+    if jsonl:
+        jsonl.flush()
 
     def verdict(name, kind, note=''):
         tally[kind] += 1
@@ -183,10 +238,11 @@ def stage_run(results, out_dir, persist=True):
         if kind not in ('match', 'no-expected'):
             detail.append((name, kind, note))
         if jsonl:
-            jsonl.write(json.dumps({'name': name, 'verdict': kind, 'detail': note}) + '\n')
+            jsonl.write(json.dumps({'name': name, 'verdict': kind,
+                                    'detail': note, 'zig': zv}) + '\n')
             jsonl.flush()
 
-    for i, r in enumerate(clean, 1):
+    for i, r in enumerate(todo, 1):
         name = r['name']
         exp = TESTS / f'{name}.expected'
         zig = out_dir / f'{name}.zig'
@@ -216,8 +272,8 @@ def stage_run(results, out_dir, persist=True):
             verdict(name, 'match')
         else:
             verdict(name, 'differ', f'want {want.strip()[:60]!r} got {got.strip()[:60]!r}')
-        if i % 50 == 0:
-            print(f'  {i}/{len(clean)}  {dict(tally)}', flush=True)
+        if i % 25 == 0:
+            print(f'  {i}/{len(todo)}  {dict(tally)}', flush=True)
 
     if jsonl:
         jsonl.close()
@@ -308,6 +364,10 @@ def main():
     ap.add_argument('--bank', action='store_true',
                     help='after a full --run or --changed: write census.json')
     ap.add_argument('--limit', type=int, default=0, help='first N programs only')
+    ap.add_argument('--batch', type=int, default=0,
+                    help='with --run: build/run at most N outstanding programs, '
+                         'carrying earlier verdicts whose emitted zig is '
+                         'byte-identical; rerun to continue where it left off')
     ap.add_argument('--all', action='store_true', help='(kept for the runner scripts; '
                     'cites are resolved now, so every program is in scope)')
     a = ap.parse_args()
@@ -315,6 +375,8 @@ def main():
         a.transpile = True
     if a.limit and (a.changed or a.bank):
         raise SystemExit('--changed and --bank are full-corpus operations; drop --limit')
+    if a.batch and not a.run:
+        raise SystemExit('--batch only means something with --run')
     if a.bank and not (a.run or a.changed):
         raise SystemExit('--bank wants run verdicts; pair it with --run or --changed')
 
@@ -337,6 +399,15 @@ def main():
     # A limited run is a smoke test; the json files are the full-corpus census
     # and a slice must not overwrite them (one did, 2026-08-19).
     persist = not a.limit
+    # The shas the last run compiled against, captured before this
+    # invocation's transpile overwrites the file: they are the carry key
+    # for resuming an interrupted or batched --run.
+    prev_shas = None
+    if a.run and persist:
+        tj = WORK / 'transpile.json'
+        if tj.is_file():
+            prev_shas = {e['name']: e.get('zig_sha')
+                         for e in json.loads(tj.read_text())}
     results, hist = stage_transpile(names, WORK)
     if persist:
         (WORK / 'transpile.json').write_text(json.dumps(results, indent=1))
@@ -376,7 +447,9 @@ def main():
               f'bank {bank["meta"]["date"]}, not rerun; {len(to_run)} to run')
         tally, detail, verdicts = stage_run(to_run, WORK, persist=persist)
     elif a.run:
-        tally, detail, verdicts = stage_run(results, WORK, persist=persist)
+        prior = load_run_carry(results, prev_shas) if persist else {}
+        tally, detail, verdicts = stage_run(results, WORK, persist=persist,
+                                            batch=a.batch, prior=prior)
         if persist:
             (WORK / 'run.json').write_text(json.dumps(
                 {'tally': dict(tally), 'detail': detail}, indent=1))
@@ -389,6 +462,11 @@ def main():
         if bank:
             print_bank_diff(bank, programs)
         if a.bank:
+            unrun = [n for n, e in programs.items()
+                     if e['stage'] == 'clean' and 'verdict' not in e]
+            if unrun:
+                raise SystemExit(f'--bank refused: {len(unrun)} clean programs '
+                                 f'have no run verdict yet; finish the batches first')
             write_bank(programs)
             print(f'\nbanked {len(programs)} programs to {CENSUS}')
     return 0
