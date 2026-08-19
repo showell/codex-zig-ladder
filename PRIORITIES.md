@@ -82,18 +82,13 @@ Explore this before asking Damian for anything. If it pays off, the ask is not
   native codexir aborts on ANY real literal.
 - ~~`__linked-list-empty` drops its argument~~ FIXED (`cx_ll_empty_n`).
 
-## 3. Upstream the two emitter fixes -- SHRUNK to a 2-line PR, prepared
+## 3. ~~Upstream the two emitter fixes~~ SENT 2026-08-19 as PR 73
 
-a061c173 changed the shape of this: upstream now pins literal arms itself
-(`zig-pin-lit-arms`, arrived with the guard fix) but applies it only on the
-guarded chain -- the plain switch path is still unpinned -- and
-`__linked-list-empty` still drops its argument. Their own
-`__list-with-capacity` row already answers the second with
-`cx_ll_with_capacity`, so the whole PR is two lines: reuse their pin at the
-switch site, reuse their capacity fn at the ll-empty row. Branch
-`zig-plug-switch-pin-ll-empty` (commit f7dd755b) is committed in a scratchpad
-worktree off a061c173, NOT pushed: verify through the ladder after the u47
-sweep frees QEMU, then send.
+Two lines reusing upstream's own functions: their `zig-pin-lit-arms` applied
+to the plain switch path (they pin only the guarded chain), and
+`__linked-list-empty` routed through their `cx_ll_with_capacity`. Verified
+before sending: plug compiled through the a061c173 seed, warmup oracles
+3/3 byte-identical.
 
 ## 4. The heap unification
 
@@ -203,9 +198,9 @@ statement about the Update 47 release, a061c173 is post-release).
 - ~~Issue 70~~ CLOSED by Update 47 ("ATA jcc + absent-drive guards"). Retire
   any workaround of ours and re-pin the CDX2064 population at the u47 rebank.
 - ~~Issue 72~~ FIXED at a061c173 (see item 2).
-- **Invited, not yet sent:** finding 14 as its own PR
-  (test-compile-batch.ps1:98's unconditional -WindowStyle, which no gate on
-  their side can see) -- "yes, send it as its own PR if you have the cycle."
+- **PR 73** (2026-08-19): switch pin + ll-empty consume, item 3 above.
+- **PR 74** (2026-08-19): finding 14, batch compiler -WindowStyle guard,
+  generator + emitted script, regen-proven byte-for-byte.
 
 
 ---
