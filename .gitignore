@@ -59,4 +59,5 @@ native/
 *.zigraw
 
 # Nightly console logs; tonight.sh rewrites them every run.
-logs/
+logs/*
+!logs/.gitignore

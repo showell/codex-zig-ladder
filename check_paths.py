@@ -50,9 +50,12 @@ FROM_CHECKOUT = [
     ('codex/test/plug-oracle-arith.codex', "the clamp rung's subject"),
 ]
 
-# Products of the author's gated PowerShell build, NOT tracked. A fresh clone
-# does not have them, and the rungs that need them would otherwise fail on a
-# missing file that names nothing.
+# Built by cycle.sh, NOT tracked. A fresh clone does not have them, and the
+# rungs that need them would otherwise fail on a missing file that names
+# nothing. The name is historical: these were once believed to be products of
+# the author's gated build, but cycle.sh has always been their producer here
+# (it stubs the author's compile step and compiles the bundle through the
+# seed).
 FROM_GATED_BUILD = [
     ('codex/plugs/zig/build-output/zig-plug.cdx', 'the TCP arm pushes IR through this'),
     ('codex/plugs/zig/build-output/plug-source.codex', 'the bundled plug source'),
@@ -122,7 +125,8 @@ def main():
     failures += check_group(FROM_CHECKOUT, CODEX, 'from the checkout (tracked)')
     failures += check_group(
         FROM_GATED_BUILD, CODEX, 'from the checkout (built, not tracked)',
-        hint="run the author's build/build.ps1 once; this is a product, not source")
+        hint='run cycle.sh once; it bundles the plug (the author\'s compile '
+             'step stubbed) and compiles it through the seed')
     failures += check_group(FROM_LADDER, LADDER, 'from the ladder')
 
     left, bootstraps = check_leftovers()

@@ -13,6 +13,11 @@ This table is the point of the whole arrangement, so it is the first thing on
 the page and it is allowed to be unflattering. A ladder that cannot say which
 seed it agrees with is not evidence about anything.
 
+Mid-rebank, the checkout's pin branch runs one Update ahead of this table --
+`seed_identity.py` names the new Update while `truth/` still holds only the
+old banks. That is the normal in-between state, not drift: the table moves
+only when `bank_truth.py` lands the complete new set.
+
 **All fourteen for the first time**, `clamp` included, swept 2026-08-17 in 2h21m
 from a cold bank (re-bank all fourteen truth arms, rebuild both plugs, then
 fourteen zig arms). `pingpong` also holds its own claim, which its arm
@@ -91,10 +96,19 @@ the exclusion is the plainest statement of the separation.
 chapters under `codex/compiler/`, and `codex/test/plug-oracle-arith.codex` with
 its `.expected`.
 
-**From the checkout, NOT tracked:** `codex/plugs/zig/build-output/zig-plug.cdx`
-and `plug-source.codex`. These are products of the author's gated PowerShell
-build, not source, so a fresh clone does not have them and the rungs that use
-them fail on a missing file. Run that build once before the first sweep.
+**From the checkout, NOT tracked, and self-regenerating:**
+`codex/plugs/zig/build-output/zig-plug.cdx` and `plug-source.codex`. A fresh
+clone does not have them, and nothing needs building to get them: `cycle.sh`
+regenerates both -- it runs the author's bundler with the compile step
+stubbed out (`Build-PlugCdx` is replaced, since that step needs the author's
+Windows host) to write `plug-source.codex`, then compiles that through the
+seed with `ring_compile.py` to produce `zig-plug.cdx` and its fingerprint.
+`ast/allcycles.sh` runs `cycle.sh` first, so the documented sweep entry
+point works on a fresh clone with no prior step. An earlier version of this
+paragraph said to run the author's gated build once; that was wrong twice
+over -- the artifacts on disk have always come from `cycle.sh` (only it
+writes the fingerprint `plug_provenance` demands), and the author's build is
+not runnable here anyway.
 
 **From the host:** `qemu-system-x86_64` (6.2.0), `python3` (3.10.12), PowerShell
 (7.5.4, for the bundlers, which are the author's tooling), and `zig` (0.16.0)
@@ -128,9 +142,10 @@ and is read-only in practice: the mirror is downstream of the author's
 Perforce, so nothing merges there and PRs are landed by being re-applied on
 their side. `origin` is the `showell/NewRepository` fork, and it exists to
 hold pushed branches: PR branches, and the pin branch below. A local `master`
-has no job in this model -- ours sat two Updates stale for weeks, confusing
-every reader who expected it to mean something. Reference `upstream/master`
-directly and let local `master` go.
+has no job in this model -- ours sat parked at Update 40 while upstream
+reached 47, confusing every reader who expected it to mean something, and is
+now deleted. Reference `upstream/master` directly and do not recreate a
+local `master`.
 
 **The ladder runs against a pin branch, one per Update.** When an Update is
 being banked, the checkout sits on a branch named for it (`u47-rebank`),
@@ -162,11 +177,12 @@ below. The pin being on the fork means no clone is precious.
 
 **Re-cloning from scratch** is therefore cheap and occasionally worth doing,
 since a long-lived clone accumulates branches from work that has since
-landed. `git clone git@github.com:showell/NewRepository.git`, add `upstream`,
-`git switch u<NN>-rebank`, then the two things git does not carry: the gated
-plug build once (the NOT-tracked artifacts above), and `CODEX_ROOT` pointed
-at the new clone -- `check_paths.py` proves the wiring in five seconds
-without spending a rung.
+landed. `git clone git@github.com:showell/NewRepository.git`, then
+`git remote add upstream git@github.com:damiant3/NewRepository.git`, then
+`git switch u<NN>-rebank` (the pin is on the fork). Git carries everything
+else: point `CODEX_ROOT` at the new clone, let `check_paths.py` prove the
+wiring in five seconds, and the first `cycle.sh` (or the sweep, which runs
+it) regenerates the untracked plug artifacts from the seed.
 
 ## What this is
 
@@ -286,9 +302,11 @@ share a bundled unit and differ only in the harness riding in it:
 That is not a flaw and it is not padding. Each pair asks the same compiler a
 different question -- `pingpong` feeds it its own output, `scale` gives it a
 real chapter instead of a toy, `clamp` gives it a subject that fails to compile
--- and those are the questions worth asking. But the evidence is eleven distinct
-units, not fourteen, and a reader counting rungs should know which number is
-which.
+-- and those are the questions worth asking. But a reader counting should
+know which number is which: **fourteen rungs, twelve compiles**
+(`LADDER_UNITS`; the merged pairs cost one compile each), **eleven distinct
+bundle constructions** (text and pingpong are separate compiles of one
+shared bundle recipe, differing only in the 19-byte harness).
 
 **The machinery now says so too, for the two expensive pairs.** Written and
 **verified 2026-08-18**: a full re-bank under the merged units reproduced all
@@ -617,8 +635,10 @@ Both seeds are one `git show <commit>:seed/Codex.cdx` away, and
 cheap experiment needs no checkout CHANGE -- `CODEX_ROOT` must still name a
 valid checkout for the imports to resolve, but it can stay wherever it is.
 The seed parameter is not reachable from `ring_compile.py`'s command line;
-call the function. Reuse a small blob the repo already carries (any
-`ast/*-cdx.blob` staged by an earlier run), and run the pair:
+call the function. Reuse a small blob from an earlier run's working tree --
+blobs are gitignored, so a fresh tree has none until `ast/arithcycle.sh`
+(which writes `ast/arith-cdx.blob` in its first seconds) or any rung has
+run once -- and run the pair:
 
     git -C $CODEX_ROOT show <old>:seed/Codex.cdx > /tmp/seed-old.cdx
     git -C $CODEX_ROOT show <new>:seed/Codex.cdx > /tmp/seed-new.cdx
@@ -636,12 +656,13 @@ diff.
 
 ### 3. Prerequisites for the rebank itself
 
-- **The clone must BE the release commit.** `seed_identity.py` derives the
-  bank's name from the release note that names the seed's hash, so a
-  seed-file swap into an older tree banks as `seed-XXXXXXXX` rather than
-  `uNN` -- honest, but not the label anything else references. Check out the
-  release commit (a scratch branch like `u47-rebank` keeps it findable), on a
-  clean tree.
+- **The clone sits on the pin branch, and the SEED must be the release's.**
+  The pin ("The checkout" above) is the release commit plus its sanctioned
+  cherry-picks, none of which may touch seed identity. `seed_identity.py`
+  derives the bank's name from the release note that names the seed's hash,
+  so a seed-file swap into an older tree banks as `seed-XXXXXXXX` rather
+  than `uNN` -- honest, but not the label anything else references. A clean
+  tree, parked on the pin.
 - **The tree must not move while the ladder reads it.** `CODEX_ROOT` names a
   working tree, and a checkout mid-sweep rebuilt the plug from the wrong
   emitter once and reproduced an already-fixed defect (2026-08-18, 90
@@ -703,6 +724,7 @@ may not, because a wrong answer IS the measurement.
 - Then the rebank, detached so a hung VM cannot take the verdicts with it
   (the script itself neither detaches nor logs):
 
+      mkdir -p logs
       setsid nohup ast/rebank_all.sh > logs/rebank-uNN.log 2>&1 < /dev/null &
 
   Truth arms run cheapest-first and stop on the first failure; a CDX9002 on
