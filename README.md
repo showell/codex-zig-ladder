@@ -498,11 +498,120 @@ cost of the ladder that produced the current bank, not as a forecast.
 1. **Sweep after any emitter change.** `ast/allcycles.sh`. One rung passing
    proves nothing about the other thirteen.
 2. **Re-bank after any seed change.** `ast/rebank_all.sh`, before any diff means
-   anything.
+   anything. The full procedure, prerequisites included, is the next section.
 3. **Validate a new subject standalone first.** Compile it through the seed on
    its own (about a minute) before spending a full cycle -- twelve minutes to
    bank plus fourteen through the plug, for the expensive rungs -- discovering
    it does not compile.
+
+## Processing a new Update
+
+What happens when the depot publishes a release, in order. Each step exists
+because skipping it has already cost something once; the citations are to the
+Update where it did.
+
+### 1. Read before running anything
+
+Fetch, and read the release commit against our own registers before any
+compile runs:
+
+- **The release note against `findings/README.md` and the open issues.** An
+  Update that closes something we filed also orphans the workaround we built
+  for it, and a workaround that outlives its finding actively corrupts
+  measurements: the `deck-record` rename outlived the finding Update 43
+  closed and silently disabled the seed's deck discipline in every bundle for
+  weeks. When a finding closes, grep for its workaround and delete it in the
+  same commit that acknowledges the closure.
+- **The diff on the surfaces we speak or re-implement.** `codex_vm.py`
+  re-implements the host contracts rather than calling `Start-VmRun`: the RAM
+  size cell at physical 0xFE8, the ring preload at 0x500000 with the
+  wpos/rpos cells, and the serial `SIZE:` framing. A release that touches
+  `codex/compiler/Emit/` (the boot stub and output helpers), `tools/codex-vm.c`,
+  or `build/vm-config.ps1` can move a contract our side hard-codes, and a
+  moved contract shows up as a diff in every truth at once, indistinguishable
+  from a compiler change. Read those diffs against `codex_vm.py` first. Also
+  `codex/plugs/zig/` (the emitter is fleet-maintained now, see step 4) and
+  the net stack if the TCP arm matters to the question at hand.
+- **The seed hashes.** The release note names the public seed; depot `main`
+  may already be several seeds past it. The bank is a claim about the
+  released seed, so everything below uses the release commit, not main.
+
+### 2. Probe the contract before committing hours to it
+
+Both seeds are one `git show <commit>:seed/Codex.cdx` away, and
+`ring_compile.compile_ring(..., seed=...)` accepts an explicit seed, so the
+cheap experiment needs no checkout at all: compile one small staged blob
+through the old seed and the new one, and confirm the new seed boots under
+our QEMU flags, takes the ring preload, and produces output our reader
+parses. Five seconds per compile. If the release claims throughput work, add
+one mid-size unit for a timing point (`check` at 4.8 MB of IR showed Update
+47's FIFO-burst output as about 10 percent of wall time). If output differs
+in size for the same input, that is the first look at what the Update changed
+in the image -- note it, it previews the bank diff.
+
+### 3. Prerequisites for the rebank itself
+
+- **The clone must BE the release commit.** `seed_identity.py` derives the
+  bank's name from the release note that names the seed's hash, so a
+  seed-file swap into an older tree banks as `seed-XXXXXXXX` rather than
+  `uNN` -- honest, but not the label anything else references. Check out the
+  release commit (a scratch branch like `u47-rebank` keeps it findable), on a
+  clean tree.
+- **The tree must not move while the ladder reads it.** `CODEX_ROOT` names a
+  working tree, and a checkout mid-sweep rebuilt the plug from the wrong
+  emitter once and reproduced an already-fixed defect (2026-08-18, 90
+  minutes). The fingerprint guard refuses arms when the tree moved under a
+  built plug; do not fight it, finish or kill the run first. The clone is not
+  PR scratch space during a sweep -- build PRs in a worktree elsewhere.
+- **`seed_identity.py` says the right thing** (seed hash, Update number,
+  `truth/uNN` target) and **`check_paths.py` passes.** Five seconds, versus
+  discovering a broken path an hour into the truth arms.
+- **One compute job.** The machine holds one QEMU comfortably; the sweep
+  beside anything else slows both and has livelocked WSL outright when
+  memory ran short. Nothing else runs until the bank is taken.
+
+### 4. Decide what the zig arms measure
+
+The truth arms depend only on the seed. The arms phase builds the plug from
+the tree's `ZigEmitter.codex`, and since the depot settled ownership
+(2026-08-18: the zig plug is ordinary fleet code, edited like any other
+plug), the emitter in a release is theirs, possibly carrying fixes we do not
+have and missing fixes we have not landed.
+
+The working rule: **sweep the release's emitter verbatim.** The sweep is then
+a measurement of what the depot shipped, which is the claim a `uNN` bank
+should stand behind; rungs that fail under the verbatim emitter but passed
+under our local fixes are precisely the list of what needs to go upstream as
+small PRs from master, which is the flow the depot asked for. Local emitter
+fixes live as PR branches, never as a standing fork the sweep quietly
+depends on -- the longer a fix stays local, the more the fleet's own edits
+drift under it.
+
+This rule is a judgment call, not a law of the setup. The alternative --
+sweep with our fixes applied, so the arms stay green and the bank lands
+faster -- measures a compiler nobody ships. If the fleet's emitter and ours
+diverge far enough that verbatim sweeps are mostly red, the right response
+is landing the fixes, not softening the rule; revisit it if that flow stops
+working.
+
+### 5. Run, bank, retire
+
+- `ast/rebank_all.sh`, detached with its log in `logs/` (a hung VM must not
+  take the verdicts with it). Truth arms run cheapest-first and stop on the
+  first failure; a CDX9002 on a big rung usually means the deck scale needs
+  raising, not that something broke.
+- **Bank only when the zig arms are green too** (`bank_truth.py`). It
+  refuses mixed-harness sets on its own; the green-arms rule is ours, from
+  the merge, and it exists because a bank taken over red arms freezes a
+  question mid-answer.
+- Diff the new bank against the previous one. Byte-identical rungs are the
+  headline when they happen (u45 to u46: all fourteen), and any rung that
+  moved is the Update's image change, localized to a subject.
+- Re-pin the diagnostics populations (`check_diags.py`) from the first clean
+  sweep -- the counts are a function of the unit list and the seed, and a
+  stale pin cries wolf.
+- Update the banked-against table at the top of this file, tag
+  (`uNN-14of14`), push.
 
 ## Consumers of what the ladder emits
 
