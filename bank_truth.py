@@ -104,6 +104,14 @@ def main():
               '--force if you mean to bank an incomplete set.')
         return 1
 
+    # Since the rename REPLACES the destination, an empty ready set must stop
+    # here even under --force: a SEED-only directory renamed over a full bank
+    # would destroy fourteen measurements to record zero.
+    if not ready:
+        print('NOTHING TO BANK: no rung is ready; refusing to replace '
+              f'{dest.name} with an empty set')
+        return 1
+
     # Built complete in a temp directory, then renamed over the old bank, so
     # the destination is only ever a whole set -- never last bank's files
     # beside this one's after a crash or a --force of a subset.
