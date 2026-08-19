@@ -679,3 +679,38 @@ The workaround is what finding 13's verification did: `compile.ps1` per
 generator, then run the `.cdx`. That is one VM boot per generator instead of one
 for the set, which is the cost the batch runner exists to avoid, so it is a
 workaround and not a fix.
+
+## 15. Match guards are dropped by the zig emitter; the arm fires on pattern alone
+
+**Found 2026-08-18 by an emitter audit; both arms measured 2026-08-19 against
+Update 46 / seed 12B07296. Filed upstream as issue 72 (still present at
+Update 47).**
+
+`IRBranch` carries `guard : IRExpr` (codex/compiler/IR/IRChapter.codex:54) and
+`ZigEmitter.codex` never reads it -- the word `guard` does not appear in the
+emitter. A guarded arm becomes a bare switch prong and fires whenever its
+pattern matches, so the program compiles cleanly on both arms and answers
+differently. No refusal, a wrong value.
+
+The probe is `findings/probe-match-guard.codex`: one guarded arm plus a
+catch-all, chosen because two arms on the same constructor would be duplicate
+switch prongs, which zig rejects, and a refusal would be the lucky case.
+
+    classify : Val -> Integer
+    classify (v) =
+     when v
+      is Num (n) when n < 0 -> 1
+      is otherwise -> 0
+
+Bare metal answers `guard-taken 0 / guard-taken 1 / otherwise 0`; the zig arm
+answers `1` on the first line.
+
+The machine-code plugs all honour the guard (X86_64Compound.codex:1879,
+Arm64CodeGen3.codex:683, RiscVCodeGen3.codex, T3IsaEmitter.codex:980). Neither
+the csharp nor the python emitter contains a read of `branch.guard` either;
+only zig is measured here.
+
+A fix cannot put a bare `if` inside the prong, because a zig switch prong
+cannot re-dispatch to the arms below it. The direct shape is an if-else chain
+(pattern test and guard as one condition) for a `when` that contains any
+guarded arm.
