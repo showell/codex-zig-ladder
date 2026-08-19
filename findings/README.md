@@ -750,3 +750,41 @@ prefix on first heap touch, which is the guest's own boot behavior -- and
 port the C# deck rule (~4 small functions) with the three name-map
 entries pointed at them. C# is gold for the deck RULE; the heap base is
 bare metal's own number, not C#'s.
+
+## 17. Unit families have no hosted-plug mapping; 8 census refusals are this one gap
+
+**Found 2026-08-19 by triaging the census's undeclared-identifier refusal
+family. Characterized from IR and emitter source; fix not yet applied
+(queued behind the wall chain's verification of finding 16).**
+
+`Timestamp = unit family NanoStamp` (Foreword DateTime) declares a
+units-of-measure type: integer-backed, compile-time scale factors. The IR
+carries the declaration as `(unit-def "Timestamp" (a-named "Integer"))`,
+type annotations as `(a-named "Timestamp")`, and resolved types as
+`(unit "Timestamp" int-default)` -- the backing type rides along in both
+forms. The zig emitter has no arm for any of the three: the unit-def is
+dropped, the name is emitted verbatim as a zig type, and the program is
+refused on an undeclared identifier. This bypasses the loud-marker net
+("no zig type for this codex type") exactly the way the emitter rules
+predict: a name error, not a type error.
+
+The census says the family is worth having: 8 of 72 refusals
+(ota-update, ota-gate-block, ota-state-machine, final-batch-test on
+Timestamp; osc-noise, audio-diffusion-test, av-codec-test on Frequency;
+infra-test on Duration). The ninth undeclared-identifier refusal
+(literal-subpattern's `sin`) is a separate libm gap.
+
+Cross-plug: the C# emitter declares nothing for `AUnitTypeDef` and its
+type renderer maps `UnitTy (name) (inner)` to `"void"`
+(CSharpEmitterExpressions.codex:60), so a unit-typed record field should
+emit illegal C# -- unverified, since its witness path never compiles the
+corpus. The machine-code plugs erase units to integers, which is the
+model to follow.
+
+Fix shape (zig): `unit-def` emits `const <Name> = i64;` (the backing
+type is in the node, so the alias is faithful, not a guess); emit-zig-type
+and zig-expr-type get a `(unit name inner)` arm answering the inner
+type's rendering. ota-update's IR never applies a unit constructor in an
+expression, so the type-level mapping may be the whole fix; whether the
+front end folds scale conversions into plain arithmetic is the thing the
+rerun will answer.
