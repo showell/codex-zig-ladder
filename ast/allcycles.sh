@@ -45,6 +45,14 @@ done
 # and a class that fires benignly everywhere is exactly the shape CDX3006 had
 # while it was hiding a real error from us.
 echo "=== diagnostics census ==="
-python3 "$T/check_diags.py" --census $T/ast/*.diags || fail=1
+# The sweep's own units only. A bare *.diags also swept in whatever
+# arith/irmem/guardprobe/codexir/ringplug last left behind, so the pinned
+# counts measured a population that moved with which TOOLS had run lately,
+# not with the source.
+diag_files=""
+for _u in $LADDER_UNITS; do
+    diag_files="$diag_files $T/ast/${_u}-subject.cdx.diags $T/ast/${_u}.ir.diags"
+done
+python3 "$T/check_diags.py" --census $diag_files || fail=1
 
 exit $fail

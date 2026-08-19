@@ -262,8 +262,13 @@ def compile_ring(blob_path, out_path, mem_mb=3072, timeout=1800, seed=None):
         # get to throw evidence away because there is a lot of it.
         diags = [l for l in header.splitlines()
                  if l.strip() and not l.startswith("WD:")]
+        # A clean compile REMOVES the sidecar rather than leaving last run's:
+        # a stale .diags feeds check_diags yesterday's population, keeping a
+        # vanished class "present" and defeating the POPULATION MOVED
+        # detection the census claims to make.
+        dpath = pathlib.Path(str(out_path) + ".diags")
+        dpath.unlink(missing_ok=True)
         if diags:
-            dpath = pathlib.Path(str(out_path) + ".diags")
             dpath.write_text("\n".join(diags) + "\n")
             census = {}
             for l in diags:
