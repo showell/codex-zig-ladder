@@ -158,7 +158,21 @@ def run_plug(plug_cdx, ir_path, out_path, port=9145, mem_mb=3072, timeout=180,
                 print("  serial |", line)
 
         if not out:
-            print("FAIL: no bytes from plug")
+            # The telemetry the status print filters is the whole diagnosis
+            # here: WD:/HEAP:/STACK: climbing until the cap says the guest was
+            # working and ran out of clock; the same lines frozen early say it
+            # wedged. Discarding them (as this did on 2026-08-19, for seven
+            # attempts across two rungs) leaves "no bytes" and nothing to act on.
+            tel = (serial + status).decode(errors="replace").splitlines()
+            tel = [l for l in tel if l.strip()]
+            print(f"FAIL: no bytes from plug after {time.time() - t0:.0f}s "
+                  f"({len(tel)} serial lines)")
+            for l in tel[:4]:
+                print("  serial |", l)
+            if len(tel) > 12:
+                print(f"  serial | ... {len(tel) - 12} lines ...")
+            for l in tel[max(4, len(tel) - 8):]:
+                print("  serial |", l)
             return False
         if not closed:
             why = (f"no bytes for {stall}s" if stalled
