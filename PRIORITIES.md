@@ -23,20 +23,21 @@ whole compiler survive transpilation". Everything below is the cheap loop.
 
 ## 1. Corpus conformance (2026-08-18)
 
-`codex/test/` in the depot holds **1,541 programs, 1,304 with hand-verified
-`.expected` output**, plus 190 `.failing` sidecars carrying expected CDX codes
-for the error path. An oracle per program, written by someone with no knowledge
+`codex/test/` holds **553 programs at the top level**, which is what the runner
+globs, most beside a hand-verified `.expected` file. (1,541 and 190 are the
+RECURSIVE counts including subdirectories, which nothing walks today; the
+earlier version of this file quoted those and overstated the reach 13x.) An oracle per program, written by someone with no knowledge
 of this plug, which is the property our own probes cannot have.
 
 Staged so the cheap half comes first:
 
-1. transpile all 1,541 and **histogram the `@compileError` markers**. Native,
+1. transpile all 553 and **histogram the `@compileError` markers**. Native,
    minutes, no zig compilation. Output is a coverage census of the emitter
    ranked by how often each missing arm actually bites.
 2. compile and run the subset that transpiles clean, diffing against
    `.expected`. That is the conformance gate.
-3. the 190 `.failing` cases are a second, different question: does the plug
-   reproduce a refusal.
+3. the `.failing` cases are a second, different question: does the plug
+   reproduce a refusal. 11 at the top level, 190 recursively; no code path yet.
 
 **Cites are resolved now** (`cite_resolve.py`, 2026-08-18), so the whole
 corpus is in scope rather than the 120 self-contained programs. That mattered:
@@ -65,9 +66,11 @@ Explore this before asking Damian for anything. If it pays off, the ask is not
 - **`IrApproxEq` emits `==`**, dropping a 4-ULP tolerance.
 - ~~`__linked-list-empty` drops its argument~~ FIXED (`cx_ll_empty_n`).
 
-## 3. Upstream the two emitter fixes
+## 3. Upstream the two emitter fixes -- UNBLOCKED, do this first
 
-`zig-pin-arms` and `cx_ll_empty_n`, once the regression sweep is green. The pin
+`zig-pin-arms` and `cx_ll_empty_n`. **The regression sweep went 14/14 on
+2026-08-18**, all four merged-unit truths still byte-identical to the bank, so
+the precondition is met. The pin
 fires on about 1% of switches (7 of 629 in `check`, 8 of 805 in `text`) with
 zero output change across ten programs. Small PR, same shape as PR 71.
 
@@ -79,13 +82,15 @@ emission. PR 71's arena is the interim.
 
 ## 5. README debts
 
-Does not say the merge is verified, does not carry the SHA-256 self-check
-result, does not mention the arena.
+DONE 2026-08-18: the merge is marked verified and the 59-minute sweep cost is
+recorded. Still owed: the SHA-256 self-check result in the epistemics section,
+and a mention of the arena.
 
 ## 6. `codexir` core-dumps on a real test program
 
-Found in the pilot. A hosted-compiler crash is its own finding; identify the
-file and reduce it.
+Two crashes in the 40-program resolved pilot, so `corpus_run.py --limit 40`
+reproduces them and `corpus/transpile.json` names them (stage `codexir`). A
+hosted-compiler crash is its own finding; identify and reduce.
 
 ## 7. Diagnostics as a banked set
 
@@ -105,3 +110,22 @@ since we re-implement the host contracts rather than inherit them.
 - **PR 71** the arena (12.5x memory, byte-identical)
 - **Issue 70** CDX2064, the ATA wait loop patching six bytes late. Damian is
   acting on it.
+
+
+---
+
+## How to read this list, given how the work actually goes
+
+Two modes alternate: at the keyboard, where decisions and code happen, and away
+from the machine, where something long should be running unattended. A cold
+review on 2026-08-18 found the list badly shaped for that -- roughly twenty
+minutes of unattended work against hours of keyboard work -- so:
+
+**Keyboard work** is items 3, 5, 7, writing probes, and landing emitter changes.
+**Away work** is running what those produce: `tonight.sh`, `ast/allcycles.sh`
+after an emitter change, and the IR-equivalence diff.
+
+The rule that makes both work: **one compute job at a time.** The machine has
+about 3 GB usable and QEMU takes most of it; a corpus pilot run beside a sweep
+on 2026-08-18 was harmless but noticeably slowed the machine. Anything fired
+from the keyboard waits for what is already running, the way `tonight.sh` does.

@@ -229,19 +229,21 @@ real chapter instead of a toy, `clamp` gives it a subject that fails to compile
 units, not fourteen, and a reader counting rungs should know which number is
 which.
 
-**The machinery now says so too, for the two expensive pairs.** Written
-2026-08-18 and NOT YET VERIFIED BY A RUN: `fibx`/`scale` and `whole`/`clamp`
+**The machinery now says so too, for the two expensive pairs.** Written and
+**verified 2026-08-18**: a full re-bank under the merged units reproduced all
+fourteen truths byte-identically, and the sweep after it was 14 of 14 on both
+arms. Cost, measured the same evening: **59 minutes** against the 2h21m the
+fourteen-compile ladder took. `fibx`/`scale` and `whole`/`clamp`
 are one harness each, running the pipeline over a list of subjects and marking
 each dump, so each pair costs one compile instead of two. `oracle_lib.sh`
 carries `LADDER_UNITS` (twelve) beside `LADDER_RUNGS` (fourteen) and checks
 them against each other; `split_truth.py` cuts each run back into the per-rung
 `.truth` and `.zigout` files everything downstream already reads.
 
-The measurement that decides whether this was worth doing is a diff against the
-u46 bank: every one of the fourteen truth files should come back byte-identical,
-because nothing about what each subject compiles has changed. Until that run
-happens, the numbers below describe the fourteen-compile ladder that produced
-them, and `text`/`pingpong` remain two compiles of one unit.
+That measurement has now been made twice: once for the merge itself, and again
+after the emitter's arena and match-arm pin landed. Fourteen truths, byte-identical
+both times. `text` and `pingpong` remain two units and always will -- pingpong's
+subject is built from text's OUTPUT, so it cannot exist until the other has run.
 
 Two provenance facts that bound all of it:
 
@@ -478,7 +480,9 @@ Then the smaller pieces:
   oracle.
 - `codex_vm.py` -- launch/READY/run helpers shared by the above.
 
-Costs, measured 2026-08-17 on the Update 46 sweep, before the units merged: the
+Costs, measured 2026-08-17 on the Update 46 sweep, before the units merged. The
+merged ladder re-banked and swept in **59 minutes** on 2026-08-18; the per-rung
+figures below are the older, four-ring-compile shape: the
 ten cheap rungs bank in one to five minutes each. The four ring rungs are the
 expensive ones, thirteen to sixteen minutes to bank and about the same through
 the plug. The cheap rungs go through the plug in well under a minute each, so
