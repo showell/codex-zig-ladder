@@ -17,6 +17,9 @@ Chapter: ProbeMatchGuard
    guard-taken 1
    otherwise 0
 
+ A plug that drops the guard prints 1 on the first line: the .Num prong
+ matches Num 5 and fires unconditionally.
+
  The first line is the whole test: classify 5 must NOT take the negative arm.
  If the plug drops the guard, it prints 1 there and the arms disagree at that
  line.
@@ -29,8 +32,8 @@ Chapter: ProbeMatchGuard
 Section: Types
 
   Val =
-    | Num Integer
-    | Word Text
+    | Num (Integer)
+    | Word (Text)
 
 Section: Classify
 
@@ -42,8 +45,7 @@ Section: Classify
   classify (v) =
    when v
     is Num (n) when n < 0 -> 1
-    is Num (n) -> 0
-    is otherwise -> 2
+    is otherwise -> 0
 
 Section: Main
 
