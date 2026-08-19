@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Seed | `12B07296419847B2` (2,831,202 bytes) |
-| Update | 46 |
+| Seed | `90646EEB22CEB9AB` (2,844,269 bytes) |
+| Update | 47 |
 | Rungs | **14 of 14 green** |
-| Banked | `truth/u46/`, and `truth/u45/` beside it |
+| Banked | `truth/u47/`, with `truth/u46/` and `truth/u45/` beside it |
 
 This table is the point of the whole arrangement, so it is the first thing on
 the page and it is allowed to be unflattering. A ladder that cannot say which

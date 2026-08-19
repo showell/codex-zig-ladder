@@ -4,9 +4,9 @@ Kept here rather than in anybody's head or memory file, because there are now
 several threads and they were drifting apart. If a memory or an essay disagrees
 with this file, this file wins. Dated entries so staleness is visible.
 
-**Clock on the list, 2026-08-18:** a new seed is coming (item 8). Everything
-that rests on "byte-identical to `truth/u46`" is evidence about the OLD seed and
-gets cheaper to establish now than after. Item 3 is the one that cares.
+**Clock on the list, 2026-08-19:** Update 47 is banked (item 8 done). The
+next seed churn restarts that clock; item 3's prepared PR and item 4 are the
+unlanded emitter work that rots fastest when it does.
 
 ## The native loop, which changes what is cheap
 
@@ -101,11 +101,11 @@ sweep frees QEMU, then send.
 zig arm, which costs sum-over-definitions instead of max-over-definitions during
 emission. PR 71's arena is the interim.
 
-## 5. README debts
+## 5. README debts -- DONE 2026-08-19
 
-DONE 2026-08-18: the merge is marked verified and the 59-minute sweep cost is
-recorded. Still owed: the SHA-256 self-check result in the epistemics section,
-and a mention of the arena.
+The SHA-256 self-check is in the epistemics section, the arena is operating
+rule 4, and the whole file was restructured to the cold sequence review's
+table of contents the same day.
 
 ## 6. `codexir` core-dumps on a real test program
 
@@ -127,94 +127,15 @@ an unattended runner must never convert a crash into a hang.
 Diffed like a truth file, retiring the CDX6020 and CDX2064 count pins that move
 whenever the unit list changes rather than when the source does.
 
-## 8. Update 47 -- PUBLIC as of 2026-08-19 (`69cd9ce8`, seed 90646EEB)
+## 8. Update 47 -- DONE 2026-08-19: banked, 14/14 both arms
 
-The release seed is 90646EEB, not the FAD4F1E2 this entry anticipated from
-main 17213: more seed churn followed (the release names six). The sequence
-below stands, with one addition: **ZigEmitter moved too** (their own
-`cx_deck_set`, plus `zig-let-annot` typing scalar let bindings), so taking the
-depot's emitter changes every zig arm's output. Item 3's PR and PR 71's arena
-both need replaying onto 47's emitter. Ownership also settled: the zig plug is
-ordinary fleet code now, so unlanded emitter work rots faster.
-
-**The read and the one-unit timing are DONE (2026-08-19, ~02:00):**
-
-- **`codex_vm.py` needs NO adaptation.** The bulk path is codex-vm-only: the
-  guest probes port 0x510, codex-vm answers 0xB7 and takes a doorbell; under
-  QEMU the port floats 0xFF and the guest falls to the UART loop. That loop
-  is what changed for us: FCR=0xC7 turns the 16550 FIFO on, LSR bit 5 now
-  means the whole FIFO is empty, and the guest sends `rep outsb` bursts of
-  16. Same bytes on the wire, better pacing. Input side (0xFE8 RAM cell,
-  ring at 0x500000, wpos/rpos cells) is untouched by the whole diff.
-- **Measured on the check unit (945 KB blob, 4.79 MB IR out), ring path,
-  TCG, one run each: seed 12B07296 128.1s -> seed 90646EEB 115.3s**, about
-  10 percent. The guardprobe (88 KB out) is timing-identical at 5.7s, so the
-  win is the output phase, as the design says. Single runs; the real
-  measurement rides the rebank.
-- **Two free findings from the same runs:** the u47 seed's IR for the check
-  unit is BYTE-IDENTICAL to u46's (first rebank data point; u45->u46 diffed
-  clean too), and the u46 arm reproduced banked `ast/check.ir` exactly. The
-  guardprobe binary grew 88,693 -> 89,053 bytes: the ATA guards and the
-  burst helper, the first visible image change of the Update.
-
-What remains of the sequence is the rebank itself, plus the ZigEmitter
-replay decision above.
-
-**Rebank attempt 1 (2026-08-19, 02:07-03:12, `logs/rebank-u47.log`): 11 of 13
-rungs green, then the fibx rung livelocked the whole WSL VM** -- second
-livelock, same signature as random881 (clock-drift spam from 03:10, no OOM
-kill, hv_storvsc write failures at 03:27, VM dead). lex through fib all
-ORACLE PASS byte-identical under seed 90646EEB; **fibx and whole are NOT
-banked for u47.** The 4GB swap was live and did not help -- RAM+swap is just
-enough to thrash forever instead of dying, so headroom widens the livelock
-window rather than closing it. The 2.5GB RLIMIT_AS from commit 20ff529 wraps
-corpus stage_run children only; the rebank path has no cap at all.
-
-Plan, agreed with Steve 2026-08-19 morning, EXECUTED later that morning:
-
-1. ~~Cap the rebank path~~ DONE (commit a300448): zig_verdict's `zig run` now
-   carries the same 2.5 GB address-space cap corpus_run.py uses.
-2. ~~Rerun fibx under the cap, watched~~ DONE: clean abort at the cap, VM
-   untouched. **The question this step existed to answer is answered, and it
-   is neither of the two guesses: the u47-rebank branch took the depot's
-   ZigEmitter verbatim, and PR 71's arena is not in Update 47's emitter**, so
-   fibx.zig came out with 22 page_allocator sites and ballooned exactly as
-   the pre-arena plug did. The 13-green sweep on seed 45 ran with OUR
-   arena'd plug. The redundant `whole` rerun was skipped (fifteen minutes of
-   QEMU to record the same predictable abort); instead the arena commit
-   7094128c was cherry-picked onto u47-rebank (clean merge beside their
-   cx_deck_set and zig-let-annot) and the full 14-rung sweep is running
-   against the already-complete u47 truths. Bank on green.
-
-Original entry:
-
-Steve reports on depot `main`, ahead of the release:
-
-- **17213, the QEMU bulk-output path. SEED CHANGED: 5B2DE4E6 -> FAD4F1E2.**
-- **17221, a gdb-watchpoint QEMU switch. Non-seed**, so it cannot move a truth.
-
-Two consequences, and the first is the one that bites:
-
-**A new seed invalidates every banked truth.** `truth/u46` is a claim about
-what 5B2DE4E6 produces. Nothing under FAD4F1E2 may be diffed against it and
-called a regression until the whole ladder is re-banked, or we will read a
-legitimate upstream change as our own breakage. Rebank first, compare second.
-That also means the 59-minute merged sweep gets spent on the rebank itself.
-
-**17213 touches the layer we re-implement rather than inherit.** `codex_vm.py`
-speaks the host contract to QEMU on our side; a bulk-output path is exactly the
-kind of change that alters how output arrives, not just how fast. Read the diff
-against `codex_vm.py` BEFORE running anything, because a silent truncation or a
-reframed chunk boundary would show up as a diff in every truth at once and look
-like a compiler change. If our reader needs to learn the new path, that is the
-first work item, not a footnote to the rebank.
-
-The upside is real: bulk output is plausibly a large cut in the four minutes an
-outer compile costs, and the whole ladder is output-bound through a serial port.
-Time one unit before and after so the claim is measured rather than assumed.
-
-Sequence when the build lands: read 17213 -> adapt `codex_vm.py` if it needs it
--> time one unit -> full rebank as `u47` -> only then diff anything.
+`truth/u47` is banked (seed 90646EEB), the sweep was 14/14 ORACLE PASS with
+the arena on the pin, and the u46 diff is the first Update to move what we
+measure: 9/14 byte-identical, parse and clamp moving with their upstream
+subjects, fibx/scale/whole growing by the ATA-guard/burst-helper bytes.
+u47's QEMU bulk-output path needed no codex_vm.py change and is ~10% faster
+on big-unit output. What remains from this entry is item 3's prepared PR and
+the heap unification (item 4).
 
 ## 9. tonight.sh's first full run: the fallout (2026-08-19, random883)
 
@@ -222,11 +143,10 @@ The run finished in 13 minutes; census 278 units -> 117 match / 95 refused /
 33 differ / 28 no-expected / 5 crashed (`corpus/run.json`). Issue 72 filed
 from step 1's bare-metal confirmation. What it left behind, cheapest first:
 
-1. **The `\x01` expected-file artifact.** Several `.expected` begin with a
-   `\x01` byte the zig arm never prints, so the 33 differs are an overcount;
-   the eyeballed ones are byte-identical after it. One corpus_run.py fix
-   deflates the differ column to its honest value. Cheap, do before reading
-   any differ as a finding.
+1. ~~The `\x01` expected-file artifact~~ DONE 2026-08-19: it is a
+   capture-channel byte (with CRLF as its sibling), and corpus_run now
+   normalizes both the way the depot's own adjudicator strips CRs. The
+   differ column deflates to its honest value on the next run.
 2. **Multi-byte CCE in the zig prelude.** Step 3 (hosted codexir vs seed IR)
    went 0 for 11 on one cause: decode-escapes -> cx_char_to_text ->
    cx_cp_to_cce panics on any codepoint outside the 97-entry single-byte

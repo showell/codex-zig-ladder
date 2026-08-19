@@ -310,7 +310,7 @@ zig_arm() {
 }
 
 # The ring arm, for subjects past the TCP intake ceiling: the receive
-# path costs ~130 bytes of guest heap per IR byte and fibx is 12.9 MB,
+# path costs ~130 bytes of guest heap per IR byte and fibx is 13.1 MB,
 # where read-serial-cce costs one. Same parser, same emitter, and the
 # ring plug is rebuilt from the same ZigEmitter -- only the transport
 # and the plug body differ.
