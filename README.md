@@ -70,14 +70,11 @@ this. That claim is checkable, and the command is the check:
 
     git -C <your Codex clone> diff upstream/master HEAD
 
-**It is not empty today, and that is the honest state of it.** On a public
-Update 46 checkout the ladder needs one patch: `ZigEmitter.codex` emitting
-`__deck-set` with its argument, which is finding 12. It is in Perforce main
-16627 and ships with Update 47, and the tree these numbers were measured on
-carries it locally. Until 47 is public, "no patch" describes the next release
-rather than the one you can clone, so a reader running the command above gets
-that hunk and should. Anything ELSE in that diff is a patch nobody has
-justified, which is what the check is for.
+**Update 47 closed the one required patch.** On a public Update 46 checkout
+the ladder needed `ZigEmitter.codex` emitting `__deck-set` with its argument
+(finding 12); Update 47 ships that fix, so on a 47 checkout the diff above
+should be empty. Anything in it is a patch nobody has justified, which is
+what the check is for.
 
 Run it in the clone you patch the plug in, not here. Before the move this was
 the same command with `':(exclude)zig-ladder'` on the end, because the ladder
@@ -522,14 +519,17 @@ compile runs:
   closed and silently disabled the seed's deck discipline in every bundle for
   weeks. When a finding closes, grep for its workaround and delete it in the
   same commit that acknowledges the closure.
-- **The diff on the surfaces we speak or re-implement.** `codex_vm.py`
-  re-implements the host contracts rather than calling `Start-VmRun`: the RAM
-  size cell at physical 0xFE8, the ring preload at 0x500000 with the
-  wpos/rpos cells, and the serial `SIZE:` framing. A release that touches
-  `codex/compiler/Emit/` (the boot stub and output helpers), `tools/codex-vm.c`,
-  or `build/vm-config.ps1` can move a contract our side hard-codes, and a
-  moved contract shows up as a diff in every truth at once, indistinguishable
-  from a compiler change. Read those diffs against `codex_vm.py` first. Also
+- **The diff on the surfaces we speak or re-implement.** Two files on our
+  side hard-code the host contracts rather than calling `Start-VmRun`:
+  `codex_vm.py` carries the RAM size cell at physical 0xFE8 and the serial
+  `SIZE:` framing, and `ring_compile.py` carries the ring itself
+  (`RING_ADDR` 0x500000, `RING_SIZE` 1 MB pinned to the seed's
+  serial-ring-buf-size, and the wpos/rpos cells 28704/28712 pinned to
+  `X86_64Boot.codex`). A release that touches `codex/compiler/Emit/` (the
+  boot stub and output helpers), `tools/codex-vm.c`, or `build/vm-config.ps1`
+  can move a contract either file hard-codes, and a moved contract shows up
+  as a diff in every truth at once, indistinguishable from a compiler
+  change. Read those diffs against BOTH files first. Also
   `codex/plugs/zig/` (the emitter is fleet-maintained now, see step 4) and
   the net stack if the TCP arm matters to the question at hand.
 - **The seed hashes.** The release note names the public seed; depot `main`
@@ -540,14 +540,25 @@ compile runs:
 
 Both seeds are one `git show <commit>:seed/Codex.cdx` away, and
 `ring_compile.compile_ring(..., seed=...)` accepts an explicit seed, so the
-cheap experiment needs no checkout at all: compile one small staged blob
-through the old seed and the new one, and confirm the new seed boots under
-our QEMU flags, takes the ring preload, and produces output our reader
-parses. Five seconds per compile. If the release claims throughput work, add
-one mid-size unit for a timing point (`check` at 4.8 MB of IR showed Update
-47's FIFO-burst output as about 10 percent of wall time). If output differs
-in size for the same input, that is the first look at what the Update changed
-in the image -- note it, it previews the bank diff.
+cheap experiment needs no checkout CHANGE -- `CODEX_ROOT` must still name a
+valid checkout for the imports to resolve, but it can stay wherever it is.
+The seed parameter is not reachable from `ring_compile.py`'s command line;
+call the function. Reuse a small blob the repo already carries (any
+`ast/*-cdx.blob` staged by an earlier run), and run the pair:
+
+    git -C $CODEX_ROOT show <old>:seed/Codex.cdx > /tmp/seed-old.cdx
+    git -C $CODEX_ROOT show <new>:seed/Codex.cdx > /tmp/seed-new.cdx
+    python3 -c "import ring_compile as r; \
+      r.compile_ring('ast/arith-cdx.blob', '/tmp/probe.cdx', seed='/tmp/seed-new.cdx')"
+
+and the same line with the old seed for the baseline. This confirms the new
+seed boots under our QEMU flags, takes the ring preload, and produces output
+our reader parses. Five seconds per compile. If the release claims
+throughput work, add one mid-size unit for a timing point (`check` at 4.8 MB
+of IR showed Update 47's FIFO-burst output as about 10 percent of wall
+time). If output differs in size for the same input, that is the first look
+at what the Update changed in the image -- note it, it previews the bank
+diff.
 
 ### 3. Prerequisites for the rebank itself
 
@@ -560,9 +571,13 @@ in the image -- note it, it previews the bank diff.
 - **The tree must not move while the ladder reads it.** `CODEX_ROOT` names a
   working tree, and a checkout mid-sweep rebuilt the plug from the wrong
   emitter once and reproduced an already-fixed defect (2026-08-18, 90
-  minutes). The fingerprint guard refuses arms when the tree moved under a
-  built plug; do not fight it, finish or kill the run first. The clone is not
-  PR scratch space during a sweep -- build PRs in a worktree elsewhere.
+  minutes). Know what is actually guarded: the fingerprint covers ONLY the
+  plug source (`ZigEmitter.codex` and `ZigPlug.codex`, `plug_provenance` in
+  `oracle_lib.sh`) -- nothing detects the seed or anything else moving
+  mid-run (`seed_identity.require_match` exists for exactly that and nothing
+  calls it yet). Everything beyond the plug source is operator discipline:
+  do not touch the clone until the run finishes or is killed. The clone is
+  not PR scratch space during a sweep -- build PRs in a worktree elsewhere.
 - **`seed_identity.py` says the right thing** (seed hash, Update number,
   `truth/uNN` target) and **`check_paths.py` passes.** Five seconds, versus
   discovering a broken path an hour into the truth arms.
@@ -596,20 +611,35 @@ working.
 
 ### 5. Run, bank, retire
 
-- `ast/rebank_all.sh`, detached with its log in `logs/` (a hung VM must not
-  take the verdicts with it). Truth arms run cheapest-first and stop on the
-  first failure; a CDX9002 on a big rung usually means the deck scale needs
-  raising, not that something broke.
+- **Warmups first**: `./cycle.sh hello recurse fib` checks the plug end to
+  end on the new checkout in minutes. `rebank_all.sh` does not run them --
+  its first plug exercise is the sweep at the END, hours in, so a gross
+  plug-side breakage found there was findable at the start.
+- Then the rebank, detached so a hung VM cannot take the verdicts with it
+  (the script itself neither detaches nor logs):
+
+      setsid nohup ast/rebank_all.sh > logs/rebank-uNN.log 2>&1 < /dev/null &
+
+  Truth arms run cheapest-first and stop on the first failure; a CDX9002 on
+  a big rung usually means the deck scale needs raising (the `decks=`
+  entries in `oracle_lib.sh`'s `mode_flags`), not that something broke.
 - **Bank only when the zig arms are green too** (`bank_truth.py`). It
   refuses mixed-harness sets on its own; the green-arms rule is ours, from
   the merge, and it exists because a bank taken over red arms freezes a
   question mid-answer.
-- Diff the new bank against the previous one. Byte-identical rungs are the
-  headline when they happen (u45 to u46: all fourteen), and any rung that
-  moved is the Update's image change, localized to a subject.
-- Re-pin the diagnostics populations (`check_diags.py`) from the first clean
-  sweep -- the counts are a function of the unit list and the seed, and a
-  stale pin cries wolf.
+- Diff the new bank against the previous one. The files are Update-prefixed,
+  so `diff -r` pairs nothing; the loop is:
+
+      for f in truth/u46/u46-*; do m=${f##*/u46-}; \
+        cmp -s "$f" "truth/u47/u47-$m" || echo "$m differs"; done
+
+  Byte-identical rungs are the headline when they happen (u45 to u46: all
+  fourteen), and any rung that moved is the Update's image change, localized
+  to a subject.
+- Re-pin the diagnostics populations -- an EDIT to the `POLICY` table in
+  `check_diags.py`, taking the new counts from the `--census` block
+  `allcycles.sh` prints at the end of the sweep. The counts are a function
+  of the unit list and the seed, and a stale pin cries wolf.
 - **Re-measure the timings and put them in this README, every rebank.** The
   log has the wall time per phase (truth arms, plug builds, arms); refresh
   the numbers in "Running it" in the same commit that updates the
