@@ -37,6 +37,35 @@ because `seed_identity.py` derives it from the seed's own hash by finding the
 release note that names it. Run it to see what a checkout is actually holding,
 and correct the table against it.
 
+## Why this exists
+
+Five objectives, ranked by how much of the repo serves each. A change that
+serves none of them probably belongs somewhere else.
+
+1. **Prove the zig transpilation of the Codex compiler faithful, to the
+   byte.** The rungs, the two arms, the banks and the provenance guards all
+   exist to force byte-identity between seed-compiled and plug-transpiled
+   output, up to the whole compiler emitting a complete CDX image.
+2. **Find defects -- in the plug and in Codex itself.** The byte-exactness
+   pressure is the instrument; `findings/README.md` is the register of what
+   it has caught, and probes-then-filings is the loop.
+3. **Build toward a Diverse Double-Compiling witness in Wheeler's sense.**
+   "What the check proves" below is scrupulous about how far along that road
+   this is; taking the seed out of the loop is the standing endgame.
+4. **Measure what each upstream Update actually changes in the emitted
+   image.** The bank-to-bank diff is the only artifact that can say; this
+   objective fell out of the banking discipline so organically that a cold
+   reviewer named it before we did.
+5. **Turn the Codex compiler into an ordinary, fast Linux process.** `zigc`
+   and the native loop make the compile step seconds instead of a VM boot,
+   which changes what is cheap for everything above.
+
+Side products worth knowing about even though no objective claims them: the
+QEMU drivers are the only non-Windows implementation of the author's host
+contracts, and so their de facto written spec; and the corpus harness is
+plug-agnostic, so a future plug in another language could be graded against
+the same banked IR and truths on day one.
+
 ## What this needs, and what it does not
 
 **It needs almost no changes to the Codex repository.** Everything Linux and
