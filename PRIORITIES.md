@@ -29,8 +29,9 @@ whole compiler survive transpilation". Everything below is the cheap loop.
 of this plug, which is the property our own probes cannot have. **The design
 is `corpus/README.md`** (banked census diffed like a truth file, changed-only
 reruns keyed on emitted-zig hashes, a set-cover sentinel gate, full census
-per-Update only); its sequencing starts with item 4 below, which poisons the
-denominator until fixed.
+per-Update only). Its blocking prerequisite -- multi-byte CCE +
+text-to-double-bits, which poisoned the denominator -- landed 2026-08-19;
+next is the baseline bank, then the sentinel set from that run's IRs.
 
 The known gap family is coherent: `poke-byte`, `peek/poke-16/32`, `bit-not` --
 the memory-access builtins; implementing the family unblocks a large slice at
@@ -90,14 +91,36 @@ during emission; the arena is the interim. Pre-approved in shape by Damian
 ("send it as its own PR when the hunt settles"), as are the `cx_show_int`
 double allocation and the per-instruction throwaway list.
 
-## 4. Multi-byte CCE in the zig prelude
+## 4. The external review, in three batches
 
-`cx_cp_to_cce` panics on any codepoint outside the 97-entry single-byte table
-and `cx_cce_to_utf8` refuses bytes >= 128 symmetrically. The ladder rungs
-never hit it (subjects arrive as compiled-in CCE literals); hosted `codexir`
-converts raw stdin then lexes, so this took the hosted-vs-seed IR comparison
-0 for 11. The honest fix is multi-byte encode and decode in the prelude; it
-unblocks the seed-independence experiment and plausibly some census units.
+`REVIEW-2026-08-19.md` (Marley, for Damian, at our 8a74c94) -- ~34 findings,
+several landing on items this file already names. The three high ones we
+spot-checked all confirmed. Absorbed as three batches so the census and
+char-migration lanes above stay first:
+
+- **Batch 1, keyboard-only, next working slot:** the wrong-bank and
+  wrong-PASS closers plus unattended hazards. Banking provenance (seed sha
+  recorded beside each `.truth`, atomic bank via temp-dir rename,
+  content-hash watermark, narrowed glob, prune-by-name), `ring_compile`
+  pre-READY EOF (item 6 below -- fix is literally `codex_vm.wait_ready`),
+  `plug_run` truncation-reads-as-success, QEMU orphan try/finally,
+  rm-stale-artifacts-first family (`.truth`, `.diags`, `plug-source`,
+  guardprobe), checks that report but do not refuse (warmup diff,
+  check_diags NOTE rc), small correctness (f4_boot, plugcycle, seed_identity
+  label, pcap coverage), and every doc seam they list (README:300 stale
+  byte-identical claim first). Commit per finding.
+- **Batch 2, needs QEMU + a re-bank:** delete the deck-record rename from
+  the ten bundlers (our own workaround-hygiene rule; Update 43 closed the
+  finding) and let the bank diff prove it image-preserving; unify the two
+  plug fingerprint guards on the ring model (re-bundle and compare).
+- **Batch 3, structural, its own session, net first:** `tests/` for the
+  refusers (split_truth, bank_truth, seed_identity, check_diags, cce,
+  pcap_parity, the `--changed` carry), THEN driver consolidation into
+  codex_vm (launch + read_size_framed; gdb RSP framing while there) and the
+  harness/bundler dedup.
+- Declined or deferred, with reasons in the review response: tracked
+  census json stays (deliberate, the bank supersedes run.json soon);
+  LICENSE is Steve's call; errors='replace' byte-compare rides Batch 3.
 
 ## 5. Census fallout (numbers from the 2026-08-19 run, `corpus/run.json`)
 
@@ -120,11 +143,15 @@ hosted-compiler crash is its own finding; identify and reduce.
 
 ## 7. ring_compile busy-loops when its QEMU dies
 
-The read/refill loop needs a child-liveness check that turns a dead guest
-into a loud failure -- today a defunct QEMU leaves ring_compile spinning at
-100% CPU with a frozen log until killed by hand. Same honesty class as the
-memory caps: an unattended runner must never convert a crash into a hang.
-Until fixed, detection is a stale log mtime beside a hot python process.
+Located by the review (`ring_compile.py:150-154`): the PRE-READY wait --
+`while b"READY" not in buf: buf += ctrl.recv(4096)` -- never checks for
+`b""`, so a dead guest returns EOF instantly and forever, a 100% spin with
+a frozen log. The read/refill and output loops already fail loud; earlier
+wording here blamed them. `codex_vm.wait_ready` has the EOF check and was
+not reused -- the fix is to call it. Same honesty class as the memory caps:
+an unattended runner must never convert a crash into a hang. Until fixed,
+detection is a stale log mtime beside a hot python process. Rides review
+Batch 1 (item 4).
 
 ## 8. Diagnostics as a banked set
 

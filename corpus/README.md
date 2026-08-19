@@ -92,12 +92,10 @@ tonight.sh slot -- not the default keystroke.
 
 ## Sequencing
 
-1. **Unblock before measuring more.** The real-literal abort
-   (`text-to-double-bits`) and multi-byte CCE (PRIORITIES item 4) are one
-   family, and they poison the denominator: 80 codexir SIGABRTs and an
-   unknown slice of the 95 refusals trace to them. Fixing them first is
-   the single highest-leverage act -- every later census is honest about
-   more programs. This is the upfront investment worth making.
+1. **Unblock before measuring more.** DONE 2026-08-19: the real-literal
+   abort (`text-to-double-bits`) and multi-byte CCE were one family and
+   poisoned the denominator (80 codexir SIGABRTs and a slice of the 95
+   refusals); both landed on the pin the same day.
 2. **Plumb the bank + `--changed`** (an afternoon of keyboard work, no
    compute): the `census.json` schema, hash comparison, verdict-diff
    output.
