@@ -156,6 +156,16 @@ they are conveniences and the set is incomplete: `lex`'s truth arm is
 have no compile of their own to run. The arms themselves are `truth_arm` and
 `arm_for` in `ast/oracle_lib.sh`; the wrappers are one line each on top.
 
+A **cycle** is one full turn of a subject through an arm: bundle the source,
+compile it through the seed, run what came out, compare the output. Every
+script with `cycle` in its name is one of these turns -- `truthcycle_<m>.sh`
+turns a rung's truth arm, `ast/<m>cycle.sh` its zig arm, and the root
+`cycle.sh` turns the plug itself (bundle, ring-compile, and warmup oracles as
+the run-and-compare, when named). `allcycles.sh` is exactly its name: the
+plug's cycle, then every rung's. When prose here prices a mistake "a cycle",
+this turn is the unit -- about a minute for a small probe, a quarter-hour
+when the plug itself must rebuild.
+
 **Banking** is recording a truth arm's output as the golden file
 (`ast/<m>.truth`) that the zig arm is diffed against. **Re-banking** is doing it
 again because something upstream moved -- most often a new seed, which
@@ -405,7 +415,7 @@ banked. That claim is checkable, and the command is the check:
     git -C <your Codex clone> log --oneline <release-commit>..HEAD
 
 The baseline is the release commit of the Update being banked, never
-`upstream/master` -- the mirror moves mid-cycle (the author's Perforce main
+`upstream/master` -- the mirror moves mid-Update (the author's Perforce main
 runs ahead of the public releases, and landings of our own PRs appear
 between them), so a moving baseline cannot anchor a claim. What may sit on
 top of the release commit is defined under "The checkout" below; anything

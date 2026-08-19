@@ -8,7 +8,7 @@ label is derived FROM the seed here, never typed alongside it.
 
 The obvious derivation -- take the highest-numbered GitHubUpdate file -- is
 wrong, and wrong today. Update 45's release commit creates GitHubUpdate46.md as
-the accumulator for the next cycle, so the highest file names an Update that has
+the accumulator for the next Update, so the highest file names an Update that has
 not shipped and whose seed does not exist. Instead: the release note that names
 our seed's hash IS our Update. That cannot drift, because a note only names a
 hash once the release built it.
