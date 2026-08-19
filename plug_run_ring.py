@@ -14,16 +14,41 @@ placeholders in a .zig file.
 
 Usage: plug_run_ring.py <ir> <out.zig> [plug_cdx]
 """
+import hashlib
+import os
 import pathlib
 import re
+import subprocess
 import sys
 
 import ring_compile
 from cce import decode
 
 
+def refuse_stale_ringplug(here):
+    """A stale ring plug silently transpiles with yesterday's emitter -- it
+    did on 2026-08-19, stamping the pre-multibyte prelude onto freshly built
+    native tools. The bundle is deterministic, so re-bundle to a scratch name
+    and compare against the fingerprint ringplug_build.sh recorded; any
+    mismatch means the checkout's plug sources moved since the cdx was built."""
+    fp_file = here / "ast" / "ringplug.cdx.fp"
+    if not fp_file.is_file():
+        raise SystemExit("no ast/ringplug.cdx.fp; run ast/ringplug_build.sh")
+    check = here / "ast" / "ringplug-source-check.codex"
+    subprocess.run([os.path.expanduser("~/.local/pwsh/pwsh"), "-NoProfile",
+                    "-File", "./bundle_ringplug.ps1", "-OutName", check.name],
+                   cwd=here / "ast", check=True, capture_output=True)
+    got = hashlib.sha256(check.read_bytes()).hexdigest()
+    check.unlink()
+    if got != fp_file.read_text().strip():
+        raise SystemExit("ast/ringplug.cdx is stale against the checkout's "
+                         "plug sources; run ast/ringplug_build.sh")
+
+
 def run_ring_plug(ir_path, out_path, plug_cdx=None, mem_mb=3072, timeout=1800):
     here = pathlib.Path(__file__).parent
+    if plug_cdx is None:
+        refuse_stale_ringplug(here)
     plug_cdx = plug_cdx or str(here / "ast" / "ringplug.cdx")
     ir = open(ir_path, "rb").read()
     if b"\x00" in ir:

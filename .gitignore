@@ -61,3 +61,5 @@ native/
 # Nightly console logs; tonight.sh rewrites them every run.
 logs/*
 !logs/.gitignore
+ast/ringplug.cdx.fp
+ringplug-source-check.codex

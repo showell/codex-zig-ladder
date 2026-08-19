@@ -23,6 +23,13 @@ T="$(cd "$(dirname "$0")" && pwd)"
 OUT="$T/native"
 mkdir -p "$OUT"
 
+# The transpile step boots the RING plug, so a stale ringplug.cdx silently
+# stamps yesterday's emitter onto today's tools (2026-08-19: the smoke test
+# caught fresh natives carrying the pre-multibyte prelude). Rebuild it from
+# source first; plug_run_ring.py refuses a stale one as the backstop.
+echo "############ ring plug"
+bash "$T/ast/ringplug_build.sh"
+
 build_one() {
     local name=$1 gen=$2 bundle=$3 subject=$4
     echo "############ $name"
