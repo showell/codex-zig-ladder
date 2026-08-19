@@ -1,0 +1,198 @@
+[
+ {
+  "name": "act-tco-loop",
+  "stage": "markers",
+  "markers": [
+   "no emitter for port-in-byte"
+  ]
+ },
+ {
+  "name": "arith-narrow-proven",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "arith-operand-order",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "arm64-boot-test",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "arm64-net-gate",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-get-pid",
+   "no emitter for net-status",
+   "no emitter for net-get-hwaddr",
+   "no emitter for process-restrict-cap",
+   "no emitter for net-status",
+   "no emitter for net-get-hwaddr",
+   "no emitter for net-recv-raw",
+   "no emitter for process-restrict-cap",
+   "no emitter for net-send-raw"
+  ]
+ },
+ {
+  "name": "arm64-proc-cells",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-get-pid",
+   "no emitter for process-get-cap",
+   "no emitter for process-restrict-cap",
+   "no emitter for process-set-scope",
+   "no emitter for process-get-scope",
+   "no emitter for process-get-network-scope",
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap",
+   "no emitter for process-restrict-cap",
+   "no emitter for process-get-cap"
+  ]
+ },
+ {
+  "name": "block-sector-count",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-sector-count"
+  ]
+ },
+ {
+  "name": "block-select-drives",
+  "stage": "markers",
+  "markers": [
+   "no emitter for block-select",
+   "no emitter for block-sector-count",
+   "no emitter for block-read-sector"
+  ]
+ },
+ {
+  "name": "bounded-integer-ops",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "bounded-param-trap",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "bounded-return-trap",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "bounded-sig-runtime",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "bounded-sig-static",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "bs3-smoke",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "builtin-narrow-proven",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "bytes-to-text-2f",
+  "stage": "markers",
+  "markers": [
+   "no emitter for unicode-bytes-to-text",
+   "no emitter for text-to-unicode-bytes"
+  ]
+ },
+ {
+  "name": "cap-audio",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap"
+  ]
+ },
+ {
+  "name": "cap-block-denied",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for block-sector-count",
+   "no emitter for block-sector-count"
+  ]
+ },
+ {
+  "name": "cap-device-declared",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "cap-direction",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap"
+  ]
+ },
+ {
+  "name": "cap-gpu-mem-denied",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for gpu-mem-write",
+   "no emitter for gpu-mem-read",
+   "no emitter for gpu-mem-write",
+   "no emitter for poke-32",
+   "no emitter for gpu-mem-read"
+  ]
+ },
+ {
+  "name": "cap-heap-poke-pure",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-byte"
+  ]
+ },
+ {
+  "name": "cap-identity-denied",
+  "stage": "markers",
+  "markers": [
+   "no emitter for poke-32",
+   "no emitter for poke-32",
+   "no emitter for key-load",
+   "no emitter for key-status",
+   "no emitter for key-zero",
+   "no emitter for key-status",
+   "no emitter for key-status"
+  ]
+ },
+ {
+  "name": "cap-manifest-derived",
+  "stage": "clean",
+  "markers": []
+ },
+ {
+  "name": "cap-media-families",
+  "stage": "markers",
+  "markers": [
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap",
+   "no emitter for process-get-cap"
+  ]
+ }
+]

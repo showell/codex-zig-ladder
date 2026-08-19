@@ -1,0 +1,94 @@
+[
+ [
+  "no emitter for process-get-cap",
+  17
+ ],
+ [
+  "no emitter for poke-32",
+  7
+ ],
+ [
+  "no emitter for process-restrict-cap",
+  4
+ ],
+ [
+  "no emitter for block-sector-count",
+  4
+ ],
+ [
+  "no emitter for key-status",
+  3
+ ],
+ [
+  "no emitter for process-get-pid",
+  2
+ ],
+ [
+  "no emitter for net-status",
+  2
+ ],
+ [
+  "no emitter for net-get-hwaddr",
+  2
+ ],
+ [
+  "no emitter for gpu-mem-write",
+  2
+ ],
+ [
+  "no emitter for gpu-mem-read",
+  2
+ ],
+ [
+  "no emitter for port-in-byte",
+  1
+ ],
+ [
+  "no emitter for net-recv-raw",
+  1
+ ],
+ [
+  "no emitter for net-send-raw",
+  1
+ ],
+ [
+  "no emitter for process-set-scope",
+  1
+ ],
+ [
+  "no emitter for process-get-scope",
+  1
+ ],
+ [
+  "no emitter for process-get-network-scope",
+  1
+ ],
+ [
+  "no emitter for block-select",
+  1
+ ],
+ [
+  "no emitter for block-read-sector",
+  1
+ ],
+ [
+  "no emitter for unicode-bytes-to-text",
+  1
+ ],
+ [
+  "no emitter for text-to-unicode-bytes",
+  1
+ ],
+ [
+  "no emitter for poke-byte",
+  1
+ ],
+ [
+  "no emitter for key-load",
+  1
+ ],
+ [
+  "no emitter for key-zero",
+  1
+ ]
+]
