@@ -18,53 +18,10 @@ Mid-rebank, the checkout's pin branch runs one Update ahead of this table --
 old banks. That is the normal in-between state, not drift: the table moves
 only when `bank_truth.py` lands the complete new set.
 
-**All fourteen for the first time**, `clamp` included, swept 2026-08-17 in 2h21m
-from a cold bank (re-bank all fourteen truth arms, rebuild both plugs, then
-fourteen zig arms). `pingpong` also holds its own claim, which its arm
-diff cannot make: the text it emits from stage 1's text is byte-identical to
-stage 1's, so the round trip is a fixed point rather than two arms agreeing on
-the same drift.
-
-**Both banked Updates are byte-identical on every rung.** Fourteen subjects,
-two compilers a release apart, not one byte of emitted image different. That
-is the first thing this arrangement can say that a single sweep cannot:
-Update 46 changed the compiler and changed nothing we measure. The same
-bank-to-bank diff is what proves a bundle edit image-preserving before it is
-trusted; the ones already proven are recorded in `JUSTIFICATIONS.md`.
-
 The table above is maintained by hand; what cannot drift is the BANK's label,
 because `seed_identity.py` derives it from the seed's own hash by finding the
 release note that names it. Run it to see what a checkout is actually holding,
 and correct the table against it.
-
-## Why this exists
-
-Five objectives, ranked by how much of the repo serves each. A change that
-serves none of them probably belongs somewhere else.
-
-1. **Prove the zig transpilation of the Codex compiler faithful, to the
-   byte.** The rungs, the two arms, the banks and the provenance guards all
-   exist to force byte-identity between seed-compiled and plug-transpiled
-   output, up to the whole compiler emitting a complete CDX image.
-2. **Find defects -- in the plug and in Codex itself.** The byte-exactness
-   pressure is the instrument; `findings/README.md` is the register of what
-   it has caught, and probes-then-filings is the loop.
-3. **Build toward a Diverse Double-Compiling witness in Wheeler's sense.**
-   "What the check proves" below is scrupulous about how far along that road
-   this is; taking the seed out of the loop is the standing endgame.
-4. **Measure what each upstream Update actually changes in the emitted
-   image.** The bank-to-bank diff is the only artifact that can say; this
-   objective fell out of the banking discipline so organically that a cold
-   reviewer named it before we did.
-5. **Turn the Codex compiler into an ordinary, fast Linux process.** `zigc`
-   and the native loop make the compile step seconds instead of a VM boot,
-   which changes what is cheap for everything above.
-
-Side products worth knowing about even though no objective claims them: the
-QEMU drivers are the only non-Windows implementation of the author's host
-contracts, and so their de facto written spec; and the corpus harness is
-plug-agnostic, so a future plug in another language could be graded against
-the same banked IR and truths on day one.
 
 ## What this is
 
@@ -84,7 +41,8 @@ source over a serial line.
 **The seed** (`seed/Codex.cdx`) is the trusted compiler binary at the root of
 that. It is the authority every measurement here is compared against, and it is
 also what produces the IR the plug consumes -- which is why a new seed
-invalidates everything banked.
+invalidates everything banked. Seeds change with each **Update**, an upstream
+release of the Codex repository; the release commit names its seed.
 
 **The plug** (`codex/plugs/zig/ZigEmitter.codex`) transpiles Codex IR into zig
 source: `prog.ir -> prog.zig`, which `zig build-exe` then makes native. Point it
@@ -102,256 +60,6 @@ compiler and the real compiler agree about that much of the compiler.
 The ladder exists to test whether the transpile is faithful. The answer has to
 be byte-exactness rather than "it seems to work", because a transpiled compiler
 that is subtly wrong produces subtly wrong binaries forever after.
-
-## What the check proves, and what it does not
-
-Be careful about how much DDC to claim here. Two things are true, and both
-matter.
-
-**The code generation on the zig arm has genuinely independent lineage.** The
-bytes of the zig arm's executable are produced by the zig toolchain, which has
-nothing to do with Codex -- not its back end, not its seed, not anything in this
-repository. Worth being specific, because it is better than it sounds: the rungs
-run their zig with `zig run` (`ast/oracle_lib.sh`, `zig_verdict`), and zig 0.16
-does not use LLVM for that. It uses its own x86-64 back end. Measured on the
-command the rungs actually use, not on a nearby one: `zig run` produces a
-10,253,773-byte binary and `zig run -fllvm` produces a 4,113,312-byte one. So
-the machine code on the two arms comes from two independently written x86-64
-code generators, and a third is one flag away if we ever want it.
-
-When the two arms agree on the output of a compiler phase, that
-agreement crossed a real toolchain boundary. This is the DDC property, and it is
-the reason the ladder is worth running.
-
-**The seed is still in the loop.** The plug consumes IR, and it is the seed that
-compiles the subject down to that IR. So both arms pass through the seed before
-they diverge. The seed has not been removed, and this ladder on its own is
-therefore not a complete DDC witness -- it is a DDC check over the part of the
-pipeline that comes after the IR.
-
-And the caveat that outranks both:
-
-What it proves is **agreement, not correctness.** Both arms descend from the
-same source, so a mistake they share is a mistake the ladder cannot see -- if
-the back end computed a rodata offset wrongly, the transpiled back end would
-reproduce that faithfully and the diff would be empty. That is what
-`ast/f4_boot.py` (below) is for: booting the emitted binary asks a third party
-with no stake in the argument.
-
-One shape of the shared-mistake worry is closed for the content section, and
-by the compiler's own hand: the CDX header carries a SHA-256 that
-`cdx-build-header` computes over the content bytes, and recomputing it from
-the decimal bytes the four back-end truths print reproduces it in all four
-(audited 2026-08-18, no violations -- alongside header offsets that tile
-exactly, symbol extents that tile with no gaps, a debug map whose 722 names
-all match the symbol map, and `pingpong.truth` byte-identical to
-`text.truth`). Two arms drifting into the same nonsense would have to keep a
-hash the emitting compiler computed for its own reasons while doing it.
-
-## What this needs, and what it does not
-
-**It needs almost no changes to the Codex repository.** Everything Linux and
-QEMU specific lives here. The driver that boots the guest, `codex_vm.py`, is
-ours: it launches QEMU directly and re-implements the contracts the author's
-`codex-vm` host provides (the guest RAM size written at physical `0xFE8`
-before boot, the ring preload, the paced serial send) rather than calling
-`Start-VmRun` in `build/vm-config.ps1`. Every plug defect the ladder found
-was fixed in `ZigEmitter.codex` and carried upstream, so the checkout needs
-at most the fixes that have landed upstream but postdate the Update being
-banked. That claim is checkable, and the command is the check:
-
-    git -C <your Codex clone> log --oneline <release-commit>..HEAD
-
-The baseline is the release commit of the Update being banked, never
-`upstream/master` -- the mirror moves mid-cycle (the author's Perforce main
-runs ahead of the public releases, and landings of our own PRs appear
-between them), so a moving baseline cannot anchor a claim. What may sit on
-top of the release commit is defined under "The checkout" below; anything
-else is a patch nobody has justified, which is what the check is for.
-
-**From the checkout, tracked and used unmodified:** `seed/Codex.cdx`,
-`build/concat-codex-self.ps1`, `codex/plugs/common/plug-build-lib.ps1`, the
-chapters under `codex/compiler/`, and `codex/test/plug-oracle-arith.codex` with
-its `.expected`.
-
-**From the checkout, NOT tracked, and self-regenerating:**
-`codex/plugs/zig/build-output/zig-plug.cdx` and `plug-source.codex`. A fresh
-clone does not have them, and nothing needs building to get them: `cycle.sh`
-regenerates both -- it runs the author's bundler with the compile step
-stubbed out (`Build-PlugCdx` is replaced, since that step needs the author's
-Windows host) to write `plug-source.codex`, then compiles that through the
-seed with `ring_compile.py` to produce `zig-plug.cdx` and its fingerprint.
-`ast/allcycles.sh` runs `cycle.sh` first, so a fresh CODEX clone needs no
-prior build step, and `cycle.sh` is the only producer of these artifacts
-here (it alone writes the fingerprint `plug_provenance` demands; the
-author's own plug build is Windows-only and never runs on this host). A
-fresh LADDER clone is a different matter: the banks are tracked, but the
-working `ast/*.truth` and `ast/*.ir` files the arms consume are not, so its
-first act is `ast/rebank_all.sh` -- `allcycles.sh` alone has nothing to
-diff against.
-
-**From the host:** `qemu-system-x86_64` (6.2.0), `python3` (3.10.12),
-PowerShell 7 installed at `~/.local/pwsh/pwsh` (the bundling scripts invoke
-that path directly; 7.5.4 here), and `zig` (0.16.0) for the arm under test.
-`/dev/kvm` is optional: `CODEX_ACCEL` selects the accelerator and the
-default is `tcg`.
-
-**Point it at a checkout with `CODEX_ROOT`.** The ladder lives outside the
-tree it audits, so it cannot find one by looking upward, and it will not
-guess:
-
-    CodexRootError: no Codex checkout at or above /home/you/codex-zig-ladder
-    (looked for codex/compiler/opening.codex); set CODEX_ROOT to the checkout
-    you mean
-
-That refusal is the feature. A ladder silently pointed at the wrong checkout
-banks truth against a seed nobody named, which is the single failure this whole
-exercise exists to prevent. Pointing it at each Update in turn is the same
-variable and no other change. `ladder_root.py` resolves both roots and is the
-only thing that knows where the checkout is; `check_paths.py` asserts every
-path the ladder opens resolves, without running a rung, so a bad setup is a
-five-second answer rather than an hour-two surprise.
-
-The ladder repo itself clones from
-`git@github.com:showell/codex-zig-ladder.git`; see the NOT-tracked
-paragraph above for what a fresh ladder clone must regenerate first.
-
-## The checkout: cloning and branching
-
-How the Codex clone `CODEX_ROOT` points at is managed. This lived in nobody's
-head for a while and the head it lived in got confused, so, written down:
-
-**Two remotes, with different jobs.** `upstream` is `damiant3/NewRepository`
-and is read-only in practice: the mirror is downstream of the author's
-Perforce, so nothing merges there and PRs are landed by being re-applied on
-their side. `origin` is the `showell/NewRepository` fork, and it exists to
-hold pushed branches: PR branches, and the pin branch below. A local `master`
-has no job in this model: reference `upstream/master` directly and keep no
-local `master` -- a branch nobody advances only goes stale and then reads as
-if it means something.
-
-**The ladder runs against a pin branch, one per Update.** When an Update is
-being banked, the checkout sits on a branch named for it (`u47-rebank`),
-created at the Update's release commit and never rebased. On top of the
-release commit it carries the fewest cherry-picks the ladder cannot run
-without, and each must already be landed or filed upstream -- the pin is a
-delivery vehicle for nothing. At Update 47 that is exactly one, the arena
-(PR 71, since landed upstream at `a061c173`, so the next pin starts clean).
-`git log <release-commit>..HEAD` is the whole statement of what we changed,
-and the ideal length is zero.
-
-**The working tree parks on the pin for the entire banking cycle.**
-`CODEX_ROOT` names a working tree, not a commit: a `git checkout` there
-mid-sweep rebuilds the plug from whatever the tree now holds, and that cost a
-90-minute sweep once (2026-08-18). The fingerprint guard in `oracle_lib.sh`
-now refuses to run arms when `ZigEmitter.codex` or `ZigPlug.codex` moved
-under a built plug, but the guard is a tripwire, not a workflow. PR work
-therefore never happens in this tree: branch in a disposable `git worktree`
-somewhere else (the session scratchpad), off `upstream/master`, push to the
-fork, and delete the worktree after the PR lands; `git worktree prune` in the
-main clone clears the stubs.
-
-**Pulling an Update:** `git fetch upstream`, read the release commit (its
-message names the seeds and what moved), create `u<NN>-rebank` at it,
-cherry-pick only what the ladder still needs, push the pin to the fork, then
-follow "Processing a new Update" below. The register of "what the ladder
-still needs" is `findings/README.md` plus the "Filed and waiting" list in
-`PRIORITIES.md`: anything there marked filed-but-not-landed is a candidate,
-and the first check is always whether the Update just landed it. The pin
-being on the fork means no clone is precious.
-
-**Re-cloning from scratch** is therefore cheap and occasionally worth doing,
-since a long-lived clone accumulates branches from work that has since
-landed. `git clone git@github.com:showell/NewRepository.git`, then
-`git remote add upstream git@github.com:damiant3/NewRepository.git`, then
-`git switch u<NN>-rebank` (the pin is on the fork). Git carries everything
-else: point `CODEX_ROOT` at the new clone, let `check_paths.py` prove the
-wiring in five seconds, and the first `cycle.sh` (or the sweep, which runs
-it) regenerates the untracked plug artifacts from the seed.
-
-## Closing arguments: what each rung is worth
-
-The ladder's names invite a reading it does not support. `lex` does not test the
-lexer. **Every rung has the same shape and diverges at the same place**: the
-seed compiles one bundled subject twice, once to a bare-metal CDX and once to
-IR-CCE, and the two arms part company only after the seed's front end, IR
-pipeline and IR serializer have all run. Both arms then execute, and what gets
-compared is program output text. Only the subject changes from rung to rung.
-
-So the phase names describe **how much of the compiler the plug had to
-transpile**, not how deeply that phase was verified. If the seed's lexer is
-wrong, both arms are wrong together and `lex` is green.
-
-What does vary, and what the ladder is really graded on, is *what artifact the
-agreement is about*:
-
-| rungs | compared artifact | what agreement is worth |
-|---|---|---|
-| `lex` `parse` `desugar` `scope` `check` `lower` | a dump this harness designed: tokens, CST, AST, IR text | two independent code generators produce programs that agree on the phase's observable behaviour, for the instruction mix that phase uses. Blind to anything the dump does not print. |
-| `text` `pingpong` | Codex source re-emitted by the compiler's own `CodexEmitter` | as above, plus `pingpong` alone carries a self-consistency claim: emitting from stage 1's text must reproduce it. That is a different question from arm agreement and is checked separately by `pingpong_fixed_point`. |
-| `lir` | machine-code bytes from hand-built `LirFunc` data, no front end involved | the instruction selector agrees. The bytes are compared as decimal text and never executed. |
-| `fib` | the IR, in IRTextEmitter's grammar, for a front end run end to end | as the dump rungs above: a designed dump, not an image. Listed apart from them only because its subject reaches further. |
-| `fibx` `scale` `whole` `clamp` | the **actual CDX image the compiler emits** -- header, content, tail, symbol map | the strongest rungs, and the reason the ladder exists: the thing under comparison is now the x86 back end's real output rather than a dump of intermediate state. `whole` does it for every chapter but the driver. |
-
-**Fourteen rungs are not fourteen independent constructions.** Three pairs
-share a bundled unit and differ only in the harness riding in it:
-
-| unit | rungs | differ by |
-|---|---|---|
-| ~1.03 MB | `text` `pingpong` | 19 bytes: the harness and its stubs |
-| ~2.44 MB | `fibx` `scale` | the subject in the harness's text literal |
-| ~2.58 MB | `whole` `clamp` | the subject in the harness's text literal |
-
-That is not a flaw and it is not padding. Each pair asks the same compiler a
-different question -- `pingpong` feeds it its own output, `scale` gives it a
-real chapter instead of a toy, `clamp` gives it a subject that fails to compile
--- and those are the questions worth asking. But a reader counting should
-know which number is which: **fourteen rungs, twelve compiles**
-(`LADDER_UNITS`; the merged pairs cost one compile each), **eleven distinct
-bundle constructions** (text and pingpong are separate compiles of one
-shared bundle recipe, differing only in the 19-byte harness).
-
-**The machinery now says so too, for the two expensive pairs.** Written and
-**verified 2026-08-18**: a full re-bank under the merged units reproduced all
-fourteen truths byte-identically, and the sweep after it was 14 of 14 on both
-arms. Cost, measured the same evening: **59 minutes** against the 2h21m the
-fourteen-compile ladder took. `fibx`/`scale` and `whole`/`clamp`
-are one harness each, running the pipeline over a list of subjects and marking
-each dump, so each pair costs one compile instead of two. `oracle_lib.sh`
-carries `LADDER_UNITS` (twelve) beside `LADDER_RUNGS` (fourteen) and checks
-them against each other; `split_truth.py` cuts each run back into the per-rung
-`.truth` and `.zigout` files everything downstream already reads.
-
-That measurement has now been made twice: once for the merge itself, and again
-after the emitter's arena and match-arm pin landed. Fourteen truths, byte-identical
-both times. `text` and `pingpong` remain two units and always will -- pingpong's
-subject is built from text's OUTPUT, so it cannot exist until the other has run.
-
-Two provenance facts that bound all of it:
-
-**The plug is not an independent tool.** `zig-plug.cdx` is `ZigEmitter.codex`
-compiled *by the seed* and run *as a QEMU kernel*. The seed therefore produced
-both the IR the two arms rest on and the tool that generates the zig arm. The
-only lineage in the building genuinely unrelated to Codex is zig's own back end.
-
-**Nothing here is checked by running it.** Even in the strongest rungs the CDX
-bytes are compared as digits. `ast/f3_run.zig` and `ast/f4_boot.py` do execute
-emitted code, but they run artifacts already known to be byte-identical between
-arms, so each is one execution rather than a comparison -- and neither is in
-`allcycles.sh`.
-
-Which leaves two sentences worth being careful about.
-
-**What this establishes.** Given IR produced by the seed, the zig plug plus an
-unrelated x86-64 code generator reproduce, byte for byte, the observable output
-of the seed's own back end across fourteen subjects, up to and including the
-entire compiler minus its driver -- and for four of those, the complete CDX
-image the compiler emits.
-
-**What it does not establish.** That the seed is honest. The seed sits upstream
-of the divergence on both arms, and it also compiled the plug that produces the
-zig arm. Agreement here is evidence about code generation, not about the front
-end both arms inherit.
 
 ## The parts
 
@@ -383,6 +91,36 @@ one means booting a machine.
 compiler's `opening`, which reads a mode line and a source unit, runs the front
 end, the IR pipeline and the back end, and writes the result out. It is what you
 are running when you run the Codex compiler.
+
+## Why this exists
+
+Five objectives, ranked by how much of the repo serves each. A change that
+serves none of them probably belongs somewhere else.
+
+1. **Prove the zig transpilation of the Codex compiler faithful, to the
+   byte.** The rungs, the two arms, the banks and the provenance guards all
+   exist to force byte-identity between seed-compiled and plug-transpiled
+   output, up to the whole compiler emitting a complete CDX image.
+2. **Find defects -- in the plug and in Codex itself.** The byte-exactness
+   pressure is the instrument; `findings/README.md` is the register of what
+   it has caught, and probes-then-filings is the loop.
+3. **Build toward a Diverse Double-Compiling witness in Wheeler's sense.**
+   "What the check proves" below is scrupulous about how far along that road
+   this is; taking the seed out of the loop is the standing endgame.
+4. **Measure what each upstream Update actually changes in the emitted
+   image.** The bank-to-bank diff is the only artifact that can say; this
+   objective fell out of the banking discipline so organically that a cold
+   reviewer named it before we did.
+5. **Turn the Codex compiler into an ordinary, fast Linux process.** `zigc`
+   and the native loop make the compile step seconds instead of a VM boot,
+   which changes what is cheap for everything above.
+
+Side products worth knowing about even though no objective claims them: the
+QEMU drivers are the only non-Windows implementation of the author's host
+contracts, and so their de facto written spec; and the corpus harness
+(`corpus_run.py`, which grades the emitter against the depot's hand-oracled
+test programs) is plug-agnostic, so a future plug in another language could
+be graded against the same banked IR and truths on day one.
 
 ## Anatomy of a rung
 
@@ -491,6 +229,71 @@ back end all the way to a CDX. They are also the four that need the ring
 transport, and the four that are expensive to run. All three facts follow the
 same boundary.
 
+## What each rung is worth
+
+The ladder's names invite a reading it does not support. `lex` does not test the
+lexer. **Every rung has the same shape and diverges at the same place**: the
+seed compiles one bundled subject twice, once to a bare-metal CDX and once to
+IR-CCE, and the two arms part company only after the seed's front end, IR
+pipeline and IR serializer have all run. Both arms then execute, and what gets
+compared is program output text. Only the subject changes from rung to rung.
+
+So the phase names describe **how much of the compiler the plug had to
+transpile**, not how deeply that phase was verified. If the seed's lexer is
+wrong, both arms are wrong together and `lex` is green.
+
+What does vary, and what the ladder is really graded on, is *what artifact the
+agreement is about*:
+
+| rungs | compared artifact | what agreement is worth |
+|---|---|---|
+| `lex` `parse` `desugar` `scope` `check` `lower` | a dump this harness designed: tokens, CST, AST, IR text | two independent code generators produce programs that agree on the phase's observable behaviour, for the instruction mix that phase uses. Blind to anything the dump does not print. |
+| `text` `pingpong` | Codex source re-emitted by the compiler's own `CodexEmitter` | as above, plus `pingpong` alone carries a self-consistency claim: emitting from stage 1's text must reproduce it. That is a different question from arm agreement and is checked separately by `pingpong_fixed_point`. |
+| `lir` | machine-code bytes from hand-built `LirFunc` data, no front end involved | the instruction selector agrees. The bytes are compared as decimal text and never executed. |
+| `fib` | the IR, in IRTextEmitter's grammar, for a front end run end to end | as the dump rungs above: a designed dump, not an image. Listed apart from them only because its subject reaches further. |
+| `fibx` `scale` `whole` `clamp` | the **actual CDX image the compiler emits** -- header, content, tail, symbol map | the strongest rungs, and the reason the ladder exists: the thing under comparison is now the x86 back end's real output rather than a dump of intermediate state. `whole` does it for every chapter but the driver. |
+
+**Fourteen rungs are not fourteen independent constructions.** Three pairs
+share a bundled unit and differ only in the harness riding in it:
+
+| unit | rungs | differ by |
+|---|---|---|
+| ~1.03 MB | `text` `pingpong` | 19 bytes: the harness and its stubs |
+| ~2.44 MB | `fibx` `scale` | the subject in the harness's text literal |
+| ~2.58 MB | `whole` `clamp` | the subject in the harness's text literal |
+
+That is not a flaw and it is not padding. Each pair asks the same compiler a
+different question -- `pingpong` feeds it its own output, `scale` gives it a
+real chapter instead of a toy, `clamp` gives it a subject that fails to compile
+-- and those are the questions worth asking. But a reader counting should
+know which number is which: **fourteen rungs, twelve compiles**
+(`LADDER_UNITS`; the merged pairs cost one compile each), **eleven distinct
+bundle constructions** (text and pingpong are separate compiles of one
+shared bundle recipe, differing only in the 19-byte harness).
+
+**The machinery now says so too, for the two expensive pairs.** Written and
+**verified 2026-08-18**: a full re-bank under the merged units reproduced all
+fourteen truths byte-identically, and the sweep after it was 14 of 14 on both
+arms. The merged sweep costs well under half of what fourteen compiles did;
+the current figures live in "Running it". `fibx`/`scale` and `whole`/`clamp`
+are one harness each, running the pipeline over a list of subjects and marking
+each dump, so each pair costs one compile instead of two. `oracle_lib.sh`
+carries `LADDER_UNITS` (twelve) beside `LADDER_RUNGS` (fourteen) and checks
+them against each other; `split_truth.py` cuts each run back into the per-rung
+`.truth` and `.zigout` files everything downstream already reads.
+
+That measurement has now been made twice: once for the merge itself, and again
+after the emitter's arena and match-arm pin landed. Fourteen truths, byte-identical
+both times. `text` and `pingpong` remain two units and always will -- pingpong's
+subject is built from text's OUTPUT, so it cannot exist until the other has run.
+
+**Both banked Updates are byte-identical on every rung.** Fourteen subjects,
+two compilers a release apart, not one byte of emitted image different. That
+is the first thing this arrangement can say that a single sweep cannot:
+Update 46 changed the compiler and changed nothing we measure. The same
+bank-to-bank diff is what proves a bundle edit image-preserving before it is
+trusted; the ones already proven are recorded in `JUSTIFICATIONS.md`.
+
 ## The two transports
 
 The transport is how a subject's IR gets into the guest. It differs between
@@ -498,7 +301,8 @@ rungs; the verdict never does.
 
 - **TCP** (`plug_run_checked.py`) is the default. It exercises the Codex-written
   network stack on every run, which is itself an oracle surface -- it is where
-  the odd-frame defect was caught. An output is trusted when the pcap parity
+  the odd-frame defect (finding 1: the NE2000 DMA fed one stale byte into
+  every odd-length receive) was caught. An output is trusted when the pcap parity
   proof holds (`pcap_parity.py`: frame parity follows TCP payload parity);
   when the proof cannot be established, the fallback is two transfers at
   different chunk sizes agreeing byte-for-byte.
@@ -514,6 +318,145 @@ take the ring, and the four rungs they carry ride in with them.
 There are two plugs, built from the same `ZigEmitter`: one fed over TCP, one fed
 through the serial ring. Both have to be rebuilt together, or a sweep reports
 yesterday's emitter for whichever rungs use the other one.
+
+## What the check proves, and what it does not
+
+Be careful about how much DDC to claim here. Two things are true, and both
+matter.
+
+**The code generation on the zig arm has genuinely independent lineage.** The
+bytes of the zig arm's executable are produced by the zig toolchain, which has
+nothing to do with Codex -- not its back end, not its seed, not anything in this
+repository. Worth being specific, because it is better than it sounds: the rungs
+run their zig with `zig run` (`ast/oracle_lib.sh`, `zig_verdict`), and zig 0.16
+does not use LLVM for that. It uses its own x86-64 back end. Measured on the
+command the rungs actually use, not on a nearby one: `zig run` produces a
+10,253,773-byte binary and `zig run -fllvm` produces a 4,113,312-byte one. So
+the machine code on the two arms comes from two independently written x86-64
+code generators, and a third is one flag away if we ever want it.
+
+When the two arms agree on the output of a compiler phase, that
+agreement crossed a real toolchain boundary. This is the DDC property, and it is
+the reason the ladder is worth running.
+
+**The seed is still in the loop.** The plug consumes IR, and it is the seed that
+compiles the subject down to that IR. So both arms pass through the seed before
+they diverge. The seed has not been removed, and this ladder on its own is
+therefore not a complete DDC witness -- it is a DDC check over the part of the
+pipeline that comes after the IR.
+
+And the caveat that outranks both:
+
+What it proves is **agreement, not correctness.** Both arms descend from the
+same source, so a mistake they share is a mistake the ladder cannot see -- if
+the back end computed a rodata offset wrongly, the transpiled back end would
+reproduce that faithfully and the diff would be empty. That is what
+`ast/f4_boot.py` ("Consumers of what the ladder emits", below) is for:
+booting the emitted binary asks a third party with no stake in the argument.
+
+One shape of the shared-mistake worry is closed for the content section, and
+by the compiler's own hand: the CDX header carries a SHA-256 that
+`cdx-build-header` computes over the content bytes, and recomputing it from
+the decimal bytes the four back-end truths print reproduces it in all four
+(audited 2026-08-18, no violations -- alongside header offsets that tile
+exactly, symbol extents that tile with no gaps, a debug map whose 722 names
+all match the symbol map, and `pingpong.truth` byte-identical to
+`text.truth`). Two arms drifting into the same nonsense would have to keep a
+hash the emitting compiler computed for its own reasons while doing it.
+
+Two provenance facts that bound all of it:
+
+**The plug is not an independent tool.** `zig-plug.cdx` is `ZigEmitter.codex`
+compiled *by the seed* and run *as a QEMU kernel*. The seed therefore produced
+both the IR the two arms rest on and the tool that generates the zig arm. The
+only lineage in the building genuinely unrelated to Codex is zig's own back end.
+
+**Nothing here is checked by running it.** Even in the strongest rungs the CDX
+bytes are compared as digits. `ast/f3_run.zig` and `ast/f4_boot.py` do execute
+emitted code, but they run artifacts already known to be byte-identical between
+arms, so each is one execution rather than a comparison -- and neither is in
+`allcycles.sh`.
+
+Which leaves two sentences worth being careful about.
+
+**What this establishes.** Given IR produced by the seed, the zig plug plus an
+unrelated x86-64 code generator reproduce, byte for byte, the observable output
+of the seed's own back end across fourteen subjects, up to and including the
+entire compiler minus its driver -- and for four of those, the complete CDX
+image the compiler emits.
+
+**What it does not establish.** That the seed is honest. The seed sits upstream
+of the divergence on both arms, and it also compiled the plug that produces the
+zig arm. Agreement here is evidence about code generation, not about the front
+end both arms inherit.
+
+## What this needs, and what it does not
+
+**It needs almost no changes to the Codex repository.** Everything Linux and
+QEMU specific lives here. The driver that boots the guest, `codex_vm.py`, is
+ours: it launches QEMU directly and re-implements the contracts the author's
+`codex-vm` host provides (the guest RAM size written at physical `0xFE8`
+before boot, the ring preload, the paced serial send) rather than calling
+`Start-VmRun` in `build/vm-config.ps1`. Every plug defect the ladder found
+was fixed in `ZigEmitter.codex` and carried upstream, so the checkout needs
+at most the fixes that have landed upstream but postdate the Update being
+banked. That claim is checkable, and the command is the check:
+
+    git -C <your Codex clone> log --oneline <release-commit>..HEAD
+
+The baseline is the release commit of the Update being banked, never
+`upstream/master` -- the mirror moves mid-cycle (the author's Perforce main
+runs ahead of the public releases, and landings of our own PRs appear
+between them), so a moving baseline cannot anchor a claim. What may sit on
+top of the release commit is defined under "The checkout" below; anything
+else is a patch nobody has justified, which is what the check is for.
+
+**From the checkout, tracked and used unmodified:** `seed/Codex.cdx`,
+`build/concat-codex-self.ps1`, `codex/plugs/common/plug-build-lib.ps1`, the
+chapters under `codex/compiler/`, and `codex/test/plug-oracle-arith.codex` with
+its `.expected`.
+
+**From the checkout, NOT tracked, and self-regenerating:**
+`codex/plugs/zig/build-output/zig-plug.cdx` and `plug-source.codex`. A fresh
+clone does not have them, and nothing needs building to get them: `cycle.sh`
+regenerates both -- it runs the author's bundler with the compile step
+stubbed out (`Build-PlugCdx` is replaced, since that step needs the author's
+Windows host) to write `plug-source.codex`, then compiles that through the
+seed with `ring_compile.py` to produce `zig-plug.cdx` and its fingerprint.
+`ast/allcycles.sh` runs `cycle.sh` first, so a fresh CODEX clone needs no
+prior build step, and `cycle.sh` is the only producer of these artifacts
+here (it alone writes the fingerprint `plug_provenance` demands; the
+author's own plug build is Windows-only and never runs on this host). A
+fresh LADDER clone is a different matter: the banks are tracked, but the
+working `ast/*.truth` and `ast/*.ir` files the arms consume are not, so its
+first act is `ast/rebank_all.sh` -- `allcycles.sh` alone has nothing to
+diff against.
+
+**From the host:** `qemu-system-x86_64` (6.2.0), `python3` (3.10.12),
+PowerShell 7 installed at `~/.local/pwsh/pwsh` (the bundling scripts invoke
+that path directly; 7.5.4 here), and `zig` (0.16.0) for the arm under test.
+`/dev/kvm` is optional: `CODEX_ACCEL` selects the accelerator and the
+default is `tcg`.
+
+**Point it at a checkout with `CODEX_ROOT`.** The ladder lives outside the
+tree it audits, so it cannot find one by looking upward, and it will not
+guess:
+
+    CodexRootError: no Codex checkout at or above /home/you/codex-zig-ladder
+    (looked for codex/compiler/opening.codex); set CODEX_ROOT to the checkout
+    you mean
+
+That refusal is the feature. A ladder silently pointed at the wrong checkout
+banks truth against a seed nobody named, which is the single failure this whole
+exercise exists to prevent. Pointing it at each Update in turn is the same
+variable and no other change. `ladder_root.py` resolves both roots and is the
+only thing that knows where the checkout is; `check_paths.py` asserts every
+path the ladder opens resolves, without running a rung, so a bad setup is a
+five-second answer rather than an hour-two surprise.
+
+The ladder repo itself clones from
+`git@github.com:showell/codex-zig-ladder.git`; see the NOT-tracked
+paragraph above for what a fresh ladder clone must regenerate first.
 
 ## Running it
 
@@ -564,25 +507,23 @@ Then the smaller pieces:
   oracle.
 - `codex_vm.py` -- launch/READY/run helpers shared by the above.
 
-Costs, measured 2026-08-17 on the Update 46 sweep, before the units merged. The
-merged ladder re-banked and swept in **59 minutes** on 2026-08-18; the per-rung
-figures below are the older, four-ring-compile shape: the
-ten cheap rungs bank in one to five minutes each. The four ring rungs are the
-expensive ones, thirteen to sixteen minutes to bank and about the same through
-the plug. The cheap rungs go through the plug in well under a minute each, so
-the ring rungs dominate everything: a full `rebank_all.sh` was **2h21m**.
-Run them in the background and watch for the markers above.
-
-Those numbers describe FOUR ring compiles. The merge makes it two, and until a
-full sweep runs under it there is no measured replacement -- so read them as the
-cost of the ladder that produced the current bank, not as a forecast.
+Costs -- this section is the one home for timing figures; re-measure and
+update them here at every rebank. A full merged `rebank_all.sh` (re-bank all
+truths, rebuild both plugs, sweep every arm) is **59 minutes**, measured
+2026-08-18. The ten cheap rungs bank in one to five minutes each and go
+through the plug in well under a minute; the two big units are the expensive
+part, thirteen to sixteen minutes to bank and about the same through the
+plug, so they dominate everything. Run long jobs in the background and watch
+for the markers above. (The pre-merge ladder, four big compiles instead of
+two, cost 2h21m -- the shape of the saving, not a current figure.)
 
 ## Operating rules
 
 1. **Sweep after any emitter change.** `ast/allcycles.sh`. One rung passing
    proves nothing about the other thirteen.
 2. **Re-bank after any seed change.** `ast/rebank_all.sh`, before any diff means
-   anything. The full procedure, prerequisites included, is the next section.
+   anything. The full procedure, prerequisites included, is "Processing a
+   new Update" below.
 3. **Validate a new subject standalone first.** Compile it through the seed on
    its own (about a minute) before spending a full cycle -- a quarter-hour to
    bank plus the same through the plug, for the expensive rungs -- discovering
@@ -593,6 +534,59 @@ cost of the ladder that produced the current bank, not as a forecast.
    rung failure instead. With the arena (upstream since `a061c173`) the big
    rungs run in about 240 MB, so the cap never bites a healthy arm.
    Measurements: `JUSTIFICATIONS.md`.
+
+## The checkout: cloning and branching
+
+How the Codex clone `CODEX_ROOT` points at is managed. This lived in nobody's
+head for a while and the head it lived in got confused, so, written down:
+
+**Two remotes, with different jobs.** `upstream` is `damiant3/NewRepository`
+and is read-only in practice: the mirror is downstream of the author's
+Perforce, so nothing merges there and PRs are landed by being re-applied on
+their side. `origin` is the `showell/NewRepository` fork, and it exists to
+hold pushed branches: PR branches, and the pin branch below. A local `master`
+has no job in this model: reference `upstream/master` directly and keep no
+local `master` -- a branch nobody advances only goes stale and then reads as
+if it means something.
+
+**The ladder runs against a pin branch, one per Update.** When an Update is
+being banked, the checkout sits on a branch named for it (`u47-rebank`),
+created at the Update's release commit and never rebased. On top of the
+release commit it carries the fewest cherry-picks the ladder cannot run
+without, and each must already be landed or filed upstream -- the pin is a
+delivery vehicle for nothing. At Update 47 that is exactly one, the arena
+(PR 71, since landed upstream at `a061c173`, so the next pin starts clean).
+`git log <release-commit>..HEAD` is the whole statement of what we changed,
+and the ideal length is zero.
+
+**The working tree parks on the pin for the entire banking cycle.**
+`CODEX_ROOT` names a working tree, not a commit: a `git checkout` there
+mid-sweep rebuilds the plug from whatever the tree now holds, and that cost a
+90-minute sweep once (2026-08-18). The fingerprint guard in `oracle_lib.sh`
+now refuses to run arms when `ZigEmitter.codex` or `ZigPlug.codex` moved
+under a built plug, but the guard is a tripwire, not a workflow. PR work
+therefore never happens in this tree: branch in a disposable `git worktree`
+somewhere else (the session scratchpad), off `upstream/master`, push to the
+fork, and delete the worktree after the PR lands; `git worktree prune` in the
+main clone clears the stubs.
+
+**Pulling an Update:** `git fetch upstream`, read the release commit (its
+message names the seeds and what moved), create `u<NN>-rebank` at it,
+cherry-pick only what the ladder still needs, push the pin to the fork, then
+follow "Processing a new Update" below. The register of "what the ladder
+still needs" is `findings/README.md` plus the "Filed and waiting" list in
+`PRIORITIES.md`: anything there marked filed-but-not-landed is a candidate,
+and the first check is always whether the Update just landed it. The pin
+being on the fork means no clone is precious.
+
+**Re-cloning from scratch** is therefore cheap and occasionally worth doing,
+since a long-lived clone accumulates branches from work that has since
+landed. `git clone git@github.com:showell/NewRepository.git`, then
+`git remote add upstream git@github.com:damiant3/NewRepository.git`, then
+`git switch u<NN>-rebank` (the pin is on the fork). Git carries everything
+else: point `CODEX_ROOT` at the new clone, let `check_paths.py` prove the
+wiring in five seconds, and the first `cycle.sh` (or the sweep, which runs
+it) regenerates the untracked plug artifacts from the seed.
 
 ## Processing a new Update
 
@@ -725,8 +719,9 @@ arena entry in `JUSTIFICATIONS.md`.
       setsid nohup ast/rebank_all.sh > logs/rebank-uNN.log 2>&1 < /dev/null &
 
   Truth arms run cheapest-first and stop on the first failure; a CDX9002 on
-  a big rung usually means the deck scale needs raising (the `decks=`
-  entries in `oracle_lib.sh`'s `mode_flags`), not that something broke.
+  a big rung usually means the deck scale -- the seed's compile-time memory
+  reservation -- needs raising (the `decks=` entries in `oracle_lib.sh`'s
+  `mode_flags`), not that something broke.
 - **Bank only when the zig arms are green too** (`bank_truth.py`). It
   refuses mixed-harness sets on its own; the green-arms rule is ours, from
   the merge, and it exists because a bank taken over red arms freezes a
