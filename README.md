@@ -25,38 +25,12 @@ diff cannot make: the text it emits from stage 1's text is byte-identical to
 stage 1's, so the round trip is a fixed point rather than two arms agreeing on
 the same drift.
 
-The sweep that got here carried four changes at once, and three of them were
-defects on our side of the line rather than the depot's:
-
-- The bundler had been renaming `deck-record` out from under the seed, a
-  workaround for a finding Update 43 closed. The gate that decides whether
-  `deck-record` is the deck intrinsic runs in the SEED, so the rename turned the
-  deck discipline OFF in every bundle we ever built. Only `clamp` could notice,
-  because only a compile that records diagnostics needs a value to outlive
-  `emit-all-defs`'s per-function `__heap-restore`.
-- The harness never named `init-phase-allocator`, which is the other half of the
-  same gate. It does now, in `DECK_PROLOGUE`.
-- Lowering was handed `sort-bindings (cr.types)`, the inferred types of the
-  subject's defs. Everything the subject DECLARES is registered into the env
-  instead, so a record literal read in receiver position resolved to nothing.
-  It gets what `opening.codex` passes now.
-- And one that was the depot's: `ZigEmitter` emitted `__deck-set` as a bare
-  constant, dropping its argument, so a caller whose binding had no second
-  consumer would not compile. Filed as finding 12, and landed upstream: it is in
-Perforce main 16627 and public with Update 47.
-
-**Both Updates are banked, and every rung is byte-identical across them.**
-Fourteen subjects, two compilers a release apart, not one byte of emitted image
-different. That is the first thing this arrangement can say that a single sweep
-cannot: Update 46 changed the compiler and changed nothing we measure.
-
-It also settled two questions rather than arguing them. `u45-scope` was banked
-with `bsearch-text-pos` present and `u46-scope` without it, and they are
-identical, so the definition stripped out of that bundle really was unreachable.
-`u45-fibx` was banked with `CCE` bundled twice and `u46-fibx` with it once, and
-they are identical, so the second copy really was inert. Both were changes made
-to get Update 46 to compile at all, and both are now shown to be
-image-preserving instead of assumed to be.
+**Both banked Updates are byte-identical on every rung.** Fourteen subjects,
+two compilers a release apart, not one byte of emitted image different. That
+is the first thing this arrangement can say that a single sweep cannot:
+Update 46 changed the compiler and changed nothing we measure. The same
+bank-to-bank diff is what proves a bundle edit image-preserving before it is
+trusted; the ones already proven are recorded in `JUSTIFICATIONS.md`.
 
 The Update is not typed here by hand -- `seed_identity.py` derives it from the
 seed's own hash by finding the release note that names it, so the label cannot
@@ -76,20 +50,12 @@ banked. That claim is checkable, and the command is the check:
 
     git -C <your Codex clone> log --oneline <release-commit>..HEAD
 
-An earlier version of this section said to diff against `upstream/master`
-and expect nothing. That was true for exactly the week when the newest
-public commit WAS the release; upstream moves between Updates (their
-Perforce main runs ahead of the public releases, and landings of our own
-PRs appear on the mirror mid-cycle), so the honest baseline is the release
-commit of the Update you are banking, and the honest statement is the log
-of what sits on top of it. What may sit there is defined under "The
-checkout" below; anything else is a patch nobody has justified, which is
-what the check is for.
-
-Before the move to its own repository this check needed
-`':(exclude)zig-ladder'` appended, because the ladder sat inside the tree it
-audits and had to be subtracted out. It does not any more, and not needing
-the exclusion is the plainest statement of the separation.
+The baseline is the release commit of the Update being banked, never
+`upstream/master` -- the mirror moves mid-cycle (the author's Perforce main
+runs ahead of the public releases, and landings of our own PRs appear
+between them), so a moving baseline cannot anchor a claim. What may sit on
+top of the release commit is defined under "The checkout" below; anything
+else is a patch nobody has justified, which is what the check is for.
 
 **From the checkout, tracked and used unmodified:** `seed/Codex.cdx`,
 `build/concat-codex-self.ps1`, `codex/plugs/common/plug-build-lib.ps1`, the
@@ -103,21 +69,19 @@ regenerates both -- it runs the author's bundler with the compile step
 stubbed out (`Build-PlugCdx` is replaced, since that step needs the author's
 Windows host) to write `plug-source.codex`, then compiles that through the
 seed with `ring_compile.py` to produce `zig-plug.cdx` and its fingerprint.
-`ast/allcycles.sh` runs `cycle.sh` first, so the documented sweep entry
-point works on a fresh clone with no prior step. An earlier version of this
-paragraph said to run the author's gated build once; that was wrong twice
-over -- the artifacts on disk have always come from `cycle.sh` (only it
-writes the fingerprint `plug_provenance` demands), and the author's build is
-not runnable here anyway.
+`ast/allcycles.sh` runs `cycle.sh` first, so the sweep works on a fresh
+clone with no prior step, and `cycle.sh` is the only producer of these
+artifacts here (it alone writes the fingerprint `plug_provenance` demands;
+the author's own plug build is Windows-only and never runs on this host).
 
 **From the host:** `qemu-system-x86_64` (6.2.0), `python3` (3.10.12), PowerShell
 (7.5.4, for the bundlers, which are the author's tooling), and `zig` (0.16.0)
 for the arm under test. `/dev/kvm` is optional: `CODEX_ACCEL` selects the
 accelerator and the default is `tcg`.
 
-**Point it at a checkout with `CODEX_ROOT`.** The ladder no longer lives
-inside the tree it audits, so it cannot find one by looking upward, and it will
-not guess:
+**Point it at a checkout with `CODEX_ROOT`.** The ladder lives outside the
+tree it audits, so it cannot find one by looking upward, and it will not
+guess:
 
     CodexRootError: no Codex checkout at or above /home/you/codex-zig-ladder
     (looked for codex/compiler/opening.codex); set CODEX_ROOT to the checkout
@@ -142,21 +106,19 @@ and is read-only in practice: the mirror is downstream of the author's
 Perforce, so nothing merges there and PRs are landed by being re-applied on
 their side. `origin` is the `showell/NewRepository` fork, and it exists to
 hold pushed branches: PR branches, and the pin branch below. A local `master`
-has no job in this model -- ours sat parked at Update 40 while upstream
-reached 47, confusing every reader who expected it to mean something, and is
-now deleted. Reference `upstream/master` directly and do not recreate a
-local `master`.
+has no job in this model: reference `upstream/master` directly and keep no
+local `master` -- a branch nobody advances only goes stale and then reads as
+if it means something.
 
 **The ladder runs against a pin branch, one per Update.** When an Update is
 being banked, the checkout sits on a branch named for it (`u47-rebank`),
 created at the Update's release commit and never rebased. On top of the
 release commit it carries the fewest cherry-picks the ladder cannot run
 without, and each must already be landed or filed upstream -- the pin is a
-delivery vehicle for nothing. At Update 47 that is exactly one: the arena
-(PR 71), which the release's emitter predates and whose absence balloons the
-big rungs' zig arms past 3 GB; it landed upstream at `a061c173`, so the next
-pin starts clean. `git log <release-commit>..HEAD` is the whole statement of
-what we changed, it is one commit today, and the ideal length is zero.
+delivery vehicle for nothing. At Update 47 that is exactly one, the arena
+(PR 71, since landed upstream at `a061c173`, so the next pin starts clean).
+`git log <release-commit>..HEAD` is the whole statement of what we changed,
+and the ideal length is zero.
 
 **The working tree parks on the pin for the entire banking cycle.**
 `CODEX_ROOT` names a working tree, not a commit: a `git checkout` there
@@ -585,16 +547,12 @@ cost of the ladder that produced the current bank, not as a forecast.
    its own (about a minute) before spending a full cycle -- twelve minutes to
    bank plus fourteen through the plug, for the expensive rungs -- discovering
    it does not compile.
-4. **The zig arm's memory is the emitter's arena, and the run is capped.**
-   The emitted prelude allocates every object from one arena (upstream since
-   a061c173; before it, `std.heap.page_allocator` rounded a ~40-byte record
-   up to a 4096-byte page and the big rungs peaked past 3 GB -- OOM-killed on
-   a good day, and twice a WSL VM livelocked instead, which no log survives).
-   With the arena, `fibx` and `whole` run in about 240 MB. `zig_verdict`
-   still wraps `zig run` in a 2.5 GB address-space cap, because the balloon
-   comes back whenever `CODEX_ROOT` names a checkout whose emitter predates
-   the arena -- the Update 47 rebank proved that -- and under the cap that is
-   a recorded rung failure instead of a dead VM.
+4. **Never lift the 2.5 GB address-space cap on `zig_verdict`'s `zig run`.**
+   An emitted binary from any emitter that predates the arena balloons past
+   3 GB and can livelock the whole WSL VM; under the cap that is a recorded
+   rung failure instead. With the arena (upstream since `a061c173`) the big
+   rungs run in about 240 MB, so the cap never bites a healthy arm.
+   Measurements: `JUSTIFICATIONS.md`.
 
 ## Processing a new Update
 
@@ -707,16 +665,12 @@ diverge far enough that verbatim sweeps are mostly red, the right response
 is landing the fixes, not softening the rule; revisit it if that flow stops
 working.
 
-One carve-out, established at the Update 47 rebank: a fix the big arms
-cannot RUN without on this machine may ride the pin branch, provided it is
-already landed or filed upstream. 47's emitter predates the arena, so its
-`fibx`/`whole` arms balloon past 3 GB -- under the 2.5 GB cap that is a
-recorded failure, and before the cap it was twice a dead VM -- and a bank
-whose two biggest rungs can never execute here measures less, not more
-honestly. The arena (PR 71, upstream at `a061c173`) was cherry-picked onto
-`u47-rebank` and the sweep went 14 of 14. The line being drawn: a capacity
-prerequisite already accepted upstream may ride the pin; a correctness fix
-may not, because a wrong answer IS the measurement.
+One carve-out (agreed, Steve + Claude, 2026-08-19): a capacity prerequisite
+the big arms cannot RUN without on this machine may ride the pin, provided
+it is already landed or filed upstream -- a bank whose two biggest rungs can
+never execute measures less, not more honestly. A correctness fix may not,
+because a wrong answer IS the measurement. Worked example and numbers: the
+arena entry in `JUSTIFICATIONS.md`.
 
 ### 5. Run, bank, retire
 
