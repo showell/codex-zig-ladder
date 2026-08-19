@@ -151,7 +151,7 @@ Every rung has a **truth arm**, which is the seed on bare metal, and a **zig
 arm**, which is the plug's output built and run natively. The per-rung wrappers
 are named `ast/truthcycle_<m>.sh` and `ast/<m>cycle.sh` where they exist, but
 they are conveniences and the set is incomplete: `lex`'s truth arm is
-`ast/truthcycle.sh`, `text` and `pingpong` have no `<m>cycle.sh` at all, and
+`ast/truthcycle.sh`, `text`, `pingpong` and `lower` have no `<m>cycle.sh`, and
 `scale` and `clamp` have wrappers that run the unit they ride in, because they
 have no compile of their own to run. The arms themselves are `truth_arm` and
 `arm_for` in `ast/oracle_lib.sh`; the wrappers are one line each on top.
@@ -297,12 +297,15 @@ after the emitter's arena and match-arm pin landed. Fourteen truths, byte-identi
 both times. `text` and `pingpong` remain two units and always will -- pingpong's
 subject is built from text's OUTPUT, so it cannot exist until the other has run.
 
-**Both banked Updates are byte-identical on every rung.** Fourteen subjects,
-two compilers a release apart, not one byte of emitted image different. That
-is the first thing this arrangement can say that a single sweep cannot:
-Update 46 changed the compiler and changed nothing we measure. The same
-bank-to-bank diff is what proves a bundle edit image-preserving before it is
-trusted; the ones already proven are recorded in `JUSTIFICATIONS.md`.
+**u45 -> u46 was byte-identical on every rung; u46 -> u47 is the first
+Update that moved the measurement.** Nine of fourteen rungs identical, five
+moved with their upstream causes: `parse` (44 new lexer tokens), `clamp`
+(6 new IR defs), and `fibx`/`scale`/`whole` (the issue-70 ATA guards and a
+burst helper, ~360 bytes each). Both kinds of answer are the point -- an
+Update that changes nothing we measure and an Update whose diff itemises
+exactly what it changed are each something a single sweep cannot say. The
+same bank-to-bank diff is what proves a bundle edit image-preserving before
+it is trusted; the ones already proven are recorded in `JUSTIFICATIONS.md`.
 
 ## The two transports
 
@@ -507,8 +510,10 @@ Then the smaller pieces:
   `@compileError`.
 - `cycle.sh [prog...]` -- rebundle the zig plug and ring-compile it, then run
   whichever warmup oracles you NAME. `cycle.sh hello recurse fib` runs three
-  small programs with banked answers and checks the plug end to end before any
-  rung is worth running; `cycle.sh` with no arguments, which is how
+  small programs with banked answers (gitignored; a fresh clone regenerates
+  them with `warmups/regen.sh`) and checks the plug end to end before any
+  rung is worth running -- a warmup diff fails the cycle; `cycle.sh` with no
+  arguments, which is how
   `allcycles.sh` invokes it, rebuilds the plug and runs no warmups at all.
 - `ring_compile.py` -- compile through the seed under QEMU via the codex-vm ring
   contract. This is the compile path, not the transport of the same name. Blobs
@@ -520,7 +525,9 @@ Then the smaller pieces:
 Costs -- this section is the one home for timing figures; re-measure and
 update them here at every rebank. A full merged `rebank_all.sh` (re-bank all
 truths, rebuild both plugs, sweep every arm) is **59 minutes**, measured
-2026-08-18. The ten cheap rungs bank in one to five minutes each and go
+2026-08-18. (Not re-measured at the u47 rebank: that run was interrupted by
+a wedged QEMU and restarted, so its wall time measures the wedge; the next
+clean rebank refreshes the figure.) The ten cheap rungs bank in one to five minutes each and go
 through the plug in well under a minute; the two big units are the expensive
 part, thirteen to sixteen minutes to bank and about the same through the
 plug, so they dominate everything. Run long jobs in the background and watch
@@ -671,11 +678,15 @@ diff.
 - **The tree must not move while the ladder reads it.** `CODEX_ROOT` names a
   working tree, and a checkout mid-sweep rebuilt the plug from the wrong
   emitter once and reproduced an already-fixed defect (2026-08-18, 90
-  minutes). Know what is actually guarded: the fingerprint covers ONLY the
-  plug source (`ZigEmitter.codex` and `ZigPlug.codex`, `plug_provenance` in
-  `oracle_lib.sh`) -- nothing detects the seed or anything else moving
-  mid-run (`seed_identity.require_match` exists for exactly that and nothing
-  calls it yet). Everything beyond the plug source is operator discipline:
+  minutes). Know what is actually guarded: the TCP plug's fingerprint covers
+  ONLY `ZigEmitter.codex` and `ZigPlug.codex` (`plug_provenance` in
+  `oracle_lib.sh`); the ring plug's guard is stronger -- `ringplug_build.sh`
+  records the bundle sha in `ast/ringplug.cdx.fp` and `plug_run_ring.py`
+  re-bundles and refuses a mismatch before booting. Banking refuses a moved
+  seed or moved harness content after the fact (the `truth_prov` sidecars),
+  but nothing detects the seed moving MID-run
+  (`seed_identity.require_match` exists for exactly that and nothing calls
+  it yet). Everything beyond that is operator discipline:
   do not touch the clone until the run finishes or is killed. The clone is
   not PR scratch space during a sweep -- build PRs in a worktree elsewhere.
 - **`seed_identity.py` says the right thing** (seed hash, Update number,

@@ -69,11 +69,15 @@ list of names.
 
 **2. Changed-only reruns.** `corpus_run.py --changed`: re-emit all,
 compare hashes to the bank, run only the changed set, report the verdict
-diff. The cache key includes the zig version and the native-tool
-fingerprint, so a toolchain or Update bump can never serve a stale
-verdict. This is the everyday loop: emitter fix -> native rebuild
-(~1 min) -> `--changed` (~5 min typical) -> a diff naming exactly what
-moved.
+diff. The carry key is (emitted-zig sha) x (zig version) x (.expected
+content sha) -- everything a verdict is actually a function of. The
+native tools are NOT in the key on purpose: every `--changed` run
+re-emits through the current tools, so a tool change shows up as moved
+zig hashes, which is the honest signal (their hashes are recorded in the
+bank's meta as provenance only). A bank written before the
+.expected half of the key existed carries nothing once, then heals.
+This is the everyday loop: emitter fix -> native rebuild (~1 min) ->
+`--changed` (~5 min typical) -> a diff naming exactly what moved.
 
 **3. A sentinel set, chosen by the data instead of by hand.** We hold the
 IR of every program, and the emitter's surface is finite (~67

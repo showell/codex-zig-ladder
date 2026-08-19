@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Run the depot's own test battery through the plug, natively.
 
-`codex/test/` holds about 1,500 Codex programs, 1,300 of them beside a
-hand-verified `.expected` file. That is an oracle per program, written by
-someone with no knowledge of this plug, which is the one property our own probes
-can never have: a probe tests what we already suspect.
+`codex/test/` holds ~560 top-level Codex programs (566 at Update 47), most
+beside a hand-verified `.expected` file. That is an oracle per program,
+written by someone with no knowledge of this plug, which is the one property
+our own probes can never have: a probe tests what we already suspect.
 
 Two stages, cheap first, because they answer different questions.
 
@@ -50,6 +50,28 @@ ZIGEMIT = LADDER / 'native' / 'zigemit'
 WORK = LADDER / 'corpus'
 CENSUS = WORK / 'census.json'
 MARKER = re.compile(r'@compileError\("zig plug: ([^"]*)"\)')
+
+
+def expected_text(name):
+    """The .expected content as the comparison sees it, or None. One home for
+    the normalization: 76 of the depot's .expected files open with one 0x01
+    the console capture wrote, and a subset of exactly those use CRLF --
+    every CRLF file is 0x01-marked, no unmarked file holds a CR, and
+    marked/unmarked siblings (vec-array vs vec-pattern) have identical prints
+    and openings, so both bytes are the capture path's line discipline, not
+    output. The depot's own adjudicator (build/test.ps1 phase 2) strips every
+    CR the same way."""
+    exp = TESTS / f'{name}.expected'
+    if not exp.is_file():
+        return None
+    want = exp.read_text(errors='replace').replace('\r', '')
+    return want[1:] if want.startswith('\x01') else want
+
+
+def expected_sha(name):
+    want = expected_text(name)
+    return None if want is None else hashlib.sha256(
+        want.strip().encode()).hexdigest()[:16]
 
 
 def need_tools():
@@ -189,16 +211,7 @@ def stage_run(results, out_dir, persist=True):
             verdict(name, kind, first[:160])
             continue
         got = p.stderr.decode('utf-8', 'replace')
-        # Compare program text, not capture-channel bytes. 76 of the depot's
-        # .expected files open with one 0x01 the console capture wrote, and a
-        # subset of exactly those use CRLF -- every CRLF file is 0x01-marked,
-        # no unmarked file holds a CR, and marked/unmarked siblings (vec-array
-        # vs vec-pattern) have identical prints and openings, so both bytes
-        # are the capture path's line discipline, not output. The depot's own
-        # adjudicator (build/test.ps1 phase 2) already strips every CR before
-        # comparing; the zig arm has no serial console to write either byte.
-        want = exp.read_text(errors='replace').replace('\r', '')
-        want = want[1:] if want.startswith('\x01') else want
+        want = expected_text(name)
         if got.strip() == want.strip():
             verdict(name, 'match')
         else:
@@ -254,6 +267,9 @@ def assemble_census(results, carried, verdicts):
         if marks:
             e['markers'] = marks
         n = r['name']
+        esha = expected_sha(n)
+        if esha:
+            e['expected_sha'] = esha
         if n in carried:
             e['verdict'] = carried[n]['verdict']
         elif n in verdicts:
@@ -345,8 +361,12 @@ def main():
             if r['stage'] != 'clean':
                 continue
             old = bank['programs'].get(r['name'])
+            # The .expected content is part of the key: an Update that
+            # rewrites an oracle file must rerun the program, or the bank
+            # serves a match against an answer that no longer exists.
             if (same_zig and old and old.get('verdict')
-                    and old.get('zig_sha') == r.get('zig_sha')):
+                    and old.get('zig_sha') == r.get('zig_sha')
+                    and old.get('expected_sha') == expected_sha(r['name'])):
                 carried[r['name']] = old
             else:
                 to_run.append(r)
