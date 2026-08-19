@@ -51,7 +51,20 @@ def run_verified(plug_cdx, ir_path, out_path, port=9145, attempts=3,
                                      pcap=pcap):
                 print(f"[verified] attempt {i + 1}: transfer failed")
                 continue
-            odd = pcap_parity.odd_bodies(pcap, port)
+            # The parity proof is vacuous on a capture that missed the
+            # transfer: a header-only pcap has zero segments, zero odd
+            # frames, and would read as trusted. The captured host->guest
+            # payload must at least cover the IR body (headers and
+            # retransmissions only add bytes, so this never false-refuses).
+            segs = pcap_parity.segments(pcap, port)
+            covered = sum(p for _, p, _ in segs)
+            need = os.path.getsize(ir_path)
+            if covered < need:
+                print(f"[verified] attempt {i + 1}: capture covers {covered} "
+                      f"of >= {need} payload bytes; parity proof would be "
+                      f"vacuous; retrying")
+                continue
+            odd = [(s, p, e) for s, p, e in segs if max(e, 60) % 2]
             blob = open(tmp, "rb").read()
             h = hashlib.md5(blob).hexdigest()[:12]
             if not odd:

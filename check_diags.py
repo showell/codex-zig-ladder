@@ -145,10 +145,12 @@ def judge(path, population=False):
     # to zero would have been silent. That is the same "cannot tell clean from
     # never-ran" hole this file closes in two other places, and I put it in
     # here. Only meaningful over a whole sweep, hence the population guard.
+    drifted = False
     if population:
         for code, entry in sorted(POLICY.items()):
             expected = entry[2] if len(entry) > 2 else None
             if expected and code not in census:
+                drifted = True
                 print(f'  NOTE {code} x0  {entry[1]}'
                       f'  <-- POPULATION MOVED, was {expected}, now absent. '
                       f'Either the sweep did not reach the source that emits it, '
@@ -163,6 +165,8 @@ def judge(path, population=False):
         # which is the exact habit this file exists to break.
         moved = '' if (not population) or expected in (None, len(lines)) else \
             f'  <-- POPULATION MOVED, was {expected}; read the new ones and re-pin'
+        if moved:
+            drifted = True
         print(f'  NOTE {code} x{len(lines)}  {entry[1]}{moved}')
     for code, lines in unknown:
         print(f'  UNKNOWN {code} x{len(lines)} -- not in check_diags.py POLICY.')
@@ -177,7 +181,11 @@ def judge(path, population=False):
         if len(lines) > 3:
             print(f'    ... {len(lines) - 3} more')
 
-    return 1 if (failures or unknown) else 0
+    # A moved pin fails the census run, not just the scroll: the CDX2064
+    # comment promises "a reappearance is a stopped rung", and a promise a
+    # return code does not keep is scroll with extra steps. Per-rung runs
+    # (no population) never judge pins, so they cannot fail on them.
+    return 1 if (failures or unknown or drifted) else 0
 
 
 if __name__ == '__main__':

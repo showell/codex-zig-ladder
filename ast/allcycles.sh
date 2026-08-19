@@ -8,8 +8,13 @@ set -e
 "$T/cycle.sh"
 # Both plugs come from the same ZigEmitter, and a sweep that refreshed
 # only one would report yesterday's emitter for whichever rungs use the
-# other.
-bash "$T/ast/ringplug_build.sh" > /dev/null
+# other. Output captured, not discarded: a refusal used to send its
+# PLUG COMPILE FAILED to /dev/null and kill the sweep with no message.
+if ! ringout=$(bash "$T/ast/ringplug_build.sh" 2>&1); then
+    printf '%s\n' "$ringout" | tail -10
+    echo "RING PLUG BUILD FAILED -- sweep not run"
+    exit 1
+fi
 echo "REBUILT"
 fail=0
 for m in $LADDER_UNITS; do
