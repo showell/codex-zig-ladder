@@ -234,6 +234,27 @@ from step 1's bare-metal confirmation. What it left behind, cheapest first:
    consistent-hash-balance, ...) -- candidate findings, since bare metal
    evidently does not trap there. Wants the probe treatment.
 
+## 10. Possible follow-up, parked: the notebook / Prism angle (2026-08-19)
+
+Not work, a bookmark, deliberately last. The earlier riff on Python angles
+for this project landed on a Python-hosted notebook that uses Codex to show
+how source becomes assembly, stage by stage. Damian already designed the
+maximal version: **Prism** (`apps/prism/design/Active/PrismDesign.md`,
+upstream) -- Codex source in the center, every plug's output arrayed around
+it, the compiler itself as the web server and the plugs as live TCP
+sidecars. He calls it dusty; it predates Update 40.
+
+Why it belongs at the end of THIS list: the zig work has been quietly
+building Prism's expensive parts in cheap form. `native/codexir` and
+`native/zigemit` run the front end and a plug with no VM at all (a third of
+a second, no QEMU, no sidecar fleet), `zigc` is the whole compiler as an
+ordinary process, and the ladder already speaks the IR wire and knows the
+per-phase output modes. A notebook driving those native binaries is a
+weekend-sized demonstrator of Prism's core loop; the full design's
+50-sidecar fan-out is the part that stays dusty. If picked up, start by
+re-reading the design against what exists now and asking Damian what he
+would want first.
+
 ---
 
 ## Filed and waiting
