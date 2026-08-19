@@ -345,9 +345,19 @@ ring_arm() {
 
 # Which transport a rung needs is a property of the rung, so the sweep
 # asks here rather than carrying a list of its own.
+#
+# check joined the ring rungs 2026-08-19: its 4.83 MB IR sat close enough
+# to the TCP intake ceiling that the guest was still receiving when the
+# 180s cap hit -- seven attempts, four chunk sizes, every one of them
+# zero bytes back with no OK line and no !EXC. The ceiling is a guest-heap
+# property, not a wire-size one, which is why a LARGER rung (text, 5.67 MB)
+# still rides TCP: what matters is heap live at once, and check's shape
+# costs more of it. Moving a rung here is the answer to that failure, not
+# a raised timeout -- waiting longer for a path that costs 130x is how the
+# ceiling gets rediscovered later at greater expense.
 arm_for() {
     case "$1" in
-        fibx|whole) echo ring_arm ;;
-        *)          echo zig_arm ;;
+        check|fibx|whole) echo ring_arm ;;
+        *)                echo zig_arm ;;
     esac
 }
