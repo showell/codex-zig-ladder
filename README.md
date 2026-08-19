@@ -171,9 +171,12 @@ main clone clears the stubs.
 
 **Pulling an Update:** `git fetch upstream`, read the release commit (its
 message names the seeds and what moved), create `u<NN>-rebank` at it,
-cherry-pick only what the ladder still needs (check first whether the Update
-landed it), push the pin to the fork, then follow "Processing a new Update"
-below. The pin being on the fork means no clone is precious.
+cherry-pick only what the ladder still needs, push the pin to the fork, then
+follow "Processing a new Update" below. The register of "what the ladder
+still needs" is `findings/README.md` plus the "Filed and waiting" list in
+`PRIORITIES.md`: anything there marked filed-but-not-landed is a candidate,
+and the first check is always whether the Update just landed it. The pin
+being on the fork means no clone is precious.
 
 **Re-cloning from scratch** is therefore cheap and occasionally worth doing,
 since a long-lived clone accumulates branches from work that has since
