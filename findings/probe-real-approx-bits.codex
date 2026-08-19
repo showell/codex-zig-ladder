@@ -1,0 +1,44 @@
+Chapter: ProbeRealApproxBits
+
+ The f32 half of the approx-equality probe, held apart from
+ probe-approx-eq.codex because today it cannot run: the zig plug has no
+ emitter for `bits-to-real-approx`, so this chapter transpiles to three
+ `@compileError` markers and the unit refuses. A refusal is the lucky case
+ -- the defect it would otherwise demonstrate (IrApproxEq emitted as `==`,
+ dropping bare metal's 4-ULP band) produces a wrong answer, not an error --
+ but the missing emitter blocks the demonstration, and is itself a gap
+ worth an entry.
+
+ Once bits-to-real-approx emits, this is the sharper instrument: the bit
+ patterns are pinned, #3F800000 and #3F800001 are one ULP apart by
+ definition, and the f32 path exercises emit-approx-eq's width flag, which
+ the f64 probe cannot.
+
+ Expected on bare metal:
+
+   one-ulp 1
+   same 1
+   five-ulp 0
+
+ A plug that emits == prints one-ulp 0. A plug without the builtin refuses
+ with `zig plug: no emitter for bits-to-real-approx`, which is what it does
+ today.
+
+Section: Values
+
+  a0 : Real approximate
+  a0 = bits-to-real-approx #3F800000
+
+  a1 : Real approximate
+  a1 = bits-to-real-approx #3F800001
+
+  a5 : Real approximate
+  a5 = bits-to-real-approx #3F800005
+
+Section: Main
+
+  opening : [Console] Nothing = act
+    print-line-uni ("one-ulp " & show (if a0 ~ a1 then 1 else 0))
+    print-line-uni ("same " & show (if a0 ~ a0 then 1 else 0))
+    print-line-uni ("five-ulp " & show (if a0 ~ a5 then 1 else 0))
+  end

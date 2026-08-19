@@ -1,0 +1,50 @@
+Chapter: ProbeApproxEq
+
+ `~` is the only equality Real has (`==` on a Real is refused, CDX2085), and
+ on bare metal it is a 4-ULP band: both operands are mapped to monotonic
+ ordinals and the ordinal distance is compared against 4 (X86_64.codex,
+ emit-approx-eq: `cmp 4 / setcc be`). ZigEmitter emits `~` and `~0` alike as
+ zig `==`, which narrows the band to zero width.
+
+ One ULP apart is therefore the whole test: inside the band, not identical.
+ 0.1 + 0.2 and 0.3 are adjacent doubles -- the sum rounds to the
+ representable value one step above the literal's -- so the pair is one ULP
+ apart by construction, with no bit-twiddling builtins involved (the precise
+ f32 version of this probe, probe-real-approx-bits.codex, is blocked on a
+ missing bits-to-real-approx emitter and refuses rather than answering).
+ Controls: a value against itself must answer 1 on any self-consistent arm,
+ and 0.31 is far outside any band, so an arm answering the same thing
+ everywhere is visibly not the language.
+
+ A caution the truth run must settle: if the constant folder evaluates
+ `~` itself at compile time, both arms inherit the compiler's own answer
+ and the probe shows nothing. The defs are kept apart to discourage that;
+ if the banked IR carries no IrApproxEq node, reshape the probe before
+ believing either arm.
+
+ Expected on bare metal:
+
+   one-ulp 1
+   same 1
+   far 0
+
+ A plug that emits == prints one-ulp 0.
+
+Section: Values
+
+  d-sum : Real
+  d-sum = 0.1 + 0.2
+
+  d-lit : Real
+  d-lit = 0.3
+
+  d-far : Real
+  d-far = 0.31
+
+Section: Main
+
+  opening : [Console] Nothing = act
+    print-line-uni ("one-ulp " & show (if d-sum ~ d-lit then 1 else 0))
+    print-line-uni ("same " & show (if d-lit ~ d-lit then 1 else 0))
+    print-line-uni ("far " & show (if d-sum ~ d-far then 1 else 0))
+  end

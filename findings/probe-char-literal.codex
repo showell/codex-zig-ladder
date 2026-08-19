@@ -1,0 +1,40 @@
+Chapter: ProbeCharLiteral
+
+ A character read out of a text, compared against a character literal. The
+ zig plug emits IrCharLit as its raw IR payload -- the CCE code the compiler
+ encoded into the literal -- while its char-at answers a Unicode codepoint,
+ so the two sides of `char-at s i == 'x'` live in different alphabets and
+ the comparison is False for every letter. Bare metal keeps both sides in
+ CCE and answers True. The depot's own corpus carries the shape already: the
+ vowel-count test is a chain of `ch == 'a'` comparisons.
+
+ The shape is a wrong ANSWER rather than a refusal: both arms compile clean,
+ one classifies the character and one never can. Numbers rather than text so
+ the answer cannot be confused with a print path. The controls pin the
+ failure to the literal: two literals agree on any self-consistent arm, and
+ the found-a line must answer 0 on both, so an arm that answers the same
+ thing everywhere is visibly not the language.
+
+ Expected on bare metal:
+
+   found-x 1
+   found-a 0
+   lit-lit 1
+   code-of-x <the truth run records it>
+
+ A plug that emits the literal raw prints found-x 0; if its char-code also
+ converts, code-of-x moves too.
+
+Section: Classify
+
+  is-x : Text, Integer -> Integer
+  is-x (s) (i) = if char-at s i == 'x' then 1 else 0
+
+Section: Main
+
+  opening : [Console] Nothing = act
+    print-line-uni ("found-x " & show (is-x "axb" 1))
+    print-line-uni ("found-a " & show (is-x "axb" 0))
+    print-line-uni ("lit-lit " & show (if 'x' == 'x' then 1 else 0))
+    print-line-uni ("code-of-x " & show (char-code 'x'))
+  end
