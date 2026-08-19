@@ -1,0 +1,54 @@
+Chapter: ProbeMatchGuard
+
+ A guarded match arm, and nothing else. The zig plug never reads
+ IRBranch.guard -- the word does not appear in ZigEmitter.codex -- so a guarded
+ arm is emitted as a switch prong with no condition and fires whenever its
+ PATTERN matches. Bare metal honours the guard (X86_64Compound.codex,
+ emit-match-guard).
+
+ The shape is chosen so the difference is a wrong ANSWER rather than a compile
+ error. Two arms on the same constructor would be duplicate switch prongs,
+ which zig rejects, and a refusal is the lucky case. One guarded arm plus a
+ catch-all compiles cleanly on both arms and disagrees.
+
+ Expected on bare metal:
+
+   guard-taken 0
+   guard-taken 1
+   otherwise 0
+
+ The first line is the whole test: classify 5 must NOT take the negative arm.
+ If the plug drops the guard, it prints 1 there and the arms disagree at that
+ line.
+
+ No cites, single chapter, ASCII only, so it can ride as a ladder subject or
+ compile standalone with build/compile.ps1.
+
+ We say:
+
+Section: Types
+
+  Val =
+    | Num Integer
+    | Word Text
+
+Section: Classify
+
+ classify answers 1 when it took the guarded arm, 0 when it fell through to the
+ unguarded one for the same constructor, and 2 for a different constructor.
+ Numbers rather than text so the answer cannot be confused with a print path.
+
+  classify : Val -> Integer
+  classify (v) =
+   when v
+    is Num (n) when n < 0 -> 1
+    is Num (n) -> 0
+    is otherwise -> 2
+
+Section: Main
+
+  opening : [Console] Nothing = act
+    print-line-uni ("guard-taken " & show (classify (Num 5)))
+    print-line-uni ("guard-taken " & show (classify (Num -5)))
+    print-line-uni ("otherwise " & show (classify (Word "x")))
+  end
