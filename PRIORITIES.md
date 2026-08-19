@@ -113,6 +113,15 @@ Two crashes in the 40-program resolved pilot, so `corpus_run.py --limit 40`
 reproduces them and `corpus/transpile.json` names them (stage `codexir`). A
 hosted-compiler crash is its own finding; identify and reduce.
 
+## 6b. ring_compile busy-loops when its QEMU dies (2026-08-19)
+
+Observed once, cost 23 silent minutes of an unattended run: during the u47
+truth-arm rerun, lex's IR-CCE compile lost its QEMU (child went defunct)
+and `ring_compile.py` spun at 100% CPU without noticing, log frozen, until
+killed by hand. The read/refill loop needs a child-liveness check that
+turns a dead guest into a loud failure. Same honesty class as the caps:
+an unattended runner must never convert a crash into a hang.
+
 ## 7. Diagnostics as a banked set
 
 Diffed like a truth file, retiring the CDX6020 and CDX2064 count pins that move
