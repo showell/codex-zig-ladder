@@ -47,6 +47,20 @@ once. Explore before asking Damian for anything; if it pays off, the ask is
   (`findings/probe-approx-eq.codex`); its two blockers
   (`bits-to-real-approx` emitter, `text-to-double-bits` prelude) landed
   2026-08-19 with the multi-byte CCE work. Run the probe both arms, file.
+- **The CCE alias limit of Char-as-codepoint (2026-08-19, DISCUSS before
+  acting).** CCE has aliases: é is tier-0 code 97 AND tier-1 code 233, and
+  the canonical encoder always answers 97. Bare metal never notices --
+  char-code / code-to-char are identity there, and byte-wise text rebuilds
+  (the compiler's own ir-quote) pass frame bytes through untouched. The
+  zig plug's codepoint Char makes those ops a code->cp->code detour that
+  canonicalises, so a 3-byte frame OPENER whose byte value collides with a
+  tier-0 codepoint (224-226, 228, 231-235, 237 -- ten of sixteen openers)
+  comes back as the wrong byte: tier-2 text through ir-quote corrupts,
+  found when the multi-byte smoke printed a stray é from an emoji frame.
+  char-to-text is now single-byte again (bare metal's mov-store-byte
+  contract), which restores identity everywhere else. The structural fix
+  is Char = CCE code, the C# model, same tension as the char-literal
+  finding above -- an emitter-wide representation change, Steve's call.
 - **Real-literal candidates in the other plugs, found by cross-reading
   while fixing ours (2026-08-19, unverified):** the JavaScript emitter's
   IrNumLit is `Number(BigInt.asIntN(64, bits))` -- the bits as a NUMBER,
