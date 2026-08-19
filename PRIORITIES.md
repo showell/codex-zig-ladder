@@ -44,10 +44,18 @@ once. Explore before asking Damian for anything; if it pays off, the ask is
   (`findings/probe-char-literal.codex`: found-x 0 where the language says 1,
   controls clean); owed: the bare-metal half, then file.
 - **`IrApproxEq` emits `==`**, dropping the 4-ULP tolerance. Probe written
-  (`findings/probe-approx-eq.codex`); its zig arm is blocked on two more
-  gaps the probe itself exposed -- `bits-to-real-approx` has no emitter and
-  `text-to-double-bits` is an unimplemented prelude marker, so native
-  codexir aborts on ANY real literal. Fix those two, run the probe, file.
+  (`findings/probe-approx-eq.codex`); its two blockers
+  (`bits-to-real-approx` emitter, `text-to-double-bits` prelude) landed
+  2026-08-19 with the multi-byte CCE work. Run the probe both arms, file.
+- **Real-literal candidates in the other plugs, found by cross-reading
+  while fixing ours (2026-08-19, unverified):** the JavaScript emitter's
+  IrNumLit is `Number(BigInt.asIntN(64, bits))` -- the bits as a NUMBER,
+  not a bitcast, so any real literal is off by ~18 orders of magnitude
+  (its own text-to-double-bits arm does the DataView reinterpret
+  correctly, one line up). Subtler: JS parseFloat and C# double.Parse are
+  correctly-rounded parsers where bare metal's __text_to_double is
+  one-division-after-integer-accumulate, so long-fraction literals can
+  carry different bits per plug. Probe before filing either.
 
 ## 3. The heap unification
 
