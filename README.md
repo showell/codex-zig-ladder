@@ -108,10 +108,11 @@ working `ast/*.truth` and `ast/*.ir` files the arms consume are not, so its
 first act is `ast/rebank_all.sh` -- `allcycles.sh` alone has nothing to
 diff against.
 
-**From the host:** `qemu-system-x86_64` (6.2.0), `python3` (3.10.12), PowerShell
-(7.5.4, for the bundlers, which are the author's tooling), and `zig` (0.16.0)
-for the arm under test. `/dev/kvm` is optional: `CODEX_ACCEL` selects the
-accelerator and the default is `tcg`.
+**From the host:** `qemu-system-x86_64` (6.2.0), `python3` (3.10.12),
+PowerShell 7 installed at `~/.local/pwsh/pwsh` (the bundling scripts invoke
+that path directly; 7.5.4 here), and `zig` (0.16.0) for the arm under test.
+`/dev/kvm` is optional: `CODEX_ACCEL` selects the accelerator and the
+default is `tcg`.
 
 **Point it at a checkout with `CODEX_ROOT`.** The ladder lives outside the
 tree it audits, so it cannot find one by looking upward, and it will not
@@ -125,11 +126,6 @@ That refusal is the feature. A ladder silently pointed at the wrong checkout
 banks truth against a seed nobody named, which is the single failure this whole
 exercise exists to prevent. Pointing it at each Update in turn is the same
 variable and no other change.
-
-One known wart: six scripts hardcode `~/.local/pwsh/pwsh` (a user-local
-install; any pwsh 7 works, but a pwsh elsewhere means editing all six) --
-`cycle.sh`, `recon.sh`, `native_build.sh`, `ast/oracle_lib.sh`,
-`ast/ringplug_build.sh` and `ast/irmemcycle.sh`.
 
 The ladder repo itself clones from
 `git@github.com:showell/codex-zig-ladder.git`; see the NOT-tracked
