@@ -20,17 +20,24 @@ pulled out of its directory to be mailed, pasted or diffed still says what it
 is. A bare `lower.truth` in a bug report names nothing.
 
 A bank is a SET, and taking one from a mixed working tree is the one way to
-make it lie. If some rungs ran under an older harness than others, the
-directory looks like fourteen measurements of one compiler and is not. There is
-no way to detect that from the files, so this refuses to bank rungs whose truth
-is older than the newest harness or the newest bundler, and says which.
+make it lie. If some rungs ran under a different seed or older harness content
+than others, the directory looks like fourteen measurements of one compiler
+and is not. Each truth carries a provenance sidecar (truth_prov.py, written by
+the truth arm: the seed sha and the harness-content sha it was measured
+under), and this refuses to bank any truth whose sidecar is missing or
+disagrees with what is on disk now -- content identity, not timestamps. The
+bank itself is written to a temp directory and renamed into place, so a crash
+or a --force can never leave a directory that is half one measurement and
+half another.
 """
 
 import argparse
 import pathlib
+import re
 import shutil
 import sys
 
+import truth_prov
 from ladder_root import LADDER
 from seed_identity import stamp, truth_dir
 
@@ -43,35 +50,6 @@ def ladder_rungs():
         if line.startswith('LADDER_RUNGS='):
             return line.split('"')[1].split()
     raise SystemExit('oracle_lib.sh: no LADDER_RUNGS= line; cannot tell what the ladder is')
-
-
-def newest_input(paths):
-    """When the things a truth is downstream of last CHANGED.
-
-    Asked of git, not the filesystem: the question is whether a truth was
-    measured under the harness content that exists now, and mtime answers a
-    different question -- a `git checkout --` that changes nothing still
-    refreshes it, which blocked two clean banks in one day. A watched file
-    with uncommitted changes has no commit time that describes it, so that
-    refuses outright.
-    """
-    import subprocess
-    existing = [p for p in paths if p.is_file()]
-    rels = [str(p.relative_to(LADDER)) for p in existing]
-    dirty = subprocess.run(
-        ['git', '-C', str(LADDER), 'status', '--porcelain', '--'] + rels,
-        capture_output=True, text=True).stdout.strip()
-    if dirty:
-        raise SystemExit('REFUSED: uncommitted changes in files truths depend on:\n'
-                         + dirty + '\ncommit them, rerun the truth arms, then bank')
-    times = []
-    for p, rel in zip(existing, rels):
-        out = subprocess.run(['git', '-C', str(LADDER), 'log', '-1',
-                              '--format=%ct', '--', rel],
-                             capture_output=True, text=True).stdout.strip()
-        if out:
-            times.append((int(out), p))
-    return max(times) if times else (0, None)
 
 
 def main():
@@ -91,49 +69,66 @@ def main():
     print(f"update {named}")
     print(f"bank   {dest}\n")
 
-    # The harnesses and bundlers every truth is downstream of. A truth older
-    # than any of them was measured on a subject nobody would build today.
-    # split_truth.py is in the list because since the units carry more than one
-    # subject a truth file is its output, not the run's: a splitter that cut
-    # the stream somewhere else would produce truths that are wrong in a way
-    # no diff of the run can see.
-    watermark, witness = newest_input(
-        list(ast.glob('gen_*_harness.py')) + list(ast.glob('bundle_*.ps1'))
-        + [ast / 'emit_harness.py', ast / 'oracle_lib.sh',
-           ast / 'split_truth.py'])
-
+    # A truth is bankable when its recorded provenance -- the seed it ran
+    # under and the harness content its subject was built from, stamped by
+    # the truth arm -- matches what is on disk NOW. split_truth.py is in the
+    # watched set because a truth file is the splitter's output, not the
+    # run's: a splitter that cut the stream somewhere else would produce
+    # truths wrong in a way no diff of the run can see.
     rungs = ladder_rungs()
     missing, stale, ready = [], [], []
     for m in rungs:
         src = ast / f'{m}.truth'
         if not src.is_file() or src.stat().st_size == 0:
             missing.append(m)
-        elif src.stat().st_mtime < watermark:
-            stale.append(m)
+            continue
+        prov = truth_prov.read_sidecar(m)
+        if prov is None:
+            stale.append((m, 'no provenance sidecar (rerun the truth arm)'))
+            continue
+        pseed, pset = prov
+        if pseed != s['sha256']:
+            stale.append((m, f'ran under seed {pseed[:12]}, disk has '
+                             f'{s["sha256"][:12]}'))
+        elif pset != truth_prov.set_hash(truth_prov.unit_of(m)):
+            stale.append((m, 'harness content moved since it ran'))
         else:
             ready.append((m, src))
 
     if missing:
         print(f'NOT BANKED: {len(missing)} rung(s) have no truth: {" ".join(missing)}')
-    if stale:
-        print(f'NOT BANKED: {len(stale)} rung(s) older than {witness.name}: {" ".join(stale)}')
+    for m, why in stale:
+        print(f'NOT BANKED: {m}: {why}')
     if (missing or stale) and not args.force:
         print('\nA partial bank reads as a whole one. Run rebank_all.sh, or pass '
               '--force if you mean to bank an incomplete set.')
         return 1
 
-    dest.mkdir(parents=True, exist_ok=True)
+    # Built complete in a temp directory, then renamed over the old bank, so
+    # the destination is only ever a whole set -- never last bank's files
+    # beside this one's after a crash or a --force of a subset.
+    tmp = dest.parent / (dest.name + '.tmp')
+    if tmp.exists():
+        shutil.rmtree(tmp)
+    tmp.mkdir(parents=True)
     for m, src in ready:
-        shutil.copy2(src, dest / f"{s['slug']}-{m}.truth")
-    (dest / 'SEED').write_text(f"{s['sha256']}\n{s['bytes']}\n{s['update']}\n")
+        shutil.copy2(src, tmp / f"{s['slug']}-{m}.truth")
+    (tmp / 'SEED').write_text(f"{s['sha256']}\n{s['bytes']}\n{s['update']}\n")
+    if dest.exists():
+        shutil.rmtree(dest)
+    tmp.rename(dest)
     print(f"banked {len(ready)} truths as {s['slug']}-<rung>.truth")
 
     # Keeping every Update forever is how a directory of measurements becomes a
     # directory nobody reads. Three is enough to see a trend and small enough
-    # to scan.
-    banks = sorted((p for p in (LADDER / 'truth').iterdir() if p.is_dir()),
-                   key=lambda p: p.stat().st_mtime)
-    for old in banks[:-args.keep] if len(banks) > args.keep else []:
+    # to scan. Pruning goes by the NAME, oldest Update number first -- never by
+    # directory mtime, which re-banking does not bump -- and touches nothing
+    # but u<N> directories, so seed-<hex> banks (deliberate, unreleased) and
+    # anything else living under truth/ are left alone.
+    banks = sorted((int(m.group(1)), p)
+                   for p in (LADDER / 'truth').iterdir()
+                   if p.is_dir() and (m := re.fullmatch(r'u(\d+)', p.name)))
+    for _, old in banks[:-args.keep] if len(banks) > args.keep else []:
         shutil.rmtree(old)
         print(f'removed old bank {old.name} (keeping {args.keep})')
     return 0

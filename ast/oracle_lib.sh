@@ -173,6 +173,10 @@ PY
     # neither guard, which mattered most under verify_merge.sh -- where the
     # expected answer IS "identical to the bank", so splitting yesterday's .raw
     # would have produced the very result the run was launched to see.
+    # The truths and their provenance sidecars go too: a run or split that
+    # fails must leave NO truth, or the next verdict diffs against
+    # yesterday's and can print ORACLE PASS from it.
+    for _r in $(unit_rungs $m); do rm -f ast/${_r}.truth ast/${_r}.truth.prov; done
     rm -f ast/${m}.raw
     if ! python3 - "$m" <<'PY'
 import sys
@@ -196,6 +200,11 @@ PY
     # every rung on the ladder rather than a special case for the big two.
     (cd $T/ast && python3 split_truth.py ${m}.raw truth $(unit_rungs $m)) \
         || { echo "SPLIT FAILED for $m -- see ast/${m}.raw"; return 1; }
+
+    # Record what measured this truth -- the seed and the harness content --
+    # so banking can refuse a mismatch instead of inferring from timestamps.
+    python3 "$T/truth_prov.py" stamp "$m" \
+        || { echo "PROVENANCE STAMP FAILED for $m"; return 1; }
 }
 
 # The pingpong rung's real claim, which the arm diff does not make.
