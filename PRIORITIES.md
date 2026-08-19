@@ -65,8 +65,17 @@ Explore this before asking Damian for anything. If it pays off, the ask is not
   confirmed the bare-metal arm (seed answers `guard-taken 0`, plug answers
   `1`). Finding 15 in the register. Still unfixed at Update 47.
 - **Char literals** are CCE codes while every other Char is a codepoint, so
-  `char-at s i == 'x'` is always false and compiles clean.
-- **`IrApproxEq` emits `==`**, dropping a 4-ULP tolerance.
+  `char-at s i == 'x'` is always false and compiles clean. **Zig arm
+  MEASURED 2026-08-19** through the native loop
+  (`findings/probe-char-literal.codex`): found-x 0 where the language says
+  1, controls clean. Owed: the bare-metal half once QEMU frees, then file.
+- **`IrApproxEq` emits `==`**, dropping a 4-ULP tolerance. Probe written
+  (`findings/probe-approx-eq.codex`, 0.1 + 0.2 ~ 0.3, one ULP, with a
+  constant-folding caution); its zig arm waits on a SEED compile because
+  writing it found TWO MORE gaps: `bits-to-real-approx` has no emitter
+  (the f32 probe, `findings/probe-real-approx-bits.codex`, refuses with 3
+  markers) and `text-to-double-bits` is an unimplemented prelude marker, so
+  native codexir aborts on ANY real literal.
 - ~~`__linked-list-empty` drops its argument~~ FIXED (`cx_ll_empty_n`).
 
 ## 3. Upstream the two emitter fixes -- UNBLOCKED, do this first
