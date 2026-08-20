@@ -445,6 +445,7 @@ Section: Names and Literals
    | OpAppend
    | OpCons
    | OpAnd
+   | OpBoolAnd
    | OpOr
    | OpApproxEq
    | OpApproxEqExact
@@ -1908,7 +1909,7 @@ Section: Keywords and Sanitization
  are the same identifier -- so these RENAME instead. X86_64Boot binds a
  chain st, sta, stb, stc, std, ste; the sixth one is `std`.
 
-  zig-prelude-decls : List Text = ["std", "main", "cx_heap", "cx_hp", "cx_dptr", "cx_bivy", "cx_nest"]
+  zig-prelude-decls : List Text = ["std", "main", "cx_heap", "cx_hp", "cx_arena_state", "cx_gpa", "cx_dptr", "cx_bivy", "cx_nest"]
 
   is-zig-prelude-decl : Text -> Boolean
   is-zig-prelude-decl (s) =
@@ -2672,7 +2673,7 @@ Section: Builtin Emitter
     ZigBuiltinEmitter { name = "__list-with-capacity", emit = \args ctx d ty -> "cx_ll_with_capacity(" & zig-ll-elem ty & ", " & emit-zig-expr (list-at args 0) ctx (d + 1) & ")" },
     ZigBuiltinEmitter { name = "text-compare", emit = \args ctx d ty -> "cx_text_compare(" & emit-zig-expr (list-at args 0) ctx (d + 1) & ", " & emit-zig-expr (list-at args 1) ctx (d + 1) & ")" },
     ZigBuiltinEmitter { name = "char-to-text", emit = \args ctx d ty -> "cx_char_to_text(" & emit-zig-expr (list-at args 0) ctx (d + 1) & ")" },
-    ZigBuiltinEmitter { name = "__linked-list-empty", emit = \args ctx d ty -> "cx_ll_empty(" & zig-ll-elem ty & ")" },
+    ZigBuiltinEmitter { name = "__linked-list-empty", emit = \args ctx d ty -> "cx_ll_with_capacity(" & zig-ll-elem ty & ", " & emit-zig-expr (list-at args 0) ctx (d + 1) & ")" },
     ZigBuiltinEmitter { name = "__linked-list-push", emit = \args ctx d ty -> "cx_ll_push(" & emit-zig-expr (list-at args 0) ctx (d + 1) & ", " & emit-zig-expr (list-at args 1) ctx (d + 1) & ")" },
     ZigBuiltinEmitter { name = "__linked-list-to-list", emit = \args ctx d ty -> emit-zig-expr (list-at args 0) ctx (d + 1) },
     ZigBuiltinEmitter { name = "__deck-pos", emit = \args ctx d ty -> "cx_deck_pos()" },
@@ -3621,7 +3622,8 @@ Section: Match Emission
    let mty = if text-length (zig-ll-elem-opt mty0) > 0 then mty0
       else zig-arms-list-type branches 0 mty0
    in let ex = zig-match-exhaustive ctx (zig-expr-type scrut) branches
-   in "switch (" & emit-zig-expr scrut ctx (d + 1) & zig-match-deref ctx (zig-expr-type scrut) & ") { " & emit-zig-match-arms branches 0 ctx d ex mty & " }"
+   in if zig-branches-guarded branches 0 then emit-zig-match-chain scrut branches ctx d mty
+   else zig-pin-lit-arms branches 0 ("switch (" & emit-zig-expr scrut ctx (d + 1) & zig-match-deref ctx (zig-expr-type scrut) & ") { " & emit-zig-match-arms branches 0 ctx d ex mty & " }")
 
   emit-zig-match-arms : List IRBranch, Integer, ZigCtx, Integer, Boolean, CodexType -> Text
   emit-zig-match-arms (branches) (i) (ctx) (d) (ex) (mty) =
@@ -3717,6 +3719,105 @@ Section: Match Emission
    in let line = if (binder == "_") | (zig-occurs body binder == False) then ""
       else "const " & zig-bind-name ctx binder d & " = _p" & integer-to-text d & "[" & integer-to-text i & "]; "
    in line & emit-zig-pat-unpack subs (i + 1) d body ctx
+
+ A zig switch prong that matches fires; there is no fall-through to the
+ next prong when a guard refuses, and two prongs on one constructor are a
+ duplicate-value error. A guarded match is therefore a labeled block of
+ if-statements ending in unreachable.
+
+  zig-guard-trivial : IRExpr -> Boolean
+  zig-guard-trivial (g) =
+   when g
+    is IrBoolLit (v) (sp) -> v
+    is otherwise -> False
+
+  zig-branches-guarded : List IRBranch, Integer -> Boolean
+  zig-branches-guarded (bs) (i) =
+   if i >= list-length bs then False
+   else if zig-guard-trivial ((list-at bs i).guard) == False then True
+   else zig-branches-guarded bs (i + 1)
+
+  zig-occurs-either : IRExpr, IRExpr, Text -> Boolean
+  zig-occurs-either (a) (b) (n) = zig-occurs a n | zig-occurs b n
+
+  zig-chain-scrut : Integer -> Text
+  zig-chain-scrut (d) = "_s" & integer-to-text d
+
+  zig-chain-uses-scrut : List IRBranch, Integer -> Boolean
+  zig-chain-uses-scrut (bs) (i) =
+   if i >= list-length bs then False
+   else let b = list-at bs i
+   in let used = when (b.pattern)
+     is IrVarPat (name) (ty) (sp) -> zig-occurs-either (b.body) (b.guard) name
+     is IrWildPat (sp) -> False
+     is otherwise -> True
+   in used | zig-chain-uses-scrut bs (i + 1)
+
+  zig-pin-lit-arms : List IRBranch, Integer, Text -> Text
+  zig-pin-lit-arms (bs) (i) (s) =
+   if i >= list-length bs then s
+   else if zig-is-int-lit ((list-at bs i).body) then "@as(i64, " & s & ")"
+   else if zig-is-num-lit ((list-at bs i).body) then "@as(f64, " & s & ")"
+   else zig-pin-lit-arms bs (i + 1) s
+
+  emit-zig-match-chain : IRExpr, List IRBranch, ZigCtx, Integer, CodexType -> Text
+  emit-zig-match-chain (scrut) (branches) (ctx) (d) (mty) =
+   let sv = zig-chain-scrut d
+   in let discard = if zig-chain-uses-scrut branches 0 then "" else "_ = " & sv & "; "
+   in zig-pin-lit-arms branches 0 (zig-label d & ": { const " & sv & " = " & emit-zig-expr scrut ctx (d + 1) & zig-match-deref ctx (zig-expr-type scrut) & "; " & discard
+      & emit-zig-chain-arms branches 0 (zig-expect ctx mty) d mty sv & "}")
+
+  emit-zig-chain-arms : List IRBranch, Integer, ZigCtx, Integer, CodexType, Text -> Text
+  emit-zig-chain-arms (branches) (i) (ctx) (d) (mty) (sv) =
+   if i >= list-length branches then "unreachable; "
+   else let b = list-at branches i
+   in let arm = emit-zig-chain-arm (b.pattern) (b.guard) (b.body) ctx d mty sv
+   in if zig-pat-is-catch-all (b.pattern) & zig-guard-trivial (b.guard) then arm
+      else arm & emit-zig-chain-arms branches (i + 1) ctx d mty sv
+
+  emit-zig-chain-tail : IRExpr, IRExpr, ZigCtx, Integer, CodexType -> Text
+  emit-zig-chain-tail (guard) (body) (ctx) (d) (mty) =
+   let leave = "break :" & zig-label d & " " & emit-zig-arm-body body mty ctx d & "; "
+   in if zig-guard-trivial guard then leave
+      else "if (" & emit-zig-expr guard ctx (d + 1) & ") " & leave
+
+  emit-zig-chain-arm : IRPat, IRExpr, IRExpr, ZigCtx, Integer, CodexType, Text -> Text
+  emit-zig-chain-arm (pat) (guard) (body) (ctx) (d) (mty) (sv) =
+   when pat
+    is IrLitPat (text) (ty) (sp) -> "if (" & sv & " == " & text & ") { " & emit-zig-chain-tail guard body ctx d mty & "} "
+    is IrCtorPat (name) (subs) (ty) (sp) ->
+     let nsubs = list-length subs
+     in let test = "if (" & sv & " == ." & zig-sanitize name & ") { "
+     in if nsubs == 0 then test & emit-zig-chain-tail guard body ctx d mty & "} "
+     else if nsubs == 1 then
+      let binder = zig-pat-binder (list-at subs 0) 0
+      in if (binder == "_") | (zig-occurs-either body guard binder == False)
+         then test & emit-zig-chain-tail guard body ctx d mty & "} "
+         else test & "const " & zig-bind-name ctx binder d & " = " & sv & "." & zig-sanitize name & "; " & emit-zig-chain-tail guard body (zig-bind-push ctx binder d) d mty & "} "
+     else if zig-any-sub-occurs-g subs 0 body guard == False
+     then test & emit-zig-chain-tail guard body ctx d mty & "} "
+     else test & "const _p" & integer-to-text d & " = " & sv & "." & zig-sanitize name & "; " & emit-zig-pat-unpack-g subs 0 d body guard ctx & emit-zig-chain-tail guard body (zig-push-bound-pats ctx subs 0 d) d mty & "} "
+    is IrVarPat (name) (ty) (sp) ->
+     if zig-occurs-either body guard name
+     then "{ const " & zig-bind-name ctx name d & " = " & sv & "; " & emit-zig-chain-tail guard body (zig-bind-push ctx name d) d mty & "} "
+     else "{ " & emit-zig-chain-tail guard body ctx d mty & "} "
+    is IrWildPat (sp) -> "{ " & emit-zig-chain-tail guard body ctx d mty & "} "
+    is IrVecPat (pats) (ty) (sp) -> "@compileError(\"zig plug: vector patterns not supported\"); "
+
+  zig-any-sub-occurs-g : List IRPat, Integer, IRExpr, IRExpr -> Boolean
+  zig-any-sub-occurs-g (subs) (i) (body) (guard) =
+   if i >= list-length subs then False
+   else let binder = zig-pat-binder (list-at subs i) i
+   in if (binder == "_") == False & zig-occurs-either body guard binder then True
+      else zig-any-sub-occurs-g subs (i + 1) body guard
+
+  emit-zig-pat-unpack-g : List IRPat, Integer, Integer, IRExpr, IRExpr, ZigCtx -> Text
+  emit-zig-pat-unpack-g (subs) (i) (d) (body) (guard) (ctx) =
+   if i == list-length subs then ""
+   else let binder = zig-pat-binder (list-at subs i) i
+   in let line = if (binder == "_") | (zig-occurs-either body guard binder == False) then ""
+      else "const " & zig-bind-name ctx binder d & " = _p" & integer-to-text d & "[" & integer-to-text i & "]; "
+   in line & emit-zig-pat-unpack-g subs (i + 1) d body guard ctx
 
 Section: Act Emission
 
@@ -4472,15 +4573,9 @@ Section: Chapter Emission
 
   zig-prelude : Text =
    "const std = @import(\"std\");\n\n"
-   & "// One arena, and the reason is measured rather than stylistic. Served\n"
-   & "// straight from page_allocator every object is rounded up to a 4096-byte\n"
-   & "// page, and this compiler's average record is about 40 bytes -- so a\n"
-   & "// record costs a page, an instruction built as a throwaway list costs\n"
-   & "// several, and one dumped byte costs three. Compiling a 539-line chapter\n"
-   & "// peaked at 3.0 GB and was OOM-killed where bare metal does the same work\n"
-   & "// inside a 1 GB guest. An arena bump-allocates at byte granularity, which\n"
-   & "// is bare metal's own model; the same compile then peaks at 238 MB and\n"
-   & "// emits byte-identical output.\n"
+   & "// page_allocator rounds every allocation up to a 4096-byte page and this\n"
+   & "// compiler's average record is about 40 bytes: one arena, bump-allocated at\n"
+   & "// byte granularity, is bare metal's own model and 12.5x less resident.\n"
    & "var cx_arena_state = std.heap.ArenaAllocator.init(std.heap.page_allocator);\n"
    & "const cx_gpa = cx_arena_state.allocator();\n\n"
    & "fn CxFn1(comptime A: type, comptime R: type) type {\n    return struct { ctx: *anyopaque, call: *const fn (*anyopaque, A) R };\n}\n"

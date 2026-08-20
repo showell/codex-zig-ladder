@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | Seed | `90646EEB22CEB9AB` (2,844,269 bytes) |
-| Update | 47 |
+| Update | 47 (release commit `69cd9ce8`) |
 | Rungs | **14 of 14 green** |
 | Banked | `truth/u47/`, with `truth/u46/` and `truth/u45/` beside it |
 
@@ -191,8 +191,10 @@ in QEMU:
 - **the banked truth** (`ast/<rung>.truth`) it will be judged against, from
   the same re-bank;
 - **the plug itself** (`zig-plug.cdx` for TCP, `ast/ringplug.cdx` for the
-  ring), a CDX binary the seed compiled from the ZigEmitter bundle when
-  `cycle.sh` last turned. The turn guards this with fingerprint checks
+  ring), a CDX binary the seed compiled
+  from the ZigEmitter bundle -- `zig-plug.cdx` when `cycle.sh` last
+  turned, `ast/ringplug.cdx` when `ringplug_build.sh` did (allcycles.sh
+  runs both). The turn guards this with fingerprint checks
   (`plug_provenance`, `refuse_stale_ringplug`) rather than trusting the tree.
 
 The turn itself is three steps:
@@ -587,7 +589,7 @@ measurements: JUSTIFICATIONS.md ("Droplet compile venue") and essay
 random893; adopted 2026-08-20.
 
 **The appliance holds no logic.** Four pushed files -- `codex_vm.py`
-and `ring_compile.py` verbatim, a two-line `ladder_root.py` stub, and
+and `ring_compile.py` verbatim, a three-line `ladder_root.py` stub, and
 the seed kernel -- plus the qemu package. No checkout, no zig, no
 daemon, no listening port, no state. It cannot drift out of sync with
 the ladder because there is nothing in it to drift; a stale SEED is
@@ -665,10 +667,19 @@ being banked, the checkout sits on a branch named for it (`u47-rebank`),
 created at the Update's release commit and never rebased. On top of the
 release commit it carries the fewest cherry-picks the ladder cannot run
 without, and each must already be landed or filed upstream -- the pin is a
-delivery vehicle for nothing. At Update 47 that is exactly one, the arena
-(PR 71, since landed upstream at `a061c173`, so the next pin starts clean).
-`git log <release-commit>..HEAD` is the whole statement of what we changed,
-and the ideal length is zero.
+delivery vehicle for nothing. `git log <release-commit>..HEAD` is the
+whole statement of what we changed, and the ideal length is zero.
+
+Update 47's actual length is SEVEN, and honesty about that beats the
+tidy story an earlier draft told here: the arena (PR 71, landed at
+`a061c173`), then the PR 75 chain (CCE tiers, char-to-text, the
+finding-16 fix -- absorbed in Update 48), then the PR 76 chain (wrap
+arithmetic, builtin yield, char-CCE -- filed). Every one is landed or
+filed, but the later six include correctness fixes, so the u47 zig arms
+measured the pin, not the verbatim release -- exactly the deviation
+step 4's working rule exists to prevent. The u48 pin starts at zero and
+stays there (agreed, Steve + Claude, 2026-08-20: the census re-pins
+verbatim too -- the noisy bank is the honest bank).
 
 **The working tree parks on the pin for the entire banking cycle.**
 `CODEX_ROOT` names a working tree, not a commit: a `git checkout` there
@@ -685,7 +696,7 @@ main clone clears the stubs.
 message names the seeds and what moved), create `u<NN>-rebank` at it,
 cherry-pick only what the ladder still needs, push the pin to the fork, then
 follow "Processing a new Update" below. The register of "what the ladder
-still needs" is `findings/README.md` plus the "Filed and waiting" list in
+still needs" is `findings/README.md` plus the "Outbound queue" in
 `PRIORITIES.md`: anything there marked filed-but-not-landed is a candidate,
 and the first check is always whether the Update just landed it. The pin
 being on the fork means no clone is precious.
@@ -895,8 +906,10 @@ code, F4 boots the emitted binary.
 - `native_build.sh` -- builds `codexir` (.codex -> .ir) and `zigemit`
   (.ir -> .zig), the two tools that take QEMU out of the pipeline entirely.
   `zigemit` is not a second implementation: it is the same `ZigEmitter`, bundled
-  with a four-line body that reads stdin and writes stdout instead of the ring
-  plug's serial framing, then transpiled and built like anything else here.
+  with a four-line body that reads stdin and writes STDERR (print-text is
+  std.debug.print in the emitted runtime -- a wart, and why every caller
+  uses `2>` redirects) instead of the ring plug's serial framing, then
+  transpiled and built like anything else here.
 
 ## zigc: the compiler as an ordinary process
 
@@ -945,12 +958,13 @@ Two things it is not:
 `ast/gen_<m>_harness.py` writes `ast/<M>Harness.codex` -- except
 `gen_scale_harness.py` and `gen_clamp_harness.py`, which own only their
 unit's second subject; the harness itself comes from the fibx and whole
-generators. The four rungs that run the back end all the way to a CDX --
-`fibx`, `scale`, `whole` and `clamp` -- share `ast/emit_harness.py`, as do
-`zigc` and `codexir`. It holds the compile
-pipeline once -- `frontend_source` (source text to a lowered IR) and
-`pipeline_source` (that plus the x86 emission) -- because six generators run
-that sequence and it must not drift between them.
+generators. `ast/emit_harness.py` holds the compile pipeline once --
+`frontend_source` (source text to a lowered IR) and `pipeline_source`
+(that plus the x86 emission) -- so the four generators that run it
+(`gen_fibx` and `gen_whole`, whose units also carry `scale` and `clamp`;
+`gen_zigc`; `gen_codexir`) cannot drift from each other. Four more
+generators import only its shared tables (`DECK_PROLOGUE`,
+`RESOLVED_TABLES`).
 
 The bundlers are PowerShell (`ast/bundle_<m>.ps1`), because they call the
 repository's own `plug-build-lib.ps1` to resolve chapter cites. That is why pwsh

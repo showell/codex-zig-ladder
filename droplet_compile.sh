@@ -22,7 +22,7 @@ OUT=$2
 [ -s "$BLOB" ] || { echo "no blob at $BLOB"; exit 1; }
 
 scp -q "$BLOB" "$HOST:ring/job.blob"
-ssh "$HOST" 'cd ring && rm -f out.cdx out.cdx.map out.cdx.diags job.blob.stage1 && CODEX_MEM_MB=1300 nice -n 15 flock -n lock python3 -u ring_compile.py job.blob out.cdx'
+ssh "$HOST" 'cd ring && rm -f out.cdx out.cdx.map out.cdx.diags job.blob.stage1 && CODEX_ACCEL=tcg CODEX_MEM_MB=1300 nice -n 15 flock -n lock python3 -u ring_compile.py job.blob out.cdx'
 rm -f "$OUT" "$OUT.map" "$OUT.diags"
 scp -q "$HOST:ring/out.cdx" "$OUT"
 scp -q "$HOST:ring/out.cdx.map" "$OUT.map" 2>/dev/null || true

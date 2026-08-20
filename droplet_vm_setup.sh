@@ -28,13 +28,14 @@ import pathlib
 CODEX = pathlib.Path.home() / "ring"
 PY
 
-# Verify the push by content, not by trust: seed hash must match, kvm must
-# be usable (group membership applies on the next ssh login, which this is).
+# Verify the push by content, not by trust: the seed hash must match.
+# KVM is reported but not required -- the venue runs TCG on purpose
+# (JUSTIFICATIONS.md, "Droplet compile venue").
 LOCAL_SHA=$(sha256sum "$REPO/seed/Codex.cdx" | cut -d' ' -f1)
 ssh "$HOST" "
   REMOTE_SHA=\$(sha256sum ring/seed/Codex.cdx | cut -d' ' -f1)
   [ \"\$REMOTE_SHA\" = \"$LOCAL_SHA\" ] || { echo 'SEED HASH MISMATCH'; exit 1; }
-  [ -r /dev/kvm ] && [ -w /dev/kvm ] || { echo 'KVM NOT ACCESSIBLE'; exit 1; }
+  [ -r /dev/kvm ] && [ -w /dev/kvm ] && echo 'kvm: accessible (unused; TCG measured faster here)' || echo 'kvm: not accessible (fine; the venue runs TCG on purpose)'
   qemu-system-x86_64 --version | head -1
   echo 'appliance ready'
 "

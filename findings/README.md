@@ -11,12 +11,14 @@ The probes are Codex chapters and still compile with the depot's own tooling:
 
     build/compile.ps1 -Src findings/<probe>.codex -Out <out>.cdx
 
-**Status re-checked against Update 45 / seed 270227BE, 2026-08-17.** Update 46
-(`adfae029`, seed 12B07296) landed the same day and closed what was left of
-finding 11; that is marked at its heading and not re-verified here. The ladder
-WAS re-banked against 46 on 2026-08-18 and every rung came back byte-identical
-to the u45 bank, so nothing below changed under the new seed; the findings
-themselves were not re-read against it.
+**Status: the ladder is banked at Update 47 (2026-08-19); Update 48
+(`b643e7c`) is released and the re-pin is in progress (2026-08-20).**
+Update 48 absorbed PR 75 (finding 16's fix, credited) and implements
+match guards natively -- finding 15 / issue 72 closes pending the
+re-pinned sweep's confirmation. Findings 18 and 19 (below) were fixed on
+the u47 pin and filed as PR 76. Earlier status: findings 1-5 fixed by
+Update 43; finding 11's remainder closed by Update 46; findings 6, 8, 9
+were measured on 2,798,031 and are recorded as found.
 
 Findings 1 through 5 were fixed by Update 43 and each is marked at its
 heading. Finding 1's fix is verified present in this seed: `emit-net-recv-raw-helper`

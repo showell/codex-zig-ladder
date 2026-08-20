@@ -86,8 +86,8 @@ mode_flags() {
         # move first: too small shows up as CDX9002 or a fault, which is the
         # honest direction to be wrong in.
         fibx)  echo " decks=160" ;;
-        # 160 scaled by unit length: whole is 2,578,233 bytes against fibx's
-        # 2,398,065, so 160 * 2578233/2398065 = 172. Deck scale tracks the
+        # 160 scaled by unit length (u47: whole 2,601,343 bytes against
+        # fibx's 2,469,864; the ratio moves per Update). Deck scale tracks the
         # unit, and guessing low here costs a ten-minute cycle to find out.
         whole) echo " decks=172" ;;
         # passes=text-plug drops the inline passes. Passes.codex says why in
