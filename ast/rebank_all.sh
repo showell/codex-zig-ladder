@@ -23,11 +23,39 @@
 set -e
 . "$(dirname "$0")/oracle_lib.sh"
 
+# An hours-class run does not belong to a terminal: run bare, this script
+# relaunches itself detached into a timestamped log and prints where to
+# watch (D4). The child takes the real lock; the parent only refuses
+# early so a held lock is reported to the terminal, not to a log nobody
+# is tailing yet.
+if [ -z "$REBANK_DETACHED" ]; then
+    flock -n "$T/.compute.lock" true || {
+        echo "COMPUTE LOCK HELD -- another sweep/build/census owns this laptop; refusing"
+        exit 1
+    }
+    mkdir -p "$T/logs"
+    log="$T/logs/rebank-$(date +%Y%m%d-%H%M%S).log"
+    REBANK_DETACHED=1 nohup "$0" > "$log" 2>&1 &
+    echo "rebank detached (pid $!); watch with: tail -f $log"
+    exit 0
+fi
+take_compute_lock
+
+# The log's last line must say how far a dead run got (C1): "recorded",
+# not "banked" -- the working truths are recorded here, the bank is
+# bank_truth.py's act alone (D1).
+recorded=0
+started=$SECONDS
+summary_done=""
+trap '[ -z "$summary_done" ] && echo "### REBANK INTERRUPTED: $recorded/$(echo $LADDER_UNITS | wc -w) units recorded, $((SECONDS - started))s in"' EXIT
+
 for m in $LADDER_UNITS; do
-    echo "############ re-banking $m ($(unit_rungs $m))"
+    rung_stamp "$m"
     truth_arm "$m"
-    echo "############ $m banked"
+    recorded=$((recorded + 1))
+    echo "############ $m recorded ($recorded/$(echo $LADDER_UNITS | wc -w), $((SECONDS - started))s elapsed)"
 done
 
-echo "############ all banked; sweeping the plug against the new bank"
+summary_done=1
+echo "############ all truths recorded ($((SECONDS - started))s); sweeping the plug against them"
 "$T/ast/allcycles.sh"

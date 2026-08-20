@@ -20,6 +20,8 @@
 # costs less.
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
+. "$T/ast/oracle_lib.sh"
+take_compute_lock
 OUT="$T/native"
 mkdir -p "$OUT"
 

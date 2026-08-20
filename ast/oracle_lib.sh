@@ -63,10 +63,18 @@ take_compute_lock() {
     # The lock only binds processes that take it. Until nothing computes
     # without it, a legacy job beside a free lock reads as protection it
     # is not (process review D3) -- so also refuse on the evidence of
-    # the processes themselves. Our own process tree is excluded: the
-    # caller's command line matches these very patterns.
+    # the processes themselves. Our own ancestor chain and immediate
+    # children are excluded: the caller's own command line matches these
+    # very patterns, and so can the shell that launched it.
+    local anc="" p=$$
+    while [ -n "$p" ] && [ "$p" -gt 1 ]; do
+        anc="$anc $p"
+        p=$(ps -o ppid= -p "$p" 2>/dev/null | tr -d ' ')
+    done
     local running
-    running=$(ps -eo pid=,ppid=,args= | awk -v self=$$ '$1 != self && $2 != self' \
+    running=$(ps -eo pid=,ppid=,args= | awk -v anc="$anc" -v self=$$ '
+            BEGIN { n = split(anc, a); for (i = 1; i <= n; i++) skip[a[i]] = 1 }
+            !(($1 in skip) || $2 == self)' \
         | grep -E 'qemu-system|rebank_all|allcycles\.sh|corpus_run|native_build' \
         | grep -v grep | head -1)
     [ -n "$running" ] && {

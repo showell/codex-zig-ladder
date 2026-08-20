@@ -41,6 +41,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # ladder-root-bootstrap
+import compute_lock
 from cite_resolve import resolve
 from ladder_root import CODEX, LADDER
 
@@ -412,6 +413,7 @@ def main():
     if a.bank and not (a.run or a.changed):
         raise SystemExit('--bank wants run verdicts; pair it with --run or --changed')
 
+    compute_lock.take()
     need_tools()
     hw = load_hardware_only()
     if hw:
