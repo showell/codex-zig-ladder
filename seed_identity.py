@@ -44,9 +44,12 @@ def seed_sha256():
 def update_label(sha):
     """The Update whose release note names this seed AS ITS RELEASE, or None.
 
-    Naming is restricted to the two release forms the notes actually use --
-    a table row marked "release seed" beside the hash, or the closing prose
-    header that begins "Seed `<hash>`" -- because a bare substring match
+    Naming is restricted to the three release forms the notes actually use --
+    a table row marked "release seed" beside the hash, the closing prose
+    header that begins "Seed `<hash>`", or the "Release measurements"
+    section header that names the seed inline (the Update 48 form; interim
+    sections are titled "Interim mirror push" and never match) -- because a
+    bare substring match
     labels too much: prior-release seeds are back-referenced in later notes
     ("The release 46 seed was ..."), and interim seeds are named in the next
     Update's accumulator, so an interim checkout would get a release number
@@ -60,6 +63,7 @@ def update_label(sha):
             continue
         for line in note.read_text(errors='replace').upper().splitlines():
             if prefix in line and ('RELEASE SEED' in line
+                                   or 'RELEASE MEASUREMENTS' in line
                                    or line.strip().startswith('SEED `')):
                 claims.append(int(m.group(1)))
                 break

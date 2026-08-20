@@ -593,8 +593,12 @@ and `ring_compile.py` verbatim, a three-line `ladder_root.py` stub, and
 the seed kernel -- plus the qemu package. No checkout, no zig, no
 daemon, no listening port, no state. It cannot drift out of sync with
 the ladder because there is nothing in it to drift; a stale SEED is
-possible, which is why re-running `droplet_vm_setup.sh` is a step of
-every re-pin (it is idempotent and verifies the pushed seed by sha).
+possible, and is guarded twice: `droplet_vm_setup.sh` sha-verifies at
+push time, and `droplet_compile.sh` re-verifies the droplet's seed
+against the checkout's ON EVERY JOB, refusing before QEMU boots -- the
+same per-use discipline `plug_run_ring.py` applies to a stale ringplug.
+Re-running the setup script at every re-pin is still the ceremony step;
+the per-job check is what makes forgetting it loud instead of silent.
 
 **Synchronous ssh is the whole protocol.** The wrapper scps the blob
 up, holds one ssh while `ring_compile.py` runs remotely -- log lines
