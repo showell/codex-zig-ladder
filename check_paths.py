@@ -115,6 +115,28 @@ def check_leftovers():
     return bad, bootstraps
 
 
+def check_table():
+    """Warn when the README's banked-against table disagrees with the Update
+    derived from the seed on disk (S7). A warning, never a failure: the
+    README itself documents the mid-rebank state where the pin runs one
+    Update ahead of the table, and that in-between is normal. What this
+    catches is the table staying wrong AFTER the new bank lands."""
+    m = re.search(r'^\| Update \| (\d+)', (LADDER / 'README.md').read_text(), re.M)
+    if not m:
+        return ['  WARN: no "| Update | N" row found in README.md to cross-check']
+    claimed = int(m.group(1))
+    import seed_identity
+    derived = seed_identity.update_label(seed_identity.seed_sha256())
+    if derived is None:
+        return [f'  note: table says Update {claimed}; the seed on disk is '
+                'unreleased (no note names it), nothing to cross-check']
+    if derived != claimed:
+        return [f'  WARN: banked-against table says Update {claimed}, the seed '
+                f'on disk derives Update {derived} -- normal mid-rebank; '
+                'correct the table when the new bank lands']
+    return []
+
+
 def main():
     print(f'CODEX  {CODEX}')
     print(f'LADDER {LADDER}\n')
@@ -130,6 +152,9 @@ def main():
     left, bootstraps = check_leftovers()
     print(f'unconverted root derivations: {len(left)}')
     print(f'sanctioned bootstraps: {len(bootstraps)}')
+
+    for line in check_table():
+        print(f'\n{line.strip()}')
 
     if failures:
         print('\nUNRESOLVED PATHS:')
