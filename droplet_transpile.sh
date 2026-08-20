@@ -13,9 +13,8 @@
 #         against build-output/zig-plug.fingerprint.
 # The kernel travels only when the droplet's fingerprint copy differs.
 # The droplet invokes the driver with an explicit kernel path, skipping
-# the droplet-side re-bundle. TCP note: run_verified needs the mem_mb
-# plumb-through (queued edit to plug_run_checked.py); until it lands the
-# tcp arm passes mem through run_plug's keyword from the call site.
+# the droplet-side re-bundle. Both arms cap the guest at mem_mb=1300 --
+# the droplet holds 2 GB total and the appliance must never swap.
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(python3 "$T/ladder_root.py" codex)"

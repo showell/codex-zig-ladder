@@ -29,7 +29,7 @@ import plug_run
 CHUNK_SIZES = [3000, 1500, 3500, 2500]
 
 def run_verified(plug_cdx, ir_path, out_path, port=9145, attempts=3,
-                 timeout=420, chunk_size=4096, stall=120):
+                 timeout=420, chunk_size=4096, stall=120, mem_mb=3072):
 
     """One transfer plus a proof. Falls back to agreement if the proof keeps
     failing, which would mean the kernel is segmenting somewhere we did not
@@ -48,7 +48,7 @@ def run_verified(plug_cdx, ir_path, out_path, port=9145, attempts=3,
         try:
             if not plug_run.run_plug(plug_cdx, ir_path, tmp, port=port,
                                      chunk_size=chunk_size, timeout=timeout, stall=stall,
-                                     pcap=pcap):
+                                     pcap=pcap, mem_mb=mem_mb):
                 print(f"[verified] attempt {i + 1}: transfer failed")
                 continue
             # The parity proof is vacuous on a capture that missed the
@@ -81,9 +81,11 @@ def run_verified(plug_cdx, ir_path, out_path, port=9145, attempts=3,
             os.unlink(tmp)
             os.unlink(pcap)
     print("[verified] parity route exhausted; falling back to agreement")
-    return run_agreed(plug_cdx, ir_path, out_path, port=port, timeout=timeout, stall=stall)
+    return run_agreed(plug_cdx, ir_path, out_path, port=port, timeout=timeout,
+                      stall=stall, mem_mb=mem_mb)
 
-def run_agreed(plug_cdx, ir_path, out_path, port=9145, attempts=4, timeout=420, stall=120):
+def run_agreed(plug_cdx, ir_path, out_path, port=9145, attempts=4, timeout=420,
+               stall=120, mem_mb=3072):
     fd, tmp = tempfile.mkstemp(suffix=".plug-attempt")
     os.close(fd)
     seen = {}
@@ -91,7 +93,8 @@ def run_agreed(plug_cdx, ir_path, out_path, port=9145, attempts=4, timeout=420, 
         for i in range(attempts):
             cs = CHUNK_SIZES[i % len(CHUNK_SIZES)]
             if not plug_run.run_plug(plug_cdx, ir_path, tmp, port=port,
-                                     chunk_size=cs, timeout=timeout, stall=stall):
+                                     chunk_size=cs, timeout=timeout, stall=stall,
+                                     mem_mb=mem_mb):
                 print(f"[agreed] attempt {i + 1} (chunk {cs}): transfer failed")
                 continue
             blob = open(tmp, "rb").read()
