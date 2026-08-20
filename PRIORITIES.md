@@ -111,6 +111,20 @@ batch's first act is re-checking its list against the tree:
   census json stays; LICENSE is Steve's call; errors='replace'
   byte-compare rides Batch 3.
 
+## 3.5 Provenance watches one file too many
+
+**Objective: instrument work.** The truth sidecars hash `oracle_lib.sh`
+whole, so a guard-or-comment edit to the ZIG-arm half invalidates every
+recorded truth's provenance -- it cost a full truth-arm re-measurement
+on 2026-08-20, hours after the same session built the guards that fired
+(the wiring batch edited oracle_lib between recording and banking; the
+diff was provably guards and comments, and the only honest path was
+re-measuring). Fix shape: segregate by volatility -- split the
+truth-arm measurement machinery (mode_flags, truth_arm, split plumbing)
+into its own sourced file that the sidecar watches, leaving the
+zig-arm/instrument half free to move. Do it right after a bank lands,
+never between recording and banking.
+
 ## 4. Widening the hunting ground: the gap families
 
 **Objective: hunting, reached through our own gap-filling.** The census
