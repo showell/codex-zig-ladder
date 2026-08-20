@@ -354,12 +354,17 @@ The rule that makes both work: **one compute job at a time.** The machine has
 about 3 GB usable and QEMU takes most of it. Anything fired from the keyboard
 waits for what is already running, the way `tonight.sh` does.
 
-**Possible change of venue (Steve, 2026-08-19): start working from the prod
-droplet as early as tomorrow.** The droplet is extremely under-utilized and
-Steve has ruled it fine to work there — treat the old don't-build-there
-posture as caution about the live site, not a blocker. What it would buy:
-a host that doesn't share a laptop with Windows, no WSL livelock exposure,
-no OEM-crapware CPU theft (2026-08-19 lost most of an evening to that).
-What to watch: 1 vCPU / 2 GB is smaller than the laptop's 3 GB, and the
-live site shares it — size QEMU and the census batches to that before
-moving the loop.
+**Droplet compile venue: BUILT AND MEASURED 2026-08-20** (design
+random893, agreed Steve + Claude). The droplet is a QEMU appliance and
+nothing more: `droplet_vm_setup.sh` provisions it (qemu + the two driver
+scripts + a ladder_root stub + the seed kernel; re-run on re-pin),
+`droplet_compile.sh <blob> <out.cdx>` compiles there synchronously over
+ssh — the held ssh IS the completion signal, logs stream live, no
+daemon, no open port, no polling. Measurements in JUSTIFICATIONS.md:
+droplet TCG 26s on the warmup blob vs the laptop's 31s (KVM measured
+43s and rejected — port-I/O-heavy guest, vmexit per access), output
+byte-identical to the laptop compile. Guest sized at 1300 MB; the site
+is protected by nice + flock, and the 2.5 MB codexir bundle compile is
+unmeasured there. The real payoff is the one-compute-job rule going
+per-host: the droplet grinds QEMU while the laptop does zig and
+keyboard work.

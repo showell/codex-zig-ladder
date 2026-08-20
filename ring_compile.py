@@ -22,6 +22,12 @@ import codex_vm
 from ladder_root import CODEX
 
 REPO = str(CODEX)
+# Same accel contract as codex_vm: tcg unless CODEX_ACCEL says otherwise,
+# and the kernel-irqchip=off workaround only off-KVM (under KVM the
+# userspace APIC path is deprecated and the guest dies pre-READY).
+# CODEX_MEM_MB sizes the guest for smaller hosts (the droplet has 2 GB).
+ACCEL = os.environ.get("CODEX_ACCEL", "tcg")
+MEM_MB = int(os.environ.get("CODEX_MEM_MB", "3072"))
 RING_ADDR = 0x500000
 RING_SIZE = 0x100000          # 1 MB, must match seed's serial-ring-buf-size
 WPOS_ADDR = 28704             # 0x7020
@@ -109,7 +115,7 @@ class Gdb:
             pass
         self.s.close()
 
-def compile_ring(blob_path, out_path, mem_mb=3072, timeout=1800, seed=None):
+def compile_ring(blob_path, out_path, mem_mb=MEM_MB, timeout=1800, seed=None):
     blob = open(blob_path, "rb").read()
     # Both ring positions are unbounded counters masked at access on both
     # the ISR write side and the __bare_metal_read_serial read side, so
@@ -124,9 +130,9 @@ def compile_ring(blob_path, out_path, mem_mb=3072, timeout=1800, seed=None):
         with open(stage_path, "wb") as f:
             f.write(blob[:RING_SIZE])
     dp, cp, gp = free_port(), free_port(), free_port()
+    machine = ["-machine", "kernel-irqchip=off"] if ACCEL != "kvm" else []
     proc = subprocess.Popen([
-        "qemu-system-x86_64", "-accel", "tcg",
-        "-machine", "kernel-irqchip=off", "-cpu", "max",
+        "qemu-system-x86_64", "-accel", ACCEL, *machine, "-cpu", "max",
         "-kernel", seed or f"{REPO}/seed/Codex.cdx",
         "-device", f"loader,file={stage_path},addr={hex(RING_ADDR)},force-raw=on",
         "-chardev", f"socket,id=ch0,host=127.0.0.1,port={dp},server=on,wait=on,nodelay=on",

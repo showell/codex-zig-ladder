@@ -91,3 +91,22 @@ the `check` rung's 175s think time failed a 120s stall window and was
 diagnosed as a transport ceiling and then as an emitter regression. 175 / 5 is
 ~35s, which is where it sat when it passed. **Read the `stream:` line before
 attributing a slowdown to a commit.**
+
+## Droplet compile venue: TCG beats KVM there, and the droplet beats the laptop (2026-08-20)
+
+The droplet appliance (droplet_vm_setup.sh / droplet_compile.sh) was sized by
+measurement before adoption. Same warmup plug blob (401353 bytes in, 377014
+out), same ring_compile.py, guest at 1300 MB on the droplet:
+
+    laptop  WSL2, tcg          stream: 31s    (the standing 29-31s contract)
+    droplet DO-Premium-Intel,
+            kvm                stream: 43s    READY at 0.4s
+            tcg                stream: 26s    READY at 0.2s
+
+KVM loses on this workload because the guest streams output through port
+I/O and polls the serial LSR; every port access is a vmexit under KVM and a
+cheap helper call under TCG. So the wrapper pins TCG. Byte-level acceptance:
+the droplet CDX and .map are byte-identical to the laptop compile of the
+same blob. Steal time zero during the runs; the 1300 MB guest fits the 2 GB
+box without swap for this workload -- larger subjects (the 2.5 MB codexir
+bundle) are unmeasured there and get their own measurement before any claim.
