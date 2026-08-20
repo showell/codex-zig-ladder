@@ -93,12 +93,25 @@ fixes NOT yet applied, batch them into ONE emitter change-set so one sweep
   census bank that item 2 was sequenced behind has landed -- the migration
   is unblocked. Ours, not a finding.
 - **bloom-spread, consistent-hash-balance, particle-spread (3 crashes):
-  `panic: integer overflow`, one family.** Hash/spread arithmetic overflows
-  i64; bare metal wraps (x86 add), C# `long` wraps (unchecked default), zig
-  `+`/`*` panics in debug. If the language's rule is wrap, the emitter
-  should use `+%`/`-%`/`*%`. VERIFY the ruling against the C# emitter and a
-  bare-metal source before editing -- if Codex intends overflow to be an
-  error, the wrap on bare metal is a FINDING, not our bug.
+  `panic: integer overflow`. RULING CHECKED 2026-08-20: wrap is the
+  language's rule; the fix is ours** (`+%`/`-%`/`*%`, and wrapping
+  negation -- `-h` on i64-min panics too). Five sources, converging:
+  CodexSubtypes.md says Integer IS the 64-bit machine word; the IR names
+  behavior wherever it deviates (IrAddRealTrapping/Saturating, clamping
+  bounded fields) and IrAddInt is the plain op; the C# gold standard
+  emits bare `+` on `long` in C#'s default unchecked context; bare metal
+  emits `lea`/`add` with no `jo` anywhere; and DECISIVELY, Foreword's own
+  BloomFilter is written against wrap -- `bloom-hash-text-loop` iterates
+  `hash * 31 + c` unbounded, mixes with `bit-shru` (only meaningful on a
+  fixed-width word), and then says `if h < 0 then -h`: a product of
+  positives that can only go negative by wrapping around. While editing,
+  check `bit-shl` and any other op zig makes checked. UPSTREAM ASIDE
+  worth sending with the fix: the Python plug emits `+` on unbounded
+  ints with NO 64-bit mask, so it silently diverges from bare metal on
+  any overflow (JS is worse -- f64 loses exact integers past 2^53), and
+  plug-oracle-arith has no overflow row to catch it. Same shape as the
+  guards sweep: our fix plus a proposed oracle row exposes the others.
+  Source-read only; demonstrate before filing.
 - **smp-arm64-boot, smp-riscv-boot (2 crashes): RESOLVED AT THE DESK
   2026-08-19 -- hardware-semantics subjects the hosted arm structurally
   cannot answer.** Each polls a marker cell at a fixed high physical
