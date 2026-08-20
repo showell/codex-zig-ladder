@@ -1,172 +1,172 @@
-{"name": "act-let-scope", "verdict": "match", "detail": ""}
-{"name": "aesgcm256", "verdict": "match", "detail": ""}
-{"name": "amp-after-call", "verdict": "match", "detail": ""}
-{"name": "approx-eq", "verdict": "match", "detail": ""}
-{"name": "arith-narrow-proven", "verdict": "differ", "detail": "want '28992\\n69997\\n16383\\nmark-ok' got '28992\\n69997\\n16383\\nmark-zero'"}
-{"name": "arith-operand-order", "verdict": "match", "detail": ""}
-{"name": "arithmetic", "verdict": "refused", "detail": "corpus/arithmetic.zig:516:251: error: expected 0 argument(s), found 1"}
-{"name": "arm64-boot-test", "verdict": "match", "detail": ""}
-{"name": "arm64-encoder", "verdict": "match", "detail": ""}
-{"name": "arp-cache-bound", "verdict": "refused", "detail": "corpus/arp-cache-bound.zig:995:399: error: expected type 'i64', found 'bool'"}
-{"name": "audio-diffusion-test", "verdict": "refused", "detail": "corpus/audio-diffusion-test.zig:509:18: error: use of undeclared identifier 'Frequency'"}
-{"name": "av-codec-test", "verdict": "refused", "detail": "corpus/av-codec-test.zig:531:22: error: use of undeclared identifier 'Frequency'"}
-{"name": "bezier-identity", "verdict": "match", "detail": ""}
-{"name": "bitop-if-cond", "verdict": "match", "detail": ""}
-{"name": "ble-att-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "bloom-spread", "verdict": "crashed", "detail": "thread 58354 panic: integer overflow"}
-{"name": "board-types", "verdict": "match", "detail": ""}
-{"name": "bounded-integer-ops", "verdict": "match", "detail": ""}
-{"name": "bounded-param-trap", "verdict": "no-expected", "detail": ""}
-{"name": "bounded-return-trap", "verdict": "no-expected", "detail": ""}
-{"name": "bounded-sig-runtime", "verdict": "match", "detail": ""}
-{"name": "bounded-sig-static", "verdict": "match", "detail": ""}
-{"name": "bounds-proof", "verdict": "match", "detail": ""}
-{"name": "bounds-prover", "verdict": "match", "detail": ""}
-{"name": "brotli-interop", "verdict": "no-expected", "detail": ""}
-{"name": "bs3-smoke", "verdict": "match", "detail": ""}
-{"name": "builtin-narrow-proven", "verdict": "match", "detail": ""}
-{"name": "call-clobber", "verdict": "refused", "detail": "corpus/call-clobber.zig:495:168: error: expected type 'i64', found 'bool'"}
-{"name": "canopen-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "cap-device-declared", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "cap-manifest-derived", "verdict": "match", "detail": ""}
-{"name": "capability-doors", "verdict": "match", "detail": ""}
-{"name": "carddeck-shuffle", "verdict": "refused", "detail": "corpus/carddeck-shuffle.zig:556:724: error: expected type 'i64', found 'bool'"}
-{"name": "cce-roundtrip", "verdict": "match", "detail": ""}
-{"name": "cce-tier1", "verdict": "refused", "detail": "corpus/cce-tier1.zig:611:67: error: expected type 'i64', found 'bool'"}
-{"name": "cdx2053-range", "verdict": "no-expected", "detail": ""}
-{"name": "chapter-pages", "verdict": "match", "detail": ""}
-{"name": "char-at-negative", "verdict": "no-expected", "detail": ""}
-{"name": "char-at-past-end", "verdict": "no-expected", "detail": ""}
-{"name": "circbuf-test", "verdict": "refused", "detail": "corpus/circbuf-test.zig:535:354: error: switch must handle all possibilities"}
-{"name": "class-op-no-instance", "verdict": "no-expected", "detail": ""}
-{"name": "cmac-test", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "cms-spread", "verdict": "refused", "detail": "corpus/cms-spread.zig:567:1353: error: expected type 'i64', found 'bool'"}
-{"name": "coap-block", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "coap-packet", "verdict": "match", "detail": ""}
-{"name": "coap-parse", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "collide-chapters", "verdict": "match", "detail": ""}
-{"name": "color-test", "verdict": "match", "detail": ""}
-{"name": "consistent-hash-balance", "verdict": "crashed", "detail": "thread 58479 panic: integer overflow"}
-{"name": "const-narrow-proven", "verdict": "match", "detail": ""}
-{"name": "convolution-identity", "verdict": "match", "detail": ""}
-{"name": "crypto-test", "verdict": "match", "detail": ""}
-{"name": "crypto-vectors", "verdict": "match", "detail": ""}
-{"name": "cryptobig", "verdict": "refused", "detail": "corpus/cryptobig.zig:687:590: error: expected type 'i64', found 'bool'"}
-{"name": "ctor-narrow-warn", "verdict": "match", "detail": ""}
-{"name": "dce-reach", "verdict": "match", "detail": ""}
-{"name": "deck-bracket-contract", "verdict": "differ", "detail": "want 'enter switches to the mark : yes\\nexit restores the bivy     ' got 'enter switches to the mark : no\\nexit restores the bivy     :'"}
-{"name": "deck-record-contract", "verdict": "differ", "detail": "want 'argument evaluates on the deck: yes\\nthe extent restores the ' got 'argument evaluates on the deck: no\\nthe extent restores the b'"}
-{"name": "diag-pci-map-judge", "verdict": "match", "detail": ""}
-{"name": "dnp3-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "dns-answer-count", "verdict": "refused", "detail": "corpus/dns-answer-count.zig:31:11: error: local constant shadows declaration of 'l'"}
-{"name": "dtls-fragment", "verdict": "match", "detail": ""}
-{"name": "dtls-handshake", "verdict": "refused", "detail": "corpus/dtls-handshake.zig:912:163: error: expected type 'i64', found 'bool'"}
-{"name": "dtls-hello", "verdict": "refused", "detail": "corpus/dtls-hello.zig:787:228: error: expected type 'i64', found 'bool'"}
-{"name": "dtls-message", "verdict": "refused", "detail": "corpus/dtls-message.zig:960:124: error: expected type 'i64', found 'bool'"}
-{"name": "e1000-aneg-budget", "verdict": "refused", "detail": "corpus/e1000-aneg-budget.zig:559:710: error: expected type 'i64', found 'bool'"}
-{"name": "e1000-link-budget", "verdict": "refused", "detail": "corpus/e1000-link-budget.zig:571:717: error: expected type 'i64', found 'bool'"}
-{"name": "ecdsa-p256", "verdict": "refused", "detail": "corpus/ecdsa-p256.zig:1227:185: error: expected type 'i64', found 'bool'"}
-{"name": "ecdsa-p384", "verdict": "refused", "detail": "corpus/ecdsa-p384.zig:1159:81: error: expected type 'i64', found 'bool'"}
-{"name": "edalias", "verdict": "match", "detail": ""}
-{"name": "edcurve", "verdict": "match", "detail": ""}
-{"name": "edit-distance-test", "verdict": "match", "detail": ""}
-{"name": "effect-dotted-allow", "verdict": "match", "detail": ""}
-{"name": "effect-launder-fork", "verdict": "no-expected", "detail": ""}
-{"name": "effect-launder-map", "verdict": "no-expected", "detail": ""}
-{"name": "effect-launder-record", "verdict": "no-expected", "detail": ""}
-{"name": "effect-map-effctx", "verdict": "match", "detail": ""}
-{"name": "effect-positive", "verdict": "match", "detail": ""}
-{"name": "effect-row-var-syntax", "verdict": "match", "detail": ""}
-{"name": "effect-value-poly", "verdict": "refused", "detail": "corpus/effect-value-poly.zig:502:29: error: expected 1 argument(s), found 0"}
-{"name": "effect-widen-arg", "verdict": "match", "detail": ""}
-{"name": "effect-widen-scope", "verdict": "match", "detail": ""}
-{"name": "enip-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "eventbus-test", "verdict": "match", "detail": ""}
-{"name": "exc-deep-frames", "verdict": "no-expected", "detail": ""}
-{"name": "exc-div-zero", "verdict": "no-expected", "detail": ""}
-{"name": "exc-gpf", "verdict": "no-expected", "detail": ""}
-{"name": "exc-null-read", "verdict": "no-expected", "detail": ""}
-{"name": "exc-stack-heap", "verdict": "no-expected", "detail": ""}
-{"name": "factorial", "verdict": "refused", "detail": "corpus/factorial.zig:553:1489: error: expected type 'i64', found 'f64'"}
-{"name": "field-cache-shape", "verdict": "match", "detail": ""}
-{"name": "field-cache-text-lit", "verdict": "match", "detail": ""}
-{"name": "field-guard-refine", "verdict": "match", "detail": ""}
-{"name": "field-range-proven", "verdict": "match", "detail": ""}
-{"name": "final-batch-test", "verdict": "refused", "detail": "corpus/final-batch-test.zig:593:21: error: use of undeclared identifier 'Timestamp'"}
-{"name": "fins-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "fork-nested", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "fork-reclaim", "verdict": "refused", "detail": "corpus/fork-reclaim.zig:497:259: error: expected type 'i64', found 'fork-reclaim.CxFn1(void,i64)'"}
-{"name": "frame-short-buffer", "verdict": "refused", "detail": "corpus/frame-short-buffer.zig:577:1756: error: expected type 'i64', found 'bool'"}
-{"name": "frameless-leaf-probe", "verdict": "match", "detail": ""}
-{"name": "fresh-alloc-narrow", "verdict": "match", "detail": ""}
-{"name": "ga-core", "verdict": "refused", "detail": "corpus/ga-core.zig:683:2514: error: expected type 'i64', found 'bool'"}
-{"name": "geometry-test", "verdict": "refused", "detail": "corpus/geometry-test.zig:729:73: error: expected type 'i64', found 'f64'"}
-{"name": "goose-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "hal-device-declared", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "hart-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "heap-frame-reclaim", "verdict": "match", "detail": ""}
-{"name": "history-test", "verdict": "match", "detail": ""}
-{"name": "idm-salt-iv-distinct", "verdict": "match", "detail": ""}
-{"name": "ieee802154-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "if-in-arith", "verdict": "match", "detail": ""}
-{"name": "if-let-join", "verdict": "match", "detail": ""}
-{"name": "image-codec-test", "verdict": "match", "detail": ""}
-{"name": "imap-wire", "verdict": "match", "detail": ""}
-{"name": "implicit-convert", "verdict": "refused", "detail": "corpus/implicit-convert.zig:491:109: error: expected type 'void', found 'comptime_int'"}
-{"name": "induction-assoc", "verdict": "match", "detail": ""}
-{"name": "induction-list", "verdict": "match", "detail": ""}
-{"name": "induction-param", "verdict": "match", "detail": ""}
-{"name": "induction-parse", "verdict": "match", "detail": ""}
-{"name": "infra-test", "verdict": "refused", "detail": "corpus/infra-test.zig:512:20: error: use of undeclared identifier 'Duration'"}
-{"name": "inline-cost-based", "verdict": "match", "detail": ""}
-{"name": "inline-single-caller", "verdict": "match", "detail": ""}
-{"name": "int-literal-underscore", "verdict": "match", "detail": ""}
-{"name": "interval-exhaustive", "verdict": "match", "detail": ""}
-{"name": "ip-checksum-odd", "verdict": "refused", "detail": "corpus/ip-checksum-odd.zig:545:110: error: expected type 'i64', found 'bool'"}
-{"name": "iterate-test", "verdict": "match", "detail": ""}
-{"name": "iterate-zip-test", "verdict": "refused", "detail": "corpus/iterate-zip-test.zig:507:1518: error: expected type 'i64', found 'bool'"}
-{"name": "j1939-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "kleene-tribool", "verdict": "no-expected", "detail": ""}
-{"name": "knx-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "leaf-let-if", "verdict": "match", "detail": ""}
-{"name": "leaf-mispredict", "verdict": "match", "detail": ""}
-{"name": "lease-handoff", "verdict": "match", "detail": ""}
-{"name": "let-dest-scope", "verdict": "refused", "detail": "corpus/let-dest-scope.zig:510:103: error: expected type 'i64', found 'bool'"}
-{"name": "let-effectful-bug", "verdict": "no-expected", "detail": ""}
-{"name": "let-else-scope", "verdict": "match", "detail": ""}
-{"name": "let-shadow-scope", "verdict": "match", "detail": ""}
-{"name": "linear-branch", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "linear-mint-container", "verdict": "match", "detail": ""}
-{"name": "linear-poly-freeze", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "linear-smoke", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "lir-binop-cross", "verdict": "match", "detail": ""}
-{"name": "lir-branch-cross", "verdict": "match", "detail": ""}
-{"name": "lir-call-cross", "verdict": "match", "detail": ""}
-{"name": "lir-frame-cross", "verdict": "match", "detail": ""}
-{"name": "lir-join-cross", "verdict": "match", "detail": ""}
-{"name": "lir-load-cross", "verdict": "match", "detail": ""}
-{"name": "lir-nullary-cross", "verdict": "match", "detail": ""}
-{"name": "lir-selector-smoke", "verdict": "match", "detail": ""}
-{"name": "lir-test-cross", "verdict": "match", "detail": ""}
-{"name": "list-cons-tail", "verdict": "match", "detail": ""}
-{"name": "list-induction", "verdict": "match", "detail": ""}
-{"name": "list-literal-o1", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'"}
-{"name": "list-oob-negative", "verdict": "no-expected", "detail": ""}
-{"name": "list-oob-read", "verdict": "no-expected", "detail": ""}
-{"name": "list-oob-write", "verdict": "no-expected", "detail": ""}
-{"name": "list-tail-empty", "verdict": "match", "detail": ""}
-{"name": "literal-subpattern", "verdict": "refused", "detail": "corpus/literal-subpattern.zig:511:25: error: use of undeclared identifier 'sin'"}
-{"name": "local-narrow-proven", "verdict": "match", "detail": ""}
-{"name": "location-sensors-stub", "verdict": "refused", "detail": "corpus/location-sensors-stub.zig:552:340: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "act-let-scope", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "aesgcm256", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "amp-after-call", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "approx-eq", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "arith-narrow-proven", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "arith-operand-order", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "arithmetic", "verdict": "refused", "detail": "corpus/arithmetic.zig:544:251: error: expected 0 argument(s), found 1", "zig": "0.16.0"}
+{"name": "arm64-boot-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "arm64-encoder", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "arp-cache-bound", "verdict": "refused", "detail": "corpus/arp-cache-bound.zig:1023:399: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "audio-diffusion-test", "verdict": "refused", "detail": "corpus/audio-diffusion-test.zig:537:18: error: use of undeclared identifier 'Frequency'", "zig": "0.16.0"}
+{"name": "av-codec-test", "verdict": "refused", "detail": "corpus/av-codec-test.zig:559:22: error: use of undeclared identifier 'Frequency'", "zig": "0.16.0"}
+{"name": "bezier-identity", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "bitop-if-cond", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "ble-att-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "bloom-spread", "verdict": "crashed", "detail": "thread 5812 panic: integer overflow", "zig": "0.16.0"}
+{"name": "board-types", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "bounded-integer-ops", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "bounded-param-trap", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "bounded-return-trap", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "bounded-sig-runtime", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "bounded-sig-static", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "bounds-proof", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "bounds-prover", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "brotli-interop", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "bs3-smoke", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "builtin-narrow-proven", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "call-clobber", "verdict": "refused", "detail": "corpus/call-clobber.zig:523:168: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "canopen-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "cap-device-declared", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "cap-manifest-derived", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "capability-doors", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "carddeck-shuffle", "verdict": "refused", "detail": "corpus/carddeck-shuffle.zig:584:724: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "cce-roundtrip", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "cce-tier1", "verdict": "refused", "detail": "corpus/cce-tier1.zig:639:67: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "cdx2053-range", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "chapter-pages", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "char-at-negative", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "char-at-past-end", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "circbuf-test", "verdict": "refused", "detail": "corpus/circbuf-test.zig:563:354: error: switch must handle all possibilities", "zig": "0.16.0"}
+{"name": "class-op-no-instance", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "cmac-test", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "cms-spread", "verdict": "refused", "detail": "corpus/cms-spread.zig:595:1353: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "coap-block", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "coap-packet", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "coap-parse", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "collide-chapters", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "color-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "consistent-hash-balance", "verdict": "crashed", "detail": "thread 6068 panic: integer overflow", "zig": "0.16.0"}
+{"name": "const-narrow-proven", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "convolution-identity", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "crypto-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "crypto-vectors", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "cryptobig", "verdict": "refused", "detail": "corpus/cryptobig.zig:715:590: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "ctor-narrow-warn", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "dce-reach", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "deck-bracket-contract", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "deck-record-contract", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "diag-pci-map-judge", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "dnp3-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "dns-answer-count", "verdict": "refused", "detail": "corpus/dns-answer-count.zig:31:11: error: local constant shadows declaration of 'l'", "zig": "0.16.0"}
+{"name": "dtls-fragment", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "dtls-handshake", "verdict": "refused", "detail": "corpus/dtls-handshake.zig:940:163: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "dtls-hello", "verdict": "refused", "detail": "corpus/dtls-hello.zig:815:228: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "dtls-message", "verdict": "refused", "detail": "corpus/dtls-message.zig:988:124: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "e1000-aneg-budget", "verdict": "refused", "detail": "corpus/e1000-aneg-budget.zig:587:710: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "e1000-link-budget", "verdict": "refused", "detail": "corpus/e1000-link-budget.zig:599:717: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "ecdsa-p256", "verdict": "refused", "detail": "corpus/ecdsa-p256.zig:1255:185: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "ecdsa-p384", "verdict": "refused", "detail": "corpus/ecdsa-p384.zig:1187:81: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "edalias", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "edcurve", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "edit-distance-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "effect-dotted-allow", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "effect-launder-fork", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "effect-launder-map", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "effect-launder-record", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "effect-map-effctx", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "effect-positive", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "effect-row-var-syntax", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "effect-value-poly", "verdict": "refused", "detail": "corpus/effect-value-poly.zig:530:29: error: expected 1 argument(s), found 0", "zig": "0.16.0"}
+{"name": "effect-widen-arg", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "effect-widen-scope", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "enip-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "eventbus-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "exc-deep-frames", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "exc-div-zero", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "exc-gpf", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "exc-null-read", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "exc-stack-heap", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "factorial", "verdict": "refused", "detail": "corpus/factorial.zig:581:1489: error: expected type 'i64', found 'f64'", "zig": "0.16.0"}
+{"name": "field-cache-shape", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "field-cache-text-lit", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "field-guard-refine", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "field-range-proven", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "final-batch-test", "verdict": "refused", "detail": "corpus/final-batch-test.zig:621:21: error: use of undeclared identifier 'Timestamp'", "zig": "0.16.0"}
+{"name": "fins-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "fork-nested", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "fork-reclaim", "verdict": "refused", "detail": "corpus/fork-reclaim.zig:525:259: error: expected type 'i64', found 'fork-reclaim.CxFn1(void,i64)'", "zig": "0.16.0"}
+{"name": "frame-short-buffer", "verdict": "refused", "detail": "corpus/frame-short-buffer.zig:605:1756: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "frameless-leaf-probe", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "fresh-alloc-narrow", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "ga-core", "verdict": "refused", "detail": "corpus/ga-core.zig:711:2514: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "geometry-test", "verdict": "refused", "detail": "corpus/geometry-test.zig:757:73: error: expected type 'i64', found 'f64'", "zig": "0.16.0"}
+{"name": "goose-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "hal-device-declared", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "hart-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "heap-frame-reclaim", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "history-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "idm-salt-iv-distinct", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "ieee802154-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "if-in-arith", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "if-let-join", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "image-codec-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "imap-wire", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "implicit-convert", "verdict": "refused", "detail": "corpus/implicit-convert.zig:519:109: error: expected type 'void', found 'comptime_int'", "zig": "0.16.0"}
+{"name": "induction-assoc", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "induction-list", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "induction-param", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "induction-parse", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "infra-test", "verdict": "refused", "detail": "corpus/infra-test.zig:540:20: error: use of undeclared identifier 'Duration'", "zig": "0.16.0"}
+{"name": "inline-cost-based", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "inline-single-caller", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "int-literal-underscore", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "interval-exhaustive", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "ip-checksum-odd", "verdict": "refused", "detail": "corpus/ip-checksum-odd.zig:573:110: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "iterate-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "iterate-zip-test", "verdict": "refused", "detail": "corpus/iterate-zip-test.zig:535:1518: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "j1939-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "kleene-tribool", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "knx-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "leaf-let-if", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "leaf-mispredict", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "lease-handoff", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "let-dest-scope", "verdict": "refused", "detail": "corpus/let-dest-scope.zig:538:103: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "let-effectful-bug", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "let-else-scope", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "let-shadow-scope", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "linear-branch", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "linear-mint-container", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "linear-poly-freeze", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "linear-smoke", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "lir-binop-cross", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "lir-branch-cross", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "lir-call-cross", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "lir-frame-cross", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "lir-join-cross", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "lir-load-cross", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "lir-nullary-cross", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "lir-selector-smoke", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "lir-test-cross", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "list-cons-tail", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "list-induction", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "list-literal-o1", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "list-oob-negative", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "list-oob-read", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "list-oob-write", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "list-tail-empty", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "literal-subpattern", "verdict": "refused", "detail": "corpus/literal-subpattern.zig:539:25: error: use of undeclared identifier 'sin'", "zig": "0.16.0"}
+{"name": "local-narrow-proven", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "location-sensors-stub", "verdict": "refused", "detail": "corpus/location-sensors-stub.zig:580:340: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
 {"name": "lorawan-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
 {"name": "lwm2m-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
 {"name": "manifest-subject", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
 {"name": "match-arms-per-line", "verdict": "match", "detail": "", "zig": "0.16.0"}
 {"name": "mbus-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
-{"name": "media-codec-test", "verdict": "refused", "detail": "corpus/media-codec-test.zig:807:164: error: expected type 'void', found 'comptime_int'", "zig": "0.16.0"}
+{"name": "media-codec-test", "verdict": "refused", "detail": "corpus/media-codec-test.zig:835:164: error: expected type 'void', found 'comptime_int'", "zig": "0.16.0"}
 {"name": "melsec-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
 {"name": "mini-bootstrap", "verdict": "match", "detail": "", "zig": "0.16.0"}
-{"name": "mix-bits", "verdict": "refused", "detail": "corpus/mix-bits.zig:511:500: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "mix-bits", "verdict": "refused", "detail": "corpus/mix-bits.zig:539:500: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
 {"name": "mod-bound-return", "verdict": "match", "detail": "", "zig": "0.16.0"}
 {"name": "modbus-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
 {"name": "modprobe", "verdict": "match", "detail": "", "zig": "0.16.0"}
@@ -180,15 +180,120 @@
 {"name": "neg-real-repro", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:457:13: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
 {"name": "negation-abutment", "verdict": "match", "detail": "", "zig": "0.16.0"}
 {"name": "noalias-linear-param", "verdict": "match", "detail": "", "zig": "0.16.0"}
-{"name": "noise-test", "verdict": "refused", "detail": "corpus/noise-test.zig:595:399: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "noise-test", "verdict": "refused", "detail": "corpus/noise-test.zig:623:399: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
 {"name": "normalize-eq", "verdict": "match", "detail": "", "zig": "0.16.0"}
 {"name": "occurrence-check", "verdict": "match", "detail": "", "zig": "0.16.0"}
 {"name": "opcua-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
-{"name": "osc-noise", "verdict": "refused", "detail": "corpus/osc-noise.zig:485:21: error: use of undeclared identifier 'Frequency'", "zig": "0.16.0"}
-{"name": "ota-gate-block", "verdict": "refused", "detail": "corpus/ota-gate-block.zig:613:16: error: use of undeclared identifier 'Timestamp'", "zig": "0.16.0"}
-{"name": "ota-state-machine", "verdict": "refused", "detail": "corpus/ota-state-machine.zig:613:16: error: use of undeclared identifier 'Timestamp'", "zig": "0.16.0"}
-{"name": "ota-update", "verdict": "refused", "detail": "corpus/ota-update.zig:613:16: error: use of undeclared identifier 'Timestamp'", "zig": "0.16.0"}
+{"name": "osc-noise", "verdict": "refused", "detail": "corpus/osc-noise.zig:513:21: error: use of undeclared identifier 'Frequency'", "zig": "0.16.0"}
+{"name": "ota-gate-block", "verdict": "refused", "detail": "corpus/ota-gate-block.zig:641:16: error: use of undeclared identifier 'Timestamp'", "zig": "0.16.0"}
+{"name": "ota-state-machine", "verdict": "refused", "detail": "corpus/ota-state-machine.zig:641:16: error: use of undeclared identifier 'Timestamp'", "zig": "0.16.0"}
+{"name": "ota-update", "verdict": "refused", "detail": "corpus/ota-update.zig:641:16: error: use of undeclared identifier 'Timestamp'", "zig": "0.16.0"}
 {"name": "par-map", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
 {"name": "par-nested", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
 {"name": "parse-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
 {"name": "parser-resync", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "particle-spread", "verdict": "crashed", "detail": "thread 6672 panic: integer overflow", "zig": "0.16.0"}
+{"name": "path-real", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "pipe-unique-test", "verdict": "refused", "detail": "corpus/pipe-unique-test.zig:561:300: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "plug-oracle-arith", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "proof-assume-axiom", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "proof-smoke", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "prop-arith", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "prose-anchor", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "prose-consistency", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "punctual-fastmath", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "punctual-iot", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "punctual-smoke", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "quotes-gate", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "quotes-parse", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "range-let-carry", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "range-refine-if", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "record-smoke", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "reservoir-uniform", "verdict": "refused", "detail": "corpus/reservoir-uniform.zig:579:1095: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "return-narrow-proven", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "reverse-reverse", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "revised-narrow", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "riscv-encoder", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "riscv32c-encoder", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "rsa-pss", "verdict": "refused", "detail": "corpus/rsa-pss.zig:1079:201: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "rsa-verify", "verdict": "refused", "detail": "corpus/rsa-verify.zig:896:185: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "rv-arg-order", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "rv-frameless-imm", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "rv-param-bind", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "rv-param-order", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "s7comm-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "scope-console", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "scope-let-arm-global", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "sensor-data", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "serial-line", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "shadow-builtin-fold", "verdict": "differ", "detail": "want 'lit 99\\nvar 99\\nabs 77' got 'lit 3\\nvar 3\\nabs 5'", "zig": "0.16.0"}
+{"name": "shadow-builtin", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "simplify-check", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "sixlowpan-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "smp-arm64-boot", "verdict": "crashed", "detail": "thread 6851 panic: oom", "zig": "0.16.0"}
+{"name": "smp-riscv-boot", "verdict": "crashed", "detail": "thread 6856 panic: oom", "zig": "0.16.0"}
+{"name": "sntp-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "sort-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "sound-test", "verdict": "refused", "detail": "corpus/sound-test.zig:513:21: error: use of undeclared identifier 'Frequency'", "zig": "0.16.0"}
+{"name": "sprite-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "stale-read-warning", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "string-escape-quote", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "stringbuilder-independence", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "stringutils-test", "verdict": "refused", "detail": "corpus/stringutils-test.zig:614:89: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "substring-over-read", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "synth-test", "verdict": "refused", "detail": "corpus/synth-test.zig:532:16: error: use of undeclared identifier 'Frequency'", "zig": "0.16.0"}
+{"name": "tco-direct-arg-reads", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "tco-framed-append", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "tco-nested-if", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "tco-shuffle-spill", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "tcp-checksum-refuse", "verdict": "refused", "detail": "corpus/tcp-checksum-refuse.zig:412:13: error: local variable shadows declaration of 'base'", "zig": "0.16.0"}
+{"name": "tcp-listen-reclaim", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "tcp-reliability", "verdict": "refused", "detail": "corpus/tcp-reliability.zig:1107:5712: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "tcp-seqwrap", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "text-append-alias", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "text-eq-branches", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "text-fold-indexed", "verdict": "differ", "detail": "want '3\\n01234\\n3\\n4' got '3\\n01234\\n0\\n4'", "zig": "0.16.0"}
+{"name": "text-helper-native", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "text-helper-spec", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "textscan-test", "verdict": "refused", "detail": "corpus/textscan-test.zig:554:958: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "textsearch-test", "verdict": "refused", "detail": "corpus/textsearch-test.zig:617:64: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "thumb2-encoder", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "tls-record-framing", "verdict": "refused", "detail": "corpus/tls-record-framing.zig:1258:130: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "tls-test", "verdict": "refused", "detail": "corpus/tls-test.zig:980:674: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "tls13-record", "verdict": "refused", "detail": "corpus/tls13-record.zig:872:308: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "tls13-schedule", "verdict": "refused", "detail": "corpus/tls13-schedule.zig:971:192: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "transport-cocite", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "trie-prefix-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "ttf-debug", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "ttt-perfect", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "tuple-syntax", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "type-checker-test", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
+{"name": "typeclass-poly", "verdict": "refused", "detail": "corpus/typeclass-poly.zig:555:34: error: use of undeclared identifier 'T2'", "zig": "0.16.0"}
+{"name": "typeclass-smoke", "verdict": "refused", "detail": "corpus/typeclass-smoke.zig:640:121: error: use of undeclared identifier 'T2'", "zig": "0.16.0"}
+{"name": "udp-frame-guard", "verdict": "refused", "detail": "corpus/udp-frame-guard.zig:771:223: error: expected type 'i64', found 'bool'", "zig": "0.16.0"}
+{"name": "ui-anim-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "ui-font-cce-order", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "ui-font-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "ui-icon-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "ui-scroll-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "ui-sound-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "ui-theme-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "unit-family-mixed", "verdict": "refused", "detail": "corpus/unit-family-mixed.zig:515:108: error: incompatible types: 'comptime_int' and 'void'", "zig": "0.16.0"}
+{"name": "unit-family", "verdict": "refused", "detail": "corpus/unit-family.zig:511:120: error: invalid operands to binary expression: 'void' and 'void'", "zig": "0.16.0"}
+{"name": "unit-smoke", "verdict": "refused", "detail": "corpus/unit-smoke.zig:511:456: error: expected type 'void', found 'comptime_int'", "zig": "0.16.0"}
+{"name": "units-foreword", "verdict": "refused", "detail": "corpus/units-foreword.zig:523:127: error: invalid operands to binary expression: 'void' and 'void'", "zig": "0.16.0"}
+{"name": "usb-desc-guard", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "usb-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "value-eq", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "watchdog-panic-probe", "verdict": "no-expected", "detail": "", "zig": "0.16.0"}
+{"name": "wavelet-sort-aliasing", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "wcet-budget-unchecked", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "wcet-probe", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "when-arm-nontail", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "when-arm-tail-call", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "when-bool-cross", "verdict": "refused", "detail": "corpus/when-bool-cross.zig:523:32: error: use of undeclared identifier 'True'", "zig": "0.16.0"}
+{"name": "when-bool-pattern", "verdict": "refused", "detail": "corpus/when-bool-pattern.zig:511:28: error: use of undeclared identifier 'True'", "zig": "0.16.0"}
+{"name": "when-generic-field", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "with-timeout-test", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "workflow-parse-int", "verdict": "match", "detail": "", "zig": "0.16.0"}
+{"name": "zigbee-encode", "verdict": "refused", "detail": "/home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'", "zig": "0.16.0"}
