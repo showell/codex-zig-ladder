@@ -71,6 +71,9 @@ movement stays attributable to the emitter. Balloon protection
 survives (the balloon class was 3 GB+, and the new emitter's
 region-exhaustion panic fires before a balloon can form). The
 RSS-shaped guard (cgroup MemoryMax) is the queued long-term answer.
+Headroom MEASURED 2026-08-20 (cold review's ask, not asserted): the
+full shape -- 1.5 GiB reservation + the 512 MB spawn stack + zig
+runtime, compile stage included -- ran green under RLIMIT_AS 2200.
 
 Root cause of the livelocks themselves was never a corpus program: the
 Windows C: drive at 98% left `swap.vhdx` unable to expand, so paging

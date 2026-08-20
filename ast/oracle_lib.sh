@@ -53,7 +53,7 @@ take_compute_lock() {
     # Re-entrant down the process tree: rebank_all holds the lock and
     # then runs allcycles.sh, which must not refuse its own parent. The
     # variable dies with the holder, so it cannot leak past a crash.
-    [ -n "$LADDER_COMPUTE_LOCK" ] && return 0
+    [ -n "${LADDER_COMPUTE_LOCK:-}" ] && return 0
     exec 9>"$T/.compute.lock"
     flock -n 9 || {
         echo "COMPUTE LOCK HELD -- another sweep/build/census owns this laptop; refusing"

@@ -34,6 +34,7 @@ PIN=$HOME/showell_repos/NewRepository
 HEAP=$HOME/showell_repos/nr-heap
 GAPS=$HOME/showell_repos/nr-gaps
 STAMP() { echo "@@@@ $1 $(date +%H:%M:%S)"; }
+PHASE=init
 trap 'echo "@@@@ CHAIN ENDED at phase $PHASE $(date +%H:%M:%S)"' EXIT
 
 CODEX_ROOT="$PIN" . "$T/ast/oracle_lib.sh"
@@ -79,7 +80,8 @@ grep -A 80 "verdict diff" "$T/logs/overnight-gaps-census.log" | head -84
 PHASE=E; STAMP "E: restore to the pinned mainline"
 CODEX_ROOT="$PIN" "$T/native_build.sh" > "$T/logs/overnight-restore-natives.log" 2>&1 \
     || { echo "RESTORE NATIVE BUILD FAILED:"; tail -8 "$T/logs/overnight-restore-natives.log"; exit 1; }
-git -C "$T" checkout -- corpus/transpile.json corpus/gaps.json corpus/run.jsonl
+git -C "$T" checkout -- corpus/transpile.json corpus/gaps.json corpus/run.jsonl \
+    || { echo "RESTORE CHECKOUT FAILED -- the corpus trio is still branch data"; exit 1; }
 python3 - "$T" <<'PY'
 import hashlib, json, pathlib, sys
 T = pathlib.Path(sys.argv[1])
