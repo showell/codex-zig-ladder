@@ -67,15 +67,7 @@ depot shipped). Remaining, in order:
 6. Diagnostics POLICY re-pin, timings refreshed into README "Running
    it", banked-against table, tag `u48-14of14`, push.
 
-## 2. The IrApproxEq probe: run both arms, file
-
-**Objective: hunting.** The one live leftover of the emitter-defect
-sweep: `IrApproxEq` emits `==`, dropping the 4-ULP tolerance. The probe
-is written (`findings/probe-approx-eq.codex`) and its two blockers
-landed 2026-08-19. Run it on both arms (the droplet runs the truth arm
-now), file the finding. Small; rides any keyboard slot after item 1.
-
-## 3. The heap unification
+## 2. The heap unification
 
 **Objective: land our own fix; the verification is due diligence.**
 `findings/zig-heap-unification.md`. Closes `__heap-restore` being a
@@ -87,7 +79,7 @@ address means (the SMP subjects peek ~2.1 GB against RLIMIT_AS caps that
 count reserved space, not resident pages). Next PR after 76, off
 whatever base is current when it goes.
 
-## 4. The external review, in three batches
+## 3. The external review, in three batches
 
 **Objective: instrument work.** The review's high findings are wrong-bank
 and wrong-PASS closers -- ways the harness could lie green. None of it
@@ -114,7 +106,7 @@ batch's first act is re-checking its list against the tree:
   census json stays; LICENSE is Steve's call; errors='replace'
   byte-compare rides Batch 3.
 
-## 5. Widening the hunting ground: the gap families
+## 4. Widening the hunting ground: the gap families
 
 **Objective: hunting, reached through our own gap-filling.** The census
 buckets with oracles left to consult are all blocked on OUR gaps; every
@@ -139,7 +131,7 @@ not port-finishing, it is instrument reach). By expected yield:
   finding 18's asides (python overflow, C# IrPowInt-as-XOR, the missing
   overflow oracle row).
 
-## 6. Diagnostics as a banked set
+## 5. Diagnostics as a banked set
 
 **Objective: instrument work.** A pinned count says something changed; a
 banked set says what. Diffed like a truth file, retiring the
@@ -147,7 +139,7 @@ CDX6020-style count pins that move whenever the unit list changes rather
 than when the source does. (The sweep's own census note says exactly
 this every time it prints.)
 
-## 7. Parked: the notebook / Prism angle
+## 6. Parked: the notebook / Prism angle
 
 Not work, a bookmark, deliberately last. A Python-hosted notebook showing
 how Codex source becomes assembly, stage by stage, is a weekend-sized
@@ -168,7 +160,7 @@ arithmetic, shadowed-builtin yield, char-CCE migration -- the hunt
 three, off `b643e7c`, spot-verified 5/5 against U48's own oracles.
 Carries the source-read asides and offers the overflow oracle row.
 
-Queued behind it: the heap unification (item 3). Base for anything new:
+Queued behind it: the heap unification (item 2). Base for anything new:
 whatever the current release is when it goes; absorption is a content
 question, never a patch-id question. PRs 71-75 are absorbed --
 one line each in DONE.md.

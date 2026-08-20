@@ -6,6 +6,9 @@ findings register, JUSTIFICATIONS.md, a bank, an essay). If an entry
 needs a paragraph, it needs a register section or a JUSTIFICATIONS entry
 instead -- write that and point at it.
 
+- **2026-08-20 — approx-eq probe run both arms; finding 20 filed**
+  (zig `==` vs bare metal's 4-ULP band: one-ulp 0 vs 1, controls agree;
+  fix is ours, queued with the gap families). Record: register 20.
 - **2026-08-20 — Two-venue sweep built** (prep/canary/long + both
   transports through the droplet; acceptance run pending the u48
   rebank). Record: script headers, README "The droplet venue",

@@ -1,4 +1,4 @@
-# Findings: six closed upstream, seven standing, three fixed here, one proposal
+# Findings: six closed upstream, eight standing, three fixed here, one proposal
 
 This directory holds the findings and the probes that make them runnable.
 It is discussion material rather than a proposed addition to the Codex tree,
@@ -869,3 +869,33 @@ match, differ/crashed/codexir buckets all EMPTY. The unplanned yield of
 finding 18's fix: all 36 hosted-compiler (codexir) aborts were checked-
 arithmetic panics in the compiler's own emitted code; wrap healed the
 front end, 15 of those programs now match outright.
+
+## 20. `IrApproxEq` emits `==`; the 4-ULP band has zero width on the zig arm
+
+**Found 2026-08-18 by an emitter audit (probe written then, blocked on the
+real-literal family until 2026-08-19); both arms measured 2026-08-20.
+Ours to fix -- the emitter's arm, not an upstream defect.**
+
+`~` is the only equality Real has (`==` on a Real is refused, CDX2085),
+and bare metal implements it as a 4-ULP band: both operands map to
+monotonic ordinals and the ordinal distance compares against 4
+(X86_64.codex, emit-approx-eq: `cmp 4 / setcc be`). ZigEmitter maps
+IrApproxEq and IrApproxEqExact alike to zig `==`.
+
+The probe (`findings/probe-approx-eq.codex`) uses 0.1 + 0.2 vs 0.3 --
+adjacent doubles, one ULP apart by construction, no bit-twiddling
+builtins. Measured:
+
+    bare metal (droplet appliance, u48 seed):  one-ulp 1 / same 1 / far 0
+    zig arm (u48 emitter; the natives' IrApproxEq path is diff-verified
+    identical to the verbatim release):        one-ulp 0 / same 1 / far 0
+
+The controls agree on both arms, so the divergence is exactly the
+tolerance. The probe's own folder caution was checked: the emitted IR
+carries the IrApproxEq nodes, so both arms evaluated `~` at runtime.
+
+Fix shape (ours, rides the next emitter batch with the gap families): a
+`cx_approx_eq` prelude fn implementing the same ordinal mapping and
+distance-4 test, with IrApproxEq routed to it; whether IrApproxEqExact
+keeps `==` is a question for the IR's own definition of exactness --
+read `ir-expr-type`'s chapter before assuming.
