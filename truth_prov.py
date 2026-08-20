@@ -105,9 +105,31 @@ def read_sidecar(rung):
     return (lines[0], lines[1]) if len(lines) >= 2 else None
 
 
+def check_rung(rung):
+    """Refuse a truth whose sidecar is missing or names another seed.
+
+    Called per-use by zig_verdict, so a mixed working tree is caught at
+    the rung that would diff against it, not hours later at bank time
+    (process review C4). The harness-content half of the sidecar stays
+    bank_truth's business: an emitter hunt edits harnesses deliberately
+    and a verdict against the recorded truth is still the verdict wanted.
+    """
+    prov = read_sidecar(rung)
+    if prov is None:
+        raise SystemExit(f'STALE TRUTH for {rung}: no provenance sidecar '
+                         '(rerun the truth arm)')
+    if prov[0] != seed_sha256():
+        raise SystemExit(f'STALE TRUTH for {rung}: recorded under seed '
+                         f'{prov[0][:12]}, disk has {seed_sha256()[:12]} '
+                         '(rerun the truth arm)')
+
+
 if __name__ == '__main__':
-    if len(sys.argv) != 3 or sys.argv[1] != 'stamp':
-        raise SystemExit('usage: truth_prov.py stamp <unit>')
-    seed, content = stamp_unit(sys.argv[2])
-    print(f'provenance stamped for {sys.argv[2]}: '
-          f'seed {seed[:12]}, harness {content[:12]}')
+    if len(sys.argv) == 3 and sys.argv[1] == 'stamp':
+        seed, content = stamp_unit(sys.argv[2])
+        print(f'provenance stamped for {sys.argv[2]}: '
+              f'seed {seed[:12]}, harness {content[:12]}')
+    elif len(sys.argv) == 3 and sys.argv[1] == 'check':
+        check_rung(sys.argv[2])
+    else:
+        raise SystemExit('usage: truth_prov.py stamp|check <unit|rung>')

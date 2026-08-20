@@ -153,6 +153,15 @@ mode_flags() {
 truth_arm() {
     local m=$1
     cd $T/ast
+    # The seed as this arm begins. CODEX_ROOT names a working tree that
+    # can move underneath an hours-class run, and a truth split under a
+    # different seed than compiled it is exactly the mixed state the
+    # provenance sidecar exists to rule out -- so record now, require
+    # after the split (C5).
+    local seed_at_start
+    seed_at_start=$(PYTHONPATH="$T" python3 -c \
+        'import seed_identity; print(seed_identity.seed_sha256())') \
+        || { echo "SEED UNREADABLE for $m"; return 1; }
     # Guarded, and the old harness removed first, because this function is
     # called with `truth_arm "$u" || ...` from verify_merge.sh -- which
     # disables errexit inside the function body, so an unguarded generator
@@ -254,6 +263,16 @@ PY
     (cd $T/ast && python3 split_truth.py ${m}.raw truth $(unit_rungs $m)) \
         || { echo "SPLIT FAILED for $m -- see ast/${m}.raw"; return 1; }
 
+    # The seed must still be the one that started the arm, or the truths
+    # just split were measured by one compiler and will be stamped as
+    # another's. Discard them: a run that fails must leave NO truth (C5).
+    if ! PYTHONPATH="$T" python3 -c \
+        "import seed_identity; seed_identity.require_match('$seed_at_start')"; then
+        echo "SEED MOVED under $m during the truth arm; truths discarded"
+        for _r in $(unit_rungs $m); do rm -f ast/${_r}.truth ast/${_r}.truth.prov; done
+        return 1
+    fi
+
     # Record what measured this truth -- the seed and the harness content --
     # so banking can refuse a mismatch instead of inferring from timestamps.
     python3 "$T/truth_prov.py" stamp "$m" \
@@ -338,6 +357,10 @@ zig_verdict() {
         || { echo "SPLIT FAILED for $m -- see ast/${m}.zigraw"; return 1; }
     local rung rc=0
     for rung in $(unit_rungs $m); do
+        # A truth recorded under another seed diffs as confidently as a
+        # fresh one. Refuse it at the rung that would use it, not hours
+        # later at bank time (C4).
+        python3 "$T/truth_prov.py" check "$rung" || { rc=1; continue; }
         if diff <(tr -d '\r' < ${rung}.truth) ${rung}.zigout > ${rung}.diff 2>&1; then
             echo "ORACLE PASS: zig $rung output byte-identical to bare-metal truth"
         else
