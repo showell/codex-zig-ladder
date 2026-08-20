@@ -259,6 +259,12 @@ was trimmed in the Perforce re-application. (`git cherry` cannot see this:
 Perforce re-application changes patch-ids, so absorption is a content
 question, never a patch-id question.)
 
+**u48 re-pin decision (Steve, 2026-08-20): the census re-pins on the
+VERBATIM release emitter, same as the ladder — Option A, "the noisy bank
+is the honest bank."** The five hunt subjects will honestly read
+differ/crash in the u48 census until PR 76 absorbs; the diff naming
+exactly them IS the measurement of what the depot shipped.
+
 **SENT 2026-08-20 as PR 76** (damiant3/NewRepository/pull/76): the hunt
 three off `b643e7c` -- wrap arithmetic, shadowed-builtin yield, char-CCE
 migration (upstream hashes 23f47945 / f337e1a6 / 593976dd, replay
