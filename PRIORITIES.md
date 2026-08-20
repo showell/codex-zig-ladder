@@ -50,29 +50,30 @@ hunt is the point.
 file, changed-only reruns keyed on emitted-zig hashes, a set-cover sentinel
 gate, full census per-Update only).
 
-**State 2026-08-19 21:25: the first full census is BANKED** --
-`corpus/census.json`, 566 programs, healthy host, finding 16's heap-base +
-deck fix on the pin, 14/14 sweep green ahead of it (log
-`logs/wall-heapdeck-2026-08-19b.log`). The `--changed` loop and the
-sentinel set are unblocked. The tallies, and what mode each bucket is:
+**State 2026-08-20: THE HUNT IS CLOSED AND RE-BANKED.** The three fixes
+(wrap arithmetic `78e8da1b`, shadow-yield `993d9f8b`, char-CCE
+`ea8d51ac`) swept 14/14 green (`logs/allcycles-hunt-fixes.log`) and the
+census re-banked on top (`logs/census-hunt-fixes.log`, 42 verdicts
+moved). The tallies:
 
-    162 match        the denominator that makes a future differ mean something
-      2 differ       HUNT: shadow-builtin-fold, text-fold-indexed
-      3 crashed      HUNT: bloom-spread, consistent-hash-balance,
-                     particle-spread (one wrap-overflow family, below)
-      2 hardware-only  smp-arm64-boot, smp-riscv-boot: classified, never run
-                     (corpus/hardware-only.txt; re-banked 2026-08-19)
-    102 refused      our gaps; dominated by the bool-vs-i64 class (item 5)
-     28 no-expected  no oracle to hunt with
-    221 markers      never ran: missing emitter builtins (poke/peek family,
-                     port-in-byte, unicode text ops) -- the gap family below
-     36 codexir      never ran: hosted-compiler stage failed (feeds item 6)
+    182 match        up from 162: the 5 hunt targets plus 15 ex-codexir
+      0 differ       EMPTY -- both differs resolved (fixes were ours)
+      0 crashed      EMPTY -- the wrap family resolved
+      0 codexir      EMPTY -- all 36 hosted-compiler aborts were checked-
+                     arithmetic panics in the compiler's own emitted code;
+                     the wrap fix healed the front end itself
+      2 hardware-only  smp-arm64-boot, smp-riscv-boot (classified, never run)
+    111 refused      our gaps; bool-vs-i64 class still dominates (item 5),
+                     plus NEW: ident-letters reaches a real gap -- zig
+                     rejects raw non-ASCII identifiers; zig-sanitize needs
+                     @"..." quoting (rides the next emitter batch)
+     29 no-expected  no oracle to hunt with
+    232 markers      missing emitter builtins (poke/peek family etc.)
      10 unresolved   cites that did not resolve
 
-The 33-differ pilot count deflated to 2 exactly as predicted once the
-capture-byte artifact was fixed. Re-measure codexir's per-program time on
-this host before quoting any figure; the only measurement so far came off
-the sick box.
+Findings 18 (wrap ruling + upstream asides) and 19 (char convergence)
+in the register carry the evidence. The next hunt surface is the gap
+families: the refused and markers buckets are all ours.
 
 **Desk triage 2026-08-19 (read-only, all seven root-caused or clustered;
 fixes NOT yet applied, batch them into ONE emitter change-set so one sweep
@@ -253,11 +254,13 @@ by the capture-byte artifact, since fixed -- deflates on the next run) /
 
 ## 6. `codexir` core-dumps on a real test program
 
-**Objective: hunting.** A hosted-compiler crash is its own finding.
-
-Two crashes in the 40-program pilot; `corpus_run.py --limit 40` reproduces
-them and `corpus/transpile.json` names them (stage `codexir`). A
-hosted-compiler crash is its own finding; identify and reduce.
+**Objective: hunting. RESOLVED 2026-08-20 -- the crashes were ours, and
+the census diff is the proof:** all 36 codexir-stage aborts were
+`panic: integer overflow` in the hosted compiler's own emitted code
+(codexir is compiled by this plug), fixed by the wrap change `78e8da1b`.
+Bucket went 36 -> 0 in one rerun; 15 of them go straight to match. Not
+an upstream finding. Item kept for the record until the next PRIORITIES
+prune.
 
 ## 7. ring_compile busy-loops when its QEMU dies
 

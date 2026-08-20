@@ -859,6 +859,11 @@ band, which the old a-z/A-Z test refused. `text-fold-indexed` and
 interception ignored user shadowing, fixed in `993d9f8b` -- whose first
 cut broke every ladder rung by yielding for subj-deck-record too, a name
 whose definition zig-skip-def deliberately never emits; the yield now
-exempts exactly the skip list) both MATCH
-their `.expected`. Sweep and census rerun over the batched change-set:
-pending at time of writing; this entry updates when they land.
+exempts exactly the skip list) both MATCH their `.expected`.
+
+LANDED 2026-08-20: sweep 14/14 green over the batched change-set and the
+census re-banked with 42 verdicts moved -- the five hunt targets to
+match, differ/crashed/codexir buckets all EMPTY. The unplanned yield of
+finding 18's fix: all 36 hosted-compiler (codexir) aborts were checked-
+arithmetic panics in the compiler's own emitted code; wrap healed the
+front end, 15 of those programs now match outright.
