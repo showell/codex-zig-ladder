@@ -873,9 +873,20 @@ exempts exactly the skip list) both MATCH their `.expected`.
 LANDED 2026-08-20: sweep 14/14 green over the batched change-set and the
 census re-banked with 42 verdicts moved -- the five hunt targets to
 match, differ/crashed/codexir buckets all EMPTY. The unplanned yield of
-finding 18's fix: all 36 hosted-compiler (codexir) aborts were checked-
-arithmetic panics in the compiler's own emitted code; wrap healed the
-front end, 15 of those programs now match outright.
+the batch: all 36 hosted-compiler (codexir) aborts healed, and 15 of
+those programs now match outright.
+
+CORRECTED 2026-08-20 (evening, measured at the u48 verbatim re-pin):
+the aborts were attributed here to finding 18's wrap fix alone, and
+that was wrong by majority. Panic-classifying every codexir abort under
+the verbatim emitter: **33 die on `codepoint outside the CCE tiers`
+(finding 19's char-CCE class -- cx_char_to_text framing a raw CCE byte
+inside the compiler's own decode-escapes) and 4 on `integer overflow`
+(finding 18's wrap class).** The healing was real and the batch fixed
+all of it, but the credit belongs mostly to the char migration. The
+attribution went unexamined because the fixes landed as one change-set
+and nobody classified the panics per-program until a newcomer
+(gop-composite-vclip, new in u48) forced the question.
 
 ## 20. `IrApproxEq` emits `==`; the 4-ULP band has zero width on the zig arm
 

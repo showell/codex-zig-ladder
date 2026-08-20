@@ -33,10 +33,10 @@ instead -- write that and point at it.
 - **2026-08-20 — PR 76 sent**: wrap + shadow-yield + char-CCE off
   `b643e7c`. Record: register findings 18/19, the PR itself.
 - **2026-08-20 — The corpus hunt closed**: 42 verdicts moved, differ /
-  crashed / codexir buckets EMPTY (all 36 hosted-compiler aborts were
-  our wrap defect in the compiler's own emitted code; match 182/566).
-  Record: `corpus/census.json` (banked), `logs/census-hunt-fixes.log`,
-  register 18/19, random895.
+  crashed / codexir buckets EMPTY (match 182/566; the 36 hosted-compiler
+  aborts healed by the batch -- later classified 33 char-CCE + 4 wrap,
+  see register 18's CORRECTED note). Record: `corpus/census.json`
+  (banked), `logs/census-hunt-fixes.log`, register 18/19, random895.
 - **2026-08-20 — ring_compile pre-READY EOF spin fixed** (dead guest no
   longer reads as a 100% spin; `codex_vm.wait_ready` reused). Record:
   the comment at the call site, review Batch 1.
