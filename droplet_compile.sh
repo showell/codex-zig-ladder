@@ -19,6 +19,12 @@ set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(python3 "$T/ladder_root.py" codex)"
 HOST=steve@162.243.1.123
+# Keepalives, because the held ssh IS the job: a dropped link (wifi blip,
+# 2026-08-20, mid-sweep) SIGHUPs the remote session, which takes the
+# guest with it -- and without these the laptop side hangs on the dead
+# connection for hours, indistinguishable from a long compile. With them
+# it fails in about a minute, loudly, at the wrapper that can say so.
+SSH_OPTS="-o ServerAliveInterval=15 -o ServerAliveCountMax=4 -o ConnectTimeout=20"
 BLOB=$1
 OUT=$2
 [ -s "$BLOB" ] || { echo "no blob at $BLOB"; exit 1; }
@@ -30,10 +36,10 @@ OUT=$2
 # named; droplet_vm_setup.sh is the fix the refusal names.
 SEED_SHA=$(sha256sum "$REPO/seed/Codex.cdx" | cut -d' ' -f1)
 
-scp -q "$BLOB" "$HOST:ring/job.blob"
-ssh "$HOST" "cd ring && [ \"\$(sha256sum seed/Codex.cdx | cut -d' ' -f1)\" = \"$SEED_SHA\" ] || { echo 'SEED STALE on droplet vs the checkout -- run droplet_vm_setup.sh'; exit 1; } && rm -f out.cdx out.cdx.map out.cdx.diags job.blob.stage1 && CODEX_ACCEL=tcg CODEX_MEM_MB=1300 nice -n 15 flock -n lock python3 -u ring_compile.py job.blob out.cdx"
+scp -q $SSH_OPTS "$BLOB" "$HOST:ring/job.blob"
+ssh $SSH_OPTS "$HOST" "cd ring && [ \"\$(sha256sum seed/Codex.cdx | cut -d' ' -f1)\" = \"$SEED_SHA\" ] || { echo 'SEED STALE on droplet vs the checkout -- run droplet_vm_setup.sh'; exit 1; } && rm -f out.cdx out.cdx.map out.cdx.diags job.blob.stage1 && CODEX_ACCEL=tcg CODEX_MEM_MB=1300 nice -n 15 flock -n lock python3 -u ring_compile.py job.blob out.cdx"
 rm -f "$OUT" "$OUT.map" "$OUT.diags"
-scp -q "$HOST:ring/out.cdx" "$OUT"
-scp -q "$HOST:ring/out.cdx.map" "$OUT.map" 2>/dev/null || true
-scp -q "$HOST:ring/out.cdx.diags" "$OUT.diags" 2>/dev/null || true
+scp -q $SSH_OPTS "$HOST:ring/out.cdx" "$OUT"
+scp -q $SSH_OPTS "$HOST:ring/out.cdx.map" "$OUT.map" 2>/dev/null || true
+scp -q $SSH_OPTS "$HOST:ring/out.cdx.diags" "$OUT.diags" 2>/dev/null || true
 [ -s "$OUT" ] || { echo "no CDX came back"; exit 1; }

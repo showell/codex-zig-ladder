@@ -19,6 +19,10 @@ set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(python3 "$T/ladder_root.py" codex)"
 HOST=steve@162.243.1.123
+# Keepalives, because the held ssh IS the job -- see droplet_compile.sh
+# for the incident (a wifi blip SIGHUPed the remote session mid-sweep,
+# killed the guest, and the laptop side hung on the dead link).
+SSH_OPTS="-o ServerAliveInterval=15 -o ServerAliveCountMax=4 -o ConnectTimeout=20"
 IR=$1
 OUT=$2
 ARM=${3:-ring}
@@ -49,17 +53,17 @@ tcp)
 esac
 
 FP=$(cat "$FP_FILE")
-REMOTE_FP=$(ssh "$HOST" "cat ring/$RNAME.fp 2>/dev/null || true")
+REMOTE_FP=$(ssh $SSH_OPTS "$HOST" "cat ring/$RNAME.fp 2>/dev/null || true")
 if [ "$FP" != "$REMOTE_FP" ]; then
     echo "pushing $RNAME (fingerprint moved)"
-    scp -qC "$KERNEL" "$HOST:ring/$RNAME"
-    ssh "$HOST" "printf '%s' '$FP' > ring/$RNAME.fp"
+    scp -qC $SSH_OPTS "$KERNEL" "$HOST:ring/$RNAME"
+    ssh $SSH_OPTS "$HOST" "printf '%s' '$FP' > ring/$RNAME.fp"
 fi
 
-scp -qC "$IR" "$HOST:ring/job.ir"
-ssh "$HOST" 'cd ring && rm -f out.zig out.zig.cce out.zig.blob && CODEX_ACCEL=tcg nice -n 15 flock -n lock python3 -u -c "
+scp -qC $SSH_OPTS "$IR" "$HOST:ring/job.ir"
+ssh $SSH_OPTS "$HOST" 'cd ring && rm -f out.zig out.zig.cce out.zig.blob && CODEX_ACCEL=tcg nice -n 15 flock -n lock python3 -u -c "
 import plug_run_ring
 plug_run_ring.run_ring_plug(\"job.ir\", \"out.zig\", plug_cdx=\"ringplug.cdx\", mem_mb=1300)"'
 rm -f "$OUT"
-scp -qC "$HOST:ring/out.zig" "$OUT"
+scp -qC $SSH_OPTS "$HOST:ring/out.zig" "$OUT"
 [ -s "$OUT" ] || { echo "no zig came back"; exit 1; }
