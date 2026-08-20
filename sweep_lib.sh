@@ -20,11 +20,23 @@ remote_ring_arm() {
     local m=$1
     cd "$T"
     rm -f "ast/${m}.zig"
+    # One labeled retry: the straw adds a failure mode the local arms do
+    # not have (a dropped link kills the remote session and its guest --
+    # the 2026-08-20 wifi blip cost fib its rung), and a transient link
+    # failure should cost a retry, not a red rung. Labeled, so a plug
+    # that genuinely dies shows up as two identical failures, never as
+    # quiet flakiness.
     if ! ./droplet_transpile.sh "ast/${m}.ir" "ast/${m}.zig" ring \
             > "ast/${m}.transport.log" 2>&1; then
-        echo "TRANSPORT FAILED for $m (ast/${m}.transport.log):"
+        echo "TRANSPORT FAILED for $m, retrying once (ast/${m}.transport.log):"
         tail -6 "ast/${m}.transport.log"
-        return 1
+        rm -f "ast/${m}.zig"
+        if ! ./droplet_transpile.sh "ast/${m}.ir" "ast/${m}.zig" ring \
+                >> "ast/${m}.transport.log" 2>&1; then
+            echo "TRANSPORT FAILED for $m twice -- not a blip:"
+            tail -6 "ast/${m}.transport.log"
+            return 1
+        fi
     fi
     zig_verdict "$m"
 }
