@@ -5,6 +5,20 @@ several threads and they were drifting apart. If a memory or an essay disagrees
 with this file, this file wins. Dated entries so staleness is visible. Done
 items leave the list; git history is their record.
 
+Every numbered item opens with an **Objective** line saying what the work is
+trying to achieve, and in which of three modes it runs -- because the same
+40-minute run means different things in different modes, and mistaking one
+for the other misprices the work:
+
+- **Hunting.** Fishing for defects that are not ours -- the project's actual
+  product. A surprise is the payoff; a clean pass is a mild disappointment.
+- **Due diligence.** Verifying that our own changes break nothing. On the
+  happy path this is pure wall time: launch it, let it run, read one line.
+  Only a red result is information, and green earns no celebration.
+- **Instrument work.** Making the harness itself honest or cheap. It neither
+  hunts nor verifies, but the other two modes are only as trustworthy as it
+  is.
+
 ## The native loop, which changes what is cheap
 
 Built by `native_build.sh`:
@@ -22,34 +36,30 @@ whole compiler survive transpilation". Everything below is the cheap loop.
 
 ---
 
-## 1. Corpus conformance
+## 1. The corpus hunt
 
-`codex/test/` holds 553 programs at the top level, most beside a hand-verified
-`.expected` file: an oracle per program, written by someone with no knowledge
-of this plug, which is the property our own probes cannot have. **The design
-is `corpus/README.md`** (banked census diffed like a truth file, changed-only
-reruns keyed on emitted-zig hashes, a set-cover sentinel gate, full census
-per-Update only). Its blocking prerequisite -- multi-byte CCE +
-text-to-double-bits, which poisoned the denominator -- landed 2026-08-19;
-next is the baseline bank, then the sentinel set from that run's IRs.
+**Objective: hunting.** Run every depot test program through the zig arm and
+diff against its hand-verified `.expected` -- an oracle per program, written
+by someone with no knowledge of this plug, which is the property our own
+probes cannot have. Every differ or crash is a candidate finding; every
+refusal is a gap in our emitter or prelude. The census *run* is due
+diligence wall time; the *triage* of what it surfaces is the hunt, and the
+hunt is the point.
 
-**State 2026-08-19 evening (Steve's call): paused at 194/299 verdicts;
-the subset is the proof of concept, findings triage is the follow-up.**
-`corpus/run.jsonl` holds 94 match / 72 refused / 23 no-expected /
-3 differ / 2 crashed. Finishing is ONE unattended ~40-minute command --
-`corpus_run.py --run --bank` (resume carries the 194; --bank refuses
-until all 299 have verdicts) -- the natural tonight.sh slot. Until it
-runs there is no census.json, so no --changed loop and no sentinel set;
-the char migration's before/after measurement falls back to the probes.
-Known since the pause: codexir measured ~0.74s/program against a recorded
-~0.15s, so the transpile stage ran ~25 min rather than ~4. **That was first
-attributed to the multi-byte CCE tier tables; the attribution is withdrawn.**
-The box itself is running ~5x slow since the 14:53 livelock and reboot --
-`ring_compile`'s `stream:` line reads 29s on 2026-08-19 at 12:30, 12:50 and
-13:30, then 149s at 18:27 and 145/146s at 19:20 and 19:40, on the same
-~400 KB workload with byte-identical code. 0.15 x 5 = 0.75, so the emitter
-owes nothing here. Re-measure codexir once the host is well before quoting
-any per-program figure.
+**The design is `corpus/README.md`** (banked census diffed like a truth
+file, changed-only reruns keyed on emitted-zig hashes, a set-cover sentinel
+gate, full census per-Update only).
+
+**State 2026-08-19 late evening: the first full census is RUNNING** --
+`corpus_run.py --run --bank` over the 566 programs now in scope (cites
+resolved), log `logs/wall-heapdeck-2026-08-19b.log`, on a healthy host
+(`stream:` back to 28-32s after the WerFault fix) with finding 16's
+heap-base + deck fix on the pin and a 14/14 sweep green ahead of it. When
+it banks, census.json exists for the first time: the `--changed` loop and
+the sentinel set unblock, and triage of the differ/crash classes (item 5)
+is the next hunt. Re-measure codexir's per-program time on this host
+before quoting any figure; the only measurement so far came off the sick
+box.
 
 The known gap family is coherent: `poke-byte`, `peek/poke-16/32`, `bit-not` --
 the memory-access builtins; implementing the family unblocks a large slice at
@@ -57,6 +67,11 @@ once. Explore before asking Damian for anything; if it pays off, the ask is
 "would you want this as a signal on your side", not "persist your IR".
 
 ## 2. Two emitter defects: finish the probes, file
+
+**Objective: hunting, then one fix.** Two suspected divergences become filed
+findings with both-arms evidence; the char migration that follows is our own
+fix (converging on the model bare metal already has), verified by the probes
+before/after and the census diff -- that tail end is due diligence.
 
 - **Char literals are CCE codes while every other Char is a codepoint**, so
   `char-at s i == 'x'` is always false and compiles clean. Zig arm measured
@@ -103,6 +118,10 @@ once. Explore before asking Damian for anything; if it pays off, the ask is
 
 ## 3. The heap unification
 
+**Objective: land our own fix; the verification is due diligence.** The
+change is ours and pre-approved in shape; the sweep and census diff that
+prove it image-preserving are wall time, and green there is not news.
+
 `findings/zig-heap-unification.md`. Closes `__heap-restore` being a no-op on
 the zig arm, which costs sum-over-definitions instead of max-over-definitions
 during emission; the arena is the interim. Pre-approved in shape by Damian
@@ -110,6 +129,10 @@ during emission; the arena is the interim. Pre-approved in shape by Damian
 double allocation and the per-instruction throwaway list.
 
 ## 4. The external review, in three batches
+
+**Objective: instrument work.** The review's high findings are wrong-bank
+and wrong-PASS closers -- ways the harness could lie green. None of it
+hunts; all of it decides whether a hunt's verdict can be trusted.
 
 `REVIEW-2026-08-19.md` (Marley, for Damian, at our 8a74c94) -- ~34 findings,
 several landing on items this file already names. The three high ones we
@@ -140,7 +163,12 @@ char-migration lanes above stay first:
   census json stays (deliberate, the bank supersedes run.json soon);
   LICENSE is Steve's call; errors='replace' byte-compare rides Batch 3.
 
-## 5. Census fallout (numbers from the 2026-08-19 run, `corpus/run.json`)
+## 5. Census fallout (numbers from the 2026-08-19 pilot, `corpus/run.json`)
+
+**Objective: mixed, and the split IS the triage.** The refusal classes are
+our gaps (fixes, then due diligence); the differs and crashes are candidate
+findings (hunting). Numbers below are the pilot's; tonight's banked census
+supersedes them.
 
 278 transpile-clean units -> 117 match / 95 refused / 33 differ (overcounted
 by the capture-byte artifact, since fixed -- deflates on the next run) /
@@ -155,11 +183,16 @@ by the capture-byte artifact, since fixed -- deflates on the next run) /
 
 ## 6. `codexir` core-dumps on a real test program
 
+**Objective: hunting.** A hosted-compiler crash is its own finding.
+
 Two crashes in the 40-program pilot; `corpus_run.py --limit 40` reproduces
 them and `corpus/transpile.json` names them (stage `codexir`). A
 hosted-compiler crash is its own finding; identify and reduce.
 
 ## 7. ring_compile busy-loops when its QEMU dies
+
+**Objective: instrument work.** An unattended runner must never convert a
+crash into a hang.
 
 Located by the review (`ring_compile.py:150-154`): the PRE-READY wait --
 `while b"READY" not in buf: buf += ctrl.recv(4096)` -- never checks for
@@ -172,6 +205,9 @@ detection is a stale log mtime beside a hot python process. Rides review
 Batch 1 (item 4).
 
 ## 8. Diagnostics as a banked set
+
+**Objective: instrument work.** A pinned count says something changed; a
+banked set says what.
 
 Diffed like a truth file, retiring the CDX6020-style count pins that move
 whenever the unit list changes rather than when the source does.
@@ -206,6 +242,10 @@ away from the machine, where something long should be running unattended.
 tooling fixes (7, 8), and landing what reviews come back on. **Away work** is
 running what those produce: `tonight.sh`, the census stages of item 1,
 `ast/allcycles.sh` after any emitter change.
+
+The objective modes at the top map onto this: due-diligence runs are away
+work by construction, and hunting and instrument work happen at the
+keyboard. A hunt's *runs* are away work; its *reads* are not.
 
 The rule that makes both work: **one compute job at a time.** The machine has
 about 3 GB usable and QEMU takes most of it. Anything fired from the keyboard
