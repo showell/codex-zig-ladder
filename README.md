@@ -157,7 +157,8 @@ have no compile of their own to run. The arms themselves are `truth_arm` and
 `arm_for` in `ast/oracle_lib.sh`; the wrappers are one line each on top.
 
 A **cycle** is one full turn of a subject through an arm: bundle the source,
-compile it through the seed, run what came out, compare the output. Every
+compile it (through the seed on the truth arm; through the plug, from banked
+IR, on the zig arm), run what came out, compare the output. Every
 script with `cycle` in its name is one of these turns -- `truthcycle_<m>.sh`
 turns a rung's truth arm, `ast/<m>cycle.sh` its zig arm, and the root
 `cycle.sh` turns the plug itself (bundle, ring-compile, and warmup oracles as
@@ -178,6 +179,44 @@ produced it, and those are tracked. That is what makes two Updates comparable:
 measured under two compilers, and the diff is the only artifact that says what
 an Update changed in the emitted image. A bank is a set, so it refuses to write
 one from a tree where some rungs ran under an older harness than others.
+
+### What a zig-arm turn actually executes
+
+The arm's name suggests the guest has left the loop, and it has not. A
+zig-arm turn assumes three artifacts on disk, every one of them seed-produced
+in QEMU:
+
+- **the subject's IR** (`ast/<m>.ir`), written by the seed at the last
+  re-bank -- the zig arm never re-compiles the subject;
+- **the banked truth** (`ast/<rung>.truth`) it will be judged against, from
+  the same re-bank;
+- **the plug itself** (`zig-plug.cdx` for TCP, `ast/ringplug.cdx` for the
+  ring), a CDX binary the seed compiled from the ZigEmitter bundle when
+  `cycle.sh` last turned. The turn guards this with fingerprint checks
+  (`plug_provenance`, `refuse_stale_ringplug`) rather than trusting the tree.
+
+The turn itself is three steps:
+
+1. **QEMU boots the plug as the guest kernel**, and the banked IR goes in
+   over the rung's transport (TCP or the ring -- below). Codex machine code
+   on the virtual metal parses the IR and emits zig source back over the
+   wire. On the four expensive rungs this step is nearly all of the wall
+   clock: fibx's IR alone is 13.1 MB on the u47 seed, and every byte crosses
+   into and out of the guest.
+2. **The host runs the emitted source** -- `zig run`, under the same 2.5 GB
+   address cap as the corpus runs. The only step of the turn with no Codex
+   code and no QEMU in it.
+3. **The output is diffed against the banked truth**, split per rung
+   (`zig_verdict` in `ast/oracle_lib.sh`). The verdict is the same
+   byte-identical claim whichever transport carried the IR.
+
+So the zig arm does not take bare metal out of the loop; it takes out the
+seed's *live run of the subject*. The guest is still there twice over --
+historically, in that the seed produced the IR, the truth and the plug; and
+live, in that the plug transpiles under QEMU on every turn. What is native
+is exactly one thing: the subject's behavior, decided by zig-built machine
+code instead of seed-built machine code. That substitution is the comparison
+the ladder exists to make.
 
 ## The fourteen rungs
 
