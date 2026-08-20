@@ -38,7 +38,8 @@ measured on 2,798,031 and are recorded here as they were found.
 **Finding 12 is new and fixed in this PR.** Finding 11 was withdrawn as filed --
 the cause was ours -- and the one thing that survived it is closed in Update 46.
 
-**Finding 15 is filed upstream as issue 70** (2026-08-18): the compiler's own
+**The CDX2064 ATA finding is filed upstream as issue 70** (2026-08-18; it has
+no numbered section here -- section 15 is the match guards): the compiler's own
 CDX2064 caught `emit-ata-wait-ready-bounded` patching its loop jcc six bytes
 late, which is finding 10's mutation hazard with a live site attached. Detail in
 `findings/cdx2064-ata-wait-ready.md`, including the eight sibling sites the
@@ -719,7 +720,10 @@ guarded arm.
 
 **Found 2026-08-19 by the corpus census (the first differ-class verdicts of
 the run); zig arm measured by `corpus_run.py`, bare-metal arm is the depot's
-hand-verified `.expected` oracles. Not yet filed; fix is ours to propose.**
+hand-verified `.expected` oracles. Fixed on the pin (`24c0d925`) and proven
+2026-08-19: 14/14 sweep plus the banked census, all three observing oracles
+MATCH. Outbound as the three-commit chain off `8f997bd8` (PRIORITIES
+"Outbound queue"); replay spot-verified 5/5 on seed `800A7683`.**
 
 One passage of ZigEmitter (the prose above `zig-name-map`) makes two
 semantic choices and documents them as checked-not-assumed. The corpus is
@@ -743,8 +747,7 @@ the check, and it caught both:
   conflates having no memory pressure with having no observable
   semantics; deck position is observable.
 
-Fix directions (not yet applied; both are prelude/emitter changes, so the
-allcycles sweep and a census rerun follow either): init `cx_hp` at
+The fix (applied in `24c0d925`, swept and census-proven): init `cx_hp` at
 6291456 to mirror the boot value -- cx_buf_want then zero-fills a 6 MB
 prefix on first heap touch, which is the guest's own boot behavior -- and
 port the C# deck rule (~4 small functions) with the three name-map
@@ -754,8 +757,7 @@ bare metal's own number, not C#'s.
 ## 17. Unit families have no hosted-plug mapping; 8 census refusals are this one gap
 
 **Found 2026-08-19 by triaging the census's undeclared-identifier refusal
-family. Characterized from IR and emitter source; fix not yet applied
-(queued behind the wall chain's verification of finding 16).**
+family. Characterized from IR and emitter source; fix not yet applied.**
 
 `Timestamp = unit family NanoStamp` (Foreword DateTime) declares a
 units-of-measure type: integer-backed, compile-time scale factors. The IR

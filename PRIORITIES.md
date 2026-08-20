@@ -68,9 +68,42 @@ sentinel set are unblocked. The tallies, and what mode each bucket is:
      10 unresolved   cites that did not resolve
 
 The 33-differ pilot count deflated to 2 exactly as predicted once the
-capture-byte artifact was fixed. Next hunt: the 2 differs and 5 crashes.
-Re-measure codexir's per-program time on this host before quoting any
-figure; the only measurement so far came off the sick box.
+capture-byte artifact was fixed. Re-measure codexir's per-program time on
+this host before quoting any figure; the only measurement so far came off
+the sick box.
+
+**Desk triage 2026-08-19 (read-only, all seven root-caused or clustered;
+fixes NOT yet applied, batch them into ONE emitter change-set so one sweep
++ one census `--changed` covers all):**
+
+- **shadow-builtin-fold (differ): intercept-by-name ignores user shadowing.**
+  The subject shadows `text-length` and `abs`; the language says the user
+  definition wins (expected 99/99/77), and the emitted zig even CONTAINS the
+  user's functions -- but the call sites were hijacked by the
+  ZigBuiltinEmitter name table (got 3/3/5). Fix: builtin interception yields
+  to names the module itself defines. Ours, not a finding.
+- **text-fold-indexed (differ): char values leak Unicode code points; the
+  language's chars ARE CCE codes.** The fold hands the lambda
+  `cx_cce_to_cp(cx_char_at(s, i))` (so 'e' arrives as 101) while IrCharLit
+  compiles to the raw CCE code (15/13/17/16/25 for the vowels) -- every
+  `ch == 'a'` fails, vowel count 0. The C# gold standard rules it: IrCharLit
+  emits the raw integer, `char-at` is raw indexing with NO conversion, and
+  `code-to-char` is the IDENTITY. Our `cx_cce_to_cp` wrappers on `char-at`
+  (ZigEmitter:820), `code-to-char` (:795), and the fold template are the
+  deviation; sweep ALL char-boundary builtins to the CCE convention in one
+  pass. Ours, not a finding.
+- **bloom-spread, consistent-hash-balance, particle-spread (3 crashes):
+  `panic: integer overflow`, one family.** Hash/spread arithmetic overflows
+  i64; bare metal wraps (x86 add), C# `long` wraps (unchecked default), zig
+  `+`/`*` panics in debug. If the language's rule is wrap, the emitter
+  should use `+%`/`-%`/`*%`. VERIFY the ruling against the C# emitter and a
+  bare-metal source before editing -- if Codex intends overflow to be an
+  error, the wrap on bare metal is a FINDING, not our bug.
+- **smp-arm64-boot, smp-riscv-boot (2 crashes): `panic: oom` under the
+  800 MB cap, and both subjects are 29 LINES.** Identical expected outputs
+  (same sha). A 29-line program that eats 800 MB hosted is either a prelude
+  pathology of ours or a hunt-worthy allocation blowup; instrument before
+  raising the cap -- the cap moves on evidence, not on the first OOM.
 
 The known gap family is coherent: `poke-byte`, `peek/poke-16/32`, `bit-not` --
 the memory-access builtins; implementing the family unblocks a large slice at
@@ -263,14 +296,17 @@ fix sits on top of them (`cx_utf8_to_cce` calls `cx_cce_frame`):
    all match. The register (`findings/README.md` sec. 16) says "fix is ours
    to propose" -- this is the proposal.
 
-Replay rehearsed 2026-08-19 in a scratch worktree off `8f997bd8`: picks 1
-and 2 apply clean, pick 3 has one trivial conflict (`zig-prelude-decls` --
-union both sides' added names). Residual diff of the replayed emitter vs the
-pin is exactly upstream's own absorbed content (PR 73's switch pin, issue
-72's match guards), nothing of ours. That combination -- upstream fleet
-edits + our three -- has not been run through our ladder; Damian's 49/49
-oracle gate covers it on his side, and a sweep against a plug built from the
-replay worktree is the optional due-diligence slot before sending.
+Replay done 2026-08-19 (worktree `~/showell_repos/nr-f16-replay`, branch
+`zig-plug-cce-heapdeck`): picks 1 and 2 apply clean, pick 3 had one trivial
+conflict (`zig-prelude-decls` -- union both sides' added names). Residual
+diff of the replayed emitter vs the pin is exactly upstream's own absorbed
+content (PR 73's switch pin, issue 72's match guards), nothing of ours.
+**Spot-verified 5/5 MATCH on seed `800A7683`** (natives built from the
+replay tree, log `logs/native-f16-replay-2026-08-19.log`): the three finding
+16 observers plus cce-roundtrip and ui-font-cce-order. No full sweep here by
+design -- it would run a new-seed plug against old-seed truth; the one full
+sweep slot is the Update 48 re-pin re-bank. Toolchain snapshots (pin and
+replay) live in `~/showell_repos/*-snapshot.tar` until the PR is absorbed.
 
 ---
 
