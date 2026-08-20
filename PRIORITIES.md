@@ -127,6 +127,14 @@ Residual classes, measured, for the next batch:
   Tup2 is declared in-unit; the marker is the type arriving from
   outside. Drags ctor-map + pattern arms; own item.
 - One-offs: `sin` (math builtin), one non-exhaustive switch.
+- **From the batch's cold review (2026-08-20 late)**: the `@"..."`
+  quoting breaks where a name is EXTENDED after sanitizing
+  (`zig-sanitize(name) & "S"` gives `@"Name"S`; `_arg_` + raw ident
+  ships hi bytes bare -- the file's own comment predicted it); f32
+  approx-eq needs bare metal's distinct f32 ordinal path (the current
+  band is f64-only, effectively zero f32-ULPs); and IrApproxEqExact
+  as `==` diverges from ordinal-distance-0 on same-bits NaN (oracle 1,
+  zig 0) -- the last two are register candidates, not just fixes.
 
 Still queued from before:
 - **Real-literal candidates in the other plugs** (source-read only,
