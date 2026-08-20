@@ -62,9 +62,10 @@ S1/S7/D1/D3/D4/C1/C3/C4/C5 plus the mem_mb plumb). Remaining, in order:
 3. Verify Update 48's native match guards on the re-pinned sweep;
    close finding 15 / issue 72 in the register. Workaround-hygiene
    extends to SCRIPTS (review S5): delete `tonight.sh` in the same
-   commit (its step 2 exists to confirm the finding being closed), and
-   sweep the other orphans (recon.sh, verify_merge.sh,
-   run_bag_probes.sh, ast/irmemcycle.sh) for retire-or-document.
+   commit (its step 2 exists to confirm the finding being closed). The
+   rest of the S5 orphan sweep is done (2026-08-20): verify_merge,
+   run_bag_probes and the irmem family retired, recon.sh kept and
+   documented as the parked endgame's instrument.
 4. Census re-pin: `native_build.sh` from the pin, full
    `corpus_run.py --changed --bank`. Expect the five PR-76 subjects
    red and possibly the 36 ex-codexir aborts back until absorption.

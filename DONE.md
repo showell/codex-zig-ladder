@@ -6,6 +6,10 @@ findings register, JUSTIFICATIONS.md, a bank, an essay). If an entry
 needs a paragraph, it needs a register section or a JUSTIFICATIONS entry
 instead -- write that and point at it.
 
+- **2026-08-20 — Orphan-script sweep (review S5)**: verify_merge,
+  run_bag_probes and the irmem family retired (their campaigns closed);
+  recon.sh kept, documented as the parked endgame's instrument;
+  tonight.sh still rides the finding-15 closure commit. Record: git.
 - **2026-08-20 — The wiring batch landed** (review items S1/S7/D1/D3/D4/
   C1/C3/C4/C5 + the mem_mb plumb: lock everywhere, stamps, traps,
   per-use prov refusal, --force confirm, table cross-check). Record:

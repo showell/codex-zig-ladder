@@ -5,6 +5,12 @@
 # the IR through the zig plug, and read the marker inventory. The inventory
 # IS the remaining-work list for a native zig compiler; a clean zig
 # typecheck here is parity with the C# witness's bar.
+#
+# Not part of any ceremony. This is the parked endgame's instrument
+# (PRIORITIES "Parked" / random839: piggyback the C# DDC witness path,
+# where C# stops at "compiles" and zig RUNS); run it when the compiler's
+# own marker inventory is the question. Kept deliberately -- retire it
+# only with that item.
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(python3 "$T/ladder_root.py" codex)"

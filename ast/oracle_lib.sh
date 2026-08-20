@@ -162,11 +162,11 @@ truth_arm() {
     seed_at_start=$(PYTHONPATH="$T" python3 -c \
         'import seed_identity; print(seed_identity.seed_sha256())') \
         || { echo "SEED UNREADABLE for $m"; return 1; }
-    # Guarded, and the old harness removed first, because this function is
-    # called with `truth_arm "$u" || ...` from verify_merge.sh -- which
-    # disables errexit inside the function body, so an unguarded generator
-    # crash would bundle YESTERDAY'S harness and reproduce the bank, the
-    # exact wrong-PASS that script exists to rule out.
+    # Guarded, and the old harness removed first: any `truth_arm "$u" ||
+    # ...` caller disables errexit inside the function body, so an
+    # unguarded generator crash would bundle YESTERDAY'S harness and
+    # reproduce the previous answer -- a wrong-PASS. The guards make the
+    # arm self-sufficient instead of trusting the caller's set -e.
     rm -f ${m^}Harness.codex
     python3 gen_${m}_harness.py || { echo "HARNESS GEN FAILED for $m"; return 1; }
     [ -s ${m^}Harness.codex ] || { echo "HARNESS GEN FAILED: no ${m^}Harness.codex"; return 1; }
@@ -232,9 +232,9 @@ PY
     # Removed first, and the run's status checked, for the reason stated at the
     # bundle step: an artifact left behind by an earlier run reads exactly like
     # one this run produced. .raw is the newest intermediate here and it got
-    # neither guard, which mattered most under verify_merge.sh -- where the
-    # expected answer IS "identical to the bank", so splitting yesterday's .raw
-    # would have produced the very result the run was launched to see.
+    # neither guard, which matters most in verify-against-bank runs -- where
+    # the expected answer IS "identical to the bank", so splitting yesterday's
+    # .raw would have produced the very result the run was launched to see.
     # The truths and their provenance sidecars go too: a run or split that
     # fails must leave NO truth, or the next verdict diffs against
     # yesterday's and can print ORACLE PASS from it.
