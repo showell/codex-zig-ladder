@@ -6,6 +6,12 @@ findings register, JUSTIFICATIONS.md, a bank, an essay). If an entry
 needs a paragraph, it needs a register section or a JUSTIFICATIONS entry
 instead -- write that and point at it.
 
+- **2026-08-20 — u48 ceremony complete, tag `u48-14of14`**: 14/14 both
+  arms (two-venue sweep + rebank echo), bank diff u47->u48 = one
+  keyword feature + one oracle section (four rungs moved, ten
+  byte-identical), census re-pinned verbatim (48 verdicts moved, the
+  honest PR-76 shape), finding 15 / issue 72 closed. Record: the tag's
+  own message, logs/INDEX.md, the Four Moved Truths artifact.
 - **2026-08-20 — Orphan-script sweep (review S5)**: verify_merge,
   run_bag_probes and the irmem family retired (their campaigns closed);
   recon.sh kept, documented as the parked endgame's instrument;

@@ -40,39 +40,7 @@ whole compiler survive transpilation". Everything below is the cheap loop.
 
 ---
 
-## 1. Finish the u48 re-pin ceremony (IN FLIGHT 2026-08-20)
-
-**Objective: due diligence, with the two-venue sweep's acceptance run as
-instrument work riding it.** Pin `u48-rebank` at `b643e7cb`, ZERO
-cherry-picks -- verbatim, and the census re-pins verbatim too (Steve:
-"the noisy bank is the honest bank"; the five hunt subjects will read
-red until PR 76 absorbs, and that diff IS the measurement of what the
-depot shipped). The truth phase is COMPLETE (12/12 units recorded under
-the u48 seed, prov'd -- `ladder_status.py` confirms) and the wiring
-batch has landed (2026-08-20, six commits closing review items
-S1/S7/D1/D3/D4/C1/C3/C4/C5 plus the mem_mb plumb). Remaining, in order:
-
-1. Acceptance run of the two-venue sweep: `sweep_prep.sh` ->
-   `sweep_canary.sh` -> `sweep_long.sh` -- this IS the ceremony's sweep
-   (the local sweep was deliberately cut at 7/14 for the venue change);
-   expected to reproduce 14/14 over the recorded truths. First
-   rung_stamp timings decide the real canary/long split point.
-2. Bank over green arms: `bank_truth.py`, then `bank_diff.sh` for
-   u47 -> u48.
-3. Verify Update 48's native match guards on the re-pinned sweep;
-   close finding 15 / issue 72 in the register. Workaround-hygiene
-   extends to SCRIPTS (review S5): delete `tonight.sh` in the same
-   commit (its step 2 exists to confirm the finding being closed). The
-   rest of the S5 orphan sweep is done (2026-08-20): verify_merge,
-   run_bag_probes and the irmem family retired, recon.sh kept and
-   documented as the parked endgame's instrument.
-4. Census re-pin: `native_build.sh` from the pin, full
-   `corpus_run.py --changed --bank`. Expect the five PR-76 subjects
-   red and possibly the 36 ex-codexir aborts back until absorption.
-5. Diagnostics POLICY re-pin, timings refreshed into README "Running
-   it", banked-against table, tag `u48-14of14`, push.
-
-## 2. The heap unification
+## 1. The heap unification
 
 **Objective: land our own fix; the verification is due diligence.**
 `findings/zig-heap-unification.md`. Closes `__heap-restore` being a
@@ -84,7 +52,7 @@ address means (the SMP subjects peek ~2.1 GB against RLIMIT_AS caps that
 count reserved space, not resident pages). Next PR after 76, off
 whatever base is current when it goes.
 
-## 3. The external review, in three batches
+## 2. The external review, in three batches
 
 **Objective: instrument work.** The review's high findings are wrong-bank
 and wrong-PASS closers -- ways the harness could lie green. None of it
@@ -111,7 +79,7 @@ batch's first act is re-checking its list against the tree:
   census json stays; LICENSE is Steve's call; errors='replace'
   byte-compare rides Batch 3.
 
-## 3.5 Provenance watches one file too many
+## 3. Provenance watches one file too many
 
 **Objective: instrument work.** The truth sidecars hash `oracle_lib.sh`
 whole, so a guard-or-comment edit to the ZIG-arm half invalidates every
@@ -181,7 +149,9 @@ arithmetic, shadowed-builtin yield, char-CCE migration -- the hunt
 three, off `b643e7c`, spot-verified 5/5 against U48's own oracles.
 Carries the source-read asides and offers the overflow oracle row.
 
-Queued behind it: the heap unification (item 2). Base for anything new:
+Queued behind it: the heap unification (item 1, branch
+`zig-plug-heap-unification` built and smoke-tested, ladder verification
+pending). Base for anything new:
 whatever the current release is when it goes; absorption is a content
 question, never a patch-id question. PRs 71-75 are absorbed --
 one line each in DONE.md.

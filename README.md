@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Seed | `90646EEB22CEB9AB` (2,844,269 bytes) |
-| Update | 47 (release commit `69cd9ce8`) |
+| Seed | `930FF7F174E1E126` (2,872,563 bytes) |
+| Update | 48 (release commit `b643e7cb`, pin verbatim) |
 | Rungs | **14 of 14 green** |
-| Banked | `truth/u47/`; the newest three banks are kept (`bank_truth.py --keep`), older ones live in git history |
+| Banked | `truth/u48/`; the newest three banks are kept (`bank_truth.py --keep`), older ones live in git history |
 
 This table is the point of the whole arrangement, so it is the first thing on
 the page and it is allowed to be unflattering. A ladder that cannot say which
@@ -571,16 +571,27 @@ Then the smaller pieces:
   Read their headers; "The droplet venue" below has the principles.
 
 Costs -- this section is the one home for timing figures; re-measure and
-update them here at every rebank. A full merged `rebank_all.sh` (re-bank all
-truths, rebuild both plugs, sweep every arm) is **59 minutes**, measured
-2026-08-18. (Not re-measured at the u47 rebank: that run was interrupted by
-a wedged QEMU and restarted, so its wall time measures the wedge; the next
-clean rebank refreshes the figure.) The ten cheap rungs bank in one to five minutes each and go
-through the plug in well under a minute; the two big units are the expensive
-part, thirteen to sixteen minutes to bank and about the same through the
-plug, so they dominate everything. Run long jobs in the background and watch
-for the markers above. (The pre-merge ladder, four big compiles instead of
-two, cost 2h21m -- the shape of the saving, not a current figure.)
+update them here at every rebank. Measured clean 2026-08-20 (u48, with
+per-rung `rung_stamp` timestamps in the logs):
+
+- **`rebank_all.sh` end to end is 87 minutes** -- 50 for the twelve truth
+  arms, 37 for the trailing all-local sweep (plug rebuilds included). The
+  ten cheap units record in one to five minutes each; `fibx` and `whole`
+  are 11-13 minutes apiece on each side and dominate everything.
+- **The two-venue sweep**: `sweep_canary.sh` is 87 seconds (lex 10s,
+  parse 29s, desugar 46s); `sweep_long.sh` over all fourteen rungs is
+  about 55 minutes healthy (scope 64s, check 198s, lower 229s, text
+  241s, pingpong 248s with the fixed point, lir 11s, fib ~30s, fibx
+  11.5m, whole 11.8m). The canary/long split stays lex+parse+desugar:
+  adding scope would push the canary past 2.5 minutes for little
+  coverage -- decided from these stamps, not intuition.
+- **The census re-pin** (`native_build.sh && corpus_run.py --changed
+  --bank`) is about an hour when nothing carries, which is every
+  Update re-pin: the natives change, so every emitted zig moves.
+
+Run long jobs in the background and watch for the markers above.
+(The pre-merge ladder, four big compiles instead of two, cost 2h21m --
+the shape of the saving, not a current figure.)
 
 ## The droplet venue
 
