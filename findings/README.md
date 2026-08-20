@@ -830,7 +830,7 @@ filing:
 
 **Found 2026-08-18 by an emitter audit (probe written then); caught live by
 the census differ `text-fold-indexed` 2026-08-19; resolved by convergence
-on the pin (`0fdb9b63`) 2026-08-20. Ours -- the codepoint representation
+on the pin (`ea8d51ac`) 2026-08-20. Ours -- the codepoint representation
 was the plug's own choice; the migration is the fix, not a report.**
 
 IrCharLit was emitted as its raw IR payload (a CCE code) while `char-at`
@@ -856,6 +856,9 @@ migration); `probe-char-ops` answers all nine rows identically on both
 arms, including letter-accent 1 and letter-cyrillic 1 through the second
 band, which the old a-z/A-Z test refused. `text-fold-indexed` and
 `shadow-builtin-fold` (finding of the same census day: builtin
-interception ignored user shadowing, fixed in `80674beb`) both MATCH
+interception ignored user shadowing, fixed in `993d9f8b` -- whose first
+cut broke every ladder rung by yielding for subj-deck-record too, a name
+whose definition zig-skip-def deliberately never emits; the yield now
+exempts exactly the skip list) both MATCH
 their `.expected`. Sweep and census rerun over the batched change-set:
 pending at time of writing; this entry updates when they land.
