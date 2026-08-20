@@ -97,11 +97,24 @@ fixes NOT yet applied, batch them into ONE emitter change-set so one sweep
   should use `+%`/`-%`/`*%`. VERIFY the ruling against the C# emitter and a
   bare-metal source before editing -- if Codex intends overflow to be an
   error, the wrap on bare metal is a FINDING, not our bug.
-- **smp-arm64-boot, smp-riscv-boot (2 crashes): `panic: oom` under the
-  800 MB cap, and both subjects are 29 LINES.** Identical expected outputs
-  (same sha). A 29-line program that eats 800 MB hosted is either a prelude
-  pathology of ours or a hunt-worthy allocation blowup; instrument before
-  raising the cap -- the cap moves on evidence, not on the first OOM.
+- **smp-arm64-boot, smp-riscv-boot (2 crashes): RESOLVED AT THE DESK
+  2026-08-19 -- hardware-semantics subjects the hosted arm structurally
+  cannot answer.** Each polls a marker cell at a fixed high physical
+  address (`peek-qword #7E000000` / `#80090000`, ~2.1 GB) that only a
+  SECONDARY CPU CORE writes (PSCI CPU_ON / hart start under QEMU virt).
+  The OOM is just the messenger: `cx_peek_qword` calls `cx_buf_want`,
+  which zero-fills the contiguous heap up to the address -- 2.1 GB against
+  an 800 MB cap. But no memory model fixes them: a hosted single process
+  has no secondary core, so even a sparse heap reads 0 forever and prints
+  "AP DID NOT RUN" -- a differ, not a match. Right move is an honest
+  census classification (a documented hardware-only exclusion bucket, its
+  own verdict class, never counted as crash), which is instrument work,
+  not a hunt. The cap stays at 800 MB; nothing here argues against it.
+  DESIGN CONSEQUENCE for the cx_heap unification (noted in
+  `findings/zig-heap-unification.md`): subjects may peek absolute
+  addresses far above any reservation, and RLIMIT_AS caps count reserved
+  address space, not resident pages -- the design must say what an
+  out-of-region absolute address means before it goes to Damian.
 
 The known gap family is coherent: `poke-byte`, `peek/poke-16/32`, `bit-not` --
 the memory-access builtins; implementing the family unblocks a large slice at

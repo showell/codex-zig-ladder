@@ -97,3 +97,25 @@ for the same program, which is how we got here.
 3. Report the no-op upstream regardless of which fix lands, because it is a
    property of the plug and not of our ladder: the plug accepts `__heap-restore`
    and discards it, and the compiler leans on it 61 times in one subject.
+
+## Absolute addresses vs the reservation (added 2026-08-19, corpus evidence)
+
+The corpus has subjects that peek fixed physical addresses far above any
+sane reservation: `smp-arm64-boot` polls `#7E000000` and `smp-riscv-boot`
+polls `#80090000` -- both about 2.1 GB, both legitimate guest-physical
+addresses on their boards. Today's contiguous `cx_buf_want` zero-fills up
+to whatever address is touched, which is how both subjects OOM an 800 MB
+cap from 29 lines of source. Two consequences for this design:
+
+- **RLIMIT_AS counts reserved address space, not resident pages.** "Reserve
+  4 GB, fault lazily" keeps RSS low but dies instantly under the corpus
+  runner's `RLIMIT_AS` cap. Either the reservation stays modest and an
+  out-of-region absolute address gets a defined loud behavior (assert with
+  the address in the message), or the cap policy moves off RLIMIT_AS for
+  emitted programs. Pick one in this design, not at debug time.
+- **These two subjects are not the design's problem to solve.** They verify
+  that a secondary CPU core executed guest code; a hosted single process
+  has no secondary core, so no memory model produces their expected
+  output. They are census-classification work (a hardware-only bucket),
+  and they are cited here only as proof that out-of-region peeks occur in
+  real depot code.
