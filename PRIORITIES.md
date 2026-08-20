@@ -50,16 +50,27 @@ hunt is the point.
 file, changed-only reruns keyed on emitted-zig hashes, a set-cover sentinel
 gate, full census per-Update only).
 
-**State 2026-08-19 late evening: the first full census is RUNNING** --
-`corpus_run.py --run --bank` over the 566 programs now in scope (cites
-resolved), log `logs/wall-heapdeck-2026-08-19b.log`, on a healthy host
-(`stream:` back to 28-32s after the WerFault fix) with finding 16's
-heap-base + deck fix on the pin and a 14/14 sweep green ahead of it. When
-it banks, census.json exists for the first time: the `--changed` loop and
-the sentinel set unblock, and triage of the differ/crash classes (item 5)
-is the next hunt. Re-measure codexir's per-program time on this host
-before quoting any figure; the only measurement so far came off the sick
-box.
+**State 2026-08-19 21:25: the first full census is BANKED** --
+`corpus/census.json`, 566 programs, healthy host, finding 16's heap-base +
+deck fix on the pin, 14/14 sweep green ahead of it (log
+`logs/wall-heapdeck-2026-08-19b.log`). The `--changed` loop and the
+sentinel set are unblocked. The tallies, and what mode each bucket is:
+
+    162 match        the denominator that makes a future differ mean something
+      2 differ       HUNT: shadow-builtin-fold, text-fold-indexed
+      5 crashed      HUNT: bloom-spread, consistent-hash-balance,
+                     particle-spread, smp-arm64-boot, smp-riscv-boot
+    102 refused      our gaps; dominated by the bool-vs-i64 class (item 5)
+     28 no-expected  no oracle to hunt with
+    221 markers      never ran: missing emitter builtins (poke/peek family,
+                     port-in-byte, unicode text ops) -- the gap family below
+     36 codexir      never ran: hosted-compiler stage failed (feeds item 6)
+     10 unresolved   cites that did not resolve
+
+The 33-differ pilot count deflated to 2 exactly as predicted once the
+capture-byte artifact was fixed. Next hunt: the 2 differs and 5 crashes.
+Re-measure codexir's per-program time on this host before quoting any
+figure; the only measurement so far came off the sick box.
 
 The known gap family is coherent: `poke-byte`, `peek/poke-16/32`, `bit-not` --
 the memory-access builtins; implementing the family unblocks a large slice at
