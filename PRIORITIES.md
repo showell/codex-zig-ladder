@@ -244,18 +244,33 @@ drift 0). **`8f997bd8` is the base for whatever goes out next.** Damian left
 one open door on 74: a QEMU fallback for the batch REPL is its own change if
 we want it -- noted, not queued.
 
-Proven and ready to send, in order, each in a throwaway worktree off
-`8f997bd8`:
+The arena prelude is NOT queued -- it went up as PR 71 and was absorbed at
+`a061c173`; upstream's arena code is byte-identical to ours, only the comment
+was trimmed in the Perforce re-application. (`git cherry` cannot see this:
+Perforce re-application changes patch-ids, so absorption is a content
+question, never a patch-id question.)
 
-- **The finding 16 fix** (heap base + real deck, our `24c0d925`): tonight's
-  14/14 sweep and the banked census are the proof; the three observing
-  oracles (arith-narrow-proven, deck-bracket-contract, deck-record-contract)
-  all match. The register (`findings/README.md` sec. 16) says "fix is ours to
-  propose" -- this is the proposal.
-- **The arena prelude** (`7094128c`, the 3 GB-OOM -> 240 MB fix): random882
-  called it the most valuable unlanded thing we have, gated on the re-bank
-  proving it; the re-bank and tonight's green ladder are that proof. The
-  fleet edits ZigEmitter daily, so this ages badly on the shelf.
+What IS queued is a three-commit dependency chain off the pin -- the CCE
+tiers and char-to-text commits were never sent as PRs, and the finding 16
+fix sits on top of them (`cx_utf8_to_cce` calls `cx_cce_frame`):
+
+1. `a3756ec0` -- multi-byte CCE tiers in the prelude, IrNumLit bits,
+   bits-to-real-approx, faithful text-to-double-bits.
+2. `181310ec` -- char-to-text is one byte, the bare-metal contract.
+3. `24c0d925` -- **the finding 16 fix** (heap base + real deck). Tonight's
+   14/14 sweep and the banked census are the proof; the three observing
+   oracles (arith-narrow-proven, deck-bracket-contract, deck-record-contract)
+   all match. The register (`findings/README.md` sec. 16) says "fix is ours
+   to propose" -- this is the proposal.
+
+Replay rehearsed 2026-08-19 in a scratch worktree off `8f997bd8`: picks 1
+and 2 apply clean, pick 3 has one trivial conflict (`zig-prelude-decls` --
+union both sides' added names). Residual diff of the replayed emitter vs the
+pin is exactly upstream's own absorbed content (PR 73's switch pin, issue
+72's match guards), nothing of ours. That combination -- upstream fleet
+edits + our three -- has not been run through our ladder; Damian's 49/49
+oracle gate covers it on his side, and a sweep against a plug built from the
+replay worktree is the optional due-diligence slot before sending.
 
 ---
 
