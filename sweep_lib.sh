@@ -10,34 +10,8 @@
 
 T="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$T/ast/oracle_lib.sh"
-
-# One compute job per host. The droplet side is flocked inside its
-# wrappers; this is the laptop side. Refuse loudly, never queue: two 3 GB
-# guests on this box thrash at 2% CPU each instead of failing (2026-08-20).
-take_compute_lock() {
-    exec 9>"$T/.compute.lock"
-    flock -n 9 || {
-        echo "COMPUTE LOCK HELD -- another sweep/build/census owns this laptop; refusing"
-        exit 1
-    }
-    # The lock only binds scripts that take it, and the legacy scripts
-    # do not yet (wiring batch, PRIORITIES item 1.2). Until every
-    # compute job holds the lock, an unlocked rebank/build beside a
-    # free lock reads as protection it is not (process review D3) --
-    # so also refuse on the evidence of the processes themselves.
-    local running
-    running=$(ps -eo args | grep -E 'qemu-system|rebank_all|allcycles\.sh|corpus_run|native_build' | grep -v grep | head -1)
-    [ -n "$running" ] && {
-        echo "COMPUTE JOB RUNNING WITHOUT THE LOCK -- refusing beside: $running"
-        exit 1
-    }
-}
-
-# Per-rung wall-clock, printed at the marker so the split point and every
-# future scheduling decision come from measured time, not intuition.
-rung_stamp() {
-    echo "=== $1 ($(unit_rungs $1)) === $(date +%H:%M:%S)"
-}
+# take_compute_lock and rung_stamp live in oracle_lib.sh now, shared with
+# the legacy loops (wiring batch, process review D3/S1).
 
 # The remote arms: same rm-stale-first discipline, same transport-log
 # placement, same zig_verdict as the local arms they shadow. Only the

@@ -44,6 +44,44 @@ unit_rungs() {
     esac
 }
 
+# One compute job per host. The droplet side is flocked inside its
+# wrappers; this is the laptop side, taken by every entry point that
+# computes (rebank_all, allcycles, native_build, corpus_run, the sweep
+# trio). Refuse loudly, never queue: two 3 GB guests on this box thrash
+# at 2% CPU each instead of failing (2026-08-20).
+take_compute_lock() {
+    # Re-entrant down the process tree: rebank_all holds the lock and
+    # then runs allcycles.sh, which must not refuse its own parent. The
+    # variable dies with the holder, so it cannot leak past a crash.
+    [ -n "$LADDER_COMPUTE_LOCK" ] && return 0
+    exec 9>"$T/.compute.lock"
+    flock -n 9 || {
+        echo "COMPUTE LOCK HELD -- another sweep/build/census owns this laptop; refusing"
+        exit 1
+    }
+    export LADDER_COMPUTE_LOCK=$$
+    # The lock only binds processes that take it. Until nothing computes
+    # without it, a legacy job beside a free lock reads as protection it
+    # is not (process review D3) -- so also refuse on the evidence of
+    # the processes themselves. Our own process tree is excluded: the
+    # caller's command line matches these very patterns.
+    local running
+    running=$(ps -eo pid=,ppid=,args= | awk -v self=$$ '$1 != self && $2 != self' \
+        | grep -E 'qemu-system|rebank_all|allcycles\.sh|corpus_run|native_build' \
+        | grep -v grep | head -1)
+    [ -n "$running" ] && {
+        echo "COMPUTE JOB RUNNING WITHOUT THE LOCK -- refusing beside: $running"
+        exit 1
+    }
+    return 0
+}
+
+# Per-rung wall-clock, printed at the marker so the split point and every
+# future scheduling decision come from measured time, not intuition (S1).
+rung_stamp() {
+    echo "=== $1 ($(unit_rungs $1)) === $(date +%H:%M:%S)"
+}
+
 # Two lists, one ladder, and they are checked against each other HERE rather
 # than trusted. The comment on LADDER_RUNGS was written after allcycles.sh and
 # rebank_all.sh each kept their own copy and disagreed by one rung; splitting
