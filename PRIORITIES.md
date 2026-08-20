@@ -115,6 +115,8 @@ where the depot's oracles can finally see them (random895 -- gap work is
 not port-finishing, it is instrument reach). By expected yield:
 
 - **bool-vs-i64 coercions** -- dominates the ~111 refusals.
+- **`cx_approx_eq`** -- finding 20's fix: the 4-ULP ordinal-distance
+  test replacing `==` on IrApproxEq (measured both arms 2026-08-20).
 - **The memory-access builtin family** (`poke-byte`, `peek/poke-16/32`,
   `bit-not`) -- the coherent slab atop the ~232 markers; implementing
   the family unblocks a large slice at once. Explore before asking
