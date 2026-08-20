@@ -49,6 +49,7 @@ CODEXIR = LADDER / 'native' / 'codexir'
 ZIGEMIT = LADDER / 'native' / 'zigemit'
 WORK = LADDER / 'corpus'
 CENSUS = WORK / 'census.json'
+HW_ONLY_FILE = WORK / 'hardware-only.txt'
 MARKER = re.compile(r'@compileError\("zig plug: ([^"]*)"\)')
 
 
@@ -72,6 +73,29 @@ def expected_sha(name):
     want = expected_text(name)
     return None if want is None else hashlib.sha256(
         want.strip().encode()).hexdigest()[:16]
+
+
+def load_hardware_only():
+    """name -> reason for programs whose expected output only real hardware
+    can produce (secondary cores, devices). They classify instead of running:
+    a hosted single process cannot answer them, so a crash or differ there is
+    noise, and running them at all invites one (the smp-* pair peeks ~2.1 GB
+    physical, which the contiguous heap model turns into an OOM). The class
+    is loud everywhere it goes: its own verdict, its own tally line, banked
+    in the census like any other verdict."""
+    if not HW_ONLY_FILE.is_file():
+        return {}
+    hw = {}
+    for line in HW_ONLY_FILE.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        name, _, reason = line.partition(' ')
+        if not (TESTS / f'{name}.codex').is_file():
+            raise SystemExit(f'{HW_ONLY_FILE.name}: {name} is not in the '
+                             f'corpus; a stale exclusion must not linger')
+        hw[name] = reason.strip()
+    return hw
 
 
 def need_tools():
@@ -207,9 +231,12 @@ def load_run_carry(results, prev):
     return carry
 
 
-def stage_run(results, out_dir, persist=True, batch=0, prior=None):
+def stage_run(results, out_dir, persist=True, batch=0, prior=None, hw=None):
     """Build and run what transpiled clean, diff against the depot's .expected."""
-    prior = prior or {}
+    hw = hw or {}
+    # A hardware-only name never carries an old verdict: its classification
+    # is this run's to make, even when a stale 'crashed' sits in run.jsonl.
+    prior = {n: e for n, e in (prior or {}).items() if n not in hw}
     clean = [r for r in results if r['stage'] == 'clean']
     todo = [r for r in clean if r['name'] not in prior]
     if batch and batch < len(todo):
@@ -237,7 +264,7 @@ def stage_run(results, out_dir, persist=True, batch=0, prior=None):
     def verdict(name, kind, note=''):
         tally[kind] += 1
         verdicts[name] = (kind, note)
-        if kind not in ('match', 'no-expected'):
+        if kind not in ('match', 'no-expected', 'hardware-only'):
             detail.append((name, kind, note))
         if jsonl:
             jsonl.write(json.dumps({'name': name, 'verdict': kind,
@@ -246,6 +273,9 @@ def stage_run(results, out_dir, persist=True, batch=0, prior=None):
 
     for i, r in enumerate(todo, 1):
         name = r['name']
+        if name in hw:
+            verdict(name, 'hardware-only', hw[name])
+            continue
         exp = TESTS / f'{name}.expected'
         zig = out_dir / f'{name}.zig'
         if not exp.is_file():
@@ -383,6 +413,10 @@ def main():
         raise SystemExit('--bank wants run verdicts; pair it with --run or --changed')
 
     need_tools()
+    hw = load_hardware_only()
+    if hw:
+        print(f'hardware-only: {len(hw)} programs classify instead of '
+              f'running ({HW_ONLY_FILE.name})')
     bank = load_bank()
     if a.changed and bank is None:
         raise SystemExit('--changed needs a bank; run --run once, then --bank')
@@ -433,6 +467,9 @@ def main():
         for r in results:
             if r['stage'] != 'clean':
                 continue
+            if r['name'] in hw:
+                to_run.append(r)      # classified, not run; never carries
+                continue
             old = bank['programs'].get(r['name'])
             # The .expected content is part of the key: an Update that
             # rewrites an oracle file must rerun the program, or the bank
@@ -447,11 +484,12 @@ def main():
         # assumption must never read as green silence.
         print(f'\n--changed: {len(carried)} clean programs byte-identical to '
               f'bank {bank["meta"]["date"]}, not rerun; {len(to_run)} to run')
-        tally, detail, verdicts = stage_run(to_run, WORK, persist=persist)
+        tally, detail, verdicts = stage_run(to_run, WORK, persist=persist,
+                                            hw=hw)
     elif a.run:
         prior = load_run_carry(results, prev_shas) if persist else {}
         tally, detail, verdicts = stage_run(results, WORK, persist=persist,
-                                            batch=a.batch, prior=prior)
+                                            batch=a.batch, prior=prior, hw=hw)
         if persist:
             (WORK / 'run.json').write_text(json.dumps(
                 {'tally': dict(tally), 'detail': detail}, indent=1))

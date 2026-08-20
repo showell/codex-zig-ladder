@@ -45,6 +45,12 @@ verdict is a pure function of (its emitted `.zig`) x (zig toolchain). The
 function of (resolved source) x (seed). All the intermediates are already
 files in this directory.
 
+The one class that runs nothing: `hardware-only.txt` names programs whose
+expected output only real hardware can produce (a secondary core writes
+the marker cell; a hosted single process has none). They classify instead
+of running -- their own verdict in the tally and the bank, never a crash
+-- and the loader refuses a name that has left the corpus.
+
 **Re-emitting is 30x cheaper than re-running.** After an emitter change,
 regenerate all 553 `.zig` (~4 min, native) and hash them: **only programs
 whose `.zig` changed can change verdict.** A one-arm emitter fix touches

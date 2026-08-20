@@ -58,8 +58,10 @@ sentinel set are unblocked. The tallies, and what mode each bucket is:
 
     162 match        the denominator that makes a future differ mean something
       2 differ       HUNT: shadow-builtin-fold, text-fold-indexed
-      5 crashed      HUNT: bloom-spread, consistent-hash-balance,
-                     particle-spread, smp-arm64-boot, smp-riscv-boot
+      3 crashed      HUNT: bloom-spread, consistent-hash-balance,
+                     particle-spread (one wrap-overflow family, below)
+      2 hardware-only  smp-arm64-boot, smp-riscv-boot: classified, never run
+                     (corpus/hardware-only.txt; re-banked 2026-08-19)
     102 refused      our gaps; dominated by the bool-vs-i64 class (item 5)
      28 no-expected  no oracle to hunt with
     221 markers      never ran: missing emitter builtins (poke/peek family,

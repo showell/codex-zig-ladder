@@ -1,6 +1,6 @@
 {
  "meta": {
-  "date": "2026-08-19",
+  "date": "2026-08-20",
   "tools": {
    "codexir": "37ce882b7d161227",
    "zigemit": "2e37103d56fd9cbd"
@@ -3346,7 +3346,7 @@
   "smp-arm64-boot": {
    "expected_sha": "496fd0eea8bdd51b",
    "stage": "clean",
-   "verdict": "crashed",
+   "verdict": "hardware-only",
    "zig_sha": "2440ab5216219d4c"
   },
   "smp-cores": {
@@ -3399,7 +3399,7 @@
   "smp-riscv-boot": {
    "expected_sha": "496fd0eea8bdd51b",
    "stage": "clean",
-   "verdict": "crashed",
+   "verdict": "hardware-only",
    "zig_sha": "11a88cfa67199dab"
   },
   "smp-tss": {

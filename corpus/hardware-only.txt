@@ -1,0 +1,9 @@
+# Programs whose expected output only real hardware can produce. The hosted
+# arm is one process on one core: no PSCI, no secondary harts, no devices.
+# corpus_run.py classifies these 'hardware-only' instead of running them --
+# an own verdict class in the tally and the census, never a crash. Every
+# name must still exist in the depot's codex/test or the loader refuses,
+# so a stale exclusion cannot linger. One name per line, reason after it;
+# the desk-triage story is PRIORITIES item 1 (2026-08-19).
+smp-arm64-boot   core 0 issues PSCI CPU_ON; only a secondary ARM64 core writes the marker at #7E000000
+smp-riscv-boot   only a started secondary hart writes the marker at #80090000
