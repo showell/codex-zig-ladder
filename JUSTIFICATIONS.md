@@ -61,6 +61,17 @@ separately). A runaway now dies by cap with ~3 GB of guest free, below
 swap territory. Raise only on the evidence of a legitimate program hitting
 the cap.
 
+AMENDED 2026-08-20: raised to 2200 MB, on exactly that criterion. The
+heap-unification emitter reserves 1.5 GiB of address space up front
+(lazily faulted; resident unchanged at ~145 MB), so under it EVERY
+legitimate program hits an 800 MB RLIMIT_AS cap at reservation. The
+raise moves no banked verdict -- the 800 MB replay above had zero cap
+hits, and the banked crashes are overflow panics -- so bank-vs-branch
+movement stays attributable to the emitter. Balloon protection
+survives (the balloon class was 3 GB+, and the new emitter's
+region-exhaustion panic fires before a balloon can form). The
+RSS-shaped guard (cgroup MemoryMax) is the queued long-term answer.
+
 Root cause of the livelocks themselves was never a corpus program: the
 Windows C: drive at 98% left `swap.vhdx` unable to expand, so paging
 stalled writeback and reclaim (forensics: claude-steve random887). Fixed

@@ -337,8 +337,9 @@ zig_verdict() {
     cd $T/ast
     # program output goes to stderr (std.debug.print); truth was serial bytes
     #
-    # The address-space cap is the same 2.5 GB corpus_run.py puts on its zig
-    # runs, and for the same incident: an emitted binary with no arena
+    # The address-space cap is 2.5 GB (corpus_run.py caps its own runs
+    # separately -- see RUN_MEM_CAP there), for this incident: an
+    # emitted binary with no arena
     # balloons past 3 GB and livelocks the whole WSL VM (twice now -- the
     # second time was this very line, fibx under the Update 47 emitter, which
     # lacks PR 71's arena). Under the cap the allocation fails in the child,

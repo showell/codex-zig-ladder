@@ -182,11 +182,19 @@ def stage_transpile(names, out_dir):
 # binaries have ballooned to 3 GB anon RSS on a 3.8 GB guest, and on 2026-08-19
 # one such run livelocked the whole WSL VM instead of drawing a clean OOM kill.
 # Under the cap the allocation fails inside the child, the arena's
-# @panic("oom") fires, and the balloon becomes a recorded verdict. 800 MB is
-# the value the full corpus was replayed under with zero cap hits and a max
-# RSS of 145 MB (JUSTIFICATIONS.md); a runaway dies by cap with ~3 GB of
-# guest still free, never reaching swap.
-RUN_MEM_CAP = 800 * 1024 * 1024
+# @panic("oom") fires, and the balloon becomes a recorded verdict.
+#
+# 2200 MB because RLIMIT_AS counts RESERVED address space: the
+# heap-unification emitter reserves 1.5 GiB of lazily faulted zero pages
+# up front (resident stays ~145 MB), so every legitimate program hits an
+# 800 MB cap at reservation -- which is JUSTIFICATIONS' own raise
+# criterion. Raising it moves no banked verdict: the full corpus
+# replayed at 800 MB with ZERO cap hits and max RSS 145 MB, and the
+# three banked crashes are overflow panics, not cap hits. The balloon
+# class was 3 GB+, so protection survives; the region-exhaustion panic
+# fires before any balloon can form under the new emitter. The honest
+# long-term guard is cgroup MemoryMax (RSS-shaped) -- queued.
+RUN_MEM_CAP = 2200 * 1024 * 1024
 
 
 def _cap_memory():
