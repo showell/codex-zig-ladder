@@ -104,6 +104,21 @@ def main():
               '--force if you mean to bank an incomplete set.')
         return 1
 
+    # --force is destructive, not convenient: the rename REPLACES the whole
+    # bank with the ready subset. Confirm by the count, so agreeing requires
+    # having read it (C3). Non-interactive stdin refuses rather than assumes.
+    if (missing or stale) and args.force:
+        print(f'\n--force: about to REPLACE {dest.name} with {len(ready)} of '
+              f'{len(rungs)} rungs; the {len(rungs) - len(ready)} others '
+              'vanish from the bank.')
+        try:
+            answer = input(f'type the ready count ({len(ready)}) to confirm: ')
+        except EOFError:
+            answer = ''
+        if answer.strip() != str(len(ready)):
+            print('confirmation mismatch; nothing banked')
+            return 1
+
     # Since the rename REPLACES the destination, an empty ready set must stop
     # here even under --force: a SEED-only directory renamed over a full bank
     # would destroy fourteen measurements to record zero.
