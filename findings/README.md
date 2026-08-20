@@ -1,4 +1,4 @@
-# Findings: six closed upstream, eight standing, three fixed here, one proposal
+# Findings: seven closed upstream, seven standing, three fixed here, one proposal
 
 This directory holds the findings and the probes that make them runnable.
 It is discussion material rather than a proposed addition to the Codex tree,
@@ -687,7 +687,14 @@ workaround and not a fix.
 
 **Found 2026-08-18 by an emitter audit; both arms measured 2026-08-19 against
 Update 46 / seed 12B07296. Filed upstream as issue 72 (still present at
-Update 47).**
+Update 47). CLOSED 2026-08-20: Update 48 implements match guards natively,
+and its release adds a Match guards section to `plug-oracle-arith.codex`
+aimed at exactly this failure shape ("no refusal, a wrong value"). Verified
+at the u48 verbatim census re-pin: `plug-oracle-arith` -> match with the
+guard rows in it -- two arms on one constructor with different guards, a
+guard on a catch-all, a guarded tuple payload, all answered right by the
+shipped emitter. `tonight.sh` (whose step 2 existed to measure this
+finding's bare-metal half) deleted in the closing commit.**
 
 `IRBranch` carries `guard : IRExpr` (codex/compiler/IR/IRChapter.codex:54) and
 `ZigEmitter.codex` never reads it -- the word `guard` does not appear in the

@@ -2,8 +2,8 @@
  "meta": {
   "date": "2026-08-20",
   "tools": {
-   "codexir": "a4e5af0aec7f71c6",
-   "zigemit": "fe5b2570975208f8"
+   "codexir": "1b9239943a40085b",
+   "zigemit": "dd4c662d1bd3ce77"
   },
   "zig": "0.16.0"
  },
@@ -14,13 +14,13 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "512923cf32ee02ae"
+   "zig_sha": "239f30c9f0a9d34b"
   },
   "act-let-scope": {
    "expected_sha": "23595e2a7c1de00e",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "2661e54cd5c4bd52"
+   "zig_sha": "7fe668637b848e52"
   },
   "act-tco-loop": {
    "expected_sha": "9605d3affc32fac1",
@@ -28,55 +28,55 @@
     "no emitter for port-in-byte"
    ],
    "stage": "markers",
-   "zig_sha": "5e26b4afb4be6b59"
+   "zig_sha": "cf87150a806f478f"
   },
   "aesgcm256": {
    "expected_sha": "3b595580f5a1dee7",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "a49248d2d224c6d0"
+   "zig_sha": "0625b435be1099a8"
   },
   "amp-after-call": {
    "expected_sha": "11decbdef895b6eb",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "7cf7f3d3dc0e9ac5"
+   "zig_sha": "4d566a2885c5d6aa"
   },
   "approx-eq": {
    "expected_sha": "996ae0b3d91f2efa",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "ad74196c1a5c3cef"
+   "zig_sha": "0f85e2349b8c0034"
   },
   "arith-narrow-proven": {
    "expected_sha": "45c0411891b9d39b",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "a4327aab777bc0ed"
+   "zig_sha": "37d297e90482a0a2"
   },
   "arith-operand-order": {
    "expected_sha": "e5bcb5f794ed1696",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "cd0708ccd93dd9f0"
+   "zig_sha": "e0b907008dd55430"
   },
   "arithmetic": {
    "expected_sha": "0559dac908d4ec64",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "4ad1c2eab936b991"
+   "zig_sha": "f2939956bb468682"
   },
   "arm64-boot-test": {
    "expected_sha": "a7b883e2231d8790",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "28d9d1bbf5bf10de"
+   "zig_sha": "87f370c8d94cb8f5"
   },
   "arm64-encoder": {
    "expected_sha": "05dd4d97ed6794b2",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "b9b00a2841c1bcc9"
+   "zig_sha": "d2b2a70bb8e46402"
   },
   "arm64-http-test": {
    "expected_sha": "b774fbbec677d1bf",
@@ -85,7 +85,7 @@
     "no emitter for unicode-bytes-to-text"
    ],
    "stage": "markers",
-   "zig_sha": "bc6e8a035b687fc2"
+   "zig_sha": "12f1ddc4a79afaef"
   },
   "arm64-net-gate": {
    "expected_sha": "abc720d6f8013582",
@@ -98,7 +98,7 @@
     "no emitter for process-restrict-cap"
    ],
    "stage": "markers",
-   "zig_sha": "703205d694b2c761"
+   "zig_sha": "c1e4ff32020ac754"
   },
   "arm64-proc-cells": {
    "expected_sha": "bf88e43aac50302e",
@@ -111,7 +111,7 @@
     "no emitter for process-set-scope"
    ],
    "stage": "markers",
-   "zig_sha": "3d108d314c1ebb90"
+   "zig_sha": "7438ad637c350aab"
   },
   "arm64-send-refusal": {
    "expected_sha": "33e99f1689736334",
@@ -123,7 +123,7 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "2937a389caec06e2"
+   "zig_sha": "3b84ac2f46a127aa"
   },
   "arm64-virtio-blk-probe": {
    "markers": [
@@ -134,7 +134,7 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "c1498086bb44fce0"
+   "zig_sha": "3f43b9552e2365e5"
   },
   "arm64-virtio-tx-probe": {
    "markers": [
@@ -146,7 +146,7 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "907badcd1597c189"
+   "zig_sha": "91a8bc8a1667817e"
   },
   "arm64-web-server": {
    "markers": [
@@ -160,13 +160,13 @@
     "no emitter for unicode-bytes-to-text"
    ],
    "stage": "markers",
-   "zig_sha": "a37ea8410a60c06c"
+   "zig_sha": "6ded70605ae319f9"
   },
   "arp-cache-bound": {
    "expected_sha": "d4a06209a6cea731",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "16f9c1697d985261"
+   "zig_sha": "364c051b921babe5"
   },
   "asn1-der": {
    "expected_sha": "f5c21dc30554af35",
@@ -174,7 +174,7 @@
     "no emitter for bit-not"
    ],
    "stage": "markers",
-   "zig_sha": "f734e5a5d9c07a2b"
+   "zig_sha": "9dac1bf729f35ec2"
   },
   "atomic-smoke": {
    "expected_sha": "5b4cb79b72985898",
@@ -187,19 +187,19 @@
     "no emitter for memory-fence"
    ],
    "stage": "markers",
-   "zig_sha": "d0f3aed5d07231ba"
+   "zig_sha": "8d6b7cccd481ce1c"
   },
   "audio-diffusion-test": {
    "expected_sha": "1f2f5c1f3fb83472",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "4ee530664ec6ea46"
+   "zig_sha": "d8732aed60a80397"
   },
   "av-codec-test": {
    "expected_sha": "523cd277740c4d20",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "f8dd4e51a2bdd75f"
+   "zig_sha": "105bfdec0c7da483"
   },
   "bacnet-encode": {
    "expected_sha": "2c624232cdd22177",
@@ -208,25 +208,25 @@
     "no emitter for to-real-approx"
    ],
    "stage": "markers",
-   "zig_sha": "93220eec14d1a655"
+   "zig_sha": "3fd9e336dbd16a2d"
   },
   "bezier-identity": {
    "expected_sha": "f371769ea15ca476",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "08e50e34d6bedbf2"
+   "zig_sha": "775ae75a7248c5c9"
   },
   "bitop-if-cond": {
    "expected_sha": "d7c9ef65093f7901",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "aab90684c3195939"
+   "zig_sha": "d02ae3f6fea5021a"
   },
   "ble-att-encode": {
    "expected_sha": "ef2d127de37b942b",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "0d8abc905572c0dd"
+   "zig_sha": "4d409ddea659049c"
   },
   "block-gate-restrict": {
    "expected_sha": "f9f104a24a3fdfe1",
@@ -239,7 +239,7 @@
     "no emitter for process-restrict-cap"
    ],
    "stage": "markers",
-   "zig_sha": "dbeca65b5d7d7650"
+   "zig_sha": "d48f1240912440fd"
   },
   "block-sector-count": {
    "expected_sha": "2747b7c718564ba5",
@@ -247,7 +247,7 @@
     "no emitter for block-sector-count"
    ],
    "stage": "markers",
-   "zig_sha": "376243ae49ec3dc3"
+   "zig_sha": "33c4b7317da31ad9"
   },
   "block-select-drives": {
    "expected_sha": "abffa0d92431f9dc",
@@ -257,76 +257,76 @@
     "no emitter for block-select"
    ],
    "stage": "markers",
-   "zig_sha": "4940cf5c59a7cc1f"
+   "zig_sha": "188b7876118605c5"
   },
   "bloom-spread": {
    "expected_sha": "08274967263b59d0",
    "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "7bfc6a8794158a7d"
+   "verdict": "crashed",
+   "zig_sha": "6e2898d26939ab17"
   },
   "board-types": {
    "expected_sha": "3e374cf184e13a36",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "404790c02614036c"
+   "zig_sha": "14bae3db367aa4b9"
   },
   "bounded-integer-ops": {
    "expected_sha": "44c90d25b1e4cbde",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "28b83cdd57835132"
+   "zig_sha": "a5f293537601f0b8"
   },
   "bounded-param-trap": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "ba0796945134d521"
+   "zig_sha": "c03069aed0c5cf4d"
   },
   "bounded-return-trap": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "44bdd81e371a0228"
+   "zig_sha": "1b16e947bd819475"
   },
   "bounded-sig-runtime": {
    "expected_sha": "107035db6bcdbf77",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "d25c16835de96b9d"
+   "zig_sha": "70b869b82e04c346"
   },
   "bounded-sig-static": {
    "expected_sha": "a5c39df50deddc47",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "e4be5f3834d1c171"
+   "zig_sha": "f6a759bfb64011e5"
   },
   "bounds-proof": {
    "expected_sha": "b7d30a0f8a4e459e",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "969be97c27d3a18b"
+   "zig_sha": "88541467ff23697e"
   },
   "bounds-prover": {
    "expected_sha": "650311146a636744",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "b8314f955575586b"
+   "zig_sha": "91895d513ebfa7de"
   },
   "brotli-interop": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "737ef4bba117de8b"
+   "zig_sha": "aae60bf047d9b72d"
   },
   "bs3-smoke": {
    "expected_sha": "7f0b6daa08e151bb",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "11ab2291e5957c73"
+   "zig_sha": "726d989ea35751d5"
   },
   "builtin-narrow-proven": {
    "expected_sha": "4e07408562bedb8b",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "c4089be9bd9c0f74"
+   "zig_sha": "bc148751b37a9a69"
   },
   "bytes-to-text-2f": {
    "markers": [
@@ -334,19 +334,19 @@
     "no emitter for unicode-bytes-to-text"
    ],
    "stage": "markers",
-   "zig_sha": "3438a90930b3093d"
+   "zig_sha": "725b4fd55b30feca"
   },
   "call-clobber": {
    "expected_sha": "dfc7936a1391f549",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "6500e57841b366d9"
+   "zig_sha": "2a507f581c8267c3"
   },
   "canopen-encode": {
    "expected_sha": "4b227777d4dd1fc6",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "7d36eda15e01b480"
+   "zig_sha": "9fca529ec0a6ca08"
   },
   "cap-audio": {
    "expected_sha": "f53c0aa21004c6f7",
@@ -354,7 +354,7 @@
     "no emitter for process-get-cap"
    ],
    "stage": "markers",
-   "zig_sha": "50af25a67bcbe694"
+   "zig_sha": "dd7e88241c8f3b35"
   },
   "cap-block-denied": {
    "expected_sha": "6183c82c22fd6e1d",
@@ -363,13 +363,13 @@
     "no emitter for poke-32"
    ],
    "stage": "markers",
-   "zig_sha": "554f70662791a8c2"
+   "zig_sha": "492425172f67f4db"
   },
   "cap-device-declared": {
    "expected_sha": "996cb7ebda069605",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "1260603634b6bd47"
+   "zig_sha": "0906470d62385326"
   },
   "cap-direction": {
    "expected_sha": "316755cafea62225",
@@ -377,7 +377,7 @@
     "no emitter for process-get-cap"
    ],
    "stage": "markers",
-   "zig_sha": "0e30f82aca96fa04"
+   "zig_sha": "59cdbd48617c914b"
   },
   "cap-gpu-byte-denied": {
    "expected_sha": "9418a42ec2f8eaa8",
@@ -387,7 +387,7 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "3299da8b84668969"
+   "zig_sha": "17944b6cc1e9c8cc"
   },
   "cap-gpu-family": {
    "expected_sha": "877c9dbb8c0a311c",
@@ -396,7 +396,7 @@
     "no emitter for gpu-mem-write"
    ],
    "stage": "markers",
-   "zig_sha": "d376252989c5ee8c"
+   "zig_sha": "737780b8f988323d"
   },
   "cap-gpu-mem-denied": {
    "expected_sha": "068a04557dd11cac",
@@ -406,7 +406,7 @@
     "no emitter for poke-32"
    ],
    "stage": "markers",
-   "zig_sha": "3988318bd8ddad4a"
+   "zig_sha": "82bbf700f84b1401"
   },
   "cap-heap-poke-pure": {
    "expected_sha": "73475cb40a568e8d",
@@ -414,7 +414,7 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "c4e16c54de2d3146"
+   "zig_sha": "563707535a208881"
   },
   "cap-identity-denied": {
    "expected_sha": "bbe042d1e4d720ec",
@@ -425,13 +425,13 @@
     "no emitter for poke-32"
    ],
    "stage": "markers",
-   "zig_sha": "107ac7db2ab63a3c"
+   "zig_sha": "0905ebbf79d5bfda"
   },
   "cap-manifest-derived": {
    "expected_sha": "1c77e1e6e622729d",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "43ad8e7066add4f1"
+   "zig_sha": "f8384af98ec329bd"
   },
   "cap-media-families": {
    "expected_sha": "b849664422cee41c",
@@ -439,7 +439,7 @@
     "no emitter for process-get-cap"
    ],
    "stage": "markers",
-   "zig_sha": "04c0802126615e4a"
+   "zig_sha": "1f7254a50e0b70b2"
   },
   "cap-network-denied": {
    "expected_sha": "4e1b22034afa95f7",
@@ -448,7 +448,7 @@
     "no emitter for poke-32"
    ],
    "stage": "markers",
-   "zig_sha": "1e22da20a0482a0b"
+   "zig_sha": "1d0c03d755de44e5"
   },
   "cap-process-family": {
    "expected_sha": "db5ac59d45f6edb3",
@@ -456,64 +456,62 @@
     "no emitter for process-get-cap"
    ],
    "stage": "markers",
-   "zig_sha": "aacb00c78706a61c"
+   "zig_sha": "61fa0f4e937ea929"
   },
   "capability-doors": {
    "expected_sha": "8d9a195fe68a0acc",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "bc2db538a385b1a2"
+   "zig_sha": "625208b0c8b1cdb8"
   },
   "carddeck-shuffle": {
    "expected_sha": "d59ef7dc04d5bb7c",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "9ba59e5ccdb57717"
+   "zig_sha": "37fc21d1d4c8daa6"
   },
   "cce-roundtrip": {
    "expected_sha": "1fcd5bcce499e61a",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "6497dcd196d3144a"
+   "zig_sha": "05b44dbf455870e3"
   },
   "cce-tier1": {
    "expected_sha": "dfee8e3623875f94",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "100b78505ae85d2f"
+   "zig_sha": "5b247ba0c58f5db1"
   },
   "cdx2053-range": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "fc81ab3c61703cc6"
+   "zig_sha": "f6aca64ac5d7e68e"
   },
   "chacha20poly1305": {
    "expected_sha": "9a2c7a1ed1f6c09f",
-   "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "e1841539d722f732"
+   "stage": "codexir"
   },
   "chapter-pages": {
    "expected_sha": "4e07408562bedb8b",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "5efa3123d7f38585"
+   "zig_sha": "be1a5151757d8eb7"
   },
   "char-at-negative": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "f6be344b3758a5ae"
+   "zig_sha": "6b64d4dde6ef31c3"
   },
   "char-at-past-end": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "992ce9a0d37fd5c8"
+   "zig_sha": "ff0cfc62e84010bd"
   },
   "circbuf-test": {
    "expected_sha": "d229262b780e171c",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "b48ac1404b220043"
+   "zig_sha": "0b252477d899416c"
   },
   "cite-override-quire": {
    "expected_sha": "a0f4b2e84f4fd454",
@@ -522,73 +520,67 @@
   "class-op-no-instance": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "f247b441d2bd9ddf"
+   "zig_sha": "1bb52a6b3e70c835"
   },
   "cmac-test": {
    "expected_sha": "4e07408562bedb8b",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "e53df43722d63bcf"
+   "zig_sha": "f98e35000d234abe"
   },
   "cms-spread": {
    "expected_sha": "f53e05a5e3c8a188",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "b648c9ee5a2c8ef4"
+   "zig_sha": "f2bddbe3f0d93bd0"
   },
   "coap-block": {
    "expected_sha": "4b227777d4dd1fc6",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "b3c0da30e2e04771"
+   "zig_sha": "7fd86397be977b57"
   },
   "coap-packet": {
    "expected_sha": "ff513761e8cdde53",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "65c18dcb3f6996a1"
+   "zig_sha": "2b288bd6b1b1547e"
   },
   "coap-parse": {
    "expected_sha": "b17ef6d19c7a5b1e",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "80d23c302d8ffe29"
+   "zig_sha": "a9e0af276066dcda"
   },
   "collide-chapters": {
    "expected_sha": "c5681b3c582b7931",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "06d3d5fae271606e"
+   "zig_sha": "d188c113f01fec85"
   },
   "color-test": {
    "expected_sha": "0202a99a19f621c4",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "5cdd0eaf33374ff4"
+   "zig_sha": "051a8f799572d4ad"
   },
   "compliance-evidence": {
    "expected_sha": "2c624232cdd22177",
-   "stage": "clean",
-   "verdict": "refused",
-   "zig_sha": "751c2e7e52c9e7bd"
+   "stage": "codexir"
   },
   "compliance-report": {
    "expected_sha": "7ac221c13f841a42",
-   "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "37788f132c5c9538"
+   "stage": "codexir"
   },
   "concurrent-test": {
    "expected_sha": "9416619bee9b04d1",
-   "stage": "clean",
-   "verdict": "refused",
-   "zig_sha": "9a0445537320031f"
+   "stage": "codexir"
   },
   "consistent-hash-balance": {
    "expected_sha": "75a2dbea0adde606",
    "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "d5b397475c140e28"
+   "verdict": "crashed",
+   "zig_sha": "e905a8dc2017dc0e"
   },
   "console-readline-cite": {
    "expected_sha": "8beb2503fdd589eb",
@@ -596,19 +588,19 @@
     "no emitter for read-line"
    ],
    "stage": "markers",
-   "zig_sha": "fca15a1238e47dc0"
+   "zig_sha": "dbebed36e1bc2ba1"
   },
   "const-narrow-proven": {
    "expected_sha": "01a267809c4d54cf",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "e8e44bf1a1f76faa"
+   "zig_sha": "05c77d1aa732f7e0"
   },
   "convolution-identity": {
    "expected_sha": "952b90c5dedf42b5",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "3c55e6aaba408148"
+   "zig_sha": "2fb4802a1fcc107d"
   },
   "cross-port-refused": {
    "expected_sha": "83a0f428f6fb7ced",
@@ -617,38 +609,38 @@
     "no emitter for port-out-byte"
    ],
    "stage": "markers",
-   "zig_sha": "fe199287a56cc353"
+   "zig_sha": "8b9339aa63e4865f"
   },
   "cross-unsupported-probe": {
    "markers": [
     "no emitter for read-file-raw"
    ],
    "stage": "markers",
-   "zig_sha": "7043f6a001b9be00"
+   "zig_sha": "3bc162c29d467827"
   },
   "crypto-test": {
    "expected_sha": "41a79da2ddbaa508",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "36ec7cdd8d841066"
+   "zig_sha": "e1a69f892ba6d2ea"
   },
   "crypto-vectors": {
    "expected_sha": "6e66618ef2404f35",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "3409b82eb70aacbe"
+   "zig_sha": "43b17daadcde4078"
   },
   "cryptobig": {
    "expected_sha": "aef6ac2f387abfa7",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "a9bdfd0fb2730bf9"
+   "zig_sha": "92c725d2f90c33e2"
   },
   "ctor-narrow-warn": {
    "expected_sha": "73475cb40a568e8d",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "883a4e901299557f"
+   "zig_sha": "b994c9a4e03fb818"
   },
   "db-csv-roundtrip": {
    "expected_sha": "d2b7b286ad015e5c",
@@ -664,26 +656,11 @@
     "unresolved type variable T83 of collision-remove"
    ],
    "stage": "markers",
-   "zig_sha": "8bc7a9f1e7c790f2"
+   "zig_sha": "960792661441f2a3"
   },
   "db-full-test": {
    "expected_sha": "0ae8607c665e2385",
-   "markers": [
-    "no emitter for alloc-bytes",
-    "no emitter for poke-byte",
-    "unresolved type variable T73 of hamt-get",
-    "unresolved type variable T74 of hamt-node-get",
-    "unresolved type variable T75 of collision-find",
-    "unresolved type variable T78 of make-single-branch",
-    "unresolved type variable T82 of hamt-remove",
-    "unresolved type variable T83 of hamt-node-remove",
-    "unresolved type variable T84 of collision-remove",
-    "unresolved type variable T86 of hamt-size",
-    "unresolved type variable T88 of hamt-fold",
-    "unresolved type variable T95 of hamt-to-list"
-   ],
-   "stage": "markers",
-   "zig_sha": "48b295d95d30390a"
+   "stage": "codexir"
   },
   "db-row-update": {
    "expected_sha": "21b42167d2970d90",
@@ -696,19 +673,19 @@
     "unresolved type variable T77 of make-single-branch"
    ],
    "stage": "markers",
-   "zig_sha": "2ec4a3b499db5a92"
+   "zig_sha": "27454f21051e918f"
   },
   "dce-reach": {
    "expected_sha": "487a1365da9b1fbd",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "92b7fe6dccf975ed"
+   "zig_sha": "ce1bbc8e1a388db3"
   },
   "deck-bracket-contract": {
    "expected_sha": "6f9bfd29b9ee9e50",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "66d519f5eeab574a"
+   "zig_sha": "57421664668d12af"
   },
   "deck-cell-contract": {
    "expected_sha": "719d78907a266797",
@@ -716,13 +693,13 @@
     "no emitter for __deck-alloc"
    ],
    "stage": "markers",
-   "zig_sha": "0c7e96546983e488"
+   "zig_sha": "f91d8ba78d98e9da"
   },
   "deck-record-contract": {
    "expected_sha": "628c549091e115ed",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "b1f9acec8a6c506b"
+   "zig_sha": "4d2bf2289aee5d55"
   },
   "desk-parse": {
    "expected_sha": "f743d92648ad290a",
@@ -735,7 +712,7 @@
     "no emitter for gpu-mem-write"
    ],
    "stage": "markers",
-   "zig_sha": "0a11d1e0695e281c"
+   "zig_sha": "939daaca072bd548"
   },
   "dhcp-acquire": {
    "expected_sha": "fd950ea37e7ea79a",
@@ -750,7 +727,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "920ac18cfadf1ea0"
+   "zig_sha": "f683d6ceced0a679"
   },
   "dhcp-acquire-e1000": {
    "expected_sha": "c76d7b20395620a8",
@@ -765,7 +742,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "920ac18cfadf1ea0"
+   "zig_sha": "f683d6ceced0a679"
   },
   "dhcp-renew": {
    "expected_sha": "00e7161df1332d86",
@@ -780,13 +757,13 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "afff4a5afd2721fc"
+   "zig_sha": "de863cbb1c0e9955"
   },
   "diag-pci-map-judge": {
    "expected_sha": "f8dca6b624f43269",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "d616ac1a4c945e8c"
+   "zig_sha": "da32925612d80a79"
   },
   "disk-enum-parse": {
    "expected_sha": "3313e79254d00296",
@@ -797,7 +774,7 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "e56689097eafea36"
+   "zig_sha": "5117b86c4df8eac0"
   },
   "diskfacts-unpack-large": {
    "expected_sha": "107dae64781d0394",
@@ -806,61 +783,57 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "b3a064dd3e6b3776"
+   "zig_sha": "6ca44e1cefb688f2"
   },
   "dnp3-encode": {
    "expected_sha": "2c624232cdd22177",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "7e65623e1dec4d63"
+   "zig_sha": "47fb33431dd87880"
   },
   "dns-answer-count": {
    "expected_sha": "f096a51478371391",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "90bd3499dc859aec"
+   "zig_sha": "bb1f25f94dad76eb"
   },
   "dtls-fragment": {
    "expected_sha": "1899078c5b9899a5",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "be36dc43c6de5ce2"
+   "zig_sha": "8f0fcb3718479c55"
   },
   "dtls-handshake": {
    "expected_sha": "1586e8b71b898617",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "9c29c41f18830efc"
+   "zig_sha": "82fbc5c1bd46b129"
   },
   "dtls-hello": {
    "expected_sha": "4e2e55ed05ac1554",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "02330ae67b68a3a3"
+   "zig_sha": "a34de1c791289950"
   },
   "dtls-message": {
    "expected_sha": "05b9625548fbcbe0",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "844ff97b7e820abd"
+   "zig_sha": "428554f83d45032e"
   },
   "dtls-openssl-fragments": {
    "expected_sha": "5dc30e3b09430590",
-   "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "21e51b98000adadf"
+   "stage": "codexir"
   },
   "dtls-record": {
    "expected_sha": "1e32ac7d3011f4d1",
-   "stage": "clean",
-   "verdict": "refused",
-   "zig_sha": "55a09be6713391c1"
+   "stage": "codexir"
   },
   "e1000-aneg-budget": {
    "expected_sha": "d5fb85b0f7a9dd40",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "d4a2aabc232071aa"
+   "zig_sha": "45c4eb1705c03837"
   },
   "e1000-asde-arms": {
    "expected_sha": "8b3de71bbfb34a3e",
@@ -871,7 +844,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "0d89532b2c6d7867"
+   "zig_sha": "5ad5845cf9b02ee0"
   },
   "e1000-asde-nolink": {
    "expected_sha": "2c5d0dca36f954ae",
@@ -882,7 +855,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "11a50c47e40f263a"
+   "zig_sha": "0e259fc234b894d8"
   },
   "e1000-asde-speed": {
    "expected_sha": "5a77bb93597a8627",
@@ -893,7 +866,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "05e687598230ee1c"
+   "zig_sha": "98122aeeed8628e3"
   },
   "e1000-bringup": {
    "expected_sha": "08ac55d016fc4862",
@@ -906,7 +879,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "cb35ac3b49fd6732"
+   "zig_sha": "d6ccba0669242f61"
   },
   "e1000-ctrl-ro": {
    "expected_sha": "4ceb3126c5f2d0da",
@@ -917,13 +890,13 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "7258c464f09e5c90"
+   "zig_sha": "f1ab621386366885"
   },
   "e1000-link-budget": {
    "expected_sha": "15eb2647af29e371",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "edc0e36f66bc7fea"
+   "zig_sha": "8b7c38d25721edff"
   },
   "e1000-link-deadline": {
    "expected_sha": "f173409adde9f9b5",
@@ -935,7 +908,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "97821716b7572666"
+   "zig_sha": "b8086ba2d7c7ca59"
   },
   "e1000-match": {
    "expected_sha": "14779134d7fc11a7",
@@ -944,7 +917,7 @@
     "no emitter for poke-32"
    ],
    "stage": "markers",
-   "zig_sha": "03a5bc5916b050e7"
+   "zig_sha": "d3c39d6b167e0824"
   },
   "e1000-mdio-slow": {
    "expected_sha": "4423e7ff702c03e9",
@@ -955,7 +928,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "7d3732c704a860e4"
+   "zig_sha": "2a79db3ba81f3b0f"
   },
   "e1000-mdio-window": {
    "expected_sha": "2c625b0b982ec255",
@@ -967,7 +940,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "a0fb443c98c030e0"
+   "zig_sha": "b3cff30e68a10e94"
   },
   "e1000-phy": {
    "expected_sha": "15a968ef75989969",
@@ -979,7 +952,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "0ddb9bd99a38c162"
+   "zig_sha": "7984154d70b73b18"
   },
   "e1000-phy-absent": {
    "expected_sha": "56a7c3420388ace9",
@@ -991,7 +964,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "4a20a5408ff44f49"
+   "zig_sha": "2bbfae4940b33c1b"
   },
   "e1000-reset-wedged": {
    "expected_sha": "eacb700bf823d8b2",
@@ -1003,7 +976,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "1f20596ca825e3d6"
+   "zig_sha": "f4f4a3c7c6fe4519"
   },
   "e1000-ring-wrap": {
    "expected_sha": "c97a7d86392b8fc4",
@@ -1016,7 +989,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "fc47cf09c9d4dfd9"
+   "zig_sha": "501ea33a19716916"
   },
   "e1000-tx-deadline": {
    "expected_sha": "2da54c968bd1c2ce",
@@ -1026,7 +999,7 @@
     "no emitter for poke-32"
    ],
    "stage": "markers",
-   "zig_sha": "f848493a0a5d909b"
+   "zig_sha": "80632b8dbcaff5c3"
   },
   "e1000-unresettable": {
    "expected_sha": "d357b637f946da51",
@@ -1038,7 +1011,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "95a8a9723f33dd51"
+   "zig_sha": "355a9439ad16469b"
   },
   "ecdsa-cert": {
    "expected_sha": "7b6bc5acb1f9547f",
@@ -1046,19 +1019,19 @@
     "no emitter for bit-not"
    ],
    "stage": "markers",
-   "zig_sha": "9ca057d4e7c251e8"
+   "zig_sha": "dc2d1df21344ae60"
   },
   "ecdsa-p256": {
    "expected_sha": "c819ab03837e4234",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "d1621054a5fc73f8"
+   "zig_sha": "753dc7d8cfd39935"
   },
   "ecdsa-p384": {
    "expected_sha": "da97108596c24eb8",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "e517828019f74196"
+   "zig_sha": "de68f8eb912ea2d2"
   },
   "ecdsa-sha384": {
    "expected_sha": "922589ffad55b058",
@@ -1066,25 +1039,43 @@
     "no emitter for bit-not"
    ],
    "stage": "markers",
-   "zig_sha": "cc6982e911f29fa7"
+   "zig_sha": "95864ba713c12d6d"
   },
   "edalias": {
    "expected_sha": "947e80d755f05fc2",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "928105594ed54c43"
+   "zig_sha": "1f867e64f951b176"
   },
   "edcurve": {
    "expected_sha": "059e8f2a426a5ce1",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "5787a08e80ff497a"
+   "zig_sha": "bac6e87c946057b0"
+  },
+  "edge-mesh-admit": {
+   "expected_sha": "8d876e0ff669d81b",
+   "stage": "clean",
+   "verdict": "refused",
+   "zig_sha": "27ddbc7abe7d2bfe"
+  },
+  "edge-mesh-live": {
+   "expected_sha": "7ff252e41e06bf85",
+   "stage": "clean",
+   "verdict": "refused",
+   "zig_sha": "11c38396f3e9346d"
+  },
+  "edge-mesh-route": {
+   "expected_sha": "570f8dc7e0ed7b08",
+   "stage": "clean",
+   "verdict": "refused",
+   "zig_sha": "ecb88a5bd8538cde"
   },
   "edit-distance-test": {
    "expected_sha": "24b5193717f1bd45",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "06f78235df290f73"
+   "zig_sha": "7de2427de51f8aa0"
   },
   "edvector": {
    "expected_sha": "a31b2431046a3125",
@@ -1092,20 +1083,20 @@
     "no emitter for bit-not"
    ],
    "stage": "markers",
-   "zig_sha": "fec0e6e1b7f0d534"
+   "zig_sha": "56ed55d9254c5e9c"
   },
   "effect-dotted-allow": {
    "expected_sha": "e05825d3013e89f3",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "490341656bad109a"
+   "zig_sha": "d6ccfadea88e669d"
   },
   "effect-handler-clause": {
    "markers": [
     "effect handlers not supported"
    ],
    "stage": "markers",
-   "zig_sha": "8446610c3a61f511"
+   "zig_sha": "4647d908ff78efd9"
   },
   "effect-handler-nested-same": {
    "expected_sha": "448c036935f18f7b",
@@ -1113,47 +1104,47 @@
     "effect handlers not supported"
    ],
    "stage": "markers",
-   "zig_sha": "73e7d5b9bd1b193c"
+   "zig_sha": "94b05e64e70b07da"
   },
   "effect-launder-fork": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "17634742f78c34de"
+   "zig_sha": "956ca0a73fecb46a"
   },
   "effect-launder-lazy": {
    "markers": [
     "no zig type for this codex type"
    ],
    "stage": "markers",
-   "zig_sha": "2faf7a04e572a8f7"
+   "zig_sha": "7af860ddc0cb21eb"
   },
   "effect-launder-map": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "11afcf67f87d2088"
+   "zig_sha": "e4a4f32fd6a749a9"
   },
   "effect-launder-record": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "a1b96789aa32c798"
+   "zig_sha": "05159311d94e2291"
   },
   "effect-map-effctx": {
    "expected_sha": "9184bad680f3c7ed",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "b7333f0483f702bc"
+   "zig_sha": "326e2dd276d3cc55"
   },
   "effect-positive": {
    "expected_sha": "09918c8a92731488",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "32344d60f712ba6a"
+   "zig_sha": "1bca8c032e46f39f"
   },
   "effect-row-var-syntax": {
    "expected_sha": "e8183d67a283d6ab",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "97bf799bc74ca218"
+   "zig_sha": "54611f839b414955"
   },
   "effect-smoke": {
    "expected_sha": "faa049bbd9308d30",
@@ -1161,25 +1152,25 @@
     "effect handlers not supported"
    ],
    "stage": "markers",
-   "zig_sha": "4a5e9eb0ac7164c8"
+   "zig_sha": "3c7fab98dc622194"
   },
   "effect-value-poly": {
    "expected_sha": "70b754b0e2632c11",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "f534e7ff30cd1b33"
+   "zig_sha": "138d423e16b9b948"
   },
   "effect-widen-arg": {
    "expected_sha": "0f101dce06db5799",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "a28c53b61401d681"
+   "zig_sha": "faae0ed6f439c2bb"
   },
   "effect-widen-scope": {
    "expected_sha": "0f101dce06db5799",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "7896ef818e9ce53a"
+   "zig_sha": "4fbfa67b6bed2f38"
   },
   "effect-widen-scope-narrow": {
    "expected_sha": "dc818a9eecbf7551",
@@ -1192,7 +1183,7 @@
     "no emitter for process-get-scope"
    ],
    "stage": "markers",
-   "zig_sha": "e08f5f2df8c97f25"
+   "zig_sha": "957c731ce6583c95"
   },
   "engine-animation": {
    "expected_sha": "f30cdd81ad600db8",
@@ -1201,7 +1192,7 @@
     "no emitter for real-to-int"
    ],
    "stage": "markers",
-   "zig_sha": "0894f0755c1d3a6c"
+   "zig_sha": "0065a453a53b688d"
   },
   "engine-culling": {
    "expected_sha": "a07102bdbfe466c7",
@@ -1213,7 +1204,7 @@
     "no emitter for real-to-int"
    ],
    "stage": "markers",
-   "zig_sha": "ff07130b19247c5e"
+   "zig_sha": "368dad95972238ff"
   },
   "engine-mesh-gen": {
    "expected_sha": "6c55635f867d8b12",
@@ -1225,7 +1216,7 @@
     "no emitter for real-to-int"
    ],
    "stage": "markers",
-   "zig_sha": "5dc965dca003710a"
+   "zig_sha": "af0afab59a9afa96"
   },
   "engine-near-clip": {
    "expected_sha": "1d984f470e274a4d",
@@ -1237,7 +1228,7 @@
     "no emitter for real-to-int"
    ],
    "stage": "markers",
-   "zig_sha": "8437143a0afc6d77"
+   "zig_sha": "0d5b26eec3e96ec3"
   },
   "engine-render-heap": {
    "expected_sha": "60a2817968792bd9",
@@ -1249,7 +1240,7 @@
     "no emitter for real-to-int"
    ],
    "stage": "markers",
-   "zig_sha": "0e54f1044e41ab5a"
+   "zig_sha": "5e70bde710432ec1"
   },
   "engine-shading": {
    "expected_sha": "9201f2db2012275d",
@@ -1261,7 +1252,7 @@
     "no emitter for real-to-int"
    ],
    "stage": "markers",
-   "zig_sha": "a92aa9d54dfdcc48"
+   "zig_sha": "a7af614c4ce958e7"
   },
   "engine-shadow": {
    "expected_sha": "e544f85b0a9146da",
@@ -1273,7 +1264,7 @@
     "no emitter for real-to-int"
    ],
    "stage": "markers",
-   "zig_sha": "0d3a3ca23d6ff5e5"
+   "zig_sha": "2c5716a966df2b95"
   },
   "engine-software-render": {
    "expected_sha": "9d62bda009d9ac34",
@@ -1285,7 +1276,7 @@
     "no emitter for real-to-int"
    ],
    "stage": "markers",
-   "zig_sha": "d2c220d1040c92b5"
+   "zig_sha": "c55224b177f60cf1"
   },
   "engine-texture": {
    "expected_sha": "4eb49b7fcf0c0afb",
@@ -1297,13 +1288,13 @@
     "no emitter for real-to-int"
    ],
    "stage": "markers",
-   "zig_sha": "14f641c7c98373b9"
+   "zig_sha": "4b491172d9054e04"
   },
   "enip-encode": {
    "expected_sha": "ef2d127de37b942b",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "14deee4f1dc3b60a"
+   "zig_sha": "a2aa5197e79a9b0a"
   },
   "esp32c6-drivers": {
    "expected_sha": "6b51d431df5d7f14",
@@ -1314,38 +1305,38 @@
     "no emitter for read-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "3801605c98f10410"
+   "zig_sha": "34111868d241d793"
   },
   "eventbus-test": {
    "expected_sha": "6b0ec70f4ec863b8",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "4e1e48e8eed4486b"
+   "zig_sha": "f8b61ae7d1cc422a"
   },
   "exc-deep-frames": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "41355cbb6b9a1322"
+   "zig_sha": "2247f59e7d95ce47"
   },
   "exc-div-zero": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "934aee959c55237b"
+   "zig_sha": "4fae9c212adf192b"
   },
   "exc-gpf": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "99fda3cc045f5f28"
+   "zig_sha": "062613ce7376f1c8"
   },
   "exc-null-read": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "3eff71a28877e0c5"
+   "zig_sha": "665ddfd628b90086"
   },
   "exc-stack-heap": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "9446c48c1439d658"
+   "zig_sha": "b0c01537f82ffeb7"
   },
   "expr-calculator": {
    "expected_sha": "8cba6c913869d77f",
@@ -1353,7 +1344,7 @@
     "no emitter for is-whitespace"
    ],
    "stage": "markers",
-   "zig_sha": "e02ab90443cc721e"
+   "zig_sha": "8e79b50239c558e4"
   },
   "factlog-layout": {
    "expected_sha": "1068ad04323af38c",
@@ -1362,13 +1353,13 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "34ed4e46fa0234b3"
+   "zig_sha": "2624734198cf1f24"
   },
   "factorial": {
    "expected_sha": "3f043aac482c9861",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "9d93afbd14f9b9b2"
+   "zig_sha": "2baa977065e34d0c"
   },
   "fat16-alloc": {
    "expected_sha": "4c20ee6748efa691",
@@ -1381,7 +1372,7 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "f5fd5c92af65dd4c"
+   "zig_sha": "a690f365176914b6"
   },
   "fat16-cluster-guard": {
    "expected_sha": "9ee7b286fa53a138",
@@ -1393,7 +1384,7 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "f719d6d261843fd2"
+   "zig_sha": "2c3bbd59c42ae286"
   },
   "fat16-cycle-guard": {
    "expected_sha": "b011c960c0345ad4",
@@ -1405,7 +1396,7 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "70754327ec0de3e3"
+   "zig_sha": "8548a9f40f109f6d"
   },
   "fat16-dirgrow": {
    "expected_sha": "29577f31351a94c2",
@@ -1419,7 +1410,7 @@
     "no emitter for process-get-scope"
    ],
    "stage": "markers",
-   "zig_sha": "52f8667d433ca36f"
+   "zig_sha": "e564777c4c8646b8"
   },
   "fat16-list": {
    "expected_sha": "aced8a4356a35d78",
@@ -1432,7 +1423,7 @@
     "no emitter for process-get-scope"
    ],
    "stage": "markers",
-   "zig_sha": "495879e81856904a"
+   "zig_sha": "39e9d820cccad758"
   },
   "fat16-mkdir": {
    "expected_sha": "d2765e66cb3150e3",
@@ -1446,7 +1437,7 @@
     "no emitter for process-get-scope"
    ],
    "stage": "markers",
-   "zig_sha": "f9169aeb371ef9c3"
+   "zig_sha": "3612a321df05c18f"
   },
   "fat16-overwrite": {
    "expected_sha": "28f3574b06070254",
@@ -1460,7 +1451,7 @@
     "no emitter for process-get-scope"
    ],
    "stage": "markers",
-   "zig_sha": "f9a16f6eb7af3132"
+   "zig_sha": "2de979aeab1b2651"
   },
   "fat16-source-cr": {
    "expected_sha": "6c311b0ebf109e32",
@@ -1474,7 +1465,7 @@
     "no emitter for process-get-scope"
    ],
    "stage": "markers",
-   "zig_sha": "97f0843b9e36c425"
+   "zig_sha": "763f99de52b89399"
   },
   "fat16-subdir": {
    "expected_sha": "faeb55339de26f8c",
@@ -1488,7 +1479,7 @@
     "no emitter for process-get-scope"
    ],
    "stage": "markers",
-   "zig_sha": "cb133b0ae3108b27"
+   "zig_sha": "0c7bd2d2b1fc1cb3"
   },
   "fat16-write": {
    "expected_sha": "96f6609494b60de3",
@@ -1502,7 +1493,7 @@
     "no emitter for process-get-scope"
    ],
    "stage": "markers",
-   "zig_sha": "2af85245197104ec"
+   "zig_sha": "f21778c10a0e786b"
   },
   "fat32-cluster-guard": {
    "expected_sha": "91b8f3c65ae39e67",
@@ -1514,7 +1505,7 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "133076bf17e59515"
+   "zig_sha": "1d3f4a032ce104eb"
   },
   "fat32-parse": {
    "expected_sha": "3daa2af3a87aacfb",
@@ -1525,7 +1516,7 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "07d736e9eb30bccc"
+   "zig_sha": "36d13cf401a6f899"
   },
   "fe310-drivers": {
    "expected_sha": "6b51d431df5d7f14",
@@ -1535,31 +1526,31 @@
     "no emitter for read-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "f4c5fce1e6d6c714"
+   "zig_sha": "a95bbda05ceeb993"
   },
   "field-cache-shape": {
    "expected_sha": "0af3c7824ab43147",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "eae03bc5637ea4ff"
+   "zig_sha": "720835e2b94d7a41"
   },
   "field-cache-text-lit": {
    "expected_sha": "fb57c8accfc932a8",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "b9cf7f9a3e1f0fb1"
+   "zig_sha": "955ed28ba16a7ae0"
   },
   "field-guard-refine": {
    "expected_sha": "6ef3cd536a21732e",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "59ae446d2f437623"
+   "zig_sha": "bf3bb5364408d805"
   },
   "field-range-proven": {
    "expected_sha": "6b51d431df5d7f14",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "ac38936fd0ad0632"
+   "zig_sha": "1e73549f097342b9"
   },
   "files-parse": {
    "expected_sha": "a3f18bcec5bae36b",
@@ -1570,49 +1561,49 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "42f2c9acf460780b"
+   "zig_sha": "0b9a798aee7a61ab"
   },
   "final-batch-test": {
    "expected_sha": "5145be064140d990",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "7def28d539decc44"
+   "zig_sha": "4b13e4112cf9ba3e"
   },
   "fins-encode": {
    "expected_sha": "4b227777d4dd1fc6",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "a81793eebf36ab57"
+   "zig_sha": "c3f17bc271f5de51"
   },
   "fork-nested": {
    "expected_sha": "44c8031cb036a735",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "4ac84e4e7ab68b28"
+   "zig_sha": "5e40eb160179dfd0"
   },
   "fork-reclaim": {
    "expected_sha": "16c0644556b54291",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "de92cdbb8b98069d"
+   "zig_sha": "961d1871556c9daa"
   },
   "frame-short-buffer": {
    "expected_sha": "7ecec0cb608cdaea",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "923aac79a25566c1"
+   "zig_sha": "02d338a842598078"
   },
   "frameless-leaf-probe": {
    "expected_sha": "68c4258681cd09ce",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "832729fe183560a6"
+   "zig_sha": "23787f0ea232f8ab"
   },
   "fresh-alloc-narrow": {
    "expected_sha": "6bf215a6c3bdf3dc",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "18e26ac25aa98391"
+   "zig_sha": "0fdc8e4ff1183dbf"
   },
   "fs-deny-runtime": {
    "expected_sha": "117a49885b132a42",
@@ -1627,7 +1618,7 @@
     "no emitter for write-file"
    ],
    "stage": "markers",
-   "zig_sha": "c6b8e09b9dba477f"
+   "zig_sha": "eecb9ead2f482aec"
   },
   "fs-handler-install": {
    "expected_sha": "f09afd0cfca98f40",
@@ -1639,7 +1630,7 @@
     "no emitter for read-text"
    ],
    "stage": "markers",
-   "zig_sha": "5ec30b7ced49223a"
+   "zig_sha": "fc7b9232b79848ce"
   },
   "fs-layer": {
    "expected_sha": "b858ae1955a4f3d1",
@@ -1656,7 +1647,7 @@
     "no emitter for write-file"
    ],
    "stage": "markers",
-   "zig_sha": "9540859adfb58d92"
+   "zig_sha": "f1034d2657e7f62b"
   },
   "fs-servicer": {
    "expected_sha": "8c4abb89dbbd22fb",
@@ -1669,7 +1660,7 @@
     "no emitter for write-file"
    ],
    "stage": "markers",
-   "zig_sha": "09906aeb145abf57"
+   "zig_sha": "3cfe737d63df614d"
   },
   "fs-spawn-inherits": {
    "expected_sha": "4a44dc15364204a8",
@@ -1682,69 +1673,45 @@
     "no emitter for process-yield"
    ],
    "stage": "markers",
-   "zig_sha": "e43cea20d189b1a3"
+   "zig_sha": "e773e9fa9ffab9b3"
   },
   "ga-core": {
    "expected_sha": "4f5d317b19900a7d",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "a1999dfa8d39f0c1"
+   "zig_sha": "7fa5aa8d9faf4515"
   },
   "geometry-test": {
    "expected_sha": "83dc8329c00533ca",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "977076a6703c95af"
+   "zig_sha": "3d2bf96c815384aa"
   },
   "goose-encode": {
    "expected_sha": "7902699be42c8a8e",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "2074c7b91cfe0451"
+   "zig_sha": "c26f21e78b86aaa0"
   },
   "gop-composite-clamp": {
    "expected_sha": "9d264b8d60d273af",
-   "markers": [
-    "no emitter for alloc-bytes",
-    "no emitter for peek-32",
-    "no emitter for poke-32",
-    "no emitter for poke-byte"
-   ],
-   "stage": "markers",
-   "zig_sha": "06371b9c03543d1c"
+   "stage": "codexir"
   },
   "gop-composite-clip": {
    "expected_sha": "13c3c43b4bb103d5",
-   "markers": [
-    "no emitter for alloc-bytes",
-    "no emitter for peek-32",
-    "no emitter for poke-32",
-    "no emitter for poke-byte"
-   ],
-   "stage": "markers",
-   "zig_sha": "369533ee41e70a30"
+   "stage": "codexir"
   },
   "gop-composite-kinds": {
    "expected_sha": "3fdaeeaea618f7af",
-   "markers": [
-    "no emitter for alloc-bytes",
-    "no emitter for peek-32",
-    "no emitter for poke-32",
-    "no emitter for poke-byte"
-   ],
-   "stage": "markers",
-   "zig_sha": "945f32513623cf18"
+   "stage": "codexir"
   },
   "gop-composite-stride": {
    "expected_sha": "edbc4e256bd6bae4",
-   "markers": [
-    "no emitter for alloc-bytes",
-    "no emitter for peek-32",
-    "no emitter for poke-32",
-    "no emitter for poke-byte"
-   ],
-   "stage": "markers",
-   "zig_sha": "12148e93a4de5b6b"
+   "stage": "codexir"
+  },
+  "gop-composite-vclip": {
+   "expected_sha": "40fe8da79475d254",
+   "stage": "codexir"
   },
   "gop-padded-stride": {
    "expected_sha": "412a963226ad5f48",
@@ -1754,7 +1721,7 @@
     "no emitter for poke-32"
    ],
    "stage": "markers",
-   "zig_sha": "12eb760588a2ad8b"
+   "zig_sha": "e5398099f5127ad9"
   },
   "gop-scene-backbuffer": {
    "expected_sha": "f4fef3e19ed3c3a7",
@@ -1766,7 +1733,7 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "59a0ac09bb8dcb66"
+   "zig_sha": "94d9aaf795432ef5"
   },
   "gop-scene-viewport": {
    "expected_sha": "f993b787d89eeaf6",
@@ -1778,7 +1745,7 @@
     "no emitter for real-to-int"
    ],
    "stage": "markers",
-   "zig_sha": "1877030b1d991485"
+   "zig_sha": "cffc83b0c047ae15"
   },
   "gop-stride": {
    "expected_sha": "bf269c2deca7a83b",
@@ -1787,7 +1754,7 @@
     "no emitter for poke-32"
    ],
    "stage": "markers",
-   "zig_sha": "6aebd7ae892a1ad2"
+   "zig_sha": "4c06580317e99630"
   },
   "gop-text-field": {
    "expected_sha": "24d27151afcebf00",
@@ -1798,17 +1765,11 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "c2b593ad0d4b62f4"
+   "zig_sha": "b3cafff7abd4c179"
   },
   "gpu-depth-tree": {
    "expected_sha": "a8611a09a27e9093",
-   "markers": [
-    "no emitter for gpu-mem-write",
-    "no emitter for gpu-out",
-    "no emitter for peek-32"
-   ],
-   "stage": "markers",
-   "zig_sha": "713c57ead3646fec"
+   "stage": "codexir"
   },
   "gpu-doorbell": {
    "expected_sha": "0aed6258a3615cc3",
@@ -1820,49 +1781,23 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "0a5a0056b42f4326"
+   "zig_sha": "3ec03561d7c4fc66"
   },
   "gpu-gauge-clamp": {
    "expected_sha": "c0b76a36c037801b",
-   "markers": [
-    "no emitter for gpu-mem-write",
-    "no emitter for gpu-out",
-    "no emitter for peek-32"
-   ],
-   "stage": "markers",
-   "zig_sha": "9ea36a9b17145052"
+   "stage": "codexir"
   },
   "gpu-input-cursor": {
    "expected_sha": "76325298c248519c",
-   "markers": [
-    "no emitter for gpu-mem-write",
-    "no emitter for gpu-out",
-    "no emitter for peek-32"
-   ],
-   "stage": "markers",
-   "zig_sha": "e9c6560585506978"
+   "stage": "codexir"
   },
   "gpu-panel-border": {
    "expected_sha": "aa4ca3054f2003df",
-   "markers": [
-    "no emitter for gpu-mem-write",
-    "no emitter for gpu-out",
-    "no emitter for peek-32"
-   ],
-   "stage": "markers",
-   "zig_sha": "fbaa6e9ed45cdd50"
+   "stage": "codexir"
   },
   "gpu-ptx": {
    "expected_sha": "78330d39c760329f",
-   "markers": [
-    "no emitter for peek-32",
-    "no emitter for poke-32",
-    "no emitter for poke-byte",
-    "no emitter for port-in-32",
-    "no emitter for port-out-32"
-   ],
-   "stage": "markers",
-   "zig_sha": "14e9a1e41473d753"
+   "stage": "codexir"
   },
   "grounds-port": {
    "expected_sha": "d2aaf9e89e052bb3",
@@ -1870,32 +1805,44 @@
     "no emitter for port-out-byte"
    ],
    "stage": "markers",
-   "zig_sha": "33bdfac181ef7837"
+   "zig_sha": "8f22cfb0a96ba08f"
+  },
+  "hal-board-sleep": {
+   "expected_sha": "772884fc647a72e8",
+   "markers": [
+    "no emitter for MkTup2",
+    "no emitter for poke-mmio-32",
+    "no emitter for read-mmio-32"
+   ],
+   "stage": "markers",
+   "zig_sha": "8f1919de3a4248a2"
   },
   "hal-device-declared": {
    "expected_sha": "e9602ae728170eee",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "d7ca4cc24daee96e"
+   "zig_sha": "98d5055e9cacea7a"
   },
   "hal-flash-linear": {
    "expected_sha": "ed53d935cb7c9bdc",
    "markers": [
+    "no emitter for MkTup2",
     "no emitter for poke-mmio",
     "no emitter for poke-mmio-32",
     "no emitter for read-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "192909c1df184d33"
+   "zig_sha": "67d07b7654607dca"
   },
   "hal-gpio-linear": {
    "expected_sha": "d04a5b3f2cef55a1",
    "markers": [
+    "no emitter for MkTup2",
     "no emitter for poke-mmio-32",
     "no emitter for read-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "bfa6d4d00aeabe5d"
+   "zig_sha": "7d6a7f0080567337"
   },
   "hal-i2c-adc-linear": {
    "expected_sha": "d92ef500682c01e4",
@@ -1907,24 +1854,26 @@
     "no emitter for read-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "e07c7e30bbbb8f4c"
+   "zig_sha": "6dbba97c2ea099ae"
   },
   "hal-peripheral-linear": {
    "expected_sha": "2d45c6d4a45dc2a6",
    "markers": [
+    "no emitter for MkTup2",
     "no emitter for poke-mmio",
     "no emitter for poke-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "c56a523affc67d7a"
+   "zig_sha": "18298f5bd953d7ab"
   },
   "hal-spi-linear": {
    "expected_sha": "1bcb789f06254525",
    "markers": [
+    "no emitter for MkTup2",
     "no emitter for poke-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "889f438e0922b47d"
+   "zig_sha": "fe53a9c2eda7ff5d"
   },
   "hal-tuple-linear": {
    "expected_sha": "ee1e22e6899b29ef",
@@ -1936,7 +1885,7 @@
     "no emitter for read-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "d135f4fbd112a1a8"
+   "zig_sha": "5e9ab8ab052ecefc"
   },
   "hamt-test": {
    "expected_sha": "4a45a2155f5c2c11",
@@ -1952,7 +1901,7 @@
     "unresolved type variable T57 of hamt-size"
    ],
    "stage": "markers",
-   "zig_sha": "da1b32cb91b04336"
+   "zig_sha": "319af1ee1456bdbc"
   },
   "handler-dotted-discharge": {
    "expected_sha": "1af0955a4ac540c9",
@@ -1960,7 +1909,7 @@
     "effect handlers not supported"
    ],
    "stage": "markers",
-   "zig_sha": "14a9328ec54a6a41"
+   "zig_sha": "1f6c0c52608cb720"
   },
   "handler-nested-ops": {
    "expected_sha": "92b33786097a12b2",
@@ -1968,7 +1917,7 @@
     "effect handlers not supported"
    ],
    "stage": "markers",
-   "zig_sha": "0d02f4722138d83a"
+   "zig_sha": "c407906438e056f4"
   },
   "handler-smoke": {
    "expected_sha": "b1f2dd0058e7f998",
@@ -1977,13 +1926,13 @@
     "no emitter for get-value"
    ],
    "stage": "markers",
-   "zig_sha": "632d498fc6f1ec35"
+   "zig_sha": "11ed349168337f69"
   },
   "hart-encode": {
    "expected_sha": "e7f6c011776e8db7",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "8f786c497a4a34d0"
+   "zig_sha": "fc380e3cfd1e0ddf"
   },
   "heap-bracket-shape": {
    "expected_sha": "6e1f0e23e73bc542",
@@ -1993,13 +1942,13 @@
     "no emitter for port-out-byte"
    ],
    "stage": "markers",
-   "zig_sha": "fde812de84c21ce1"
+   "zig_sha": "ad19844219462bb0"
   },
   "heap-frame-reclaim": {
    "expected_sha": "bce81a471c76d552",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "11d66cd672bd9c8f"
+   "zig_sha": "e588da617f6b93c2"
   },
   "heap-scrub": {
    "expected_sha": "acd45d2076ad016b",
@@ -2008,12 +1957,10 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "b527be4f40330437"
+   "zig_sha": "8c7005f5193eab91"
   },
   "helm-full-test": {
-   "stage": "clean",
-   "verdict": "no-expected",
-   "zig_sha": "f2498f010acbddce"
+   "stage": "codexir"
   },
   "hid-decode": {
    "expected_sha": "4ad7c0fe58be02e4",
@@ -2021,13 +1968,13 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "3f8df9577424ead8"
+   "zig_sha": "afc66312d0745680"
   },
   "history-test": {
    "expected_sha": "969124248a875dbf",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "e5fa175ac474eed2"
+   "zig_sha": "0aa27b65ac908638"
   },
   "hpet-interrupt": {
    "expected_sha": "8c732de2593659e2",
@@ -2036,13 +1983,15 @@
     "no emitter for read-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "06793b394a7c0bc3"
+   "zig_sha": "b4c2e4f7dfe3c06a"
   },
   "ident-letters": {
    "expected_sha": "3d8d790a514e09e3",
-   "stage": "clean",
-   "verdict": "refused",
-   "zig_sha": "5fb7aa5cfdcd8cbc"
+   "markers": [
+    "no emitter for o"
+   ],
+   "stage": "markers",
+   "zig_sha": "0bdeb5af0a8ef0ea"
   },
   "idm-key-tests": {
    "expected_sha": "4a44dc15364204a8",
@@ -2050,7 +1999,7 @@
     "no emitter for bit-not"
    ],
    "stage": "markers",
-   "zig_sha": "c113cac4edbb3325"
+   "zig_sha": "a4a2309de6b50587"
   },
   "idm-read-line": {
    "expected_sha": "dd59cd7783b812ef",
@@ -2061,13 +2010,13 @@
     "no emitter for uefi-read-key-ex"
    ],
    "stage": "markers",
-   "zig_sha": "a1bb4d72b4fdd748"
+   "zig_sha": "5c8ba6e36bec7de2"
   },
   "idm-salt-iv-distinct": {
    "expected_sha": "7444c7c81bfd6f08",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "cb67345ecc050796"
+   "zig_sha": "2deb55ebe9f68b49"
   },
   "iec104-encode": {
    "expected_sha": "4fc82b26aecb47d2",
@@ -2076,67 +2025,67 @@
     "no emitter for to-real-approx"
    ],
    "stage": "markers",
-   "zig_sha": "7bbc3772514088a6"
+   "zig_sha": "60b16a0465a4ca1d"
   },
   "ieee802154-encode": {
    "expected_sha": "4b227777d4dd1fc6",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "92b63a396e0ea196"
+   "zig_sha": "5a568097f8944f32"
   },
   "if-in-arith": {
    "expected_sha": "d0d56b33f427bc0d",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "08e039d6fe26f90d"
+   "zig_sha": "01e979434cfb7f0d"
   },
   "if-let-join": {
    "expected_sha": "64b14a3d85ada5eb",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "684c9aef351eca2c"
+   "zig_sha": "f3bcb6dfdf41c4c8"
   },
   "image-codec-test": {
    "expected_sha": "7adb8f45e3a89a2b",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "268f1c8fd2d46627"
+   "zig_sha": "e6033439e3b65d94"
   },
   "imap-wire": {
    "expected_sha": "5b02fd70361f2762",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "170f1df6dc851eb6"
+   "zig_sha": "386365b253e2ac0d"
   },
   "implicit-convert": {
    "expected_sha": "2a15613a809b1fe9",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "01c8051a784eea82"
+   "zig_sha": "a4fc7e488e2fefd7"
   },
   "induction-assoc": {
    "expected_sha": "cef617ae70878692",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "23704cda885e41d3"
+   "zig_sha": "77c86e80443243d9"
   },
   "induction-list": {
    "expected_sha": "e06189e12975c2c5",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "33526408df501620"
+   "zig_sha": "553611fb8dda4c2f"
   },
   "induction-param": {
    "expected_sha": "e661095337fd2554",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "b8745f01f613d6d6"
+   "zig_sha": "f85e38ceaddefd74"
   },
   "induction-parse": {
    "expected_sha": "c7d3a3adabe79365",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "310abf0932f85845"
+   "zig_sha": "477b7365baf4ff76"
   },
   "inductive-list": {
    "expected_sha": "2cfb6d7422215e66",
@@ -2146,56 +2095,47 @@
     "unresolved type variable T6 of ilist-length"
    ],
    "stage": "markers",
-   "zig_sha": "8425ba6e9bad0c8e"
+   "zig_sha": "3a01dbf86d6b1108"
   },
   "infra-test": {
    "expected_sha": "6a644f68456472a5",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "6e4c5f5f10a6eca2"
+   "zig_sha": "1b53fc88e164e5b4"
   },
   "inline-cost-based": {
    "expected_sha": "74ff00f487a4b80a",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "5c24ebe4d35b4607"
+   "zig_sha": "a7b2b655fafae4d8"
   },
   "inline-single-caller": {
    "expected_sha": "0b28e26b86a29d36",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "6251a2bff6a16dad"
+   "zig_sha": "25382eebb3e20e48"
   },
   "input-metal": {
    "expected_sha": "9a1bdeecbc3e0d73",
-   "markers": [
-    "no emitter for atomic-exchange",
-    "no emitter for peek-32",
-    "no emitter for poke-32",
-    "no emitter for poke-byte",
-    "no emitter for port-in-16",
-    "no emitter for port-in-byte"
-   ],
-   "stage": "markers",
-   "zig_sha": "12232ac063788c44"
+   "stage": "codexir"
   },
   "int-literal-underscore": {
    "expected_sha": "32db333f897133fa",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "a7cfe861f4bc41ef"
+   "zig_sha": "bd7e8d9e7e2a048b"
   },
   "interval-exhaustive": {
    "expected_sha": "ff4cdd3beb242237",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "d359f16dc987aa11"
+   "zig_sha": "38d60801f77cd29f"
   },
   "ip-checksum-odd": {
    "expected_sha": "44da909b14031dfa",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "557ff08c08510519"
+   "zig_sha": "ebe3093c4018761a"
   },
   "ir-check-clean": {
    "expected_sha": "7e087ed7fe035483",
@@ -2203,25 +2143,25 @@
     "no zig type for this codex type"
    ],
    "stage": "markers",
-   "zig_sha": "d0444a39bef26ce7"
+   "zig_sha": "064a648feb3d2657"
   },
   "iterate-test": {
    "expected_sha": "cdb66204985b62df",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "f12e55f38d6bd966"
+   "zig_sha": "21f5375465378500"
   },
   "iterate-zip-test": {
    "expected_sha": "88d0e740f8cb32fa",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "d45ec782d3b81f4b"
+   "zig_sha": "bf9be79c2b04fd5d"
   },
   "j1939-encode": {
    "expected_sha": "ef2d127de37b942b",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "e79509a477cda2d7"
+   "zig_sha": "0c5e08ac188ba0ff"
   },
   "keyboard-layout-test": {
    "expected_sha": "dd1fa9d7d7d36dd0",
@@ -2230,7 +2170,7 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "1450f93f4782e4f6"
+   "zig_sha": "667c0238a8798422"
   },
   "keys-collision": {
    "expected_sha": "84216d53d701faa1",
@@ -2241,7 +2181,7 @@
     "no emitter for uefi-read-key-ex"
    ],
    "stage": "markers",
-   "zig_sha": "caabacbd37a7a66f"
+   "zig_sha": "7a6d700249c477a5"
   },
   "keys-mods": {
    "expected_sha": "b5171b4a5998d2e7",
@@ -2252,7 +2192,7 @@
     "no emitter for uefi-read-key-ex"
    ],
    "stage": "markers",
-   "zig_sha": "58d0aa6655a45ada"
+   "zig_sha": "90f148736b729816"
   },
   "keys-numpad": {
    "expected_sha": "f2c1a892abd92aad",
@@ -2263,7 +2203,7 @@
     "no emitter for uefi-read-key-ex"
    ],
    "stage": "markers",
-   "zig_sha": "e016db65c2185236"
+   "zig_sha": "3ecf71cffc94a0a8"
   },
   "keys-shift": {
    "expected_sha": "a55fe51da87469a1",
@@ -2274,7 +2214,7 @@
     "no emitter for uefi-read-key-ex"
    ],
    "stage": "markers",
-   "zig_sha": "b3a5b4c54d37c27e"
+   "zig_sha": "a4201de8b4db340f"
   },
   "keys-sidecar": {
    "expected_sha": "8023d4660f7ebe9a",
@@ -2285,24 +2225,22 @@
     "no emitter for uefi-read-key-ex"
    ],
    "stage": "markers",
-   "zig_sha": "94f523ffa798f499"
+   "zig_sha": "48e8b07a50d6e580"
   },
   "kleene-tribool": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "37c26304b35cb7e5"
+   "zig_sha": "5f015a9332edbe87"
   },
   "klondike-test": {
    "expected_sha": "b51cc48705b31fee",
-   "stage": "clean",
-   "verdict": "refused",
-   "zig_sha": "423f69743d741aad"
+   "stage": "codexir"
   },
   "knx-encode": {
    "expected_sha": "4b227777d4dd1fc6",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "9237679807bdd754"
+   "zig_sha": "33c37ad4b7b16d90"
   },
   "kvstore-test": {
    "expected_sha": "af7894398650f039",
@@ -2316,7 +2254,7 @@
     "unresolved type variable T55 of collision-remove"
    ],
    "stage": "markers",
-   "zig_sha": "ebc985dfbacceca6"
+   "zig_sha": "a0858355c20c99f6"
   },
   "lang-smoke": {
    "expected_sha": "f32d63e8a0f8cd9a",
@@ -2326,7 +2264,7 @@
     "unresolved type variable T54 of swap-tup"
    ],
    "stage": "markers",
-   "zig_sha": "407a00ea3e3ab15c"
+   "zig_sha": "9f0e6deac71ecd75"
   },
   "lapic-regs": {
    "expected_sha": "4b227777d4dd1fc6",
@@ -2335,7 +2273,7 @@
     "no emitter for read-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "559ead14099556e3"
+   "zig_sha": "0fc0a5c99b5c1a3a"
   },
   "lazy-smoke": {
    "expected_sha": "9dd471dadb59cdf1",
@@ -2343,54 +2281,54 @@
     "no zig type for this codex type"
    ],
    "stage": "markers",
-   "zig_sha": "6795796d8eae86b4"
+   "zig_sha": "ed290e544b126ad0"
   },
   "leaf-let-if": {
    "expected_sha": "888a0137b603f470",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "6e3f01d1e5068a1b"
+   "zig_sha": "827add73bdd20e18"
   },
   "leaf-mispredict": {
    "expected_sha": "ff1ecc3dc20527bb",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "b8ab4c26c34fb98e"
+   "zig_sha": "5a7b839b08ce5921"
   },
   "lease-handoff": {
    "expected_sha": "fcbbe030f6eaae9e",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "50fcc4c811c22410"
+   "zig_sha": "293d6ca5b85b599c"
   },
   "let-dest-scope": {
    "expected_sha": "df011bf8a92e695a",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "cbf40750176e1bc5"
+   "zig_sha": "61539c790504bd0c"
   },
   "let-effectful-bug": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "336be68aec4ee0fb"
+   "zig_sha": "9cf552858d39d7ac"
   },
   "let-else-scope": {
    "expected_sha": "c0c554c69509b8fe",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "ca8c20f7f9718f7a"
+   "zig_sha": "9a1a57a7e51aef26"
   },
   "let-shadow-scope": {
    "expected_sha": "19581e27de7ced00",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "1a0385f022a62069"
+   "zig_sha": "cef35a76069d03a5"
   },
   "linear-branch": {
    "expected_sha": "0bb58c9d1e38197e",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "c967cd084852ec25"
+   "zig_sha": "c2f671bc3064949f"
   },
   "linear-capture-once": {
    "expected_sha": "b46d1beeefe9cb0b",
@@ -2398,43 +2336,43 @@
     "no zig type for this codex type"
    ],
    "stage": "markers",
-   "zig_sha": "20751b138936ee7e"
+   "zig_sha": "3580bf12a4741f17"
   },
   "linear-mint-container": {
    "expected_sha": "6b86b273ff34fce1",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "c1f014cfbb58fe2c"
+   "zig_sha": "8cc988ba88f3224b"
   },
   "linear-poly-freeze": {
    "expected_sha": "4713498bfa551ad2",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "2038cca2c4f1ce4b"
+   "zig_sha": "2f7a84b8266a9663"
   },
   "linear-smoke": {
    "expected_sha": "648f4f0c87c7cb3c",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "b00f59e3d03c73fa"
+   "zig_sha": "243c1b733ca254c1"
   },
   "lir-binop-cross": {
    "expected_sha": "760cb4f96c13005a",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "4c90840c81818ecf"
+   "zig_sha": "5b3372785daed39c"
   },
   "lir-branch-cross": {
    "expected_sha": "f44327f25b4709b9",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "6eab063344531f41"
+   "zig_sha": "69b08a27e10d62be"
   },
   "lir-call-cross": {
    "expected_sha": "bd18377b33570b84",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "8a4e5c88bd5f560d"
+   "zig_sha": "b37169efd84c6da1"
   },
   "lir-check": {
    "expected_sha": "6b6a00170e2e71bd",
@@ -2442,43 +2380,43 @@
     "no emitter for x"
    ],
    "stage": "markers",
-   "zig_sha": "a00aebf8b5438274"
+   "zig_sha": "9fb6a0b1730bcf25"
   },
   "lir-frame-cross": {
    "expected_sha": "5576c8d13c09ffff",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "8184fee0d3ea3d42"
+   "zig_sha": "b488b0640c92a417"
   },
   "lir-join-cross": {
    "expected_sha": "eb9bf7b90b8e5c12",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "74440884d4725d7e"
+   "zig_sha": "86e3057817ef5bd8"
   },
   "lir-load-cross": {
    "expected_sha": "0234e7ece3de6d51",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "33293912ea2c8f97"
+   "zig_sha": "ffcec5d9810bdc31"
   },
   "lir-nullary-cross": {
    "expected_sha": "59f94d0b2c42bf03",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "a71bb2b44333d615"
+   "zig_sha": "fdffdd352199e917"
   },
   "lir-selector-smoke": {
    "expected_sha": "9eb57cd131c173d4",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "aecf6ad7e8118455"
+   "zig_sha": "55aafbcc2dd31733"
   },
   "lir-test-cross": {
    "expected_sha": "200cf86ff3243e8c",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "5e987c5b1d8ad55a"
+   "zig_sha": "a25dfed4e3da3f25"
   },
   "list-comprehension-copy": {
    "expected_sha": "c0aff3f07b98c067",
@@ -2486,40 +2424,40 @@
     "no emitter for map-list"
    ],
    "stage": "markers",
-   "zig_sha": "a7fb295ec202ce72"
+   "zig_sha": "4ba8bf7720d8558c"
   },
   "list-cons-tail": {
    "expected_sha": "c4d883b5d99606f3",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "0440b5d391052618"
+   "zig_sha": "c1329c0d58c9ce4a"
   },
   "list-induction": {
    "expected_sha": "42d26f9d88b7d6a2",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "b2a29dfb984ccb38"
+   "zig_sha": "a5bc5be48cbea8ff"
   },
   "list-literal-o1": {
    "expected_sha": "b024a0e972bf3bd1",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "9ab2ce5b1690a7c9"
+   "zig_sha": "c6a4ddd8e354b86b"
   },
   "list-oob-negative": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "3b77797a0e8a2cf4"
+   "zig_sha": "8d31bf8cfea6447e"
   },
   "list-oob-read": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "4556eefa7cfe73c4"
+   "zig_sha": "fa720a2f1516401b"
   },
   "list-oob-write": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "04d73ae93b630f6a"
+   "zig_sha": "fb4ffa21d4da2e29"
   },
   "list-pattern": {
    "expected_sha": "70c9d09af1d8637f",
@@ -2529,13 +2467,13 @@
     "no emitter for __list-tail"
    ],
    "stage": "markers",
-   "zig_sha": "47a8fa9377549014"
+   "zig_sha": "70bc0a6fafd66549"
   },
   "list-tail-empty": {
    "expected_sha": "6052f2b53bed9c8f",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "28f98bd8f0908bb5"
+   "zig_sha": "bfccc5e66040b3be"
   },
   "list-test": {
    "expected_sha": "6b9259f3341cc67c",
@@ -2549,48 +2487,41 @@
     "unresolved type variable T9 of cl-length"
    ],
    "stage": "markers",
-   "zig_sha": "81776bbca01ec5f0"
+   "zig_sha": "81c57dc3dc74de5d"
   },
   "list-view-probe": {
    "expected_sha": "7b3e166325e7b218",
-   "markers": [
-    "no emitter for __list-head",
-    "no emitter for __list-len",
-    "no emitter for __list-tail",
-    "no emitter for unicode-bytes-to-text"
-   ],
-   "stage": "markers",
-   "zig_sha": "62ab3141c64b0354"
+   "stage": "codexir"
   },
   "literal-subpattern": {
    "expected_sha": "fbec06ec28d6984f",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "11e618876d5a8e16"
+   "zig_sha": "f0fd00945228d7b6"
   },
   "local-narrow-proven": {
    "expected_sha": "4e07408562bedb8b",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "b238a9664318b755"
+   "zig_sha": "867e40d8cdbcc4df"
   },
   "location-sensors-stub": {
    "expected_sha": "922cd0d5b83a1c9a",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "63c03ef9e1f30167"
+   "zig_sha": "2ee64404e0119362"
   },
   "lorawan-encode": {
    "expected_sha": "3fdba35f04dc8c46",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "ed8a9f655c682f16"
+   "zig_sha": "f72b63de0f354f9f"
   },
   "lwm2m-encode": {
    "expected_sha": "6b51d431df5d7f14",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "854529066051651b"
+   "zig_sha": "d5455391b070452c"
   },
   "manifest-pin": {
    "expected_sha": "38dba7f8ac218888",
@@ -2598,12 +2529,12 @@
     "no emitter for block-read-sector"
    ],
    "stage": "markers",
-   "zig_sha": "4835beb45476e4ac"
+   "zig_sha": "07b19e18d3c411c3"
   },
   "manifest-subject": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "ed4f93c19851ecc2"
+   "zig_sha": "bb62a8a93afacd18"
   },
   "mask-ops": {
    "expected_sha": "303a572693c0168f",
@@ -2615,13 +2546,13 @@
     "no emitter for vec-splat"
    ],
    "stage": "markers",
-   "zig_sha": "eb19b8cc8ababe1e"
+   "zig_sha": "fc47e2e8b840f20a"
   },
   "match-arms-per-line": {
    "expected_sha": "787ab161cf05f8ad",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "27aadb2081f6a671"
+   "zig_sha": "037e57fe9f98c272"
   },
   "matrix3-test": {
    "expected_sha": "cbad71299637dde6",
@@ -2630,108 +2561,108 @@
     "no emitter for real-to-int"
    ],
    "stage": "markers",
-   "zig_sha": "2aa244a97d8cfefe"
+   "zig_sha": "cdf4f75b29c8dff4"
   },
   "mbus-encode": {
    "expected_sha": "4b227777d4dd1fc6",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "3b30ed8cf5a3200b"
+   "zig_sha": "eaf7b5e1180e69c1"
   },
   "media-codec-test": {
    "expected_sha": "4727bb076f6a8573",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "a859caac54fcee56"
+   "zig_sha": "a9e0ebde7fe8f5f7"
   },
   "melsec-encode": {
    "expected_sha": "4b227777d4dd1fc6",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "bcaf422a773b424e"
+   "zig_sha": "87bed72669b624d5"
   },
   "mini-bootstrap": {
    "expected_sha": "ec2c15def8251759",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "09a612d5b50b97ff"
+   "zig_sha": "19b14160331fda33"
   },
   "mix-bits": {
    "expected_sha": "d2ca49a1981324ab",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "eb9b2a0aaf81f506"
+   "zig_sha": "db8cecc93a5244cc"
   },
   "mod-bound-return": {
    "expected_sha": "fa1107122d8448af",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "ae51481301e0be30"
+   "zig_sha": "0c52744db2e0b0d4"
   },
   "modbus-encode": {
    "expected_sha": "4523540f1504cd17",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "c119da0c5c5deee6"
+   "zig_sha": "5701399385f219a3"
   },
   "modprobe": {
    "expected_sha": "572d165ad84641a2",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "c79c41cda0734eb4"
+   "zig_sha": "b924104ff9ebf272"
   },
   "mouse-decode": {
    "expected_sha": "c08efdf458956ee8",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "b9a1dd7292c77915"
+   "zig_sha": "3cb8a0f2606ed641"
   },
   "mqtt-encode": {
    "expected_sha": "4fc82b26aecb47d2",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "3628d32e185de723"
+   "zig_sha": "4b825b669b8322a2"
   },
   "mqttsn-encode": {
    "expected_sha": "e7f6c011776e8db7",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "c5de1066f1e9986f"
+   "zig_sha": "f6f7401b3483c55c"
   },
   "mut-borrow-transitive": {
    "expected_sha": "c2356069e9d1e79c",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "8016a98cd537c06e"
+   "zig_sha": "96a66a1d2fd101f9"
   },
   "mutable-alias": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "13c62b28f4b0903c"
+   "zig_sha": "b177be4e2210857c"
   },
   "mutable-smoke": {
    "expected_sha": "d12f0a4827fd416e",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "c9a46a3770371da3"
+   "zig_sha": "9cff8b05635b62f0"
   },
   "neg-int-parse": {
    "expected_sha": "37aa1ccf80e48183",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "23008c291025218d"
+   "zig_sha": "cde91f4ad47c201b"
   },
   "neg-real-repro": {
    "expected_sha": "b63d2b235e273730",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "a8799bd68a99131d"
+   "zig_sha": "6577f616f0c60c42"
   },
   "negation-abutment": {
    "expected_sha": "f6d3689406496cfe",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "a057458d8f6dec53"
+   "zig_sha": "1737061074b25b1d"
   },
   "nested-spawn": {
    "expected_sha": "2cd73463f8335100",
@@ -2740,7 +2671,7 @@
     "no emitter for process-wait"
    ],
    "stage": "markers",
-   "zig_sha": "fa22e2032b0f63dd"
+   "zig_sha": "c729756df487520e"
   },
   "net-driver-seam-bound": {
    "expected_sha": "9574d4ed91f0cb5c",
@@ -2753,7 +2684,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "0d11a919ab3f383b"
+   "zig_sha": "041ce5a68ae16f83"
   },
   "net-driver-seam-no-av": {
    "expected_sha": "1af1490659f3c902",
@@ -2766,7 +2697,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "0d11a919ab3f383b"
+   "zig_sha": "041ce5a68ae16f83"
   },
   "net-io-clock": {
    "expected_sha": "1a1a955fb085f95d",
@@ -2778,7 +2709,7 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "ccf66abd8e8b944c"
+   "zig_sha": "3df5a505ff701f55"
   },
   "net-poll-calibrated": {
    "expected_sha": "6c20c26af6b9b8b6",
@@ -2791,7 +2722,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "b501f97a00b336f0"
+   "zig_sha": "dce7cb1dc2808b25"
   },
   "network-effect": {
    "expected_sha": "68bd4eb76b1e06cb",
@@ -2804,7 +2735,7 @@
     "no emitter for process-get-network-scope"
    ],
    "stage": "markers",
-   "zig_sha": "e139c65ad28fbc84"
+   "zig_sha": "2cfed55ee5ceb726"
   },
   "network-scope-deny": {
    "expected_sha": "4a44dc15364204a8",
@@ -2812,7 +2743,7 @@
     "no emitter for process-get-network-scope"
    ],
    "stage": "markers",
-   "zig_sha": "a3f52a0bf38813be"
+   "zig_sha": "8bd68a3e6fe8d3da"
   },
   "network-scope-open": {
    "expected_sha": "4fc82b26aecb47d2",
@@ -2820,7 +2751,7 @@
     "no emitter for process-get-network-scope"
    ],
    "stage": "markers",
-   "zig_sha": "98d5e9e55817250a"
+   "zig_sha": "e9a6769c11570b58"
   },
   "network-scope-spawn": {
    "expected_sha": "4a44dc15364204a8",
@@ -2830,45 +2761,45 @@
     "no emitter for process-yield"
    ],
    "stage": "markers",
-   "zig_sha": "3381b695f5e55a13"
+   "zig_sha": "0adb90db26d82def"
   },
   "noalias-linear-param": {
    "expected_sha": "7902699be42c8a8e",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "27be8627a9cd022d"
+   "zig_sha": "767805ef67726755"
   },
   "noise-test": {
    "expected_sha": "9490139822f9b8d9",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "853dee5076bf960f"
+   "zig_sha": "60d92b8105b59a71"
   },
   "normalize-eq": {
    "expected_sha": "2d78f79b4d451df1",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "a16e5e39f5793802"
+   "zig_sha": "08b25121bddff005"
   },
   "nrf52840-drivers": {
-   "expected_sha": "670671cd97404156",
+   "expected_sha": "59e19706d51d39f6",
    "markers": [
     "no emitter for MkTup2",
     "no emitter for poke-mmio-32",
     "no emitter for read-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "f8908f8b6a893e1e"
+   "zig_sha": "45ba37655457a7a9"
   },
   "nrf9160-drivers": {
-   "expected_sha": "6f4b6612125fb3a0",
+   "expected_sha": "535fa30d7e25dd8a",
    "markers": [
     "no emitter for MkTup2",
     "no emitter for poke-mmio-32",
     "no emitter for read-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "cfbd30f51d4b34f2"
+   "zig_sha": "504b6053b0f5363d"
   },
   "nvme-encode": {
    "expected_sha": "043b3610c49ec230",
@@ -2877,37 +2808,35 @@
     "no emitter for poke-32"
    ],
    "stage": "markers",
-   "zig_sha": "9770bf98b5693125"
+   "zig_sha": "722c33ba8b56c922"
   },
   "oauth-island": {
    "expected_sha": "3036437cdd573890",
-   "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "7c0723e65450b457"
+   "stage": "codexir"
   },
   "occurrence-check": {
    "expected_sha": "2689367b205c16ce",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "89912733999bad5b"
+   "zig_sha": "74bd981ab6481792"
   },
   "opcua-encode": {
    "expected_sha": "f5ca38f748a1d6ea",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "f3b964bdafbc55f9"
+   "zig_sha": "a9dbe3c7ec2707a8"
   },
   "osc-noise": {
    "expected_sha": "22f081032f0c9990",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "369a3a0a386b5861"
+   "zig_sha": "f2a37dbaee49fe9b"
   },
   "ota-gate-block": {
    "expected_sha": "2c624232cdd22177",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "d308998f23a9eb9e"
+   "zig_sha": "fa277e763f7944e8"
   },
   "ota-gate-real": {
    "expected_sha": "9cea224ca9a871d0",
@@ -2915,54 +2844,54 @@
     "no zig type for this codex type"
    ],
    "stage": "markers",
-   "zig_sha": "49733c4bcac3aa34"
+   "zig_sha": "a0e50fdcc91a2e9f"
   },
   "ota-state-machine": {
    "expected_sha": "4fc82b26aecb47d2",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "96aea49fd9e70494"
+   "zig_sha": "85c3b497849c47e3"
   },
   "ota-update": {
    "expected_sha": "992d771e36c3f901",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "8ded88caed3eac98"
+   "zig_sha": "f67c78779a4c5a46"
   },
   "par-map": {
    "expected_sha": "624b60c58c9d8bfb",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "ad2cfc26083a6d77"
+   "zig_sha": "7736319addb06430"
   },
   "par-nested": {
    "expected_sha": "81b8a03f97e8787c",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "6281fec5ef5253e8"
+   "zig_sha": "427b7240953895ec"
   },
   "parse-test": {
    "expected_sha": "8fb05f56f47b8af1",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "5931255699c601cb"
+   "zig_sha": "369943f95671d02b"
   },
   "parser-resync": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "ba0fe53263a7b1b5"
+   "zig_sha": "e0d43e919c419827"
   },
   "particle-spread": {
    "expected_sha": "b02adaeb1ce70d69",
    "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "cfe923b9de6b9d07"
+   "verdict": "crashed",
+   "zig_sha": "1798ca47d9432267"
   },
   "path-real": {
    "expected_sha": "6cb2b8ce36dab340",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "01e581c362fd6841"
+   "zig_sha": "f5924dc8aa5d07eb"
   },
   "pci-bridge-scan": {
    "expected_sha": "316dcb6e48ed368f",
@@ -2971,7 +2900,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "42725437d49a2977"
+   "zig_sha": "e32780953555d040"
   },
   "pci-bus-master": {
    "expected_sha": "460271ce2287f56a",
@@ -2980,7 +2909,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "26572637bd1a5140"
+   "zig_sha": "a5fdedb39a749dc8"
   },
   "peek32-sign": {
    "expected_sha": "626fe760931c353b",
@@ -2990,7 +2919,7 @@
     "no emitter for poke-32"
    ],
    "stage": "markers",
-   "zig_sha": "7f92fc77a73de9a2"
+   "zig_sha": "fdefe34ca76cfb0e"
   },
   "pi4-drivers": {
    "expected_sha": "6b51d431df5d7f14",
@@ -3000,13 +2929,13 @@
     "no emitter for read-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "48c3600d5e926909"
+   "zig_sha": "9c36e758ef3e7d05"
   },
   "pipe-unique-test": {
    "expected_sha": "c8ef12d37bd4fbd5",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "97bca94856d5f41f"
+   "zig_sha": "24c844959e7c0eb4"
   },
   "pit-latch": {
    "expected_sha": "bd6862354da4caf5",
@@ -3017,13 +2946,13 @@
     "no emitter for read-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "54cd4c36b91ffb10"
+   "zig_sha": "b7bc58fd15f5d67b"
   },
   "plug-oracle-arith": {
-   "expected_sha": "6f7533553433cabe",
+   "expected_sha": "f4244e53c7f2807a",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "40f7ddf7e16c4f7d"
+   "zig_sha": "aed53c08b9bf49f8"
   },
   "poke16-width": {
    "expected_sha": "80ca932066a109e8",
@@ -3035,13 +2964,11 @@
     "no emitter for poke-32"
    ],
    "stage": "markers",
-   "zig_sha": "0ea49344aeca677d"
+   "zig_sha": "23620fe5b26715e2"
   },
   "poly1305": {
    "expected_sha": "49c8fd382eaaa2c0",
-   "stage": "clean",
-   "verdict": "refused",
-   "zig_sha": "7171c7948ebe3789"
+   "stage": "codexir"
   },
   "port-in-32-width": {
    "expected_sha": "f46aa35d6da20a9e",
@@ -3050,7 +2977,7 @@
     "no emitter for port-out-32"
    ],
    "stage": "markers",
-   "zig_sha": "3bbd3e4719a35e24"
+   "zig_sha": "69d7de1c4fe0477e"
   },
   "proc-state-running": {
    "expected_sha": "1ec10cb04ed5330f",
@@ -3059,7 +2986,7 @@
     "no emitter for process-wait"
    ],
    "stage": "markers",
-   "zig_sha": "df19908a35597828"
+   "zig_sha": "0e8610408ab1854a"
   },
   "process-exit-status": {
    "expected_sha": "427ff80a55b60bfc",
@@ -3069,55 +2996,53 @@
     "no emitter for process-wait"
    ],
    "stage": "markers",
-   "zig_sha": "b9c32b435b55fc3b"
+   "zig_sha": "7c91fcee752f5ea8"
   },
   "proof-assume-axiom": {
    "expected_sha": "e5e5e9218d2477a6",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "80ff8c3c8088dcfc"
+   "zig_sha": "820dcdddbad6545e"
   },
   "proof-smoke": {
    "expected_sha": "7db60b2e3e7052ee",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "5d94b716411b7659"
+   "zig_sha": "04748135bad23a5f"
   },
   "prop-arith": {
    "expected_sha": "3fcbea96a29d9b68",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "9623ac6093af9a3d"
+   "zig_sha": "13b85406c3fe68b6"
   },
   "prose-anchor": {
    "expected_sha": "51c76fefaf91da53",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "4e18409f18586f18"
+   "zig_sha": "e8b2d2bc121db073"
   },
   "prose-consistency": {
    "expected_sha": "22b183bb490aad0d",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "d7127e6d9adb5e45"
+   "zig_sha": "f304c7104c0dba3e"
   },
   "prose-smoke": {
    "expected_sha": "8a59e77aafa07fd5",
-   "stage": "clean",
-   "verdict": "refused",
-   "zig_sha": "a716e046af1aa056"
+   "stage": "codexir"
   },
   "punctual-fastmath": {
    "expected_sha": "31d074161986c4c8",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "c68cfd993cecf38a"
+   "zig_sha": "bed1330f9f90b2f4"
   },
   "punctual-iot": {
    "expected_sha": "197c68291a81ffbd",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "888aa4c6f53ac106"
+   "zig_sha": "8c7b42f286ee5400"
   },
   "punctual-quire": {
    "expected_sha": "babb176765d12e3f",
@@ -3125,21 +3050,22 @@
     "no emitter for bit-not"
    ],
    "stage": "markers",
-   "zig_sha": "37b8ec02a9bad854"
+   "zig_sha": "8bd47e31f7d9a026"
   },
   "punctual-smoke": {
    "expected_sha": "7bce32704569acca",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "b8f7e17fa6ee5a9c"
+   "zig_sha": "e67433965f419f49"
   },
   "qemu-virt-board": {
    "expected_sha": "2c624232cdd22177",
    "markers": [
+    "no emitter for MkTup2",
     "no emitter for poke-mmio"
    ],
    "stage": "markers",
-   "zig_sha": "d4a683eac423400f"
+   "zig_sha": "cebb39f2e047c0c2"
   },
   "qr-encode": {
    "expected_sha": "0b0525151971455a",
@@ -3148,51 +3074,49 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "9c4bcd3890a1ec48"
+   "zig_sha": "e79cad355f4b73f5"
   },
   "queue-test": {
    "expected_sha": "305723b569f67a94",
-   "stage": "clean",
-   "verdict": "refused",
-   "zig_sha": "fae256f1ff02248e"
+   "stage": "codexir"
   },
   "quote-from-peer": {
    "markers": [
     "no emitter for sort-ascending"
    ],
    "stage": "markers",
-   "zig_sha": "6cb035f3bebe39f2"
+   "zig_sha": "3e70bb45f704ef29"
   },
   "quote-from-store": {
    "markers": [
     "no emitter for sort-ascending"
    ],
    "stage": "markers",
-   "zig_sha": "6cb035f3bebe39f2"
+   "zig_sha": "3e70bb45f704ef29"
   },
   "quotes-gate": {
    "expected_sha": "8d18bc3bfb0b7cd0",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "ac56a00ab931438f"
+   "zig_sha": "1d7ecc8b8f82827d"
   },
   "quotes-parse": {
    "expected_sha": "fcb513a32c310530",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "d18577572c10406d"
+   "zig_sha": "1905144946e4f3ca"
   },
   "range-let-carry": {
    "expected_sha": "97aa5cea6ca2bc05",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "f0736c86752cd324"
+   "zig_sha": "fffb0f3b909012cd"
   },
   "range-refine-if": {
    "expected_sha": "811786ad1ae74adf",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "4844f0365a803ed7"
+   "zig_sha": "c88c53a4e5059bad"
   },
   "rasterizer-test": {
    "expected_sha": "61c3d2cfdb5ae96e",
@@ -3200,7 +3124,7 @@
     "no emitter for real-to-int"
    ],
    "stage": "markers",
-   "zig_sha": "c3d1d85973b8e672"
+   "zig_sha": "c09d96c15a390821"
   },
   "raytracer-test": {
    "expected_sha": "4c262bca5ff134fb",
@@ -3209,7 +3133,7 @@
     "no emitter for real-to-int"
    ],
    "stage": "markers",
-   "zig_sha": "15902ff51e032848"
+   "zig_sha": "6783e1820506f541"
   },
   "real-cert": {
    "expected_sha": "20124104b6488832",
@@ -3217,48 +3141,48 @@
     "no emitter for bit-not"
    ],
    "stage": "markers",
-   "zig_sha": "f3cfdcfabe3e79a5"
+   "zig_sha": "60d01906981d11d3"
   },
   "record-smoke": {
    "expected_sha": "ae4ad6355ac45725",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "430a4a0ddca98f87"
+   "zig_sha": "0abfbffe97191abe"
   },
   "reservoir-uniform": {
    "expected_sha": "5ccfe1c3220427a8",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "8e33e1002dbeb94d"
+   "zig_sha": "5b3886ad71018db5"
   },
   "return-narrow-proven": {
    "expected_sha": "e4d87964f01da032",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "5a0b0cde48bc71bd"
+   "zig_sha": "ced8f10d07ba0048"
   },
   "reverse-reverse": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "9cb38c446037cdec"
+   "zig_sha": "e6b45f0ec1d9bafe"
   },
   "revised-narrow": {
    "expected_sha": "c15961a21a6a2adf",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "77e60d273d1f4dc9"
+   "zig_sha": "84e8a0cd1f622989"
   },
   "riscv-encoder": {
    "expected_sha": "2c2c993b00357d6e",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "813e6cda3237ad86"
+   "zig_sha": "375277417a588db8"
   },
   "riscv32c-encoder": {
    "expected_sha": "134db31773ba500c",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "c472cdf1f7c1b200"
+   "zig_sha": "c52ad59519ea7315"
   },
   "rp2040-drivers": {
    "expected_sha": "eb1e33e8a81b697b",
@@ -3268,49 +3192,49 @@
     "no emitter for read-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "88f48208c2c251e7"
+   "zig_sha": "c1caff918f0f191b"
   },
   "rsa-pss": {
    "expected_sha": "98fc758fae3542eb",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "01af04d1b96cb2bd"
+   "zig_sha": "d5b9b681a79adbf0"
   },
   "rsa-verify": {
    "expected_sha": "1e84747a9598428a",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "78052c1d1f47c540"
+   "zig_sha": "30d8a3f9f9f23cdb"
   },
   "rv-arg-order": {
    "expected_sha": "aae6f32007235000",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "adb55dea85e91a1a"
+   "zig_sha": "0ed5f52427eeae99"
   },
   "rv-frameless-imm": {
    "expected_sha": "20932e45d8fa6cb3",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "46a73c1386b71ff8"
+   "zig_sha": "10dbadc16b4ef845"
   },
   "rv-param-bind": {
    "expected_sha": "e02f1016db830ec4",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "5f259ea4799c757a"
+   "zig_sha": "3f177dfc9218ae5c"
   },
   "rv-param-order": {
    "expected_sha": "235e081a4e2fb87e",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "9d7c4aa03e51c076"
+   "zig_sha": "f1c7c691378e178e"
   },
   "s7comm-encode": {
    "expected_sha": "2c624232cdd22177",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "d98a4254f8a07d5d"
+   "zig_sha": "2d8c57ca99cf5bcb"
   },
   "scope-allow": {
    "expected_sha": "3cb9ad8a38fd7604",
@@ -3323,13 +3247,13 @@
     "no emitter for process-get-scope"
    ],
    "stage": "markers",
-   "zig_sha": "1565cda3730e568e"
+   "zig_sha": "70f1b75540223a9a"
   },
   "scope-console": {
    "expected_sha": "41739a88ba7f4054",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "c4b55c5e47e7b1a5"
+   "zig_sha": "a1e3050ceefc478b"
   },
   "scope-handler-clause": {
    "expected_sha": "e74541dde65f967c",
@@ -3337,13 +3261,13 @@
     "effect handlers not supported"
    ],
    "stage": "markers",
-   "zig_sha": "e31f3f6de3d7928b"
+   "zig_sha": "18400937db5fd02c"
   },
   "scope-let-arm-global": {
    "expected_sha": "eab68139c5bc06ed",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "c67f8c10ff7a9143"
+   "zig_sha": "dfe1524cacf06a5d"
   },
   "scope-runtime-deny": {
    "expected_sha": "936a49985af00892",
@@ -3357,7 +3281,7 @@
     "no emitter for process-get-scope"
    ],
    "stage": "markers",
-   "zig_sha": "47686a4acacf3e5d"
+   "zig_sha": "f246582e53cf219e"
   },
   "scope-runtime-open": {
    "expected_sha": "30a893284a9d968a",
@@ -3371,7 +3295,7 @@
     "no emitter for process-get-scope"
    ],
    "stage": "markers",
-   "zig_sha": "424327f0a18b040c"
+   "zig_sha": "207424cd5cffcd29"
   },
   "scope-runtime-spawn": {
    "expected_sha": "4a44dc15364204a8",
@@ -3387,7 +3311,7 @@
     "no emitter for process-yield"
    ],
    "stage": "markers",
-   "zig_sha": "45ae295f5e86b2e6"
+   "zig_sha": "81bad2ee1dcd8e7f"
   },
   "scope-try-region": {
    "expected_sha": "d3d41b339292ec7f",
@@ -3395,7 +3319,7 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "86a1ebd166fa632e"
+   "zig_sha": "1fd96e413752a567"
   },
   "sector-read-list-growth": {
    "expected_sha": "1b2117f43f07e55c",
@@ -3403,48 +3327,46 @@
     "no emitter for block-read-sector"
    ],
    "stage": "markers",
-   "zig_sha": "0b76a2e4d9072272"
+   "zig_sha": "2bf2211f86636fad"
   },
   "sensor-data": {
    "expected_sha": "a4efc2e2c8791681",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "5c421bc4226b3302"
+   "zig_sha": "dcf34ea17b396f5b"
   },
   "serial-line": {
    "expected_sha": "ef2d127de37b942b",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "16775c293870a71a"
+   "zig_sha": "af4134ac6e28b90f"
   },
   "shadow-builtin": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "ec88aea282519100"
+   "zig_sha": "f8a5482f8d32a56f"
   },
   "shadow-builtin-fold": {
    "expected_sha": "6c63835417392879",
    "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "f7367329f41fa513"
+   "verdict": "differ",
+   "zig_sha": "f3e9e7cfd4421637"
   },
   "shell-build-keep": {
    "expected_sha": "b4727ae398ca2179",
-   "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "87a477e5e2fe83be"
+   "stage": "codexir"
   },
   "simplify-check": {
    "expected_sha": "5c3ec9da37bb6168",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "8a0431acdafbed23"
+   "zig_sha": "8696d1ce99e2d895"
   },
   "sixlowpan-encode": {
    "expected_sha": "4b227777d4dd1fc6",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "fca3a851119e3672"
+   "zig_sha": "0bbdb3a556a8a281"
   },
   "smp-affinity": {
    "expected_sha": "78595340168024f5",
@@ -3456,13 +3378,13 @@
     "no emitter for process-wait"
    ],
    "stage": "markers",
-   "zig_sha": "6fb4235d4a93d884"
+   "zig_sha": "406aa399736dd281"
   },
   "smp-arm64-boot": {
    "expected_sha": "496fd0eea8bdd51b",
    "stage": "clean",
    "verdict": "hardware-only",
-   "zig_sha": "10de85dd4f7f718f"
+   "zig_sha": "34f8d05485651386"
   },
   "smp-cores": {
    "expected_sha": "e303d7044ab1ddda",
@@ -3470,7 +3392,7 @@
     "no emitter for atomic-load"
    ],
    "stage": "markers",
-   "zig_sha": "294e14182f59979d"
+   "zig_sha": "9c57334eb38de8f7"
   },
   "smp-dispatch": {
    "expected_sha": "6d91acc5e5d93637",
@@ -3480,7 +3402,7 @@
     "no emitter for process-wait"
    ],
    "stage": "markers",
-   "zig_sha": "ba38bb18d650d12c"
+   "zig_sha": "ccc82a8fbeb3fc8f"
   },
   "smp-halt": {
    "expected_sha": "e1ac59f1bbfdc1a0",
@@ -3489,7 +3411,7 @@
     "no emitter for process-wait"
    ],
    "stage": "markers",
-   "zig_sha": "5b604bd98bc07b14"
+   "zig_sha": "1864f01f07fac95a"
   },
   "smp-preempt": {
    "expected_sha": "51ff413886760574",
@@ -3499,7 +3421,7 @@
     "no emitter for process-wait"
    ],
    "stage": "markers",
-   "zig_sha": "40268ebea25ff65e"
+   "zig_sha": "49ccc4cba4061078"
   },
   "smp-proc0-pinned": {
    "expected_sha": "6b25c39cd223e4fd",
@@ -3509,13 +3431,13 @@
     "no emitter for process-wait"
    ],
    "stage": "markers",
-   "zig_sha": "c56d3b9a1f072fc6"
+   "zig_sha": "95e3e7270403cea4"
   },
   "smp-riscv-boot": {
    "expected_sha": "496fd0eea8bdd51b",
    "stage": "clean",
    "verdict": "hardware-only",
-   "zig_sha": "aa39d026652e99ae"
+   "zig_sha": "bff2a1e4d15c104a"
   },
   "smp-tss": {
    "expected_sha": "ea321a0c47fad4ba",
@@ -3523,31 +3445,29 @@
     "no emitter for atomic-load"
    ],
    "stage": "markers",
-   "zig_sha": "526f0a67ca11bc3c"
+   "zig_sha": "65d29a2f9340b2a3"
   },
   "smtp-md-test": {
    "expected_sha": "f7603ade63a315f7",
-   "stage": "clean",
-   "verdict": "refused",
-   "zig_sha": "2aaad19cdb7e9b2b"
+   "stage": "codexir"
   },
   "sntp-encode": {
    "expected_sha": "ef2d127de37b942b",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "98843ff32cf8a371"
+   "zig_sha": "8da08dfd323a55ea"
   },
   "sort-test": {
    "expected_sha": "54b017dfcaa35f58",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "385f627a30f0dcac"
+   "zig_sha": "98e153c8d177136b"
   },
   "sound-test": {
    "expected_sha": "f472f87c2271308b",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "c0756b471c7073e4"
+   "zig_sha": "d17d57cfe7156137"
   },
   "sparkplug-encode": {
    "expected_sha": "6b51d431df5d7f14",
@@ -3557,7 +3477,7 @@
     "no emitter for to-real-approx"
    ],
    "stage": "markers",
-   "zig_sha": "6cbc2a5c1ed067bf"
+   "zig_sha": "05db1b43de256a5b"
   },
   "spawn-memo-table": {
    "expected_sha": "0b918943df0962bc",
@@ -3566,7 +3486,7 @@
     "no emitter for process-yield"
    ],
    "stage": "markers",
-   "zig_sha": "22b5441ad9f373e0"
+   "zig_sha": "dba1e226a1f76ff1"
   },
   "spawn-reuse": {
    "expected_sha": "4fc82b26aecb47d2",
@@ -3577,73 +3497,74 @@
     "no emitter for process-wait"
    ],
    "stage": "markers",
-   "zig_sha": "9579004ebf03d7d4"
+   "zig_sha": "2fb1642da956939f"
   },
   "sprite-test": {
    "expected_sha": "8d1305293e139346",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "bcf0e48e02ee5c64"
+   "zig_sha": "0837478ffa9f7176"
+  },
+  "stale-read-sibling-arg": {
+   "stage": "clean",
+   "verdict": "no-expected",
+   "zig_sha": "dc72415c34096fea"
   },
   "stale-read-warning": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "7a7d9c866321efa9"
+   "zig_sha": "e9d7298e763b0074"
   },
   "stats-wrap-test": {
    "expected_sha": "c0bbc35537e8c632",
-   "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "0210280d0b9903ed"
+   "stage": "codexir"
   },
   "stm32f4-drivers": {
-   "expected_sha": "6b51d431df5d7f14",
+   "expected_sha": "8527a891e2241369",
    "markers": [
     "no emitter for MkTup2",
     "no emitter for poke-mmio-32",
     "no emitter for read-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "6bb58f10c1f38a08"
+   "zig_sha": "628c8420c222ba67"
   },
   "stm32l4-drivers": {
-   "expected_sha": "9400f1b21cb527d7",
+   "expected_sha": "6f4b6612125fb3a0",
    "markers": [
     "no emitter for MkTup2",
     "no emitter for poke-mmio-32",
     "no emitter for read-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "85a8ac3a3fef8c06"
+   "zig_sha": "ed3b904cb2acc2e9"
   },
   "string-escape-quote": {
    "expected_sha": "0f3f493c4dbd8a22",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "d9424fd9c897e8e3"
+   "zig_sha": "769094bf61a22b81"
   },
   "stringbuilder-independence": {
    "expected_sha": "d86a15b450dddf00",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "2256c1e644c4db13"
+   "zig_sha": "601ac84691519d73"
   },
   "stringbuilder-test": {
    "expected_sha": "03b776b9118c02bb",
-   "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "f77e1bf032c3515e"
+   "stage": "codexir"
   },
   "stringutils-test": {
    "expected_sha": "b28a82c2aab54018",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "b1a197e7aa5f2a97"
+   "zig_sha": "43fa970b4bfc3ef5"
   },
   "substring-over-read": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "653929e03699d263"
+   "zig_sha": "4558608774072012"
   },
   "suggested-width": {
    "expected_sha": "2a4aa27443a5f4b7",
@@ -3651,13 +3572,13 @@
     "no emitter for suggested-vector-width"
    ],
    "stage": "markers",
-   "zig_sha": "9957d5ea25b7bfb7"
+   "zig_sha": "0ccca6110cdc6b5d"
   },
   "synth-test": {
    "expected_sha": "e7b66aef70efd71c",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "3bb5ebfe319f3359"
+   "zig_sha": "d33240f6425cb1fe"
   },
   "tag-equal": {
    "expected_sha": "0ece35268a0528f8",
@@ -3665,7 +3586,7 @@
     "no emitter for tag-equal"
    ],
    "stage": "markers",
-   "zig_sha": "8b946875cbe9c498"
+   "zig_sha": "b37a84ecd0b95c2a"
   },
   "tco-bitop-loop": {
    "expected_sha": "aa4ca077f33b0a98",
@@ -3673,109 +3594,107 @@
     "no emitter for bit-not"
    ],
    "stage": "markers",
-   "zig_sha": "21fd6e58a730bf7e"
+   "zig_sha": "d6c192434fa177db"
   },
   "tco-direct-arg-reads": {
    "expected_sha": "e8f7f3112d0dcf84",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "9211bbede214498f"
+   "zig_sha": "c96a772c26cd1393"
   },
   "tco-framed-append": {
    "expected_sha": "bea22223e83d5b6f",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "32c46048551eda55"
+   "zig_sha": "27b8f5c593ebd4ea"
   },
   "tco-nested-if": {
    "expected_sha": "7b68d94979f24798",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "67f8992dc27ed36b"
+   "zig_sha": "651aec4b22e455d4"
   },
   "tco-shuffle-spill": {
    "expected_sha": "ecbdae648a605638",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "b266faa260609d93"
+   "zig_sha": "5ba1c0b787256683"
   },
   "tcp-checksum-refuse": {
    "expected_sha": "5cb5f7558844fda3",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "f79f255b7a0115a5"
+   "zig_sha": "6091c528ba6712ce"
   },
   "tcp-listen-reclaim": {
    "expected_sha": "1069be5a2e9233de",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "1b6e39b714eed7ac"
+   "zig_sha": "ba5d50122a0e193d"
   },
   "tcp-reliability": {
    "expected_sha": "e45bab2e521c2fd1",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "37ef875c4729ae19"
+   "zig_sha": "a0fe33ad9c4cdb87"
   },
   "tcp-seqwrap": {
    "expected_sha": "83074b677a2bf013",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "dc6afe275ebc3d36"
+   "zig_sha": "3afc93bcc94e5109"
   },
   "text-append-alias": {
    "expected_sha": "2f9acb02faa121bb",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "09eeb23897c9e2b3"
+   "zig_sha": "33f50a76bd679c0a"
   },
   "text-eq-branches": {
    "expected_sha": "790a095c05d4b873",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "92c381e06d1e4e57"
+   "zig_sha": "89d8e81525296f65"
   },
   "text-fold-indexed": {
    "expected_sha": "016388584ce1a1ce",
    "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "fcadff028e4e43fa"
+   "verdict": "differ",
+   "zig_sha": "da2bfc99c4f44999"
   },
   "text-helper-native": {
    "expected_sha": "6b930001b32cb4fb",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "2676bcdac5a19bf9"
+   "zig_sha": "0d78e4c8206d4384"
   },
   "text-helper-spec": {
    "expected_sha": "6b930001b32cb4fb",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "943be4d012aa97bf"
+   "zig_sha": "20699b3928e9056b"
   },
   "textfield-typing": {
    "expected_sha": "7757f36f52dd71a4",
-   "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "11db1e23e3f14313"
+   "stage": "codexir"
   },
   "textscan-test": {
    "expected_sha": "3e28a05d0a3024e9",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "d99a05bb0b81d284"
+   "zig_sha": "d6ceb2a1dd6f554f"
   },
   "textsearch-test": {
    "expected_sha": "8ed678f0c091d01f",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "9f666c4b532e5b11"
+   "zig_sha": "394278499ac8610d"
   },
   "thumb2-encoder": {
    "expected_sha": "01bf6046854f85ba",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "534de25a5e321ffb"
+   "zig_sha": "677aab3f68554190"
   },
   "timer-registers": {
    "expected_sha": "51b2a46c61bf43c9",
@@ -3786,7 +3705,7 @@
     "no emitter for read-mmio-32"
    ],
    "stage": "markers",
-   "zig_sha": "f584125ab840047c"
+   "zig_sha": "f9cb51b6b4a19698"
   },
   "tls-cert": {
    "expected_sha": "9d064a587135bddf",
@@ -3794,7 +3713,7 @@
     "no emitter for bit-not"
    ],
    "stage": "markers",
-   "zig_sha": "912b3182715c191d"
+   "zig_sha": "d296c35c263e27a4"
   },
   "tls-cv-schemes": {
    "expected_sha": "f32637b449fd02a9",
@@ -3802,43 +3721,43 @@
     "no emitter for bit-not"
    ],
    "stage": "markers",
-   "zig_sha": "72165a3b5dbca38e"
+   "zig_sha": "8ddd79cc5ce3ec98"
   },
   "tls-record-framing": {
    "expected_sha": "277d707ac84abe47",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "94b1b617b843f6fe"
+   "zig_sha": "f447971b4932b2f4"
   },
   "tls-test": {
    "expected_sha": "dbddee473ff9c344",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "228b96e92f61fda4"
+   "zig_sha": "b3369b3c31f988a6"
   },
   "tls13-record": {
    "expected_sha": "a9ebc9579f9c1813",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "44d5fea99dac3e37"
+   "zig_sha": "377164dec400df69"
   },
   "tls13-schedule": {
    "expected_sha": "b23825a1524ccce0",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "aee68e11067be194"
+   "zig_sha": "c2791a5d4035011c"
   },
   "transport-cocite": {
    "expected_sha": "829e168d9bd6d654",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "a351f4852073d656"
+   "zig_sha": "4b227538afd9584d"
   },
   "trie-prefix-test": {
    "expected_sha": "2fea0c05ea4c8558",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "3463fe8d2104f17b"
+   "zig_sha": "4e90900baa9ef0c1"
   },
   "truetype-bridge-test": {
    "expected_sha": "03b5f2cd94740e18",
@@ -3858,45 +3777,45 @@
     "no emitter for poke-byte"
    ],
    "stage": "markers",
-   "zig_sha": "e8f6b8d924e1b7ca"
+   "zig_sha": "7d87c33cc2dce856"
   },
   "ttf-debug": {
    "expected_sha": "3435cdae97fead6e",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "87a5244d03adf582"
+   "zig_sha": "7e2541c593dea8e6"
   },
   "ttt-perfect": {
    "expected_sha": "cdc4743d371a408c",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "73465081c12f89f5"
+   "zig_sha": "54f03ca31e448e9c"
   },
   "tuple-syntax": {
    "expected_sha": "2c866bed4e0952c5",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "e3637dfc05630bf5"
+   "zig_sha": "7f8a81fcb8ac059a"
   },
   "type-checker-test": {
    "expected_sha": "73475cb40a568e8d",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "961cf05b742b3e4c"
+   "zig_sha": "362983c24c2403cb"
   },
   "type-class-no-instance": {
    "markers": [
     "no emitter for __no-instance-to-text-Boolean"
    ],
    "stage": "markers",
-   "zig_sha": "7ad93295e7eb815e"
+   "zig_sha": "fdea80c0c9130a8b"
   },
   "type-class-no-instance-gen": {
    "markers": [
     "no emitter for __no-instance-Showable-Boolean"
    ],
    "stage": "markers",
-   "zig_sha": "9eb23e8663655024"
+   "zig_sha": "c0f3816dc5f91cd0"
   },
   "type-name-existence": {
    "expected_sha": "e75f1f408c825079",
@@ -3904,25 +3823,25 @@
     "no zig type for this applied type"
    ],
    "stage": "markers",
-   "zig_sha": "dfb5d75785e9352d"
+   "zig_sha": "36aaef4a21222d62"
   },
   "typeclass-poly": {
    "expected_sha": "f909dcc6bd770bdd",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "f5dd0a5a826189bf"
+   "zig_sha": "65c39cc158f38408"
   },
   "typeclass-smoke": {
    "expected_sha": "4b7a1f48409f6c83",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "3c3109ce9a4a2be6"
+   "zig_sha": "816829510a72af08"
   },
   "udp-frame-guard": {
    "expected_sha": "9a46cd3e850f04a2",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "4812ea4b7fc59214"
+   "zig_sha": "0b8990c558b2f046"
   },
   "uefi-read-key-nofirmware": {
    "expected_sha": "9780ea0a02dde5c4",
@@ -3930,109 +3849,97 @@
     "no emitter for uefi-read-key"
    ],
    "stage": "markers",
-   "zig_sha": "9e10aded0c066b4c"
+   "zig_sha": "ba4ca4f6dff8a31c"
   },
   "ui-anim-test": {
    "expected_sha": "e5807b575b6e94ff",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "760df075ef457e3a"
+   "zig_sha": "3c62a6faa0ff1f5b"
   },
   "ui-dialog-test": {
    "expected_sha": "c9ea7eba6fa92d38",
-   "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "c7d9a25c5924e4f7"
+   "stage": "codexir"
   },
   "ui-event-test": {
    "expected_sha": "13d2663bd31e33c4",
-   "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "338977875af0ed3b"
+   "stage": "codexir"
   },
   "ui-focus-test": {
    "expected_sha": "9c746cd2be93c707",
-   "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "b5bb41c2283f106b"
+   "stage": "codexir"
   },
   "ui-font-cce-order": {
    "expected_sha": "791abde14d2d9a3c",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "0cc32c970288ecfa"
+   "zig_sha": "a3feb64bf0982dbf"
   },
   "ui-font-test": {
    "expected_sha": "6a6427a48b782797",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "b813cdfd3b4ff701"
+   "zig_sha": "84df78fff90f55cb"
   },
   "ui-icon-test": {
    "expected_sha": "5345747a56d51277",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "adb849e83b87ef70"
+   "zig_sha": "40b2ca9074141ed6"
   },
   "ui-layout-test": {
    "expected_sha": "dd8b5fea20d2f75b",
-   "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "0c0a31a952edb01e"
+   "stage": "codexir"
   },
   "ui-orchestrator-test": {
    "expected_sha": "f4ebc3683039d0fc",
-   "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "83a9ce6f0279b788"
+   "stage": "codexir"
   },
   "ui-scroll-test": {
    "expected_sha": "02a8695337ea7d6b",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "738474e949250eff"
+   "zig_sha": "f3e3245f703cabd5"
   },
   "ui-sound-test": {
    "expected_sha": "138ac58e703ff8fd",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "ca594fe6a5cd4c90"
+   "zig_sha": "a1fe4cac6a529133"
   },
   "ui-surface-test": {
    "expected_sha": "3570e1e69240016c",
-   "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "493ca2c40edcd0df"
+   "stage": "codexir"
   },
   "ui-theme-test": {
    "expected_sha": "842ef70a524ecefb",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "9d1607e543fd9fd1"
+   "zig_sha": "662f471917840c5f"
   },
   "unit-family": {
    "expected_sha": "a68a49889db13474",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "2f6f7d8e4f874d47"
+   "zig_sha": "f9c013d2071f7717"
   },
   "unit-family-mixed": {
    "expected_sha": "ef06071cd905cc34",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "2c9d0f05fd0b12db"
+   "zig_sha": "c3177a64795a889f"
   },
   "unit-smoke": {
    "expected_sha": "c5c3d4ce16f03f41",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "b8450960c6c86c35"
+   "zig_sha": "278e874a97a24b01"
   },
   "units-foreword": {
    "expected_sha": "4112034125e885c1",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "5c56593fe4bb0cbf"
+   "zig_sha": "50c9096fc6830cb2"
   },
   "uri-encode": {
    "expected_sha": "0b31a155c7465feb",
@@ -4040,31 +3947,29 @@
     "no emitter for text-to-unicode-bytes"
    ],
    "stage": "markers",
-   "zig_sha": "6db08479fc9080e0"
+   "zig_sha": "7676b053c157257c"
   },
   "usb-desc-guard": {
    "expected_sha": "2b1d07704843374d",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "38ee189ddbc6eba0"
+   "zig_sha": "9c6e7a55789a5447"
   },
   "usb-test": {
    "expected_sha": "008152da69df71fb",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "fec29557472c41e1"
+   "zig_sha": "bcbae5720ca9a7f1"
   },
   "validation-rules": {
    "expected_sha": "4afe192a43e870e6",
-   "stage": "clean",
-   "verdict": "match",
-   "zig_sha": "9c6537edba6bd64f"
+   "stage": "codexir"
   },
   "value-eq": {
    "expected_sha": "2c16b9b9f9faca13",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "46407f8445c59fd1"
+   "zig_sha": "e7af2f5b4d2f78f0"
   },
   "vbe-mode-set": {
    "expected_sha": "e2d5d5ab213015af",
@@ -4074,7 +3979,7 @@
     "no emitter for port-out-16"
    ],
    "stage": "markers",
-   "zig_sha": "453e41964b041381"
+   "zig_sha": "1ce567b779417f54"
   },
   "vec-arith-hazards": {
    "expected_sha": "dd9a42a5cb762212",
@@ -4087,7 +3992,7 @@
     "no emitter for vec-sub"
    ],
    "stage": "markers",
-   "zig_sha": "faaa0e32c0e17144"
+   "zig_sha": "3a565f56917d65f2"
   },
   "vec-array": {
    "expected_sha": "da2b106efb0fa11e",
@@ -4100,7 +4005,7 @@
     "no emitter for vec-store-at"
    ],
    "stage": "markers",
-   "zig_sha": "dffdac5cd374f760"
+   "zig_sha": "f9dbf85c111e917b"
   },
   "vec-extract-hazards": {
    "expected_sha": "2f2677df8f2ce398",
@@ -4111,14 +4016,14 @@
     "no emitter for vec4-splat"
    ],
    "stage": "markers",
-   "zig_sha": "3e7dd08fa0cc220e"
+   "zig_sha": "de6ec7d1e237fa0d"
   },
   "vec-lane-computed-oob": {
    "markers": [
     "no emitter for vec-extract"
    ],
    "stage": "markers",
-   "zig_sha": "31e118ed53ef854f"
+   "zig_sha": "af18adaeb87c922f"
   },
   "vec-mask-hazards": {
    "expected_sha": "380161d3dbf834ad",
@@ -4134,7 +4039,7 @@
     "no emitter for vec-splat"
    ],
    "stage": "markers",
-   "zig_sha": "1da8e8e41eae48a6"
+   "zig_sha": "ed3856b0711bc5cd"
   },
   "vec-nest-probe": {
    "expected_sha": "a2da19aafda9bdd0",
@@ -4143,7 +4048,7 @@
     "no emitter for vec-splat"
    ],
    "stage": "markers",
-   "zig_sha": "a7d1a193a7174cdf"
+   "zig_sha": "4e68028b67dcf877"
   },
   "vec-nested-binop": {
    "expected_sha": "a8ff7293c4a515de",
@@ -4152,7 +4057,7 @@
     "no emitter for vec-splat"
    ],
    "stage": "markers",
-   "zig_sha": "4fb72212d8ef4e29"
+   "zig_sha": "8af05f2530fbfe9f"
   },
   "vec-pattern": {
    "expected_sha": "46c5a7aa9c6ce745",
@@ -4161,7 +4066,7 @@
     "vector patterns not supported"
    ],
    "stage": "markers",
-   "zig_sha": "7eaee66988dbd846"
+   "zig_sha": "bd1165a1edfa7d6f"
   },
   "vec-reduce-add": {
    "expected_sha": "cce80e2cb9470ac2",
@@ -4170,7 +4075,7 @@
     "no emitter for vec-splat"
    ],
    "stage": "markers",
-   "zig_sha": "7eb602f4eec67cd8"
+   "zig_sha": "6810d4bf15a729fd"
   },
   "vec-select": {
    "expected_sha": "2de4c16bafc0cc30",
@@ -4180,7 +4085,7 @@
     "no emitter for vec-splat"
    ],
    "stage": "markers",
-   "zig_sha": "127d22c0c9d5817c"
+   "zig_sha": "3ef34b49aca714d3"
   },
   "vector-basic": {
    "expected_sha": "1f3ba317e496d3c2",
@@ -4189,7 +4094,7 @@
     "no emitter for vec-splat"
    ],
    "stage": "markers",
-   "zig_sha": "fed2205629b8db46"
+   "zig_sha": "b9fada1d288f3191"
   },
   "vector-f32": {
    "expected_sha": "c35d920b723a534e",
@@ -4198,7 +4103,7 @@
     "no emitter for vec4-splat"
    ],
    "stage": "markers",
-   "zig_sha": "caeb41d35a5732f5"
+   "zig_sha": "5fbffaab6e6e0d91"
   },
   "vector-int": {
    "expected_sha": "58cfe2fb8f8af334",
@@ -4207,7 +4112,7 @@
     "no emitter for vec-splat"
    ],
    "stage": "markers",
-   "zig_sha": "5725b069252ef3ad"
+   "zig_sha": "784f4ada6ab0ac1d"
   },
   "wademo-bulk": {
    "expected_sha": "280827118c9ae8fb",
@@ -4232,25 +4137,25 @@
   "watchdog-panic-probe": {
    "stage": "clean",
    "verdict": "no-expected",
-   "zig_sha": "4736028e70e56c05"
+   "zig_sha": "4f23590d76dd8791"
   },
   "wavelet-sort-aliasing": {
    "expected_sha": "239a78fe46bca9f9",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "d99758fe2ff2ee4c"
+   "zig_sha": "14ddf813b8d75dca"
   },
   "wcet-budget-unchecked": {
    "expected_sha": "b69bf61dd19f26a4",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "bc916785b10cd282"
+   "zig_sha": "0d5a971d8352c4fb"
   },
   "wcet-probe": {
    "expected_sha": "4ac94ebfdd294218",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "a57e2af903e1aaf7"
+   "zig_sha": "87f32c503b1c4493"
   },
   "web-chain": {
    "expected_sha": "001ba34120f8e150",
@@ -4258,7 +4163,7 @@
     "no emitter for bit-not"
    ],
    "stage": "markers",
-   "zig_sha": "ae5ea215c9b839e2"
+   "zig_sha": "6bfd91288cd60c6a"
   },
   "web-mux-concurrent": {
    "expected_sha": "abedbeb44199a17d",
@@ -4272,7 +4177,7 @@
     "no emitter for unicode-bytes-to-text"
    ],
    "stage": "markers",
-   "zig_sha": "1310dea1ea9c1756"
+   "zig_sha": "76bb136ba3d7d883"
   },
   "web-mux-idle-reap": {
    "expected_sha": "d9ea3b941e8020ac",
@@ -4286,7 +4191,7 @@
     "no emitter for unicode-bytes-to-text"
    ],
    "stage": "markers",
-   "zig_sha": "5c3352c2dab31a70"
+   "zig_sha": "46d5b58bb16da90e"
   },
   "web-mux-lifecycle": {
    "expected_sha": "8741fd35fc460dab",
@@ -4300,7 +4205,7 @@
     "no emitter for unicode-bytes-to-text"
    ],
    "stage": "markers",
-   "zig_sha": "64ec3a72f925b170"
+   "zig_sha": "621a8896800ffe4c"
   },
   "web-mux-reassembly": {
    "expected_sha": "2bb4ec157d080f36",
@@ -4314,49 +4219,49 @@
     "no emitter for unicode-bytes-to-text"
    ],
    "stage": "markers",
-   "zig_sha": "c5d09e21d6437c46"
+   "zig_sha": "4a995bac17950719"
   },
   "when-arm-nontail": {
    "expected_sha": "093af642e4008f25",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "c257f5ea2a1de70a"
+   "zig_sha": "09dc041454acea04"
   },
   "when-arm-tail-call": {
    "expected_sha": "0d4b5f69639a6c5d",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "056f99a4435c6f1a"
+   "zig_sha": "81b16dfa3f77e6de"
   },
   "when-bool-cross": {
    "expected_sha": "05105adfb1d6be5e",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "ea51a472e43fc137"
+   "zig_sha": "65a614ba842e94af"
   },
   "when-bool-pattern": {
    "expected_sha": "d6f8e24f58618d24",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "d960695395c86cef"
+   "zig_sha": "af013dbada2af6ca"
   },
   "when-generic-field": {
    "expected_sha": "4edc061fa24cb3d1",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "383e7ccb447702f7"
+   "zig_sha": "d6735c04636d40bf"
   },
   "with-timeout-test": {
    "expected_sha": "73475cb40a568e8d",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "46e48d6fcc42955e"
+   "zig_sha": "73565ef8e2ec906f"
   },
   "workflow-parse-int": {
    "expected_sha": "12e26b55895e665e",
    "stage": "clean",
    "verdict": "match",
-   "zig_sha": "f7b825a807a6fe33"
+   "zig_sha": "a3ebd2fd095f5bd7"
   },
   "x509-chain": {
    "expected_sha": "7de26030645cc131",
@@ -4364,7 +4269,7 @@
     "no emitter for bit-not"
    ],
    "stage": "markers",
-   "zig_sha": "57369e386fe06068"
+   "zig_sha": "c66055941974f2f2"
   },
   "x509-parse": {
    "expected_sha": "b0aa717bbef619df",
@@ -4372,13 +4277,13 @@
     "no emitter for bit-not"
    ],
    "stage": "markers",
-   "zig_sha": "f6c03ccbaca9ac2a"
+   "zig_sha": "1795b68c8d579af3"
   },
   "zigbee-encode": {
    "expected_sha": "4b227777d4dd1fc6",
    "stage": "clean",
    "verdict": "refused",
-   "zig_sha": "848cbb4a22d5911b"
+   "zig_sha": "747ab6372f98416d"
   }
  }
 }
