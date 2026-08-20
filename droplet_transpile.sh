@@ -3,18 +3,18 @@
 # counterpart of droplet_compile.sh, same held-ssh contract (logs stream
 # live, the exit code is the completion signal, flock refuses a second
 # job loudly).
-# Usage: droplet_transpile.sh <in.ir> <out.zig> [ring|tcp]   (default ring)
+# Usage: droplet_transpile.sh <in.ir> <out.zig> [ring]
 #
-# Staleness checks run HERE, where the checkout lives, before anything is
-# pushed -- the droplet has no checkout to re-bundle against:
-#   ring: plug_run_ring.refuse_stale_ringplug (re-bundles, compares
-#         ast/ringplug.cdx.fp), the same check the local arm runs.
-#   tcp:  plug_provenance's contract -- sha of ZigEmitter+ZigPlug sources
-#         against build-output/zig-plug.fingerprint.
+# Ring only: the tcp argument is still recognized so an old caller gets
+# the reason instead of a mystery, but it refuses (see the case below).
+# The staleness check runs HERE, where the checkout lives, before
+# anything is pushed -- the droplet has no checkout to re-bundle
+# against: plug_run_ring.refuse_stale_ringplug (re-bundles, compares
+# ast/ringplug.cdx.fp), the same check the local arm runs.
 # The kernel travels only when the droplet's fingerprint copy differs.
 # The droplet invokes the driver with an explicit kernel path, skipping
-# the droplet-side re-bundle. Both arms cap the guest at mem_mb=1300 --
-# the droplet holds 2 GB total and the appliance must never swap.
+# the droplet-side re-bundle, and caps the guest at mem_mb=1300 -- the
+# droplet holds 2 GB total and the appliance must never swap.
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(python3 "$T/ladder_root.py" codex)"
@@ -36,15 +36,13 @@ print('ringplug fresh against the checkout')"
     RNAME=ringplug.cdx
     ;;
 tcp)
-    FP_FILE="$REPO/codex/plugs/zig/build-output/zig-plug.fingerprint"
-    [ -s "$FP_FILE" ] || { echo "no zig-plug.fingerprint; run sweep_prep.sh or cycle.sh"; exit 1; }
-    NOW=$(cat "$REPO/codex/plugs/zig/ZigEmitter.codex" "$REPO/codex/plugs/zig/ZigPlug.codex" | sha256sum | cut -d' ' -f1)
-    [ "$NOW" = "$(cat "$FP_FILE")" ] || {
-        echo "zig-plug.cdx is stale against the checkout's plug sources; run sweep_prep.sh or cycle.sh"
-        exit 1
-    }
-    KERNEL="$REPO/codex/plugs/zig/build-output/zig-plug.cdx"
-    RNAME=zig-plug.cdx
+    # Measured 2026-08-20: the TCP plug's boot-time heap reservation
+    # needs >= 1600 MB of guest RAM (connects at 1600, exits silently at
+    # 1500), and the appliance caps guests at 1300 because the droplet
+    # holds the live site in its 2 GB. Refusing here beats reproducing
+    # the silent exit; the ring arm serves every unit remotely.
+    echo "the TCP plug cannot boot inside the appliance's 1300 MB cap -- use the ring arm"
+    exit 1
     ;;
 *)
     echo "unknown arm '$ARM' (ring|tcp)"; exit 1 ;;
@@ -59,16 +57,9 @@ if [ "$FP" != "$REMOTE_FP" ]; then
 fi
 
 scp -qC "$IR" "$HOST:ring/job.ir"
-if [ "$ARM" = ring ]; then
-    ssh "$HOST" 'cd ring && rm -f out.zig out.zig.cce out.zig.blob && CODEX_ACCEL=tcg nice -n 15 flock -n lock python3 -u -c "
+ssh "$HOST" 'cd ring && rm -f out.zig out.zig.cce out.zig.blob && CODEX_ACCEL=tcg nice -n 15 flock -n lock python3 -u -c "
 import plug_run_ring
 plug_run_ring.run_ring_plug(\"job.ir\", \"out.zig\", plug_cdx=\"ringplug.cdx\", mem_mb=1300)"'
-else
-    ssh "$HOST" 'cd ring && rm -f out.zig && CODEX_ACCEL=tcg nice -n 15 flock -n lock python3 -u -c "
-import plug_run_checked
-ok = plug_run_checked.run_verified(\"zig-plug.cdx\", \"job.ir\", \"out.zig\", mem_mb=1300)
-raise SystemExit(0 if ok else 1)"'
-fi
 rm -f "$OUT"
 scp -qC "$HOST:ring/out.zig" "$OUT"
 [ -s "$OUT" ] || { echo "no zig came back"; exit 1; }

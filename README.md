@@ -538,11 +538,10 @@ neither `ORACLE` nor `TRANSPORT FAILED` is failed. `ORACLE` matches both
 catching **silence**, a rung that produced no verdict at all. One did once, and
 read exactly like a rung that never ran.
 
-**`ast/rebank_all.sh`** re-records every truth arm and then sweeps. It
-neither detaches nor logs itself (yet -- the wiring batch in PRIORITIES
-item 1.2 moves that inward); run it with the `setsid nohup` pattern from
-"Processing a new Update" step 5 or a hung VM takes the verdicts with
-it. Run it after any seed change: a new seed invalidates both arms, since it compiles the truth
+**`ast/rebank_all.sh`** re-records every truth arm and then sweeps.
+Run it bare: it relaunches itself detached into
+`logs/rebank-<stamp>.log` and prints the tail command, so a hung VM or
+a closed terminal cannot take the verdicts with it. Run it after any seed change: a new seed invalidates both arms, since it compiles the truth
 binary *and* produces the IR-CCE the plug consumes. It is ordered cheapest rung
 first and stops on the first failure, because the failure modes are shared.
 
@@ -625,6 +624,17 @@ and no swap; the big 2.5 MB bundle compile is UNMEASURED there --
 measure before relying on it). Output is byte-identical to a local
 compile of the same blob; that was the acceptance test.
 
+**Every droplet arm rides the ring.** The TCP plug's boot-time heap
+reservation needs >= 1600 MB of guest RAM -- measured 2026-08-20:
+connects at 1600, exits SILENTLY at 1500 and below (nothing on serial,
+a clean debug-port exit that reads like a qemu failure) -- so it cannot
+boot inside the 1300 MB cap, and `droplet_transpile.sh` refuses the tcp
+argument with that reason rather than reproducing the silent exit. The
+Codex network stack keeps its oracle coverage in the local venues
+(`cycle.sh` warmups and `ast/allcycles.sh` both push IR over TCP), and
+the two transports were measured byte-identical on the same IR (laptop
+tcp vs droplet ring, lex, 2026-08-20).
+
 What the droplet buys is not mainly the 5s: it is that the
 one-compute-job rule becomes per-host. The laptop can bundle, build
 zig and diff while the droplet grinds a compile -- two QEMU-scale jobs
@@ -643,8 +653,10 @@ that used to serialize on one 3.8 GB machine now overlap across two.
    it does not compile.
 4. **One compute job per host.** QEMU, a sweep, a census run, a native
    build: one at a time on any given machine. The droplet enforces it
-   with `flock -n`; on the laptop it is discipline until the same lock
-   lands here. Two 3 GB guests on the 3.8 GB laptop do not fail -- they
+   with `flock -n`; on the laptop every compute entry point takes
+   `take_compute_lock` (in `ast/oracle_lib.sh`, with `compute_lock.py`
+   as the Python half), which also refuses on the evidence of a running
+   job that did not take it. Two 3 GB guests on the 3.8 GB laptop do not fail -- they
    thrash at 2% CPU each, which reads as mysterious slowness rather
    than as the refused launch it should have been (2026-08-20, a sweep
    and a native build stacked; the sweep's artifacts were garbage).

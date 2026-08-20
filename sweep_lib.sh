@@ -13,22 +13,9 @@ T="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # take_compute_lock and rung_stamp live in oracle_lib.sh now, shared with
 # the legacy loops (wiring batch, process review D3/S1).
 
-# The remote arms: same rm-stale-first discipline, same transport-log
-# placement, same zig_verdict as the local arms they shadow. Only the
+# The remote arm: same rm-stale-first discipline, same transport-log
+# placement, same zig_verdict as the local arms it shadows. Only the
 # QEMU venue moved.
-remote_zig_arm() {
-    local m=$1
-    cd "$T"
-    rm -f "ast/${m}.zig"
-    if ! ./droplet_transpile.sh "ast/${m}.ir" "ast/${m}.zig" tcp \
-            > "ast/${m}.transport.log" 2>&1; then
-        echo "TRANSPORT FAILED for $m (ast/${m}.transport.log):"
-        tail -6 "ast/${m}.transport.log"
-        return 1
-    fi
-    zig_verdict "$m"
-}
-
 remote_ring_arm() {
     local m=$1
     cd "$T"
@@ -42,11 +29,18 @@ remote_ring_arm() {
     zig_verdict "$m"
 }
 
+# Every droplet arm rides the ring, unlike the local split in arm_for:
+# the TCP plug's boot-time heap reservation needs >= 1600 MB of guest
+# RAM (measured 2026-08-20: connects at 1600, exits SILENTLY at 1500 --
+# nothing on serial, clean debug-port exit) and the droplet holds 2 GB
+# total with the live site on it, so the appliance caps guests at 1300.
+# The ring plug boots and serves there comfortably. The Codex network
+# stack keeps its oracle coverage in the local venues -- cycle.sh's
+# warmups and the all-local allcycles.sh both push IR over TCP -- and
+# the two transports were measured byte-identical on the same IR
+# (laptop tcp vs droplet ring, 2026-08-20).
 remote_arm_for() {
-    case "$1" in
-        fibx|whole) echo remote_ring_arm ;;
-        *)          echo remote_zig_arm ;;
-    esac
+    echo remote_ring_arm
 }
 
 # One unit through its remote arm with the silence rule allcycles.sh

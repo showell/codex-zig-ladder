@@ -63,11 +63,13 @@ rm -f ast/ringplug.cdx
 sha256sum ast/ringplug-source.codex | cut -d' ' -f1 > ast/ringplug.cdx.fp
 rm -f "$T/.prep-ring.blob"
 
-# --- push kernels, fingerprints and the TCP-arm drivers ---
-scp -qC "$PLUG_CDX" "$HOST:ring/zig-plug.cdx"
-scp -q "$PLUG_DIR/build-output/zig-plug.fingerprint" "$HOST:ring/zig-plug.fingerprint"
+# --- push the ring kernel, its fingerprint, and the drivers ---
+# Only the ring kernel travels: the TCP plug cannot boot inside the
+# appliance's 1300 MB cap (see remote_arm_for in sweep_lib.sh), so the
+# freshly compiled zig-plug.cdx stays in build-output for the LOCAL
+# arms, where plug_provenance still wants it fresh.
 scp -qC "$T/ast/ringplug.cdx" "$HOST:ring/ringplug.cdx"
 scp -q "$T/ast/ringplug.cdx.fp" "$HOST:ring/ringplug.cdx.fp"
-scp -q "$T/plug_run.py" "$T/plug_run_checked.py" "$T/pcap_parity.py" "$T/plug_run_ring.py" "$HOST:ring/"
+scp -q "$T/plug_run.py" "$T/plug_run_checked.py" "$T/pcap_parity.py" "$T/plug_run_ring.py" "$T/cce.py" "$HOST:ring/"
 
 echo "### sweep_prep done $(date +%H:%M:%S): both kernels compiled on the droplet and pushed"
