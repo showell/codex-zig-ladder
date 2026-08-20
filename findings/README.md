@@ -1,4 +1,4 @@
-# Findings: six closed upstream, seven standing, one fixed here, one proposal
+# Findings: six closed upstream, seven standing, three fixed here, one proposal
 
 This directory holds the findings and the probes that make them runnable.
 It is discussion material rather than a proposed addition to the Codex tree,
@@ -790,3 +790,72 @@ type's rendering. ota-update's IR never applies a unit constructor in an
 expression, so the type-level mapping may be the whole fix; whether the
 front end folds scale conversions into plain arithmetic is the thing the
 rerun will answer.
+
+## 18. Integer arithmetic in the zig plug was overflow-checked; the language wraps
+
+**Found 2026-08-19 by the corpus census (three crash-class verdicts); ruling
+checked at the desk 2026-08-20; fixed on the pin (`78e8da1b`) the same day.
+Ours, not an upstream defect -- recorded for the ruling and the asides.**
+
+`bloom-spread`, `consistent-hash-balance` and `particle-spread` all died
+with `panic: integer overflow` in hash-mixing code. The ruling that wrap is
+the language's rule rests on five converging sources: CodexSubtypes.md says
+Integer IS the 64-bit machine word; the IR names behavior wherever it
+deviates (IrAddRealTrapping/Saturating, clamped bounded fields) and
+IrAddInt is the plain op; the C# plug emits bare `+` on `long` in C#'s
+default unchecked context; bare metal emits `lea`/`add`/`imul`/`neg` with
+no `jo` anywhere; and decisively, Foreword's own BloomFilter iterates
+`hash * 31 + c` unbounded, mixes with `bit-shru`, then tests `if h < 0
+then -h` -- a product of positives that only goes negative by wrapping.
+
+The fix: `+%`/`-%`/`*%` on the integer binop rows, `-%` for non-real
+IrNegate, `cx_ipow` mirroring `__ipow` (negative exponent -> 0, wrapping
+square-and-multiply) in place of `std.math.pow` which panics on both
+overflow and negative exponents, shift counts masked `& 63` (x86 `cl`
+semantics; C# `<<` on long masks identically), and a wrapping accumulator
+in `cx_text_to_integer`. All three subjects MATCH their `.expected`.
+
+Upstream asides, source-read only, each needing a demonstration before
+filing:
+
+- The **python plug** emits `+` on unbounded ints with no 64-bit mask, so
+  it silently diverges from bare metal on any overflow; the JS plug is
+  worse (f64 loses exact integers past 2^53).
+- The **C# plug maps IrPowInt to `^`** (CSharpEmitterExpressions.codex:984),
+  which is XOR in C#, not exponentiation.
+- **plug-oracle-arith has no overflow row** to catch any of this; a
+  wrap-observing row is the oracle proposal that would expose the fleet.
+
+## 19. Char literals were CCE while Char values were codepoints; resolved by migrating Char to the CCE code
+
+**Found 2026-08-18 by an emitter audit (probe written then); caught live by
+the census differ `text-fold-indexed` 2026-08-19; resolved by convergence
+on the pin (`0fdb9b63`) 2026-08-20. Ours -- the codepoint representation
+was the plug's own choice; the migration is the fix, not a report.**
+
+IrCharLit was emitted as its raw IR payload (a CCE code) while `char-at`
+answered a Unicode codepoint, so `char-at s i == 'x'` lived in two
+alphabets and was false for every letter -- a wrong answer, not a
+refusal, on both probes and on the depot's own vowel-count test
+(`text-fold-indexed`: expected 3/2/4-style counts, zig arm answered 0s).
+
+Resolution is the identity model bare metal and the C# plug share:
+char-code / code-to-char vanish, char-at is the same bare read as
+char-code-at, cx_char_to_text stores one raw byte, is-letter / is-digit
+use the CCE bands (13..64 and 97..127 letters, 3..12 digits -- read off
+`emit-is-letter-builtin` itself). The codepoint model was structurally
+lossy (CCE aliases canonicalise through any code->cp->code detour,
+corrupting byte-wise text rebuilds); codepoints now exist only at the I/O
+boundary.
+
+Both-arms evidence, line-identical on every row (bare metal run on the
+droplet appliance, zig arm through the rebuilt natives, 2026-08-20):
+`probe-char-literal` answers found-x 1 / found-a 0 / lit-lit 1 /
+code-of-x 36 on both arms (the zig arm answered found-x 0 before the
+migration); `probe-char-ops` answers all nine rows identically on both
+arms, including letter-accent 1 and letter-cyrillic 1 through the second
+band, which the old a-z/A-Z test refused. `text-fold-indexed` and
+`shadow-builtin-fold` (finding of the same census day: builtin
+interception ignored user shadowing, fixed in `80674beb`) both MATCH
+their `.expected`. Sweep and census rerun over the batched change-set:
+pending at time of writing; this entry updates when they land.
