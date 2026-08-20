@@ -210,3 +210,13 @@ running what those produce: `tonight.sh`, the census stages of item 1,
 The rule that makes both work: **one compute job at a time.** The machine has
 about 3 GB usable and QEMU takes most of it. Anything fired from the keyboard
 waits for what is already running, the way `tonight.sh` does.
+
+**Possible change of venue (Steve, 2026-08-19): start working from the prod
+droplet as early as tomorrow.** The droplet is extremely under-utilized and
+Steve has ruled it fine to work there — treat the old don't-build-there
+posture as caution about the live site, not a blocker. What it would buy:
+a host that doesn't share a laptop with Windows, no WSL livelock exposure,
+no OEM-crapware CPU theft (2026-08-19 lost most of an evening to that).
+What to watch: 1 vCPU / 2 GB is smaller than the laptop's 3 GB, and the
+live site shares it — size QEMU and the census batches to that before
+moving the loop.
