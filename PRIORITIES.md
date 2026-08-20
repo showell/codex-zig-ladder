@@ -236,12 +236,26 @@ against what exists now and ask Damian what he would want first.
 
 ---
 
-## Filed and waiting
+## Outbound queue
 
-- **PR 73** (2026-08-19): plain-switch literal pin + `__linked-list-empty`
-  consumes its size hint, via upstream's own functions.
-- **PR 74** (2026-08-19): batch compiler starts on Linux pwsh
-  (`-WindowStyle` only on Windows), generator + emitted script.
+PRs 73 and 74 were absorbed 2026-08-19: re-applied in Perforce (main 17401),
+public at `8f997bd8`, verified on Damian's side (49/49 plug oracles; script
+drift 0). **`8f997bd8` is the base for whatever goes out next.** Damian left
+one open door on 74: a QEMU fallback for the batch REPL is its own change if
+we want it -- noted, not queued.
+
+Proven and ready to send, in order, each in a throwaway worktree off
+`8f997bd8`:
+
+- **The finding 16 fix** (heap base + real deck, our `24c0d925`): tonight's
+  14/14 sweep and the banked census are the proof; the three observing
+  oracles (arith-narrow-proven, deck-bracket-contract, deck-record-contract)
+  all match. The register (`findings/README.md` sec. 16) says "fix is ours to
+  propose" -- this is the proposal.
+- **The arena prelude** (`7094128c`, the 3 GB-OOM -> 240 MB fix): random882
+  called it the most valuable unlanded thing we have, gated on the re-bank
+  proving it; the re-bank and tonight's green ladder are that proof. The
+  fleet edits ZigEmitter daily, so this ages badly on the shelf.
 
 ---
 
