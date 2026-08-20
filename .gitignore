@@ -65,3 +65,4 @@ ast/ringplug.cdx.fp
 ringplug-source-check.codex
 *.truth.prov
 .agentgrid
+!logs/INDEX.md

@@ -20,6 +20,17 @@ take_compute_lock() {
         echo "COMPUTE LOCK HELD -- another sweep/build/census owns this laptop; refusing"
         exit 1
     }
+    # The lock only binds scripts that take it, and the legacy scripts
+    # do not yet (wiring batch, PRIORITIES item 1.2). Until every
+    # compute job holds the lock, an unlocked rebank/build beside a
+    # free lock reads as protection it is not (process review D3) --
+    # so also refuse on the evidence of the processes themselves.
+    local running
+    running=$(ps -eo args | grep -E 'qemu-system|rebank_all|allcycles\.sh|corpus_run|native_build' | grep -v grep | head -1)
+    [ -n "$running" ] && {
+        echo "COMPUTE JOB RUNNING WITHOUT THE LOCK -- refusing beside: $running"
+        exit 1
+    }
 }
 
 # Per-rung wall-clock, printed at the marker so the split point and every

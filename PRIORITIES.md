@@ -2,7 +2,9 @@
 
 Kept here rather than in anybody's head or memory file, because there are now
 several threads and they were drifting apart. If a memory or an essay disagrees
-with this file, this file wins. Dated entries so staleness is visible. Done
+with this file, this file wins. The README's "Processing a new Update" is
+the ceremony's step list; this file adds items and says where they slot --
+on a conflict about ORDER, the README's list is the spine. Dated entries so staleness is visible. Done
 items leave the list -- git history is their record, DONE.md holds one line
 and a pointer each when a pointer helps, and measurements go to
 JUSTIFICATIONS.md. This file is the queue, not the diary.
@@ -50,17 +52,30 @@ depot shipped). Remaining, in order:
 
 1. Rebank completes -> bank only over green arms; diff `truth/u48`
    against `truth/u47` (the `cmp` loop in README step 5).
-2. The two deferred wiring edits (they touch files the running rebank
-   reads): `mem_mb` plumb-through in `plug_run_checked.py`
-   (`run_verified` -> `run_plug`), and `take_compute_lock` adoption in
-   `native_build.sh`, `corpus_run.py`, `ast/allcycles.sh`.
+2. The wiring batch (edits to files the running rebank reads; the
+   process review PROCESS-REVIEW-2026-08-20.md is the source for most):
+   `mem_mb` plumb-through in `plug_run_checked.py`; `take_compute_lock`
+   into `oracle_lib.sh`, taken by `rebank_all.sh`, `allcycles.sh`,
+   `native_build.sh`, `corpus_run.py` (D3); `rung_stamp` into
+   `oracle_lib.sh`, called from both loops, elapsed line at the end
+   (S1); EXIT traps + a final `SWEEP: n/14` summary in both loops (C1);
+   `allcycles.sh` success path prints `NOT BANKED -- run bank_truth.py`
+   (D1); `rebank_all.sh` logs and detaches itself (D4); `zig_verdict`
+   refuses a truth whose prov sidecar names another seed (C4);
+   `seed_identity.require_match` called at truth_arm top and after
+   split_truth (C5); `check_paths.py` warns when the banked-against
+   table disagrees with the derived Update outside a rebank (S7);
+   `bank_truth.py --force` prints ready-count and confirms (C3).
 3. Acceptance run of the two-venue sweep: `sweep_prep.sh` ->
    `sweep_canary.sh` -> `sweep_long.sh`, expected to reproduce the
    fresh bank's 14/14. First rung_stamp timings decide the real
    canary/long split point.
 4. Verify Update 48's native match guards on the re-pinned sweep;
-   close finding 15 / issue 72 in the register (nothing of ours to
-   delete -- we carried the probe, never a workaround).
+   close finding 15 / issue 72 in the register. Workaround-hygiene
+   extends to SCRIPTS (review S5): delete `tonight.sh` in the same
+   commit (its step 2 exists to confirm the finding being closed), and
+   sweep the other orphans (recon.sh, verify_merge.sh,
+   run_bag_probes.sh, ast/irmemcycle.sh) for retire-or-document.
 5. Census re-pin: `native_build.sh` from the pin, full
    `corpus_run.py --changed --bank`. Expect the five PR-76 subjects
    red and possibly the 36 ex-codexir aborts back until absorption.

@@ -7,7 +7,7 @@
 | Seed | `90646EEB22CEB9AB` (2,844,269 bytes) |
 | Update | 47 (release commit `69cd9ce8`) |
 | Rungs | **14 of 14 green** |
-| Banked | `truth/u47/`, with `truth/u46/` and `truth/u45/` beside it |
+| Banked | `truth/u47/`; the newest three banks are kept (`bank_truth.py --keep`), older ones live in git history |
 
 This table is the point of the whole arrangement, so it is the first thing on
 the page and it is allowed to be unflattering. A ladder that cannot say which
@@ -538,8 +538,11 @@ neither `ORACLE` nor `TRANSPORT FAILED` is failed. `ORACLE` matches both
 catching **silence**, a rung that produced no verdict at all. One did once, and
 read exactly like a rung that never ran.
 
-**`ast/rebank_all.sh`** re-banks every truth arm and then sweeps. Run it after
-any seed change: a new seed invalidates both arms, since it compiles the truth
+**`ast/rebank_all.sh`** re-records every truth arm and then sweeps. It
+neither detaches nor logs itself (yet -- the wiring batch in PRIORITIES
+item 1.2 moves that inward); run it with the `setsid nohup` pattern from
+"Processing a new Update" step 5 or a hung VM takes the verdicts with
+it. Run it after any seed change: a new seed invalidates both arms, since it compiles the truth
 binary *and* produces the IR-CCE the plug consumes. It is ordered cheapest rung
 first and stops on the first failure, because the failure modes are shared.
 
@@ -857,19 +860,22 @@ arena entry in `JUSTIFICATIONS.md`.
   a big rung usually means the deck scale -- the seed's compile-time memory
   reservation -- needs raising (the `decks=` entries in `oracle_lib.sh`'s
   `mode_flags`), not that something broke.
-- **Bank only when the zig arms are green too** (`bank_truth.py`). It
+- **Bank only when the zig arms are green too** (`bank_truth.py`).
+  Terminology, because a crashed session once nearly tagged over its
+  absence: the rebank RECORDS working truths (`ast/<m>.truth`; its
+  "banked" log lines mean this) -- the BANK is `truth/uNN/`, written
+  only by an explicit `bank_truth.py`, which `rebank_all.sh` never
+  runs. "All banked" in a rebank log does not mean the bank exists.
+  `--force` REPLACES the destination with the ready subset; after an
+  interrupted rebank, re-run the missing units instead. It
   refuses mixed-harness sets on its own; the green-arms rule is ours, from
   the merge, and it exists because a bank taken over red arms freezes a
   question mid-answer.
-- Diff the new bank against the previous one. The files are Update-prefixed,
-  so `diff -r` pairs nothing; the loop is:
-
-      for f in truth/u46/u46-*; do m=${f##*/u46-}; \
-        cmp -s "$f" "truth/u47/u47-$m" || echo "$m differs"; done
-
-  Byte-identical rungs are the headline when they happen (u45 to u46: all
-  fourteen), and any rung that moved is the Update's image change, localized
-  to a subject.
+- Diff the new bank against the previous one: `./bank_diff.sh` (defaults
+  to the two newest banks, so this instruction cannot go stale per
+  rebank). Byte-identical rungs are the headline when they happen (u45 to
+  u46: all fourteen), and any rung that moved is the Update's image
+  change, localized to a subject.
 - Re-pin the diagnostics populations -- an EDIT to the `POLICY` table in
   `check_diags.py`, taking the new counts from the `--census` block
   `allcycles.sh` prints at the end of the sweep. The counts are a function
