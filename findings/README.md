@@ -722,8 +722,8 @@ guarded arm.
 the run); zig arm measured by `corpus_run.py`, bare-metal arm is the depot's
 hand-verified `.expected` oracles. Fixed on the pin (`24c0d925`) and proven
 2026-08-19: 14/14 sweep plus the banked census, all three observing oracles
-MATCH. Outbound as the three-commit chain off `8f997bd8` (PRIORITIES
-"Outbound queue"); replay spot-verified 5/5 on seed `800A7683`.**
+MATCH. Sent 2026-08-19 as PR 75 (the three-commit chain off `8f997bd8`);
+replay spot-verified 5/5 on seed `800A7683`.**
 
 One passage of ZigEmitter (the prose above `zig-name-map`) makes two
 semantic choices and documents them as checked-not-assumed. The corpus is

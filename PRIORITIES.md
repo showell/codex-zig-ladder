@@ -82,16 +82,14 @@ fixes NOT yet applied, batch them into ONE emitter change-set so one sweep
   user's functions -- but the call sites were hijacked by the
   ZigBuiltinEmitter name table (got 3/3/5). Fix: builtin interception yields
   to names the module itself defines. Ours, not a finding.
-- **text-fold-indexed (differ): char values leak Unicode code points; the
-  language's chars ARE CCE codes.** The fold hands the lambda
+- **text-fold-indexed (differ): this is item 2's decided char migration,
+  caught by a depot oracle.** The fold hands the lambda
   `cx_cce_to_cp(cx_char_at(s, i))` (so 'e' arrives as 101) while IrCharLit
   compiles to the raw CCE code (15/13/17/16/25 for the vowels) -- every
-  `ch == 'a'` fails, vowel count 0. The C# gold standard rules it: IrCharLit
-  emits the raw integer, `char-at` is raw indexing with NO conversion, and
-  `code-to-char` is the IDENTITY. Our `cx_cce_to_cp` wrappers on `char-at`
-  (ZigEmitter:820), `code-to-char` (:795), and the fold template are the
-  deviation; sweep ALL char-boundary builtins to the CCE convention in one
-  pass. Ours, not a finding.
+  `ch == 'a'` fails, vowel count 0. Joins probe-char-literal as evidence;
+  the fold template joins char-at/code-to-char on item 2's flip list. The
+  census bank that item 2 was sequenced behind has landed -- the migration
+  is unblocked. Ours, not a finding.
 - **bloom-spread, consistent-hash-balance, particle-spread (3 crashes):
   `panic: integer overflow`, one family.** Hash/spread arithmetic overflows
   i64; bare metal wraps (x86 add), C# `long` wraps (unchecked default), zig
@@ -283,9 +281,10 @@ was trimmed in the Perforce re-application. (`git cherry` cannot see this:
 Perforce re-application changes patch-ids, so absorption is a content
 question, never a patch-id question.)
 
-What IS queued is a three-commit dependency chain off the pin -- the CCE
-tiers and char-to-text commits were never sent as PRs, and the finding 16
-fix sits on top of them (`cx_utf8_to_cce` calls `cx_cce_frame`):
+**SENT 2026-08-19 as PR 75** (github.com/damiant3/NewRepository/pull/75):
+the three-commit dependency chain -- the CCE tiers and char-to-text commits
+were never sent before, and the finding 16 fix sits on top of them
+(`cx_utf8_to_cce` calls `cx_cce_frame`):
 
 1. `a3756ec0` -- multi-byte CCE tiers in the prelude, IrNumLit bits,
    bits-to-real-approx, faithful text-to-double-bits.
