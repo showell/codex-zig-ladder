@@ -75,62 +75,9 @@ Findings 18 (wrap ruling + upstream asides) and 19 (char convergence)
 in the register carry the evidence. The next hunt surface is the gap
 families: the refused and markers buckets are all ours.
 
-**Desk triage 2026-08-19 (read-only, all seven root-caused or clustered;
-fixes NOT yet applied, batch them into ONE emitter change-set so one sweep
-+ one census `--changed` covers all):**
-
-- **shadow-builtin-fold (differ): intercept-by-name ignores user shadowing.**
-  The subject shadows `text-length` and `abs`; the language says the user
-  definition wins (expected 99/99/77), and the emitted zig even CONTAINS the
-  user's functions -- but the call sites were hijacked by the
-  ZigBuiltinEmitter name table (got 3/3/5). Fix: builtin interception yields
-  to names the module itself defines. Ours, not a finding.
-- **text-fold-indexed (differ): this is item 2's decided char migration,
-  caught by a depot oracle.** The fold hands the lambda
-  `cx_cce_to_cp(cx_char_at(s, i))` (so 'e' arrives as 101) while IrCharLit
-  compiles to the raw CCE code (15/13/17/16/25 for the vowels) -- every
-  `ch == 'a'` fails, vowel count 0. Joins probe-char-literal as evidence;
-  the fold template joins char-at/code-to-char on item 2's flip list. The
-  census bank that item 2 was sequenced behind has landed -- the migration
-  is unblocked. Ours, not a finding.
-- **bloom-spread, consistent-hash-balance, particle-spread (3 crashes):
-  `panic: integer overflow`. RULING CHECKED 2026-08-20: wrap is the
-  language's rule; the fix is ours** (`+%`/`-%`/`*%`, and wrapping
-  negation -- `-h` on i64-min panics too). Five sources, converging:
-  CodexSubtypes.md says Integer IS the 64-bit machine word; the IR names
-  behavior wherever it deviates (IrAddRealTrapping/Saturating, clamping
-  bounded fields) and IrAddInt is the plain op; the C# gold standard
-  emits bare `+` on `long` in C#'s default unchecked context; bare metal
-  emits `lea`/`add` with no `jo` anywhere; and DECISIVELY, Foreword's own
-  BloomFilter is written against wrap -- `bloom-hash-text-loop` iterates
-  `hash * 31 + c` unbounded, mixes with `bit-shru` (only meaningful on a
-  fixed-width word), and then says `if h < 0 then -h`: a product of
-  positives that can only go negative by wrapping around. While editing,
-  check `bit-shl` and any other op zig makes checked. UPSTREAM ASIDE
-  worth sending with the fix: the Python plug emits `+` on unbounded
-  ints with NO 64-bit mask, so it silently diverges from bare metal on
-  any overflow (JS is worse -- f64 loses exact integers past 2^53), and
-  plug-oracle-arith has no overflow row to catch it. Same shape as the
-  guards sweep: our fix plus a proposed oracle row exposes the others.
-  Source-read only; demonstrate before filing.
-- **smp-arm64-boot, smp-riscv-boot (2 crashes): RESOLVED AT THE DESK
-  2026-08-19 -- hardware-semantics subjects the hosted arm structurally
-  cannot answer.** Each polls a marker cell at a fixed high physical
-  address (`peek-qword #7E000000` / `#80090000`, ~2.1 GB) that only a
-  SECONDARY CPU CORE writes (PSCI CPU_ON / hart start under QEMU virt).
-  The OOM is just the messenger: `cx_peek_qword` calls `cx_buf_want`,
-  which zero-fills the contiguous heap up to the address -- 2.1 GB against
-  an 800 MB cap. But no memory model fixes them: a hosted single process
-  has no secondary core, so even a sparse heap reads 0 forever and prints
-  "AP DID NOT RUN" -- a differ, not a match. Right move is an honest
-  census classification (a documented hardware-only exclusion bucket, its
-  own verdict class, never counted as crash), which is instrument work,
-  not a hunt. The cap stays at 800 MB; nothing here argues against it.
-  DESIGN CONSEQUENCE for the cx_heap unification (noted in
-  `findings/zig-heap-unification.md`): subjects may peek absolute
-  addresses far above any reservation, and RLIMIT_AS caps count reserved
-  address space, not resident pages -- the design must say what an
-  out-of-region absolute address means before it goes to Damian.
+All four desk-triage clusters of 2026-08-19 resolved (git history and
+findings 18/19 are the record; the SMP pair's design consequence for the
+heap unification lives in `findings/zig-heap-unification.md`).
 
 The known gap family is coherent: `poke-byte`, `peek/poke-16/32`, `bit-not` --
 the memory-access builtins; implementing the family unblocks a large slice at
