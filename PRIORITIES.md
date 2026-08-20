@@ -99,19 +99,36 @@ never between recording and banking.
 buckets with oracles left to consult are all blocked on OUR gaps; every
 family implemented promotes a slab of programs into the comparing stage
 where the depot's oracles can finally see them (random895 -- gap work is
-not port-finishing, it is instrument reach). By expected yield:
+not port-finishing, it is instrument reach).
 
-- **bool-vs-i64 coercions** -- dominates the ~111 refusals.
-- **`cx_approx_eq`** -- finding 20's fix: the 4-ULP ordinal-distance
-  test replacing `==` on IrApproxEq (measured both arms 2026-08-20).
-- **The memory-access builtin family** (`poke-byte`, `peek/poke-16/32`,
-  `bit-not`) -- the coherent slab atop the ~232 markers; implementing
-  the family unblocks a large slice at once. Explore before asking
-  Damian for anything.
-- **Non-ASCII identifiers**: `zig-sanitize` needs `@"..."` quoting
-  (ident-letters reached this the day the char migration landed).
-- **Unit families** (finding 17's fix shape): `unit-def` emits an alias
-  of its backing type; 8 refusals.
+**BATCH IMPLEMENTED 2026-08-20 evening** on branch
+`zig-plug-refusal-gaps` (off the PR-76 tip; nine commits; typecheck
+meter: 90 of the census's 105 refusals promoted). In it: the entry
+shim (startFn, 39 refusals), Boolean->Integer coercion at declaring
+boundaries (35), the memory-access family to C#'s _Buf rules
+(alloc-bytes, peek/poke-16/32, poke-byte, bit-not -- the marker slab's
+top), unit aliases (finding 17), the approx-eq 4-ULP band (finding
+20), @"..." identifier quoting (ident-letters), Boolean literal
+patterns, and the observed prelude-shadowing colliders. Verification
+= overnight_verify.sh phases C-D (sweep + census); the PR follows it.
+
+Residual classes, measured, for the next batch:
+- **Curried/oversaturated calls** (5): a zero-param def whose value is
+  a closure called with args needs `f().call(...)`; struct-vs-struct
+  binops in the fork/par family ride the same machinery.
+- **show of a Real** (2): needs bare metal's __show_real formatting
+  mirrored, never guessed.
+- **Type-class dictionaries** (2): undeclared `T2`.
+- **The systematic prelude-shadowing sweep** (1+): zig bans locals AND
+  params shadowing file-scope names; dns-answer-count defines l, base,
+  h... -- rename every prelude local and param to cx_, mechanically,
+  in one commit. Letter-chasing measured futile.
+- **MkTup2 out-of-unit** (16 markers): tuple machinery works when
+  Tup2 is declared in-unit; the marker is the type arriving from
+  outside. Drags ctor-map + pattern arms; own item.
+- One-offs: `sin` (math builtin), one non-exhaustive switch.
+
+Still queued from before:
 - **Real-literal candidates in the other plugs** (source-read only,
   2026-08-19): the JS emitter's IrNumLit is `Number(BigInt.asIntN(64,
   bits))` -- bits as a NUMBER, not a bitcast; and parseFloat /
