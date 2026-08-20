@@ -259,7 +259,16 @@ was trimmed in the Perforce re-application. (`git cherry` cannot see this:
 Perforce re-application changes patch-ids, so absorption is a content
 question, never a patch-id question.)
 
-**SENT 2026-08-19 as PR 75** (github.com/damiant3/NewRepository/pull/75):
+**SENT 2026-08-20 as PR 76** (damiant3/NewRepository/pull/76): the hunt
+three off `b643e7c` -- wrap arithmetic, shadowed-builtin yield, char-CCE
+migration (upstream hashes 23f47945 / f337e1a6 / 593976dd, replay
+worktree `~/showell_repos/nr-hunt-replay`, branch pushed to the fork).
+Spot-verified on the U48 base: natives from the replay tree, 5/5 subjects
+MATCH against U48's own oracles, both char probes line-identical to
+truth. Carries the two source-read asides (python plug overflow, C#
+IrPowInt XOR) and offers the overflow oracle row.
+
+**ABSORBED in Update 48 (`b643e7c`), credited: PR 75** (github.com/damiant3/NewRepository/pull/75):
 the three-commit dependency chain -- the CCE tiers and char-to-text commits
 were never sent before, and the finding 16 fix sits on top of them
 (`cx_utf8_to_cce` calls `cx_cce_frame`):
