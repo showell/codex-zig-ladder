@@ -1,0 +1,73 @@
+#!/bin/bash
+# The two-venue sweep's shared prep: bundle BOTH plugs once, compile both
+# kernels on the droplet, stamp the same fingerprints the local scripts
+# stamp, and push the kernels plus the TCP-arm drivers to the appliance.
+# sweep_canary.sh and sweep_long.sh consume what this leaves behind; a
+# sweep is only coherent if every rung sees the same plug, which is why
+# bundling happens here and nowhere else in the two-venue path.
+#
+# The bundling entrypoints and fingerprint semantics are the same ones
+# cycle.sh and ast/ringplug_build.sh use (Build-TranspilerPlug with the
+# compile step stubbed; sha of the bundled source for the ring fp, sha of
+# the two plug sources for the TCP fingerprint) -- only the compile venue
+# moved. Those two scripts remain the all-local authority.
+set -e
+T="$(cd "$(dirname "$0")" && pwd)"
+REPO="$(python3 "$T/ladder_root.py" codex)"
+HOST=steve@162.243.1.123
+. "$T/sweep_lib.sh"
+take_compute_lock
+
+echo "### sweep_prep $(date +%H:%M:%S)"
+
+# --- the TCP plug (zig-plug.cdx) ---
+PLUG_DIR="$REPO/codex/plugs/zig"
+PLUG_SRC="$PLUG_DIR/build-output/plug-source.codex"
+PLUG_CDX="$PLUG_DIR/build-output/zig-plug.cdx"
+rm -f "$PLUG_SRC"
+~/.local/pwsh/pwsh -NoProfile -Command "
+\$ErrorActionPreference = 'Stop'
+. $REPO/codex/plugs/common/plug-build-lib.ps1
+function Build-PlugCdx { Write-Host '[bundle only, compile skipped]' }
+Build-TranspilerPlug -PlugDir $PLUG_DIR -PlugName zig -Chapters @('ZigEmitter', 'ZigPlug')
+" | tail -1
+[ -s "$PLUG_SRC" ] || { echo "BUNDLE FAILED: no plug-source.codex"; exit 1; }
+python3 - "$PLUG_SRC" "$T/.prep-plug.blob" <<'PY'
+import sys
+src = open(sys.argv[1], 'rb').read()
+open(sys.argv[2], 'wb').write(b"CDX map\n" + src + b"\x04")
+print(f"plug blob: {len(src)} bytes")
+PY
+rm -f "$PLUG_CDX"
+"$T/droplet_compile.sh" "$T/.prep-plug.blob" "$PLUG_CDX"
+[ -s "$PLUG_CDX" ] || { echo "PLUG COMPILE FAILED"; exit 1; }
+cat "$PLUG_DIR/ZigEmitter.codex" "$PLUG_DIR/ZigPlug.codex" \
+    | sha256sum | cut -d' ' -f1 > "$PLUG_DIR/build-output/zig-plug.fingerprint"
+rm -f "$T/.prep-plug.blob"
+
+# --- the ring plug (ast/ringplug.cdx) ---
+cd "$T/ast"
+rm -f ringplug-source.codex
+~/.local/pwsh/pwsh -NoProfile -File ./bundle_ringplug.ps1 | tail -1
+[ -s ringplug-source.codex ] || { echo "BUNDLE FAILED: no ringplug-source.codex"; exit 1; }
+python3 - ringplug-source.codex "$T/.prep-ring.blob" <<'PY'
+import sys
+src = open(sys.argv[1], 'rb').read()
+open(sys.argv[2], 'wb').write(b"CDX map\n" + src + b"\x04")
+print(f"ring blob: {len(src)} bytes")
+PY
+cd "$T"
+rm -f ast/ringplug.cdx
+"$T/droplet_compile.sh" "$T/.prep-ring.blob" "$T/ast/ringplug.cdx"
+[ -s ast/ringplug.cdx ] || { echo "RING PLUG COMPILE FAILED"; exit 1; }
+sha256sum ast/ringplug-source.codex | cut -d' ' -f1 > ast/ringplug.cdx.fp
+rm -f "$T/.prep-ring.blob"
+
+# --- push kernels, fingerprints and the TCP-arm drivers ---
+scp -qC "$PLUG_CDX" "$HOST:ring/zig-plug.cdx"
+scp -q "$PLUG_DIR/build-output/zig-plug.fingerprint" "$HOST:ring/zig-plug.fingerprint"
+scp -qC "$T/ast/ringplug.cdx" "$HOST:ring/ringplug.cdx"
+scp -q "$T/ast/ringplug.cdx.fp" "$HOST:ring/ringplug.cdx.fp"
+scp -q "$T/plug_run.py" "$T/plug_run_checked.py" "$T/pcap_parity.py" "$T/plug_run_ring.py" "$HOST:ring/"
+
+echo "### sweep_prep done $(date +%H:%M:%S): both kernels compiled on the droplet and pushed"
