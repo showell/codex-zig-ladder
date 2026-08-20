@@ -488,7 +488,9 @@ diff against.
 PowerShell 7 installed at `~/.local/pwsh/pwsh` (the bundling scripts invoke
 that path directly; 7.5.4 here), and `zig` (0.16.0) for the arm under test.
 `/dev/kvm` is optional: `CODEX_ACCEL` selects the accelerator and the
-default is `tcg`.
+default is `tcg` -- which measured FASTER than KVM for this workload
+(see "The droplet venue"). A second ssh-reachable host for the compile
+stage is optional too; nothing requires it.
 
 **Point it at a checkout with `CODEX_ROOT`.** The ladder lives outside the
 tree it audits, so it cannot find one by looking upward, and it will not
@@ -560,6 +562,8 @@ Then the smaller pieces:
   guest's read cursor over the gdbstub. `ring_refill_test.sh` is that path's
   oracle.
 - `codex_vm.py` -- launch/READY/run helpers shared by the above.
+- `droplet_vm_setup.sh` / `droplet_compile.sh` -- provision and drive the
+  remote QEMU venue (see "The droplet venue" below).
 
 Costs -- this section is the one home for timing figures; re-measure and
 update them here at every rebank. A full merged `rebank_all.sh` (re-bank all
@@ -573,6 +577,50 @@ plug, so they dominate everything. Run long jobs in the background and watch
 for the markers above. (The pre-merge ladder, four big compiles instead of
 two, cost 2h21m -- the shape of the saving, not a current figure.)
 
+## The droplet venue
+
+The QEMU compile stage can run on a second host: a small cloud box
+(the same one that serves a live website, which is why the rails below
+exist) provisioned as an appliance by `droplet_vm_setup.sh` and driven
+by `droplet_compile.sh <blob> <out.cdx>`. Design and the founding
+measurements: JUSTIFICATIONS.md ("Droplet compile venue") and essay
+random893; adopted 2026-08-20.
+
+**The appliance holds no logic.** Four pushed files -- `codex_vm.py`
+and `ring_compile.py` verbatim, a two-line `ladder_root.py` stub, and
+the seed kernel -- plus the qemu package. No checkout, no zig, no
+daemon, no listening port, no state. It cannot drift out of sync with
+the ladder because there is nothing in it to drift; a stale SEED is
+possible, which is why re-running `droplet_vm_setup.sh` is a step of
+every re-pin (it is idempotent and verifies the pushed seed by sha).
+
+**Synchronous ssh is the whole protocol.** The wrapper scps the blob
+up, holds one ssh while `ring_compile.py` runs remotely -- log lines
+stream back live, the exit code propagates -- and scps the CDX (and
+its `.map`/`.diags` sidecars) down. Completion needs no polling and
+failure needs no forensics. There is deliberately no queue and no
+service; if the droplet is unreachable, everything still runs locally
+and nothing here is on the critical path.
+
+**TCG on purpose, not KVM.** Measured on the warmup blob: droplet TCG
+26s, laptop TCG 31s, droplet KVM 43s. This guest streams output
+through port I/O and polls the serial status register; under KVM every
+port access is a vmexit, under TCG a cheap helper call. The wrapper
+pins TCG and the numbers live in JUSTIFICATIONS.md -- re-measure there
+before believing anything else about relative speed.
+
+**The rails, because a live site shares the box:** `nice -n 15` on the
+QEMU process, `flock -n` so a second job refuses loudly instead of
+queueing silently, and the guest sized at 1300 MB (the box has 2 GB
+and no swap; the big 2.5 MB bundle compile is UNMEASURED there --
+measure before relying on it). Output is byte-identical to a local
+compile of the same blob; that was the acceptance test.
+
+What the droplet buys is not mainly the 5s: it is that the
+one-compute-job rule becomes per-host. The laptop can bundle, build
+zig and diff while the droplet grinds a compile -- two QEMU-scale jobs
+that used to serialize on one 3.8 GB machine now overlap across two.
+
 ## Operating rules
 
 1. **Sweep after any emitter change.** `ast/allcycles.sh`. One rung passing
@@ -584,7 +632,14 @@ two, cost 2h21m -- the shape of the saving, not a current figure.)
    its own (about a minute) before spending a full cycle -- a quarter-hour to
    bank plus the same through the plug, for the expensive rungs -- discovering
    it does not compile.
-4. **Never lift the 2.5 GB address-space cap on `zig_verdict`'s `zig run`.**
+4. **One compute job per host.** QEMU, a sweep, a census run, a native
+   build: one at a time on any given machine. The droplet enforces it
+   with `flock -n`; on the laptop it is discipline until the same lock
+   lands here. Two 3 GB guests on the 3.8 GB laptop do not fail -- they
+   thrash at 2% CPU each, which reads as mysterious slowness rather
+   than as the refused launch it should have been (2026-08-20, a sweep
+   and a native build stacked; the sweep's artifacts were garbage).
+5. **Never lift the 2.5 GB address-space cap on `zig_verdict`'s `zig run`.**
    An emitted binary from any emitter that predates the arena balloons past
    3 GB and can livelock the whole WSL VM; under the cap that is a recorded
    rung failure instead. With the arena (upstream since `a061c173`) the big
@@ -678,6 +733,11 @@ compile runs:
 - **The seed hashes.** The release note names the public seed; depot `main`
   may already be several seeds past it. The bank is a claim about the
   released seed, so everything below uses the release commit, not main.
+  A seed change also stales the droplet appliance's pushed copy: re-run
+  `droplet_vm_setup.sh` when the checkout re-pins (it re-pushes and
+  sha-verifies; a droplet compile against last Update's seed would bank
+  truth nobody named, the exact failure `CODEX_ROOT`'s refusal exists
+  to prevent, one host over).
 
 ### 2. Probe the contract before committing hours to it
 
