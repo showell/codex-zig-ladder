@@ -43,43 +43,32 @@ whole compiler survive transpilation". Everything below is the cheap loop.
 ## 1. Finish the u48 re-pin ceremony (IN FLIGHT 2026-08-20)
 
 **Objective: due diligence, with the two-venue sweep's acceptance run as
-instrument work riding it.** The rebank is running detached
-(`logs/rebank-u48.log`); pin `u48-rebank` at `b643e7cb`, ZERO
+instrument work riding it.** Pin `u48-rebank` at `b643e7cb`, ZERO
 cherry-picks -- verbatim, and the census re-pins verbatim too (Steve:
 "the noisy bank is the honest bank"; the five hunt subjects will read
 red until PR 76 absorbs, and that diff IS the measurement of what the
-depot shipped). Remaining, in order:
+depot shipped). The truth phase is COMPLETE (12/12 units recorded under
+the u48 seed, prov'd -- `ladder_status.py` confirms) and the wiring
+batch has landed (2026-08-20, six commits closing review items
+S1/S7/D1/D3/D4/C1/C3/C4/C5 plus the mem_mb plumb). Remaining, in order:
 
-1. Rebank completes -> bank only over green arms; diff `truth/u48`
-   against `truth/u47` (the `cmp` loop in README step 5).
-2. The wiring batch (edits to files the running rebank reads; the
-   process review PROCESS-REVIEW-2026-08-20.md is the source for most):
-   `mem_mb` plumb-through in `plug_run_checked.py`; `take_compute_lock`
-   into `oracle_lib.sh`, taken by `rebank_all.sh`, `allcycles.sh`,
-   `native_build.sh`, `corpus_run.py` (D3); `rung_stamp` into
-   `oracle_lib.sh`, called from both loops, elapsed line at the end
-   (S1); EXIT traps + a final `SWEEP: n/14` summary in both loops (C1);
-   `allcycles.sh` success path prints `NOT BANKED -- run bank_truth.py`
-   (D1); `rebank_all.sh` logs and detaches itself (D4); `zig_verdict`
-   refuses a truth whose prov sidecar names another seed (C4);
-   `seed_identity.require_match` called at truth_arm top and after
-   split_truth (C5); `check_paths.py` warns when the banked-against
-   table disagrees with the derived Update outside a rebank (S7);
-   `bank_truth.py --force` prints ready-count and confirms (C3).
-3. Acceptance run of the two-venue sweep: `sweep_prep.sh` ->
-   `sweep_canary.sh` -> `sweep_long.sh`, expected to reproduce the
-   fresh bank's 14/14. First rung_stamp timings decide the real
-   canary/long split point.
-4. Verify Update 48's native match guards on the re-pinned sweep;
+1. Acceptance run of the two-venue sweep: `sweep_prep.sh` ->
+   `sweep_canary.sh` -> `sweep_long.sh` -- this IS the ceremony's sweep
+   (the local sweep was deliberately cut at 7/14 for the venue change);
+   expected to reproduce 14/14 over the recorded truths. First
+   rung_stamp timings decide the real canary/long split point.
+2. Bank over green arms: `bank_truth.py`, then `bank_diff.sh` for
+   u47 -> u48.
+3. Verify Update 48's native match guards on the re-pinned sweep;
    close finding 15 / issue 72 in the register. Workaround-hygiene
    extends to SCRIPTS (review S5): delete `tonight.sh` in the same
    commit (its step 2 exists to confirm the finding being closed), and
    sweep the other orphans (recon.sh, verify_merge.sh,
    run_bag_probes.sh, ast/irmemcycle.sh) for retire-or-document.
-5. Census re-pin: `native_build.sh` from the pin, full
+4. Census re-pin: `native_build.sh` from the pin, full
    `corpus_run.py --changed --bank`. Expect the five PR-76 subjects
    red and possibly the 36 ex-codexir aborts back until absorption.
-6. Diagnostics POLICY re-pin, timings refreshed into README "Running
+5. Diagnostics POLICY re-pin, timings refreshed into README "Running
    it", banked-against table, tag `u48-14of14`, push.
 
 ## 2. The heap unification
@@ -193,6 +182,7 @@ work** is running what those produce: the rebanks, the sweeps, the census
 runs. A hunt's *runs* are away work; its *reads* are not.
 
 The rule that makes both work: **one compute job per host.** The laptop
-holds one QEMU comfortably; the droplet is flocked and the laptop lock is
-item 1.2. The droplet venue means away work can overlap keyboard work
-across hosts -- but never two compute jobs on one.
+holds one QEMU comfortably; the droplet is flocked inside its wrappers
+and every laptop entry point takes `take_compute_lock`. The droplet
+venue means away work can overlap keyboard work across hosts -- but
+never two compute jobs on one.
