@@ -564,8 +564,9 @@ Then the smaller pieces:
   guest's read cursor over the gdbstub. `ring_refill_test.sh` is that path's
   oracle.
 - `codex_vm.py` -- launch/READY/run helpers shared by the above.
-- `droplet_vm_setup.sh` / `droplet_compile.sh` -- provision and drive the
-  remote QEMU venue (see "The droplet venue" below).
+- `droplet_*.sh` and `sweep_*.sh` -- the remote QEMU venue and the
+  two-venue sweep (prep once, fail-fast canary, full-coverage long).
+  Read their headers; "The droplet venue" below has the principles.
 
 Costs -- this section is the one home for timing figures; re-measure and
 update them here at every rebank. A full merged `rebank_all.sh` (re-bank all
@@ -581,32 +582,31 @@ two, cost 2h21m -- the shape of the saving, not a current figure.)
 
 ## The droplet venue
 
-The QEMU compile stage can run on a second host: a small cloud box
-(the same one that serves a live website, which is why the rails below
-exist) provisioned as an appliance by `droplet_vm_setup.sh` and driven
-by `droplet_compile.sh <blob> <out.cdx>`. Design and the founding
-measurements: JUSTIFICATIONS.md ("Droplet compile venue") and essay
-random893; adopted 2026-08-20.
+QEMU work can run on a second host: a small cloud box (the same one
+that serves a live website, which is why the rails below exist)
+provisioned as an appliance and driven over synchronous ssh. The
+scripts are the documentation here -- `droplet_*.sh` and `sweep_*.sh`
+at the repo root carry their contracts in their headers, and
+enumerating them in prose only invites drift. Design and the founding
+measurements: JUSTIFICATIONS.md ("Droplet compile venue") and essays
+random893/random894; adopted 2026-08-20.
 
-**The appliance holds no logic.** Four pushed files -- `codex_vm.py`
-and `ring_compile.py` verbatim, a three-line `ladder_root.py` stub, and
-the seed kernel -- plus the qemu package. No checkout, no zig, no
-daemon, no listening port, no state. It cannot drift out of sync with
-the ladder because there is nothing in it to drift; a stale SEED is
-possible, and is guarded twice: `droplet_vm_setup.sh` sha-verifies at
-push time, and `droplet_compile.sh` re-verifies the droplet's seed
-against the checkout's ON EVERY JOB, refusing before QEMU boots -- the
-same per-use discipline `plug_run_ring.py` applies to a stale ringplug.
-Re-running the setup script at every re-pin is still the ceremony step;
-the per-job check is what makes forgetting it loud instead of silent.
+**The principles, which are stabler than the file list:**
 
-**Synchronous ssh is the whole protocol.** The wrapper scps the blob
-up, holds one ssh while `ring_compile.py` runs remotely -- log lines
-stream back live, the exit code propagates -- and scps the CDX (and
-its `.map`/`.diags` sidecars) down. Completion needs no polling and
-failure needs no forensics. There is deliberately no queue and no
-service; if the droplet is unreachable, everything still runs locally
-and nothing here is on the critical path.
+- **The appliance holds no logic.** Verbatim driver scripts, kernels,
+  and the seed are PUSHED artifacts; no checkout, no zig, no daemon,
+  no listening port, no state. What can go stale is exactly the pushed
+  artifacts, so every one is guarded twice: sha-verified at push time,
+  and re-verified against the checkout's copy ON EVERY JOB, refusing
+  before QEMU boots -- the per-use discipline `plug_run_ring.py`
+  applies to a stale ringplug, generalized. Staleness checks that need
+  the checkout (re-bundling, source shas) run laptop-side before
+  anything is pushed.
+- **Synchronous ssh is the whole protocol.** One held ssh per job: log
+  lines stream back live, the exit code propagates, artifacts scp back
+  after. No polling, no queue, no service. If the droplet is
+  unreachable, everything still runs locally (`ast/allcycles.sh` is
+  the all-local sweep) and nothing here is on the critical path.
 
 **TCG on purpose, not KVM.** Measured on the warmup blob: droplet TCG
 26s, laptop TCG 31s, droplet KVM 43s. This guest streams output
