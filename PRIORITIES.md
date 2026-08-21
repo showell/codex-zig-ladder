@@ -123,10 +123,26 @@ the console verdict died with a WSL crash at ~21:37Z. What this buys:
   With slack alone both rungs are byte-identical to the bank -- correct
   but sized wrong still holds. A 1.65 MB shortfall is reservation-sizing
   territory, not narrowing territory.
-- whole's segfault at 0x9 looked like a pointer defect and is NOT one:
-  the slack re-run completes byte-identical on both rungs, so it was deck
-  exhaustion in disguise. Do not put it on the finding-24 lead list. All
-  four emit rungs cluster at 27.0-27.1 MB across 3-61 defs
+- **whole's segfault IS finding 24, and MORE DECK MAKES IT GO AWAY.**
+  That pairing is the most useful thing in this item. The crash is in
+  `st_append_code` reading `st.workspace.code_capacity`, faulting at
+  **0x9 = 1 + 8** where finding 24's recorded signature is **0x896 =
+  2190 + 8** -- same function, same field, `workspace` reduced to a small
+  integer. And with `cx_deck_slack` at 128 MB and nothing else changed,
+  both rungs run byte-identical to the bank.
+  So finding 24's "pointer-shaped length" is plausibly a CONSEQUENCE of
+  deck exhaustion clobbering the record rather than an independent
+  field-offset or struct-layout defect. **The decisive experiment is
+  cheap and now possible**: rerun finding 24's own native reproducer
+  (`codexir` on the 2.5 MB subject, 11 seconds) with slack. If it too
+  survives, finding 24 collapses into the sizing story; if it still
+  crashes, the two are separate and the exclusion list stands untouched.
+  (An earlier edit of this file said the opposite -- "deck exhaustion in
+  disguise, not a pointer defect, do not put it on the finding-24 lead
+  list." That was written from the bare `Segmentation fault at address
+  0x9` line without reading the frame beneath it. The slack half was
+  right; the dismissal was wrong.)
+- All four emit rungs cluster at 27.0-27.1 MB across 3-61 defs
   (JUSTIFICATIONS); a ~2 MB bump to the formula's flat term covers every
   measured rung, and the sweep should then run 14/14 with no narrowing.
 - The droplet sweep-prep gap is real: a fresh droplet sandbox carries no

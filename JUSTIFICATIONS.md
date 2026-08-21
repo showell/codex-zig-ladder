@@ -188,9 +188,14 @@ byte-identical to the u48 bank -- the correct-but-sized-wrong verdict
 holds at `86f6fae9`.
 
 The whole unit, same experiment (`ast/whole-slack.zig`, slack only): both
-rungs run to completion byte-identical to the bank -- the sweep's
-`Segmentation fault at address 0x9` was deck exhaustion in disguise, not
-a pointer defect. Its emit placements, zig arm at `86f6fae9`:
+rungs run to completion byte-identical to the bank. Note carefully what
+that does and does not say. The sweep's `Segmentation fault at address
+0x9` is finding 24's signature exactly -- `st_append_code` reading
+`st.workspace.code_capacity`, 0x9 = 1 + 8 against finding 24's 0x896 =
+2190 + 8 -- so the honest reading is that MORE DECK SUPPRESSES FINDING
+24's CRASH, which points at deck exhaustion as its cause rather than
+clearing it as unrelated. PRIORITIES item 1 carries the follow-up.
+Its emit placements, zig arm at `86f6fae9`:
 
     rung   defs  reservation   zig arm     vs reservation
     whole     5   25,493,504   27,016,144   over by 1,522,640 (6.0%)
