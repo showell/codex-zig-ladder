@@ -220,6 +220,31 @@ Still queued from before:
   finding 18's asides (python overflow, C# IrPowInt-as-XOR, the missing
   overflow oracle row).
 
+## 4.5 Execute the rung renames (PROPOSED 2026-08-21, not started)
+
+**Objective: instrument work.** The rung names bury the lead -- `fibx` says
+nothing about what it tests and `scale` names a property of the input. Worse,
+six of fourteen rungs never reach the x86 back end at all and nothing in the
+names says so. The full proposal, mapping and migration plan is
+`RENAME-PROPOSAL.md`; that file is temporary and gets deleted by the commit
+that executes it.
+
+Headlines: a unit is named for the stage it reaches, a rung adds
+`_on_<subject>` only when its unit carries two subjects, and **six names do not
+move**. No re-bank is needed -- no rung name appears in any banked truth as a
+rung name, so the 42 files move by `git mv` with their bytes unchanged.
+
+**Do it when the deck investigation settles, not before.** Every finding
+written this week refers to the current names, and renaming while we are still
+re-reading them costs more than it saves.
+
+The one hazard worth carrying in your head: all `ast/` outputs are gitignored,
+so after a rename the tree still holds a complete set of real, plausible,
+pre-rename artifacts under the old names. Three sites spell old names as
+literals without deriving them from `LADDER_RUNGS` -- `ast/f3_run.zig:222`,
+`ast/f4_boot.py:26-29`, `overnight_verify.sh:99-100` -- and a missed one reads
+yesterday's dump and passes green. Clean the orphans before the first sweep.
+
 ## 5. Diagnostics as a banked set
 
 **Objective: instrument work.** A pinned count says something changed; a
