@@ -40,38 +40,81 @@ whole compiler survive transpilation". Everything below is the cheap loop.
 
 ---
 
-## 1. The heap unification -- VERIFIED RED, one defect fixed, one open
+## 1. The heap unification -- five fixes landed 2026-08-21, one crash open
 
-**Objective: land our own fix. The verification stopped being due
-diligence the moment it went red; finishing it is now hunting our own
-plug.** `findings/zig-heap-unification.md` -- the design note, plus the
-2026-08-21 section that is the live diagnosis. Read that section before
-touching this; it records what is ruled out as well as what is known,
-and one of the exclusions (the deck nesting model) cost hours and looks
-exactly like a cause.
+**Objective: land our own fix; finishing it is hunting our own plug.**
+`findings/zig-heap-unification.md` for the design and the deck diagnosis;
+`findings/README.md` 21-27 for what the unit tests found. Read the
+EXCLUSIONS before touching anything -- several plausible mechanisms are
+recorded as refuted, each with the test that killed it, and re-running them
+is the main way to waste a day here.
 
-State: 10/14 rungs byte-identical to the u48 bank, `fibx` and `whole`
-red. With reclaim disabled both are byte-identical, so the rest of the
-branch is correct. **Defect A fixed** (`14b2b8b6`, `cx_ll_with_capacity`
-discarded its argument -- the emit tables were reallocating inside
-`emit_all_defs`' bracket, exactly the corruption the compiler's own
-guard text predicts). **A second escape is open**, symptom 0x896;
-prime suspect is list growth schedule against bare metal's explicit
-headroom. Next instrument is poison-on-restore -- the plan is in the
-findings doc.
+Landed on `zig-plug-heap-unification` today, all measured on both arms:
+`14b2b8b6` list capacity honoured, `c09cd892` list constructors reserve the
+true total (6.96 MB of deck), `86675554` text concat extends in place
+(finding 22, the asymptotic one), `6fe3f49d` uncovered codepoint substitutes
+rather than refusing (finding 23, which unblocked the native loop on real
+source), `1a5ec700` peek-qword wraps (finding 26), `3c4c00d6` reserve with
+rawAlloc (finding 27 -- and 38.0s/15.3s sys becomes 11.4s/1.8s, because the
+old code committed all 1.5 GiB).
 
-Cheap loop, established 2026-08-21: patch the emitted `ast/fibx.zig`
-prelude and `zig run` it -- **ten seconds**, versus ~11 minutes for the
-rung, because the ring transpile is what costs. Truth rides stderr, so
-stdout is free for instrumentation.
+**A full heap-branch sweep is running on the droplet** in sandbox
+`20260821T163244Z-heap-sweep` (ladder 0b6ff4d, codex 3c4c00d6), launched
+2026-08-21 16:32Z, ~45 min. It answers whether the five fixes move the
+previous 10/14. Read `$SANDBOX/sweep.log`.
 
-Still unanswered from the original design, and still required before the
-PR: what an out-of-region absolute address means (the SMP subjects peek
-~2.1 GB against RLIMIT_AS caps that count reserved space, not resident
-pages). Pre-approved in shape by Damian ("send it as its own PR when the
-hunt settles"), as are the `cx_show_int` double allocation and the
-per-instruction throwaway list. Sends after 76, off whatever base is
-current when it goes.
+**Still open: finding 24**, the `codexir` crash on the 2.5 MB subject, which
+now reproduces natively in 11 seconds instead of eleven minutes through
+QEMU. Ruled out by measurement, do not re-test: use-after-reclaim (that
+binary never calls `__heap-restore`), reuse of freed memory (free made a
+no-op changes nothing -- run twice), the in-place concat, a wrong argument
+(pointer identical at creation and use, length zero), the deck guard, an
+out-of-buffer write (unchecked on BOTH arms, so upstream semantics), and the
+0xAA fill (zero-filling changes nothing). The live lead is the shape of the
+corrupt value: a length field of order 1.3e14, which is POINTER-shaped in
+the Linux mmap regime rather than 0xAAAA-shaped. That reads as field-offset
+confusion or a struct-layout mismatch -- a pointer sitting where a length
+belongs -- not as uninitialised or stale memory.
+
+Still unanswered from the original design and still required before the PR:
+what an out-of-region absolute address means (the SMP subjects peek ~2.1 GB
+against RLIMIT_AS caps that count reserved space, not resident pages).
+Sends after 76.
+
+## 1.5 The unit tests -- ONGOING, and currently the best yield per minute
+
+**Objective: instrument work that keeps turning into hunting.** Small Codex
+programs, one per primitive tier, run on BOTH arms through the real
+toolchains and compared. Ordered by what a failure invalidates rather than
+by difficulty: if `__heap-save` does not observe allocation, every cost in
+every other file is a zero that means nothing.
+
+Written and carrying both columns: `findings/prim-deck.codex` (tier 0 the
+meter, tier 1 the two cursors, 16 assertions), `findings/prim-lists.codex`
+(tier 2, and `findings/primitive-costs.md` is its 26-row table),
+`findings/prim-text.codex` (tier 3 text and CCE),
+`findings/prim-buffers.codex` (tier 5 buffers).
+`findings/probe-memory-model.codex` carries the quadratic detector and
+predates the tiers.
+
+Not yet written: **tier 4, records and closures** -- record allocation cost,
+`__record-set` mutating and returning the same object, closure capture and
+the `.call(.ctx, ...)` shape. Then **tier 6, the composites** --
+`emit-build`'s reservation, `accum-capacity` pre-sizing, the per-definition
+save/restore bracket -- which are only interpretable once 0-5 are pinned.
+
+Rules that make these worth the trouble. Codex whenever the property is
+observable from inside a Codex program, so bare metal is the oracle; zig
+only when it is not, and then it is a regression test with no oracle and
+must be labelled so. Never print an address. Assert the instrument before
+believing it -- every file checks that its own meter reads a known
+reservation. And keep a control: `cat-accum` is quadratic on BOTH arms, so
+it is inherent to the source and not ours, and without that column it would
+have been filed as a plug defect.
+
+Yield so far, in one morning: findings 22, 23, 25, 26 and 27, of which 25
+was invisible to eleven days of rung sweeps because the ladder's own slugs
+coincide.
 
 ## 2. The external review, in three batches
 
