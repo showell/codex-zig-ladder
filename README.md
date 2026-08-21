@@ -514,6 +514,66 @@ The ladder repo itself clones from
 `git@github.com:showell/codex-zig-ladder.git`; see the NOT-tracked
 paragraph above for what a fresh ladder clone must regenerate first.
 
+## The zig build mode is part of the experiment
+
+**Every zig build in this ladder is Debug, and that is a decision rather than
+a default nobody looked at.** No `-O` flag appears anywhere in the repository:
+`native_build.sh`, `cycle.sh`, `tier_run.py`, `overnight_verify.sh`,
+`ast/oracle_lib.sh` and `recon.sh` all invoke `zig run` or `zig build-exe`
+bare, and bare means Debug.
+
+Keep it that way, for a reason specific to what this ladder is for. Its job is
+to find places where the plug and bare metal disagree. Debug turns undefined
+behaviour into a loud panic at the point it happens; a release mode turns the
+same divergence into a wrong answer that may still compare byte-identical by
+luck, and a rung that passes by luck is worse than one that fails.
+
+**What actually changes with the mode.** Measured on zig 0.16.0, one program
+per cell:
+
+| behaviour | Debug | ReleaseSafe | ReleaseFast | ReleaseSmall |
+|---|---|---|---|---|
+| a local declared `= undefined` reads as | **0xAA** | 0x00 | 0x00 | 0x00 |
+| signed overflow | **panic** | **panic** | wraps | wraps |
+| slice index past the end | panic | panic | UB | UB |
+| `@intCast` out of range | panic | panic | UB | UB |
+
+The top two rows are measured, one program per cell. The bottom two follow
+zig's documented safety-check placement and have not been measured cell by
+cell here, though they are the ones this ladder leans on hardest.
+
+The first row is a narrower claim than it looks and is **not** the same
+question as finding 27's. That finding is about `Allocator.alloc`'s
+`@memset(_, undefined)` on a runtime-sized buffer surviving optimisation; this
+row is about a fixed-size local, which a release build is free to fold away
+whether or not the memset elsewhere survives. Do not read one as evidence for
+the other -- they were conflated once already while this table was being
+written.
+
+**The asymmetry with bare metal is the part worth internalising.** Bare metal
+has no build mode. Its guarantees are *in the instruction stream*:
+`emit-index-bounds` emits two UD2s around every `list-at` and `char-at`, and
+`emit-substring-bounds` emits three around every `substring`. Ours are partly
+in the build mode. `cx_list_at` is `l.items.items[@intCast(i)]` and
+`cx_char_at` is `s[@intCast(i)]` -- both correct today, both correct *because
+we build Debug*. So "the plug matches bare metal on out-of-range access" is a
+claim about Debug, and only about Debug.
+
+**This has already bitten once.** Finding 27 hid for as long as it did because
+its mechanism was mode-dependent: `Allocator.alloc` memsets to `undefined`,
+which is 0xAA in Debug and elided in ReleaseFast, so the old code was
+zero-and-lazy in a release build and 0xAA-and-committed only in the mode we
+actually use. Finding 18 is the same family from the other side -- the plug was
+overflow-checked where the language wraps, and the fix was to use wrapping
+operators, which are mode-independent *on purpose*.
+
+**So if anyone ever wants release-mode rungs**, the prelude has to carry its
+own explicit checks first, rather than borrowing zig's. Otherwise several
+guarantees the findings register depends on evaporate silently and the ladder
+stays green while doing it. Changing the mode also invalidates the plug arm of
+every banked truth; the bare-metal arm is unaffected, which is why
+`tier_run.py` banks that column and not this one.
+
 ## Running it
 
 Paths below are relative to this repository; the bundlers and rung scripts
