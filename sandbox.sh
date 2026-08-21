@@ -82,7 +82,11 @@ export SANDBOX="$run"
 # guests at 1300 MB and pins TCG; the laptop wants the tool defaults, and a
 # native build inside a 1300 MB guest does not finish. Baking one venue's
 # numbers into a host-agnostic script is how that failure arrives silently.
-[ -f "\$HOME/.codex_ladder_env" ] && . "\$HOME/.codex_ladder_env"
+if [ -f "\$HOME/.codex_ladder_env" ]; then . "\$HOME/.codex_ladder_env"; fi
+# `env` must succeed even when the host file is absent: a trailing test that
+# fails makes `. env` return 1 and silently short-circuits the caller's
+# `&&` chain, which cost one build launch.
+:
 EOF
 
 {
