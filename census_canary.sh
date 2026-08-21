@@ -20,11 +20,31 @@
 # hand-written `.expected`, and together they reach every changed builtin
 # that any clean program can reach:
 #
-#   deck-bracket-contract   __deck-set, __deck-enter
-#   text-helper-native      text-replace, text-split   (2202d3e5's only venue)
-#   frameless-leaf-probe    bit-shl, bit-shru
-#   shadow-builtin-fold     substring
-#   textscan-test           char-code
+#   deck-bracket-contract   __deck-set, __deck-enter          expect match
+#   text-helper-native      text-replace, text-split          expect match
+#   frameless-leaf-probe    bit-shl, bit-shru                 expect match
+#   text-append-alias       char-code                         expect match
+#   shadow-builtin-fold     substring                         expect DIFFER
+#
+# Four of the five are expected to MATCH, and were chosen that way: a rung
+# that is red before you start cannot tell you anything by being red. Each
+# carried verdict `match` in the 08-20 bank and still transpiles clean.
+# `textscan-test` held the char-code slot first and is a standing `refused`
+# (`expected type 'i64', found 'bool'`, shared with `stringutils-test` and
+# `tls13-schedule`); `text-append-alias` covers the same builtin and is
+# green, so it took the slot.
+#
+# `shadow-builtin-fold` is the exception and is kept deliberately. It is the
+# ONLY program in 572 that calls `substring`, transpiles, and has an oracle
+# -- the other two are `lang-smoke` (blocked on map-list) and
+# `substring-over-read` (no `.expected`). It reports
+# `want 99/99/77, got 3/3/5`: builtin interception ignoring user shadowing,
+# which was found and FIXED on 2026-08-20 as `993d9f8b`, went upstream in
+# PR 76, and PR 76 IS STILL UNABSORBED -- so the fix is on `u47-rebank` and
+# not on the u48 pin this branch is cut from. The red is expected, external,
+# and stable. Do not re-investigate it; if it ever stops differing, PR 76
+# landed. The signal from this rung is the runner's `no verdict moved vs
+# bank` line, not its tally.
 #
 # Three criteria, and the third was learned the hard way: calls a changed
 # builtin, TRANSPILES CLEAN, and is not on hardware-only.txt. A first
@@ -64,7 +84,7 @@
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 
-CANARY_PROGRAMS="deck-bracket-contract,text-helper-native,frameless-leaf-probe,shadow-builtin-fold,textscan-test"
+CANARY_PROGRAMS="deck-bracket-contract,text-helper-native,frameless-leaf-probe,text-append-alias,shadow-builtin-fold"
 
 echo "### census_canary $(date +%H:%M:%S)"
 python3 -u "$T/corpus_run.py" --run --only "$CANARY_PROGRAMS"
