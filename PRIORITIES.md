@@ -40,37 +40,44 @@ whole compiler survive transpilation". Everything below is the cheap loop.
 
 ---
 
-## 1. The heap unification -- nine fixes landed 2026-08-21, one crash open
+## 1. The heap unification -- the branch carries the fixes, one crash open
 
 **Objective: land our own fix; finishing it is hunting our own plug.**
 `findings/zig-heap-unification.md` for the design and the deck diagnosis;
-`findings/README.md` 21-27 for what the unit tests found. Read the
+`findings/README.md` 21-29 for what the unit tests found. Read the
 EXCLUSIONS before touching anything -- several plausible mechanisms are
 recorded as refuted, each with the test that killed it, and re-running them
 is the main way to waste a day here.
 
-Landed on `zig-plug-heap-unification` today, all measured on both arms:
-`14b2b8b6` list capacity honoured, `c09cd892` list constructors reserve the
-true total (6.96 MB of deck), `86675554` text concat extends in place
-(finding 22, the asymptotic one), `6fe3f49d` uncovered codepoint substitutes
-rather than refusing (finding 23, which unblocked the native loop on real
-source), `1a5ec700` peek-qword wraps (finding 26), `3c4c00d6` reserve with
-rawAlloc (finding 27 -- and 38.0s/15.3s sys becomes 11.4s/1.8s, because the
-old code committed all 1.5 GiB), `def42bc7` substring traps out of range
-instead of clamping (finding 28), `35292021` text results are copies so a
-decked text is really decked (finding 29, three aliasing sites).
+Landed on `zig-plug-heap-unification` 2026-08-21, each measured on both
+arms. `git log --oneline master..zig-plug-heap-unification` is the list; what
+each one bought:
 
-**BLOCKER: the natives predate the last four changes.** `codexir` and
-`zigemit` were built at 10:36/11:14 and carry the old prelude, so findings 28
-and 29 are verified as standalone zig only, and tier 3's zig column is
-knowingly stale (marked as such in `primitive-costs.md`). `native_build.sh`
-in a sandbox is the gate for everything downstream, and it is the
->25-minute class.
+    14b2b8b6  __list-with-capacity honoured, and a cursor-collision refusal
+    62ee2dd2  a deck allocation overrunning its reservation now refuses
+    c09cd892  list constructors reserve the true total -- 6.96 MB of deck
+    86675554  text concat extends in place            finding 22, asymptotic
+    6fe3f49d  an uncovered codepoint substitutes      finding 23
+    1a5ec700  peek-qword wraps                        finding 26
+    3c4c00d6  reserve with rawAlloc                   finding 27
+    def42bc7  substring traps out of range            finding 28
+    35292021  substring and split copy                finding 29
+    2202d3e5  text-replace copies                     finding 29, 4th site
+
+Finding 23 is the one that unblocked the native loop on real source, and
+finding 27 took a compile from 38.0s real / 15.3s sys to 11.4s / 1.8s,
+because the old code committed all 1.5 GiB.
+
+**The natives must be rebuilt after any of these, and that is the gate for
+everything downstream.** `native_build.sh` in a sandbox, >25 minutes, and
+nothing else may touch the CPU while it runs: the guest asks for 3072 MB on
+a 3849 MB box, and a concurrent `zig run` is enough to stall its transport
+mid-transfer.
 
 **The droplet sweep was killed at 10/14 with fibx stalled on stale IR, so
 it answered nothing.** Re-running it is now the question that GATES the Text
-narrowing rather than a status check: seven of the nine fixes landed after
-the last real deck measurement, and if the four emit rungs now fit their
+narrowing rather than a status check: most of these fixes landed after the
+last real deck measurement, and if the four emit rungs now fit their
 reservation the narrowing may be unnecessary. Cheaper than the narrowing
 either way, and if they still overflow it says by how much. Needs the
 rebuilt natives first.
