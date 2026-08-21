@@ -73,17 +73,30 @@ Finding 23 is the one that unblocked the native loop on real source, and
 finding 27 took a compile from 38.0s real / 15.3s sys to 11.4s / 1.8s,
 because the old code committed all 1.5 GiB.
 
-Natives rebuilt 2026-08-21 in sandbox `20260821T180749Z-natives-f29b`
-through `2202d3e5`, and findings 28, 29 and 30 are confirmed on both arms
-through them. **`c86e66d5` postdates that build and is verified as standalone
-zig only**; `findings/gold/probe-shift-count.txt` holds the bare-metal column
-it must match, so confirming it after the next rebuild is one command.
+Natives rebuilt 2026-08-21 EVENING in sandbox `20260821T215618Z-natives-census`
+at `574c87a6` (branch tip), so they now carry every fix through
+`c86e66d5`/`f8e97925`. **`c86e66d5` is CONFIRMED against bare metal**:
+`./tier_run.py findings/probe-shift-count.codex` is 17 lines byte-identical
+to `findings/gold/probe-shift-count.txt`. `prim-text` through the same
+natives agrees on every semantic row (`replace works yes` both arms, which
+is `2202d3e5`); its 12 differing rows are all COST rows, and the zig column
+is now mostly BELOW bare metal where it used to be above.
+
+That rebuild also surfaced a harness defect worth knowing about: the marker
+scan counted the prelude's `cx_address_of` comptime guard as a refusal, so
+**every native build had been refusing itself since `f8e97925` landed** --
+one marker in 2.7 MB, from prelude text no subject reaches. Same guard
+printed a spurious `gap:` on every `tier_run`. Both now read
+`findings/prelude-comptime-guards.txt`; read that file before adding to it.
 
 **The natives must be rebuilt after any emitter change, and that is the gate
 for everything downstream.** `native_build.sh` in a sandbox, >25 minutes, and
 nothing else may touch the CPU while it runs: the guest asks for 3072 MB on
 a 3849 MB box, and a concurrent `zig run` is enough to stall its transport
-mid-transfer.
+mid-transfer. **It runs HERE, not on the droplet** -- that venue pins a
+1300 MB guest and the build does not fail there, it HANGS (three seconds of
+CPU in eighteen minutes, no output). `native_build.sh` refuses the droplet
+venue outright now; the toggle remains right for the sweep's ordinary rungs.
 
 **The sweep re-ran locally 2026-08-21 and answered: 10/12 green, both emit
 rungs still red -- but red LOUDLY now.** Sandbox
