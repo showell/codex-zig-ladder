@@ -51,6 +51,25 @@ Section: Instrument
  taken without the run growing to match. Only the Integer escapes the
  window, so nothing reclaimed is read.
 
+ Running it on both arms. The zig arm is three native processes and no VM:
+ `./native/codexir < findings/probe-memory-model.codex 2> p.ir`, then
+ `./native/zigemit < p.ir 2> p.zig`, then `zig run p.zig` -- output is on
+ stderr, hence the redirects. The bare-metal arm needs the cites resolved
+ first, which the zig path does for itself and this one does not:
+ `cite_resolve.resolve()` the file, wrap the unit as
+ `b"CDX map decks=100\n" + unit + b"\x04"`, then `codex_vm.py compile` it
+ and `codex_vm.py run` the result. Measured 2026-08-21: four seconds to
+ compile, instant to run. That is the point of keeping this small -- the
+ same question against the fibx unit is eleven minutes a side.
+
+ Two things this probe will not tell you unless you keep them in mind. The
+ bare-metal compile runs the inline passes (fold-constants, inline-leaf-calls,
+ inline-single-caller) and a plug path may not, so constants can shift between
+ arms for reasons that are not the allocator. And every meter is a
+ `__heap-save` delta, so it sees only what the frontier sees: on a plug where
+ objects come from somewhere other than the bump pointer, every meter reads
+ zero and `frontier observes allocation` says so rather than lying.
+
   measure : (Integer -> Integer) -> Integer
   measure (f) =
    let h0 = __heap-save
@@ -131,7 +150,7 @@ Section: Contract
    in let kept = deck-record (cat-loop 0 8 [])
    in let k1 = __heap-restore keep0
    in let survived = list-length kept
-   in let metered = measure (\z -> __heap-advance (z + 1024))
+   in let metered = measure (\z -> let adv = __heap-advance (z + 1024) in z)
    in let observes = measure (\z -> list-length [z, 1, 2, 3, 4, 5, 6, 7])
    in act
      print-line-uni ("enter switches to the mark : " & show-yn (on-deck == mark))
