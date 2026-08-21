@@ -258,3 +258,69 @@ Ten rungs green would have signed off on both defects. Only `fibx` and
 `whole` allocate enough for a reclaim to be reached by a later allocation.
 That is the argument for keeping expensive scale rungs in the ladder,
 stated as a measurement rather than a preference.
+
+## ROOT CAUSE, 2026-08-21 evening: the deck overruns its reservation
+
+Measured, with the arithmetic closing exactly. Supersedes the "open second
+escape" above; that section's ruled-out list still stands EXCEPT the deck
+collision, which is back on and is the cause (see the correction below).
+
+`emit-build` places the deck at the current frontier with `__deck-set` and
+then lifts the main frontier clear of it with `__heap-advance`, reserving
+`defs*65536 + 25165824` bytes. For fibx (3 IR definitions) that is
+**25362432 bytes at [115842304, 141204736)**, and the main frontier is
+lifted to exactly 141204736 -- so the parked main frontier IS the deck's
+top. **Nothing enforces the bound**: `cx_bump_alloc` checked only the
+1.5 GiB reserve ceiling.
+
+The deck ran to **149817824 -- 8613088 bytes over**. Out there it
+allocated the `CodegenState` that `emit-all-defs` deliberately decks (so
+it survives the per-definition restores) at 149819928. The main frontier,
+rewound to 141204736 by those same restores, then climbed back; at
+`build_debug_map` it crossed 149819928 and wrote over that record.
+`st.workspace` became **2190**, and the next read of
+`st2d.workspace.code_capacity` faulted at **0x896 = 2190 + 8**, the offset
+of that field.
+
+Chain, end to end: deck overruns -> decked state lands in main's region ->
+main reallocates over it -> a pointer field becomes a small integer ->
+segfault thousands of allocations later, in a hash function, with nothing
+near the actual fault.
+
+**Upstream has seen this exact shape.** `BuildSettings.codex` records that
+starving the deck floor "did not raise CDX9002; it crashed in
+__text_compare on a garbage pointer, which is the failure the guard exists
+to prevent, with the guard present and compiled in" -- because
+`deck-short-of` reads `__deck-pos`, and that cell is **frozen** inside a
+phase-wide extent while the real cursor moves in R10. So the exhaustion
+guard cannot fire where exhaustion happens. Worth raising with Damian
+independently of our fix.
+
+Landed: `62ee2dd2` refuses the crossing instead of corrupting silently --
+inside an extent the bound is `cx_bivy`, outside it `cx_dptr`, both live
+cursors because the program chooses where the deck goes.
+
+**Still open, and now a sizing question rather than a mystery:** the zig
+arm needs more deck than bare metal reserves for the same program (8.6 MB
+more on fibx, against a 25 MB reservation -- roughly a third over). The
+likely reason is representation width: text is a 16-byte slice here where
+bare metal carries a pointer, and every list adds a CxList indirection
+plus an ArrayList header. Options are to shrink deck consumption or to
+scale the reservation on this arm; the second diverges from a number the
+depot can observe (`__deck-pos`), so it is not a free choice.
+
+### Correction: how the earlier exclusion went wrong
+
+The 2026-08-21 morning section lists "the frontier entering the deck" as
+ruled out. That was wrong, and the mechanism of the error is worth more
+than the error: the invariant check **never armed**. It armed only when a
+`__heap-advance` pushed the frontier past a recorded deck top, and
+`__deck-set` is called three times in this program -- the arming flag was
+reset by a later placement and never set again. A guard that never runs
+is exactly as quiet as a guard that passes, and the silence was read as
+evidence.
+
+The rule that follows: **an instrument must report how many times it
+actually executed.** The run that found the root cause printed
+`checks_run=` in its panic and logged every deck placement; that is why
+the third `__deck-set` -- the one that mattered -- was visible at all.
