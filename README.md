@@ -651,6 +651,38 @@ one-compute-job rule becomes per-host. The laptop can bundle, build
 zig and diff while the droplet grinds a compile -- two QEMU-scale jobs
 that used to serialize on one 3.8 GB machine now overlap across two.
 
+## One sandbox per experiment
+
+Every run on a shared box gets its own directory. `./sandbox.sh <label>`
+makes two detached worktrees -- the ladder and a Codex checkout -- plus an
+`env` file that points `CODEX_ROOT` inside the sandbox, and a `MANIFEST`
+recording both commits. Then:
+
+    ./sandbox.sh my-experiment
+    cd ~/runs/<stamp>-my-experiment/ladder && . ../env
+
+`./sandbox.sh --list` shows them; `./sandbox.sh --prune [keep]` removes all
+but the newest N and prunes the worktrees.
+
+The failure this prevents is not a run that crashes. It is a run that reads
+yesterday's artifact and PASSES. Every output the ladder produces is
+gitignored -- `ast/*.truth`, `*.truth.prov`, `*.ir`, `*.zig`, `*-subject.codex`,
+`native/*` -- so a shared checkout quietly accumulates a complete set of
+plausible, real, stale files under exactly the names the next run looks for.
+Two instances in one afternoon on 2026-08-21: a debug-instrumented
+`native/codexir` and a clobbered `ast/codexir.zig` left where a later census
+would have used them without complaint, and blobs written to fixed `/tmp`
+paths that a second experiment would have overwritten.
+
+A fresh worktree carries none of those, which is the whole point: a run that
+needs natives must build them or be handed them deliberately, and cannot
+inherit them by accident. Worktrees share the object store, so the cost is
+the working tree rather than the history -- about 800 MB a sandbox against
+60 GB free on the droplet.
+
+Pointing `CODEX_ROOT` inside the sandbox is deliberate too: it makes "someone
+pulled the shared checkout mid-run" stop being a thing that can happen.
+
 ## Operating rules
 
 1. **Sweep after any emitter change.** `ast/allcycles.sh`. One rung passing
