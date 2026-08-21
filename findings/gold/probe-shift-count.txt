@@ -1,0 +1,18 @@
+# key e7b1cf5450aabef3
+-- in range, expected identical on both arms --
+shl 1 by 0    1
+shl 1 by 4    16
+shl 1 by 62   4611686018427387904
+shr 256 by 4  16
+shr -256 by 4 -16
+shru 256 by 4 16
+shr is arith  yes
+-- out of range: x86 masks the count to six bits --
+shl 1 by 64   1
+shl 1 by 65   2
+shr 256 by 68 16
+shru 256 by 6816
+-- negative counts take their low six bits --
+shl 1 by -1   -9223372036854775808
+shl 1 by -64  1
+-- reached the end, so this arm masked rather than trapping --

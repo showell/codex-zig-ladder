@@ -93,11 +93,10 @@ they now agree too: finding 28's fix makes us trap where we clamped, probed
 separately in `findings/probe-substring-trap.codex` because a tier file that
 trapped would take its other assertions down with it.
 
-**Provenance of the post-fix column.** Measured through a `zigemit` built from
-`35292021` paired with a `codexir` from the previous build, because that
-sandbox's own `codexir` transpile stalled. Legitimate for these rows -- the
-prelude comes from `zigemit` and `codexir` only turns `.codex` into IR -- and
-recorded rather than smoothed over. To be re-taken from a clean pair.
+Both columns come from a clean native pair built in sandbox
+`20260821T180749Z-natives-f29b` (ladder `eec62b8`, codex `2202d3e5`). The
+whole file runs 51 lines with 12 differing, and every one of the 12 is a cost
+row: the CCE codes and all fifteen semantic assertions are identical.
 
 ### Tier 4: records and closures (`findings/prim-records.codex`)
 
