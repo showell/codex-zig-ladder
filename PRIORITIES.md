@@ -112,15 +112,25 @@ All seven tiers exist and carry both columns:
 
     tier 0/1  findings/prim-deck.codex       the meter, the two cursors    16 assertions
     tier 2    findings/prim-lists.codex      lists                          26 cost rows
-    tier 3    findings/prim-text.codex       text and CCE
+    tier 3    findings/prim-text.codex       text, CCE, substring, split
     tier 4    findings/prim-records.codex    records and closures
     tier 5    findings/prim-buffers.codex    raw buffers
     tier 6    findings/prim-composite.codex  emit-all-defs in miniature      9 assertions
 
 `findings/primitive-costs.md` is the cost table; `findings/probe-memory-model.codex`
-carries the quadratic detector and predates the tiers. Small probes that
-isolate one answer live beside them: `probe-peek-qword`, `probe-fresh-span`,
-`prim-cce`.
+carries the quadratic detector and predates the tiers. `prim-text-semantics`
+pins what text MEANS rather than what it costs, as the before-picture for the
+`Text` narrowing.
+
+Small probes isolating one answer live beside them, and three exist because a
+tier file could not hold the question: `probe-substring-trap` and
+`probe-shift-count` each kill one arm on purpose, and `probe-deck-substring`
+needs a rewind and a clobber to make its answer visible. Also
+`probe-peek-qword`, `probe-fresh-span`, `prim-cce`.
+
+**A tier file cannot assert anything that traps.** One trap takes the file's
+other forty assertions with it, so a guarantee question gets its own probe and
+the tier keeps the in-range rows.
 
 **Ask whether a helper FAILS on the same inputs, not just whether it computes
 the same answer.** Findings 28 and 29 both came from that question and neither
@@ -136,8 +146,9 @@ anyone thought to look. Tier 6 would have caught defect A outright -- when
 would have said no, in about a second.
 
 **Standing work, not a finished task.** Run the tiers after any emitter
-change; they are seconds a side and they are the cheapest signal we have. Add
-a tier row whenever a finding names a primitive that has none.
+change -- `tier_run.py <file>` does both arms and diffs them, and it banks the
+bare-metal column, so only the plug's side costs anything after the first run.
+Add a tier row whenever a finding names a primitive that has none.
 
 Rules that make these worth the trouble. Codex whenever the property is
 observable from inside a Codex program, so bare metal is the oracle; zig only
