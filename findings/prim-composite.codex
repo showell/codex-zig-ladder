@@ -1,0 +1,103 @@
+Chapter: PrimComposite
+  cites Foreword chapter Console
+
+ Tier 6: the composites. Everything below is built out of tiers 0-5, and it is
+ where the expensive bugs actually were, so it is only interpretable once
+ those are pinned.
+
+ This models `emit-all-defs` in miniature. The real thing: reserve a deck with
+ `emit-build`, pre-size a dozen accumulator tables to `accum-capacity`, then
+ for each definition take `__heap-save`, emit freely, extract only SCALARS,
+ `__heap-restore`, and carry the accumulated state forward on the deck. The
+ discipline that makes it safe is that only integers cross the bracket, and
+ that the accumulators never reallocate inside one -- which is why they are
+ pre-sized. A push past the pre-sized capacity reallocates into scratch the
+ bracket then reclaims, and the table is left pointing at freed memory.
+
+ Both heap defects of 2026-08-21 lived in exactly this shape. The first was
+ `__list-with-capacity` discarding its argument, so the tables started at
+ capacity zero and grew inside the bracket -- and this test would have caught
+ it, because `table survived N brackets` would have said no. The second was
+ the deck outgrowing the reservation `emit-build` makes for it.
+
+ The counts here are tiny -- eight items, a table pre-sized to sixty-four --
+ so every number can be worked out on paper. The point is the SHAPE, not the
+ scale.
+
+ deck-record is declared as the identity it is; the code generator gives it
+ meaning by name. Note that bare metal only intercepts it when its defining
+ chapter matches init-phase-allocator's, and this chapter is neither, so on
+ bare metal it stays identity while the zig plug brackets it -- finding 25.
+ Nothing below depends on which happens; the survivor test uses an explicit
+ deck reservation instead.
+
+Section: Instrument
+
+  deck-record : a -> a
+  deck-record (x) = x
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+Section: Shapes
+
+ One "definition": allocate scratch, read one scalar out of it, append that
+ scalar to the accumulator, restore. The accumulator must outlive the restore
+ because it was created before the bracket and never regrown inside it.
+
+  emit-one : List Integer, Integer -> List Integer
+  emit-one (acc) (n) =
+   let h = __heap-save
+   in let scratch = [n, n + 1, n + 2, n + 3, n + 4, n + 5, n + 6, n + 7]
+   in let taken = list-at scratch 3
+   in let pushed = list-push acc taken
+   in let back = __heap-restore h
+   in pushed
+
+  emit-all : List Integer, Integer, Integer -> List Integer
+  emit-all (acc) (i) (n) =
+   if i >= n then acc
+   else emit-all (emit-one acc i) (i + 1) n
+
+  sum-list : List Integer, Integer, Integer, Integer -> Integer
+  sum-list (l) (i) (n) (acc) =
+   if i >= n then acc
+   else sum-list l (i + 1) n (acc + list-at l i)
+
+  table : Integer -> List Integer
+  table (cap) = __list-with-capacity cap
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- the emit-all-defs shape, eight items, table pre-sized to 64 --"
+   let base = __heap-save
+   in let m = __deck-set base
+   in let lift = __heap-advance 1048576
+   in let acc0 = deck-record (table 64)
+   in let before = __heap-save
+   in let acc = emit-all acc0 0 8
+   in let after = __heap-save
+   in act
+     print-line-uni ("table survived 8 brackets  : " & show-yn (list-length acc == 8))
+     print-line-uni ("contents are what we pushed: " & show-yn (sum-list acc 0 8 0 == 52))
+     print-line-uni ("first entry is right       : " & show-yn (list-at acc 0 == 3))
+     print-line-uni ("last entry is right        : " & show-yn (list-at acc 7 == 10))
+     print-line-uni ("frontier returned to start : " & show-yn (after == before))
+     print-line-uni ("  (all yes = only scalars crossed the bracket)")
+   end
+   print-line-uni "-- a scalar crosses a bracket; a list allocated inside does not --"
+   let h = __heap-save
+   in let inside = list-at [7, 8, 9] 1
+   in let back = __heap-restore h
+   in print-line-uni ("scalar survives the rewind : " & show-yn (inside == 8))
+   print-line-uni "-- the reservation is finite and its size is observable --"
+   let b2 = __heap-save
+   in let m2 = __deck-set b2
+   in let lift2 = __heap-advance 65536
+   in let top = __heap-save
+   in act
+     print-line-uni ("lift is exactly the reserve: " & show-yn (top - b2 == 65536))
+     print-line-uni ("deck starts at the mark    : " & show-yn (__deck-pos == b2))
+   end
+  end
