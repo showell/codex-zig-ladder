@@ -103,9 +103,13 @@ CX-DECK line. The sandbox ladder predates the sweep-digest commit
 (`00cf4bd`), so these artifacts under `ladder/ast/` are the only record --
 the console verdict died with a WSL crash at ~21:37Z. What this buys:
 
-- The Text-narrowing question stays open but is sharper: the emit rungs
-  still do not fit, and the refusal now names the exact cursor positions
-  at collision instead of corrupting silently.
+- The Text-narrowing question is answered by the slack re-run (evening,
+  JUSTIFICATIONS deck table, second column): the fixes cut the zig arm
+  from 1.437× to 1.142× bare metal, scale now FITS its reservation, and
+  fibx overflows by 1.65 MB (6.5%) where the morning's gap was 8.6 MB.
+  With slack alone both rungs are byte-identical to the bank -- correct
+  but sized wrong still holds. A 1.65 MB shortfall is reservation-sizing
+  territory, not narrowing territory.
 - whole's segfault at 0x9 is a near-null address, not a deck symptom --
   a new datum for the finding-24 pointer-shaped-value lead list.
 - The droplet sweep-prep gap is real: a fresh droplet sandbox carries no

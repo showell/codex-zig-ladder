@@ -168,3 +168,21 @@ reservation multiplied by four and **nothing else changed**, the branch
 runs to completion and both rungs are byte-identical to the u48 bank
 (fibx 282995 bytes, scale 336800). The heap unification is correct; it is
 sized wrong.
+
+Re-measured 2026-08-21 evening, after the day's branch fixes, on the swept
+artifact itself: sandbox `20260821T204032Z-longsweep`, emitter `86f6fae9`,
+`ast/fibx-slack.zig` = the swept `fibx.zig` with only `cx_deck_slack`
+raised to 128 MB, peaks read from the CX-DECK instrument stream (stdout).
+Bare-metal column unchanged from above -- same subjects, same seed.
+
+    rung   defs  reservation   bare metal   zig arm     zig/bare  vs reservation
+    fibx      3   25,362,432   23,654,536   27,014,528    1.142×   over by 1,652,096 (6.5%)
+    scale    61   29,163,520   23,708,712   27,064,232    1.142×   fits, 2,099,288 free
+
+The day's fixes cut the zig arm from 1.437× bare metal to 1.142×, again
+flat across 3 and 61 definitions. scale now FITS its reservation; fibx
+still overflows, but by 1.65 MB where the morning's gap was 8.6 MB. The
+top-level placements used 103,127 and 1,392,861 bytes of their 109 MB.
+With the slack and nothing else changed, both rungs run to completion
+byte-identical to the u48 bank -- the correct-but-sized-wrong verdict
+holds at `86f6fae9`.
