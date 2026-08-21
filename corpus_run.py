@@ -53,6 +53,21 @@ CENSUS = WORK / 'census.json'
 HW_ONLY_FILE = WORK / 'hardware-only.txt'
 MARKER = re.compile(r'@compileError\("zig plug: ([^"]*)"\)')
 
+# Prelude preconditions wear the same spelling as refusals and are not
+# refusals; findings/prelude-comptime-guards.txt says which and why. Here the
+# cost of confusing them is the highest of the three scans that read this
+# list: one prelude guard marked EVERY program 'markers', which disqualified
+# all of them from the --run stage, so a census that looked like it ran
+# answered nothing -- and it read as a regression, `deck-bracket-contract`
+# flipping match -> markers against the bank.
+PRELUDE_GUARDS = frozenset(
+    m.group(1)
+    for ln in (LADDER / 'findings' / 'prelude-comptime-guards.txt')
+    .read_text().splitlines()
+    if ln.strip() and not ln.startswith('#')
+    for m in [MARKER.search(ln)] if m
+)
+
 
 def expected_text(name):
     """The .expected content as the comparison sees it, or None. One home for
@@ -139,7 +154,7 @@ def transpile(src, out_dir):
     # so the hash is the cache key --changed compares against the bank.
     r['zig_sha'] = hashlib.sha256(zig.encode()).hexdigest()[:16]
 
-    marks = MARKER.findall(zig)
+    marks = [m for m in MARKER.findall(zig) if m not in PRELUDE_GUARDS]
     r['stage'] = 'markers' if marks else 'clean'
     r['markers'] = marks
     return r
@@ -405,6 +420,9 @@ def main():
     ap.add_argument('--bank', action='store_true',
                     help='after a full --run or --changed: write census.json')
     ap.add_argument('--limit', type=int, default=0, help='first N programs only')
+    ap.add_argument('--only', default='', metavar='NAMES',
+                    help='comma-separated program names, for a covering set '
+                         'rather than a prefix (census_canary.sh passes these)')
     ap.add_argument('--batch', type=int, default=0,
                     help='with --run: build/run at most N outstanding programs, '
                          'carrying earlier verdicts whose emitted zig is '
@@ -416,6 +434,10 @@ def main():
         a.transpile = True
     if a.limit and (a.changed or a.bank):
         raise SystemExit('--changed and --bank are full-corpus operations; drop --limit')
+    if a.only and (a.changed or a.bank):
+        raise SystemExit('--changed and --bank are full-corpus operations; drop --only')
+    if a.only and a.limit:
+        raise SystemExit('--only and --limit both slice the corpus; pick one')
     if a.batch and not a.run:
         raise SystemExit('--batch only means something with --run')
     if a.bank and not (a.run or a.changed):
@@ -440,11 +462,22 @@ def main():
     # self-contained programs.
     if a.limit:
         names = names[:a.limit]
+    if a.only:
+        # A named set, not a prefix: the canary is chosen to COVER the changed
+        # builtins, and the programs that do that are scattered through the
+        # alphabet. A name that does not exist is a typo in the covering set
+        # and silently running six of seven would misreport the coverage.
+        want = [w.strip() for w in a.only.split(',') if w.strip()]
+        have = {p.stem: p for p in names}
+        missing = [w for w in want if w not in have]
+        if missing:
+            raise SystemExit(f'--only: no such program(s): {", ".join(missing)}')
+        names = [have[w] for w in want]
     print(f'corpus: {len(names)} programs from {TESTS}')
 
     # A limited run is a smoke test; the json files are the full-corpus census
     # and a slice must not overwrite them (one did, 2026-08-19).
-    persist = not a.limit
+    persist = not (a.limit or a.only)
     # The shas the last run compiled against, captured before this
     # invocation's transpile overwrites the file: they are the carry key
     # for resuming an interrupted or batched --run.
