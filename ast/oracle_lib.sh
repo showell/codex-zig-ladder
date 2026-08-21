@@ -416,6 +416,13 @@ ring_arm() {
 # Which transport a rung needs is a property of the rung, so the sweep
 # asks here rather than carrying a list of its own.
 arm_for() {
+    # CODEX_ALL_RING=1 sends every unit through the ring: the TCP plug
+    # cannot boot inside a 1300 MB guest (measured 2026-08-20 -- it
+    # connects at 1600 and exits SILENTLY below that), so a small-RAM
+    # venue runs all-ring and consciously surrenders the TCP-transport
+    # coverage to laptop runs. The transports are measured
+    # byte-identical on the same IR.
+    [ -n "${CODEX_ALL_RING:-}" ] && { echo ring_arm; return; }
     case "$1" in
         fibx|whole) echo ring_arm ;;
         *)          echo zig_arm ;;
