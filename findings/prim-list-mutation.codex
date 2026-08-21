@@ -44,6 +44,16 @@ Section: Shapes
   three : Integer -> List Integer
   three (n) = [n, n + 1, n + 2]
 
+ An empty list cannot answer for its own element type, so it needs a context.
+ These give one, which keeps this file about MUTATION -- the untyped case is
+ its own finding and lives in probe-tyvar-leak.codex.
+
+  no-ints : Integer -> List Integer
+  no-ints (n) = []
+
+  fresh-ll : Integer -> List Integer
+  fresh-ll (n) = __linked-list-empty n
+
  A helper that pushes onto a list the caller still holds. If push mutates,
  the caller's own binding grows -- which is the shape that leaked a rename map
  across every definition once.
@@ -63,7 +73,7 @@ Section: Main
    print-line-uni ("length of three            : " & show-yn (list-length (three 5) == 3))
    print-line-uni ("first element              : " & show-yn (list-at (three 5) 0 == 5))
    print-line-uni ("last element               : " & show-yn (list-at (three 5) 2 == 7))
-   print-line-uni ("length of empty            : " & show-yn (list-length [] == 0))
+   print-line-uni ("length of empty            : " & show-yn (list-length (no-ints 0) == 0))
    print-line-uni ("sum walks every element    : " & show-yn (sum-to (three 5) 0 0 == 18))
    print-line-uni "-- list-set-at MUTATES: the alias is the only witness --"
    let a = three 5
@@ -88,7 +98,7 @@ Section: Main
      print-line-uni ("old elements survive       : " & show-yn (list-at palias 0 == 5))
    end
    print-line-uni "-- pushing onto an EMPTY list, where there may be nothing to mutate --"
-   let e = []
+   let e = no-ints 0
    in let ealias = e
    in let e2 = list-push e 7
    in act
@@ -124,7 +134,7 @@ Section: Main
      print-line-uni ("snoc alias grew            : " & show-yn (list-length salias == 4))
    end
    print-line-uni "-- linked lists: 198 call sites, and no assertion until now --"
-   let ll = __linked-list-empty 4
+   let ll = fresh-ll 4
    in let l1 = __linked-list-push ll 10
    in let l2 = __linked-list-push l1 20
    in let l3 = __linked-list-push l2 30
@@ -132,7 +142,7 @@ Section: Main
    in act
      print-line-uni ("three pushes, three out    : " & show-yn (list-length flat == 3))
      print-line-uni ("sum survives the flatten   : " & show-yn (sum-to flat 0 0 == 60))
-     print-line-uni ("empty flattens to empty    : " & show-yn (list-length (__linked-list-to-list (__linked-list-empty 4)) == 0))
+     print-line-uni ("empty flattens to empty    : " & show-yn (list-length (__linked-list-to-list (fresh-ll 4)) == 0))
    end
    print-line-uni "-- capacity is a hint, not a bound (finding 21 as a standing test) --"
    let cap = __list-with-capacity 2

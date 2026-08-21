@@ -1,0 +1,52 @@
+Chapter: ProbeTyvarLeak
+  cites Foreword chapter Console
+
+ An unsubstituted type variable reaches the emitted zig as a bare identifier,
+ not as a marker.
+
+ `emit-zig-type` renders `is TypeVar (id) -> "T" & integer-to-text id`
+ (ZigEmitter.codex:274). Inside a generic body that is right -- the name is a
+ `comptime T181: type` parameter and is in scope. At a call site where
+ substitution should already have happened and did not, the same rule emits
+ `T181` into a scope that has no such name, and zig answers
+
+     error: use of undeclared identifier 'T181'
+
+ which names nothing about Codex, points at a 9,000-column generated line, and
+ above all is NOT a `@compileError` marker.
+
+ That last part is the finding rather than the error. Every other unmapped
+ construct in this emitter refuses loudly and by name, and two mechanisms
+ depend on it: `zig-is-unmapped` tests for the marker to decide whether a
+ definition's return type is recoverable, and `corpus_run.py --transpile`
+ histograms the markers to rank WHICH GAP TO FIX FIRST. A construct that
+ renders as a plausible identifier instead is invisible to both. It does not
+ appear in the census ranking at all, so however often it bites, the number
+ that decides priorities reads zero.
+
+ Found 2026-08-21 by tier 8 -- `__linked-list-empty` in a statement position,
+ where nothing supplies an expected type. The same call with a type context
+ emits `cx_ll_with_capacity(i64, 4)` and compiles, which is why eleven days of
+ rung sweeps never met it: every real use in the compiler has a context.
+
+ Both lines below are the SAME BUILTIN. The first has a return type to be read
+ from and works. The second does not and leaks. Run it through `codexir` and
+ `zigemit` and grep the emitted zig for `T` followed by digits; the failure is
+ visible without compiling, which is the point -- a marker would have been.
+
+Section: Shapes
+
+ Context supplied by the signature. This one is fine.
+
+  typed-empty : Integer -> List Integer
+  typed-empty (n) = __linked-list-empty n
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- with a type context, the element type is read from the signature --"
+   print-line-uni ("typed empty has length 0   : " & (if list-length (typed-empty 4) == 0 then "yes" else "no"))
+   print-line-uni "-- without one, the type variable is emitted verbatim --"
+   print-line-uni ("untyped empty has length 0 : " & (if list-length (__linked-list-empty 4) == 0 then "yes" else "no"))
+   print-line-uni "-- reached the end, so this arm resolved both --"
+  end
