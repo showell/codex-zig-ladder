@@ -35,6 +35,32 @@ plug, not a patched artifact. Reproduce with the recipe in
 | cat loop 32 | 6296 | 6305 | +9 |
 | cat loop 64 | 20760 | 20770 | +10 |
 
+### Tier 4: records and closures (`findings/prim-records.codex`)
+
+| shape | bare metal | zig arm | delta |
+|---|---|---|---|
+| record, 1 field | 8 | 11 | +3 |
+| record, 2 fields | 16 | 19 | +3 |
+| record, 4 fields | 32 | 39 | +7 |
+| record, 8 fields | 64 | 67 | +3 |
+| capturing closure | 16 | 13 | **-3** |
+| non-capturing closure | 8 | 0 | **-8** |
+
+**A bare-metal record is exactly `fields*8` -- no header at all**, unlike a
+list, which pays `16 + cap*8`. Ours matches modulo the same alignment padding
+that shows up everywhere else, so records are NOT a divergence source. That
+matters for the `Text` narrowing: shrinking a text handle shrinks every record
+field holding one, and the record machinery around it already agrees.
+
+Closures are two more rows where we are cheaper -- we allocate nothing for an
+empty capture context where bare metal spends 8. Same fidelity-not-victory
+pattern as `cons` and `push`.
+
+All eight SEMANTIC assertions are identical across arms, including the three
+that pin finding 10: an update through `__record-set` is visible through the
+original name and through an alias taken before it. One object, mutated in
+place, on both arms. `mutable` promises value semantics neither delivers.
+
 ## What the table says
 
 **The floor is +8, and it is our list header.** Bare metal's list is one
