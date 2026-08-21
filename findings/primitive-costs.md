@@ -35,6 +35,53 @@ plug, not a patched artifact. Reproduce with the recipe in
 | cat loop 32 | 6296 | 6305 | +9 |
 | cat loop 64 | 20760 | 20770 | +10 |
 
+### Tier 3: substring and split (`findings/prim-text.codex`)
+
+Measured 2026-08-21, after the cold agent's design review pointed out that
+this family had no row anywhere and that the `Text` narrowing turns on it.
+
+| shape | bare metal | zig arm | delta |
+|---|---|---|---|
+| substring 4 of 8 | 16 | 0 | **-16** |
+| substring 8 of 8 | 16 | 0 | **-16** |
+| substring 20 of 20 | 32 | 0 | **-32** |
+| substring 0 of 4 | 8 | 0 | **-8** |
+| **scan, 28 pieces of 4** | **448** | **0** | **-448** |
+| text-split, 3 pieces | 112 | 170 | +58 |
+| text-split, 6 pieces | 256 | 173 | **-83** |
+
+**Bare metal always copies; we always slice.** `emit-substring-alloc` bumps
+the frontier by `(len + 15) & ~7` and `emit-substring-copy` moves the bytes
+one at a time (`Emit/X86_64Builtins.codex:610`, `:618`), so a substring costs
+exactly what a text of that length costs -- the four single rows are `8 +
+align8(len)` on the nose, and the scan is 28 x 16 = 448 with no residue.
+`cx_substring` returns a sub-slice of its argument and allocates nothing.
+
+So this is a family where **we are cheaper than the oracle**, and on the shape
+real subjects actually use: a tokenizer takes many small pieces out of one
+buffer, and every one of them is free to us and 16 bytes to bare metal. It
+moves the deck estimate in our favour, which is the opposite of what the
+list-constructor and `List Text` rows do, and it had been counted as neither.
+
+Split crosses over. At three pieces we are dearer by 58, because our list
+grows geometrically while bare metal's is sized once; at six we are cheaper by
+83, because the pieces themselves are free. Bare metal's marginal cost is 48 a
+piece (16 of text plus 32 of list) against our roughly nothing, so past about
+four pieces the slice wins and keeps winning.
+
+**This is the cost argument for representation (b).** A handle that is a
+pointer AT a length word, the way bare metal does it, cannot describe a slice
+of somebody else's bytes -- there is nowhere to put the shorter length -- so
+adopting it converts every one of these zeros into `8 + align8(len)`. The
+scan row prices that decision at 448 bytes per 28 tokens.
+
+All fifteen semantic assertions -- seven substring, eight split/replace --
+are identical on both arms, including the empty-source and trailing-separator
+split counts and the `text-concat-list . text-split` round trip. The one
+divergence is out of range, where bare metal traps and we clamp: finding 28,
+probed separately in `findings/probe-substring-trap.codex` because a tier file
+that trapped would take its other assertions down with it.
+
 ### Tier 4: records and closures (`findings/prim-records.codex`)
 
 | shape | bare metal | zig arm | delta |

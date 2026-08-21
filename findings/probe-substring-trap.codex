@@ -1,0 +1,34 @@
+Chapter: ProbeSubstringTrap
+  cites Foreword chapter Console
+
+ Finding 28. An out-of-range `substring` must KILL the program.
+
+ Upstream ruled on this deliberately and wrote down why. Substring once took
+ its start and length on trust: `substring a 0 40` on a five-byte string
+ answered `abcde   s       PASSWORD-1234567890     ` -- the whole of the next
+ allocation, returned verbatim. The fix traps rather than clamps, at Damian's
+ ruling, "because a clamp turns a program's bug into quietly wrong data, and
+ this project's virtues say a safety guarantee is never silently degraded"
+ (Emit/X86_64Builtins.codex:640-666; the check is `emit-substring-bounds` at
+ :666, three UD2 traps -- negative start, negative length, and `len > srclen -
+ start` computed by subtraction because the obvious sum can wrap).
+
+ `cx_substring` clamps with `@min`. So the plug takes a program that upstream
+ kills and lets it run on quietly wrong data -- the exact outcome the ruling
+ exists to prevent, restored by the backend that was supposed to mirror it.
+
+ This probe is the one file here that is NOT expected to agree, and it is not
+ expected to survive either. Bare metal should die on UD2 with nothing after
+ the first line. The zig arm should print a length, and the length it prints
+ is the size of the lie: asked for 40 bytes of a 5-byte text, it answers 5.
+
+ Kept out of `prim-text.codex` for that reason -- a tier file that trapped
+ would take its other forty assertions down with it.
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- about to ask for 40 bytes of a 5-byte text --"
+   print-line-uni ("answered length: " & integer-to-text (text-length (substring "abcde" 0 40)))
+   print-line-uni "-- still running, so this arm clamped rather than trapped --"
+  end
