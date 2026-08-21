@@ -1,0 +1,51 @@
+Chapter: ProbeShowTypes
+  cites Foreword chapter Console
+
+ `show` is polymorphic. The plug implements one of its four cases.
+
+ Its declared type is `ForAllTy 0 (FunTy (TypeVar 0) empty-row TextTy)` --
+ anything to Text -- and bare metal honours that by dispatching on the
+ argument's resolved type (`emit-show-builtin`, Emit/X86_64.codex:1639):
+
+     Real f32   -> emit-show-real-approx
+     Real       -> __real_to_text
+     Text       -> the value ITSELF, unchanged
+     Boolean    -> "True" or "False"     (emit-show-bool, :1663)
+     otherwise  -> __itoa
+
+ The plug emits `cx_show_int(<arg>)` for all of them, and `cx_show_int` takes
+ an `i64`. So `show` of a Text or a Boolean is not a wrong answer, it is a zig
+ type error -- which is at least loud, but loud in the wrong register.
+
+ THAT IS THE POINT OF THIS PROBE rather than the arithmetic. The failure is
+ `error: expected type 'i64', found '[]const u8'`, pointing into a generated
+ line thousands of columns wide, naming no Codex construct. It is NOT a
+ `@compileError("zig plug: ...")` marker, and two mechanisms read only markers:
+ `zig-is-unmapped` decides recoverability by testing for one, and
+ `corpus_run.py --transpile` histograms them to rank WHICH GAP TO FIX FIRST. A
+ gap that fails this way scores zero in the ranking that sets priorities, no
+ matter how often it bites. Same class as the type-variable leak in
+ probe-tyvar-leak.codex, reached from a different direction.
+
+ `show` has 108 call sites in the compiler. They evidently pass integers,
+ since the ladder builds -- so the question this probe raises is not "is the
+ plug broken today" but "what happens the first time somebody writes
+ `show` of a Boolean", and the answer should be a named refusal.
+
+ Bare metal prints all five lines below. The zig arm is expected not to
+ compile at all, which is why this cannot live in a tier file.
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- show of an integer: the case the plug implements --"
+   print-line-uni ("show 42                    : " & show 42)
+   print-line-uni ("show -7                    : " & show (0 - 7))
+   print-line-uni ("agrees with integer-to-text: " & (if text-compare (show 42) (integer-to-text 42) == 0 then "yes" else "no"))
+   print-line-uni "-- show of a Boolean: bare metal says True or False --"
+   print-line-uni ("show True                  : " & show True)
+   print-line-uni ("show False                 : " & show False)
+   print-line-uni "-- show of a Text: bare metal returns it unchanged --"
+   print-line-uni ("show of a text             : " & show "already text")
+   print-line-uni "-- reached the end, so this arm dispatched on the type --"
+  end

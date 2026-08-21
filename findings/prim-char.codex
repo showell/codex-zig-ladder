@@ -1,0 +1,100 @@
+Chapter: PrimChar
+  cites Foreword chapter Console
+
+ Tier 10: characters, and the two encodings a Char can be.
+
+ By the count: `char-code` 129 uses, `char-at` 44, `code-to-char` 19 -- 192
+ call sites against six lines of existing coverage in `prim-cce.codex`. It is
+ also the family with the longest divergence history in this project, which
+ makes a standing test worth more here than almost anywhere else.
+
+ THE MODEL, because the assertions below are meaningless without it. Text is
+ CCE in the interior of every implementation -- that is Codex semantics, not a
+ storage choice, and `E` IS 39. But the CHAR representation is a free choice
+ and the plugs made it differently: a Char is a CODEPOINT in the zig plug and a
+ CCE CODE in the C# plug. So:
+
+     char-code-at s i    answers in CCE, on every arm            (the raw byte)
+     char-at s i         answers a Char, in that arm's model
+     char-code c         Char -> CCE
+     code-to-char n      CCE -> Char
+     char-to-text c      Char -> a ONE-BYTE text, no framing
+
+ `char-at` once returned the raw CCE byte while `char-code` expected a
+ codepoint, so `char-code (char-at s i)` fed a CCE code to a table wanting a
+ codepoint. The composition below is that defect as a standing test: whatever
+ each arm's Char is, going text -> Char -> CCE must land back where
+ `char-code-at` already is.
+
+ THE ALIAS ROWS ARE EXPECTED TO DIFFER, and are marked. CCE is not injective
+ into codepoints: `é` is BOTH tier-0 code 97 and tier-1 code 233, and the
+ canonical encoder picks 97. An arm whose Char is a codepoint therefore cannot
+ round-trip 233 -- it becomes the codepoint for e-acute, and coming back the
+ encoder answers 97. An arm whose Char is already a CCE code round-trips it
+ exactly. This is known information loss with a decided resolution (migrate
+ Char to the CCE-code identity model), so these lines are a PROGRESS MARKER:
+ when the migration lands they should stop differing, and if they change
+ before it lands, something moved that nobody intended.
+
+ `char-to-text` must be one raw byte and must not frame. The compiler's own
+ `ir-quote` walks char-code-at / code-to-char / char-to-text over every byte of
+ a text literal, and a framing implementation double-encodes every multi-byte
+ character on the IR wire. The rebuild rows below are that walk in miniature.
+
+Section: Instrument
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+Section: Shapes
+
+ text -> Char -> CCE, which must land where char-code-at already is.
+
+  via-char : Text, Integer -> Integer
+  via-char (s) (i) = char-code (char-at s i)
+
+ The ir-quote walk in miniature: take a text apart by index and put it back
+ one byte at a time.
+
+  rebuild : Text, Integer, Integer, Text -> Text
+  rebuild (s) (i) (n) (acc) =
+   if i >= n then acc
+   else rebuild s (i + 1) n (acc & char-to-text (code-to-char (char-code-at s i)))
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- char-code-at answers in CCE, and the codes are the same everywhere --"
+   print-line-uni ("code A                     : " & integer-to-text (char-code-at "A" 0))
+   print-line-uni ("code a                     : " & integer-to-text (char-code-at "a" 0))
+   print-line-uni ("code E is 39, not 69       : " & show-yn (char-code-at "E" 0 == 39))
+   print-line-uni ("code space                 : " & integer-to-text (char-code-at " " 0))
+   print-line-uni ("code zero digit            : " & integer-to-text (char-code-at "0" 0))
+   print-line-uni "-- text -> Char -> CCE lands where char-code-at already is --"
+   print-line-uni ("via-char on A              : " & show-yn (via-char "A" 0 == char-code-at "A" 0))
+   print-line-uni ("via-char on a lowercase    : " & show-yn (via-char "z" 0 == char-code-at "z" 0))
+   print-line-uni ("via-char mid-string        : " & show-yn (via-char "abcd" 2 == char-code-at "abcd" 2))
+   print-line-uni ("via-char on a digit        : " & show-yn (via-char "7" 0 == char-code-at "7" 0))
+   print-line-uni ("via-char on punctuation    : " & show-yn (via-char "?" 0 == char-code-at "?" 0))
+   print-line-uni "-- code-to-char is char-code's inverse, over the ASCII range --"
+   print-line-uni ("round trip A               : " & show-yn (char-code (code-to-char (char-code-at "A" 0)) == char-code-at "A" 0))
+   print-line-uni ("round trip space           : " & show-yn (char-code (code-to-char (char-code-at " " 0)) == char-code-at " " 0))
+   print-line-uni ("round trip newline-ish     : " & show-yn (char-code (code-to-char 2) == 2))
+   print-line-uni "-- char-to-text is ONE byte and does not frame --"
+   print-line-uni ("one char is length one     : " & show-yn (text-length (char-to-text (char-at "A" 0)) == 1))
+   print-line-uni ("and it is the same byte    : " & show-yn (char-code-at (char-to-text (char-at "A" 0)) 0 == char-code-at "A" 0))
+   print-line-uni ("rebuild of ascii round trips: " & show-yn (text-compare (rebuild "hello world" 0 11 "") "hello world" == 0))
+   print-line-uni ("rebuild preserves length   : " & show-yn (text-length (rebuild "abcd" 0 4 "") == 4))
+   print-line-uni "-- multi-byte characters, still one CCE code each --"
+   print-line-uni ("Gamma is one character     : " & show-yn (text-length "Γ" == 1))
+   print-line-uni ("code Gamma                 : " & integer-to-text (char-code-at "Γ" 0))
+   print-line-uni ("code tau                   : " & integer-to-text (char-code-at "τ" 0))
+   print-line-uni ("via-char on Gamma          : " & show-yn (via-char "Γ" 0 == char-code-at "Γ" 0))
+   print-line-uni ("rebuild of Gamma           : " & show-yn (text-compare (rebuild "Γ" 0 1 "") "Γ" == 0))
+   print-line-uni "-- MARKED: the CCE alias, where the two Char models must differ --"
+   print-line-uni ("  (e-acute is CCE 97 AND 233; a codepoint Char cannot hold both)")
+   print-line-uni ("code eacute                : " & integer-to-text (char-code-at "é" 0))
+   print-line-uni ("round trip of 233          : " & integer-to-text (char-code (code-to-char 233)))
+   print-line-uni ("  (233 = a CCE-code Char; 97 = a codepoint Char, losing the alias)")
+   print-line-uni ("round trip of 97           : " & integer-to-text (char-code (code-to-char 97)))
+  end
