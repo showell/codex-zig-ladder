@@ -20,6 +20,24 @@ take_compute_lock
 
 echo "### sweep_prep $(date +%H:%M:%S)"
 
+# WHOSE PLUG. CODEX_ROOT means two opposite things depending on what is being
+# built, and nothing used to say which one it was pointing at. For a truth arm
+# or a tier the pin is CORRECT -- bare metal is the oracle and must be the
+# released compiler. For a plug build the pin is almost always WRONG, because
+# the whole point is to measure a branch that has moved. Same variable,
+# inverted role, and one wrong export silently builds the unmodified plug and
+# then measures it against a hypothesis about a modified one.
+#
+# So say it, first line, before spending four minutes of QEMU on it. Not a
+# refusal: building the pin's plug is a legitimate baseline, and a guard that
+# forbids a legitimate thing gets switched off.
+plug_branch=$(git -C "$REPO" rev-parse --abbrev-ref HEAD 2>/dev/null || echo '?')
+plug_head=$(git -C "$REPO" rev-parse --short HEAD 2>/dev/null || echo '?')
+plug_dirty=$(git -C "$REPO" status --porcelain 2>/dev/null | head -1)
+echo "### plug source: $REPO"
+echo "###   branch $plug_branch at $plug_head${plug_dirty:+  (working tree DIRTY)}"
+echo "###   $(git -C "$REPO" log --oneline -1 2>/dev/null | cut -c1-72)"
+
 # --- the TCP plug (zig-plug.cdx) ---
 PLUG_DIR="$REPO/codex/plugs/zig"
 PLUG_SRC="$PLUG_DIR/build-output/plug-source.codex"
