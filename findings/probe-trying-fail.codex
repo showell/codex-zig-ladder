@@ -1,0 +1,63 @@
+Chapter: ProbeTryingFail
+  cites Foreword chapter Console
+
+ `fail` does not fail here, and `trying` does not try.
+
+ `fail` was the last builtin with 70 call sites and no assertion anywhere.
+ Reading it turned up something better than a missing test: on bare metal it
+ does not terminate at all. `emit-fail-builtin` (Emit/X86_64Builtins.codex:908)
+ evaluates the message, DISCARDS it, stores 1 at `try-fail-flag-addr`, and
+ returns 0. Execution continues.
+
+ It is a signal, not a panic, and the thing that reads the signal is Codex's
+ retry construct:
+
+     trying N times
+       ...body...
+     falling back to
+       ...fallback...
+     end
+
+ `emit-try-check-flag` (Emit/X86_64.codex:1487) reloads that flag after each
+ statement of the body and branches when it is set, so a failed attempt is
+ retried up to N times and then the fallback runs.
+
+ THE PLUG IMPLEMENTS NEITHER HALF.
+
+     fail    -> @panic(<message>), which terminates
+     IrTry   -> `emit-zig-act body ctx d (zig-type-is-void ty)`
+
+ That second one is the worse of the two. It emits the BODY and silently
+ discards `fb` and `fail-stmts` -- the fallback and the failure handler are
+ not refused, not marked, not mentioned; they are simply not there. It is the
+ same shape as the `IrVecPat` defect this emitter already carries a warning
+ about: an unhandled construct mapped onto a valid-but-different one, which
+ produces a wrong program with no diagnostic.
+
+ So a retry that bare metal recovers from kills this arm twice over: `fail`
+ panics before the flag would be checked, and even if it did not, there is no
+ fallback to reach.
+
+ The success case is tested FIRST and deliberately. `trying` around a body
+ that never fails works on both arms, because emitting just the body is
+ accidentally right when nothing fails -- which is precisely why 70 `fail`
+ sites and six `trying` blocks sit in the compiler with the ladder green.
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- a trying block whose body SUCCEEDS: both arms should agree --"
+   trying 2 times
+     print-line-uni "body ran once"
+   falling back to
+     print-line-uni "FELL BACK -- should not print in the success case"
+   end
+   print-line-uni "-- a trying block whose body FAILS: bare metal recovers --"
+   trying 2 times
+     print-line-uni "attempt"
+     fail "deliberate failure"
+   falling back to
+     print-line-uni "fell back, and the program is still alive"
+   end
+   print-line-uni "-- reached the end, so this arm has a working retry --"
+  end

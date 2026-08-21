@@ -1505,3 +1505,63 @@ word. If either error branch ever fires, that rung goes red on those lines, and
 **the first reading will look like an emitter bug rather than a representation
 difference.** Arguably the divergence one wants to see; recorded here so whoever
 meets it does not spend the afternoon it would otherwise cost.
+
+## 32. `fail` does not fail, and `trying` does not try
+
+**Found 2026-08-21 by `findings/probe-trying-fail.codex`, written because a
+frequency pass left `fail` as the last builtin with 70 call sites and no
+assertion. Ours. TWO defects, one construct.**
+
+Reading `fail` turned up something better than a missing test: **on bare metal
+it does not terminate.** `emit-fail-builtin` (`Emit/X86_64Builtins.codex:908`)
+evaluates the message, DISCARDS it, stores 1 at `try-fail-flag-addr`, and
+returns 0. Execution continues.
+
+It is a signal, and the thing that reads it is Codex's retry construct:
+
+    trying N times
+      ...body...
+    falling back to
+      ...fallback...
+    end
+
+`emit-try-check-flag` (`Emit/X86_64.codex:1487`) reloads the flag after each
+statement of the body and branches when it is set, so a failed attempt is
+retried up to N times and then the fallback runs.
+
+**The plug implements neither half.**
+
+    fail   ->  @panic(<message>)                                  terminates
+    IrTry  ->  emit-zig-act body ctx d (zig-type-is-void ty)       body only
+
+The second is the worse one. It emits the body and **silently discards `fb`
+and `fail-stmts`** -- the fallback and the failure handler are not refused, not
+marked, not mentioned. They are simply absent. That is the shape this emitter
+already carries a standing warning about from the `IrVecPat` defect: an
+unhandled construct mapped onto a valid-but-different one, producing a wrong
+program with no diagnostic.
+
+**And it does not even compile.** `@panic` diverges, so any statement after a
+`fail` -- including everything after the enclosing `trying` block -- is
+unreachable, and zig refuses with
+
+    error: unreachable code
+
+which names no Codex construct and is not a `@compileError` marker. Third
+member of that family today, after the type-variable leak and polymorphic
+`show`: the plug fails in a register the census cannot count, so the gap scores
+zero in the ranking that decides what to fix first.
+
+**Why the ladder is green with 70 `fail` sites and six `trying` blocks in the
+compiler.** Not established here. The reachability column added to
+`tier_coverage.py` is the tool for it, and the `address-of` precedent is
+suggestive -- a construct can be everywhere in the source and nowhere in the
+emitted program. Recorded as a question, not an answer.
+
+**Not fixed.** Unlike the other findings today this is not a helper returning a
+wrong number; it is an unimplemented language construct, and implementing retry
+semantics in the emitter is a design change rather than a correction. The
+minimum honest step is that `IrTry` should REFUSE by name when it has a
+fallback or failure block it cannot emit, so the gap becomes countable. What
+`fail` should compile to depends on how a plug is meant to model the flag, and
+that is a question for Damian rather than a decision to take here.
