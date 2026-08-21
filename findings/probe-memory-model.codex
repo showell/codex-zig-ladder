@@ -1,0 +1,184 @@
+Chapter: ProbeMemoryModel
+  cites Foreword chapter Console
+
+ A memory probe small enough to hand-check. The subject we have been
+ arguing with is the 2.5 MB x86-64 back end, where every quantity is
+ entangled with every other and a wrong mechanism survives several
+ experiments before anything contradicts it. Here the expected numbers
+ can be worked out on paper, so a wrong mechanism fails on the first
+ line that disagrees.
+
+ There is one bump frontier. `__heap-save` reads it, `__heap-restore`
+ rewinds it, `__heap-advance` reserves a span. Objects that must outlive
+ a rewind go on the deck, a second cursor into the same heap that
+ `__deck-enter` swaps into the allocation register while parking the
+ frontier in the bivy. The contract section asserts relations between
+ those cursors and must print byte-identically on every arm; it never
+ prints an address, because the arms have different layouts and always
+ will.
+
+ `__deck-alloc` is absent below on purpose: the zig plug has no emitter
+ for it and answers `@compileError`. The same claim is made by its
+ decomposition -- enter, save, advance, save, exit -- which every arm
+ does have, so the assertion survives the gap instead of being lost to
+ it.
+
+ The meters below the marker line are a different kind of output. They
+ measure allocation as a `__heap-save` delta, which is only a measure of
+ anything on an arm where objects come from the frontier. An arm that
+ allocates elsewhere reports zero for all of them, and that zero is the
+ answer to a real question rather than a broken probe, so the meter
+ section names the condition first and the detector says UNMEASURED
+ rather than dividing by it.
+
+Section: Instrument
+
+ `deck-record` is a name the code generator intercepts, bracketing its
+ argument's evaluation in a deck extent. The stub is what the type
+ checker reads and what an arm without the interception falls back to.
+
+  deck-record : a -> a
+  deck-record (x) = x
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+ The probe is a lambda so the closure is built at the call site, before
+ the window opens, and its cost cannot land inside the measurement; the
+ result is threaded through the guard so nothing can drop the work the
+ window is there to observe. The rewind makes each measurement
+ independent of every other, which is what lets a quadratic reading be
+ taken without the run growing to match. Only the Integer escapes the
+ window, so nothing reclaimed is read.
+
+  measure : (Integer -> Integer) -> Integer
+  measure (f) =
+   let h0 = __heap-save
+   in let r = f 0
+   in let h1 = __heap-save
+   in let back = __heap-restore h0
+   in if r >= 0 then h1 - h0 else 0 - 1
+
+  ratio-text : Integer, Integer -> Text
+  ratio-text (prev) (cur) =
+   if prev <= 0 then "n/a"
+   else let t = (cur * 10 + prev / 2) / prev
+   in integer-to-text (t / 10) & "." & integer-to-text (t - (t / 10) * 10)
+
+ Doubling n doubles a linear cost and quadruples a quadratic one, so the
+ two ratios separate at 3.0 with a wide margin either side. Both ratios
+ must agree; one of each is a shape neither name fits and saying so is
+ better than picking the nearer lie.
+
+  verdict : Integer, Integer, Integer -> Text
+  verdict (a) (b) (c) =
+   if a <= 0 then "UNMEASURED"
+   else let r1 = (b * 10 + a / 2) / a
+   in let r2 = (c * 10 + b / 2) / b
+   in if (r1 >= 30) & (r2 >= 30) then "QUADRATIC"
+   else if (r1 < 30) & (r2 < 30) then "LINEAR"
+   else "MIXED"
+
+Section: Shapes
+
+  cap-list : Integer -> List Integer
+  cap-list (n) = __list-with-capacity n
+
+  push-loop : Integer, Integer, List Integer -> List Integer
+  push-loop (i) (n) (acc) =
+   if i >= n then acc else push-loop (i + 1) n (list-push acc i)
+
+  cat-loop : Integer, Integer, List Integer -> List Integer
+  cat-loop (i) (n) (acc) =
+   if i >= n then acc else cat-loop (i + 1) n (acc & [i])
+
+  text-loop : Integer, Integer, Text -> Text
+  text-loop (i) (n) (acc) =
+   if i >= n then acc else text-loop (i + 1) n (acc & "x")
+
+Section: Contract
+
+ The mark is eight megabytes above the frontier: far enough that no
+ allocation made under one cursor can be mistaken for one made under the
+ other, and far enough that the largest reading the detector takes -- a
+ quarter megabyte, rewound as soon as it is read -- cannot climb into
+ the deck and overwrite what the deck is holding.
+
+  opening : [Console] Nothing = act
+   let bivy = __heap-save
+   in let mark = bivy + 8388608
+   in let m = __deck-set mark
+   in let e1 = __deck-enter
+   in let on-deck = __heap-save
+   in let d1 = __deck-exit
+   in let off-deck = __heap-save
+   in let n1 = __deck-enter
+   in let n2 = __deck-enter
+   in let n3 = __deck-exit
+   in let still-on-deck = __heap-save
+   in let n4 = __deck-exit
+   in let after-nest = __heap-save
+   in let r1 = __deck-enter
+   in let res0 = __heap-save
+   in let r2 = __heap-advance 64
+   in let res1 = __heap-save
+   in let r3 = __deck-exit
+   in let trip0 = __heap-save
+   in let t1 = __heap-advance 4096
+   in let t2 = __heap-restore trip0
+   in let trip1 = __heap-save
+   in let keep0 = __heap-save
+   in let kept = deck-record (cat-loop 0 8 [])
+   in let k1 = __heap-restore keep0
+   in let survived = list-length kept
+   in let metered = measure (\z -> __heap-advance (z + 1024))
+   in let observes = measure (\z -> list-length [z, 1, 2, 3, 4, 5, 6, 7])
+   in act
+     print-line-uni ("enter switches to the mark : " & show-yn (on-deck == mark))
+     print-line-uni ("outer exit restores bivy   : " & show-yn (off-deck == bivy))
+     print-line-uni ("inner exit does not restore: " & show-yn (still-on-deck == mark))
+     print-line-uni ("outer exit does restore    : " & show-yn (after-nest == bivy))
+     print-line-uni ("mark and bivy are distinct : " & show-yn (mark > bivy))
+     print-line-uni ("deck reserve bumps by size : " & show-yn (res1 - res0 == 64))
+     print-line-uni ("save/restore round trips   : " & show-yn (trip1 == trip0))
+     print-line-uni ("deck-record survives rewind: " & show-yn (survived == 8))
+     print-line-uni ("meter reads a 1024 reserve : " & show-yn (metered == 1024))
+     print-line-uni ("ratio arithmetic 2x and 4x : " & show-yn (ratio-text 100 201 == "2.0"))
+     print-line-uni ("verdict names the two shapes: " & show-yn ((verdict 100 201 402 == "LINEAR") & (verdict 100 405 1620 == "QUADRATIC")))
+
+     print-line-uni "-- meters below this line are expected to differ between arms --"
+     print-line-uni ("frontier observes allocation: " & show-yn (observes > 0))
+     print-line-uni ("list literal 1  " & integer-to-text (measure (\z -> list-length [z])))
+     print-line-uni ("list literal 2  " & integer-to-text (measure (\z -> list-length [z, 1])))
+     print-line-uni ("list literal 4  " & integer-to-text (measure (\z -> list-length [z, 1, 2, 3])))
+     print-line-uni ("list literal 8  " & integer-to-text observes)
+     print-line-uni ("concat 4 & 4    " & integer-to-text (measure (\z -> list-length ([z, 1, 2, 3] & [4, 5, 6, 7]))))
+     print-line-uni ("chain a&b&c&d   " & integer-to-text (measure (\z -> list-length ([z] & [1] & [2] & [3]))))
+     print-line-uni ("push loop 16    " & integer-to-text (measure (\z -> list-length (push-loop z 16 []))))
+     print-line-uni ("capacity 0      " & integer-to-text (measure (\z -> list-length (cap-list z))))
+     print-line-uni ("capacity 16     " & integer-to-text (measure (\z -> list-length (cap-list (z + 16)))))
+     print-line-uni ("capacity 256    " & integer-to-text (measure (\z -> list-length (cap-list (z + 256)))))
+     print-line-uni ("text concat 2   " & integer-to-text (measure (\z -> text-length ("abcd" & "efgh"))))
+     print-line-uni ("List Integer 4  " & integer-to-text (measure (\z -> list-length [z, 1, 2, 3])))
+     print-line-uni ("List Text 4     " & integer-to-text (measure (\z -> list-length ["a", "b", "c", "d"])))
+
+     print-line-uni "-- accumulator shapes: n, 2n, 4n and the ratios --"
+     let c1 = measure (\z -> list-length (cat-loop z 64 []))
+     in let c2 = measure (\z -> list-length (cat-loop z 128 []))
+     in let c3 = measure (\z -> list-length (cat-loop z 256 []))
+     in let p1 = measure (\z -> list-length (push-loop z 64 []))
+     in let p2 = measure (\z -> list-length (push-loop z 128 []))
+     in let p3 = measure (\z -> list-length (push-loop z 256 []))
+     in let x1 = measure (\z -> text-length (text-loop z 64 ""))
+     in let x2 = measure (\z -> text-length (text-loop z 128 ""))
+     in let x3 = measure (\z -> text-length (text-loop z 256 ""))
+     in act
+       print-line-uni ("cat-accum  " & integer-to-text c1 & " " & integer-to-text c2 & " " & integer-to-text c3
+        & "  ratios " & ratio-text c1 c2 & " " & ratio-text c2 c3 & " -> " & verdict c1 c2 c3)
+       print-line-uni ("push-accum " & integer-to-text p1 & " " & integer-to-text p2 & " " & integer-to-text p3
+        & "  ratios " & ratio-text p1 p2 & " " & ratio-text p2 p3 & " -> " & verdict p1 p2 p3)
+       print-line-uni ("text-accum " & integer-to-text x1 & " " & integer-to-text x2 & " " & integer-to-text x3
+        & "  ratios " & ratio-text x1 x2 & " " & ratio-text x2 x3 & " -> " & verdict x1 x2 x3)
+     end
+   end
+  end
