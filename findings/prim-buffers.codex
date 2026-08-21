@@ -84,12 +84,13 @@ Section: Main
    print-line-uni "-- write-bytes and qword, little-endian --"
    let b = fresh-buf 4096
    in let e = __buf-write-bytes b 0 [1, 2, 3, 4, 0, 0, 0, 0]
+   in let e2 = __buf-write-bytes b 16 [8, 7, 6, 5, 0, 0, 0, 0]
    in act
      print-line-uni ("write-bytes answers end    : " & show-yn (e == 8))
      print-line-uni ("first byte is the low byte : " & show-yn (peek-byte b 0 == 1))
      print-line-uni ("qword is little-endian     : " & show-yn (peek-qword b 0 == 67305985))
      print-line-uni ("read-bytes round trips     : " & show-yn (list-length (__buf-read-bytes b 0 4) == 4))
-     print-line-uni ("zeroed where untouched     : " & show-yn (peek-qword b 16 == 0))
+     print-line-uni ("second qword round trips   : " & show-yn (peek-qword b 16 == 84281096))
    end
    print-line-uni "-- a fresh reservation reads as zero --"
    let b = fresh-buf 256
