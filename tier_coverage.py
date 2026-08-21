@@ -19,6 +19,24 @@ case that taught this -- 110 mentions across the tiers, every one of them
 printing somebody else's number, and not one asserting its own answer until
 tier 7. So read a high tier count as "look closer", not as "done".
 
+THE `reached` COLUMN IS THE ONE THAT CHANGES DECISIONS. Counting occurrences in
+the subject counts code the rungs never run: IR emission prunes to what the
+`opening` reaches, and for `whole` that is 3,540 of 4,773 definitions -- a
+quarter of the file is dead in every rung built from it. So this also counts
+the plug's own `cx_` helper in the EMITTED zig (`ast/*.zig`), which is the
+pruned program. A builtin with heavy use in source and none in any emitted rung
+is one **no rung can reach**, and a unit test is the only thing that will ever
+cover it.
+
+`address-of` is why this column exists: 65 in source, 4 emitted, and finding 31
+sat under it undetected because 59 of its call sites live in `opening.codex` --
+the one chapter a rung can never bundle, since a rung replaces it.
+
+Caveat on `reached`: the map from builtin to helper is many-to-one -- `list-push`
+and `__linked-list-push` both emit `cx_ll_push` -- so a shared helper inflates
+both. Read a LOW reached count against a high source count; a high one only
+says "something reaches this helper".
+
     ./tier_coverage.py            the ranking and the gap
     ./tier_coverage.py --all      every builtin, including the unused ones
 """
@@ -53,26 +71,40 @@ def main():
     subject = SUBJECT.read_text(errors='replace')
     tiers = ''.join(f.read_text(errors='replace') for f in sorted(FINDINGS.glob('*.codex')))
 
-    rows = [(token_uses(subject, n), token_uses(tiers, n), n) for n in names]
-    rows.sort(reverse=True)
+    helper = dict(re.findall(
+        r'ZigBuiltinEmitter \{ name = "([^"]+)", emit = [^"]*"(cx_[a-z_0-9]+)\(',
+        EMITTER.read_text()))
+    zigs = [p.read_text(errors='replace') for p in sorted((LADDER / 'ast').glob('*.zig'))]
 
-    total = sum(c for c, _, _ in rows)
+    def reached(name):
+        fn = helper.get(name)
+        if fn is None or not zigs:
+            return None
+        return max(len(re.findall(re.escape(fn) + r'\(', z)) for z in zigs)
+
+    rows = [(token_uses(subject, n), token_uses(tiers, n), reached(n), n) for n in names]
+    rows.sort(key=lambda r: (r[0], r[1]), reverse=True)
+
+    total = sum(c for c, _, _, _ in rows)
     print(f'{len(names)} builtins in the plug; {total:,} call sites in '
-          f'{len(subject):,} bytes of compiler\n')
-    print(f'{"builtin":<24} {"compiler":>8} {"tiers":>6}   note')
+          f'{len(subject):,} bytes of compiler; {len(zigs)} emitted rungs read\n')
+    print(f'{"builtin":<24} {"source":>7} {"reached":>8} {"tiers":>6}   note')
 
     gap_sites = gap_names = 0
-    for compiler, tier, name in rows:
+    for compiler, tier, rch, name in rows:
         if not compiler and not show_all:
             continue
         note = ''
-        if compiler >= 15 and tier == 0:
+        if compiler >= 10 and rch == 0:
+            note = 'NO RUNG REACHES IT -- only a unit test can'
+        elif compiler >= 15 and tier == 0:
             note = 'UNTESTED'
             gap_sites += compiler
             gap_names += 1
         elif compiler >= 15 and tier <= 2:
             note = 'barely'
-        print(f'{name:<24} {compiler:>8} {tier:>6}   {note}')
+        r = '-' if rch is None else str(rch)
+        print(f'{name:<24} {compiler:>7} {r:>8} {tier:>6}   {note}')
 
     print()
     if gap_names:
