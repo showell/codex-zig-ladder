@@ -1,0 +1,34 @@
+Chapter: FreshSpan
+  cites Foreword chapter Console
+
+ Finding 27 says a reserved span reads as zero on bare metal and as something
+ else here, and the free-rewind mechanism was tested and refuted. This prints
+ what is actually there, because recognisable content names the writer: CCE
+ text decodes as small numbers in the 2..80 range, a pointer shows as a run
+ with a high byte, a list header shows a small count followed by zeros.
+
+  bytes-text : Integer, Integer, Integer, Text -> Text
+  bytes-text (b) (i) (n) (acc) =
+   if i >= n then acc
+   else bytes-text b (i + 1) n (acc & integer-to-text (peek-byte b i) & " ")
+
+  nonzero-count : Integer, Integer, Integer, Integer -> Integer
+  nonzero-count (b) (i) (n) (acc) =
+   if i >= n then acc
+   else nonzero-count b (i + 1) n (acc + (if peek-byte b i == 0 then 0 else 1))
+
+  opening : [Console] Nothing = act
+   let a = __heap-save
+   in let adv1 = __heap-advance 256
+   in act
+     print-line-uni ("span A nonzero of 256 : " & integer-to-text (nonzero-count a 0 256 0))
+     print-line-uni ("span A first 24       : " & bytes-text a 0 24 "")
+   end
+   let b = __heap-save
+   in let adv2 = __heap-advance 4096
+   in act
+     print-line-uni ("span B nonzero of 256 : " & integer-to-text (nonzero-count b 0 256 0))
+     print-line-uni ("span B first 24       : " & bytes-text b 0 24 "")
+     print-line-uni ("span B at 2048, 24    : " & bytes-text b 2048 24 "")
+   end
+  end

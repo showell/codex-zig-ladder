@@ -1,4 +1,4 @@
-# Findings: seven closed upstream, twelve standing, five fixed here, one proposal
+# Findings: seven closed upstream, eleven standing, six fixed here, one proposal
 
 This directory holds the findings and the probes that make them runnable.
 It is discussion material rather than a proposed addition to the Codex tree,
@@ -1143,7 +1143,7 @@ load exactly.
 ## 27. A freshly reserved buffer is zero on bare metal and arbitrary here
 
 **Found 2026-08-21 by `findings/prim-buffers.codex`, both arms, same program.
-Ours to fix. OPEN.**
+Ours. FIXED same day (`3c4c00d6`).**
 
     assertion                       zig arm   bare metal
     neighbours undisturbed          NO        yes
@@ -1155,15 +1155,27 @@ A buffer is a span of the heap reserved by `__heap-save` then
 reads as zero -- the plug's own prelude comment claims to match "an arena the
 guest zero-fills at boot". On this arm it reads as whatever was last there.
 
-**The mechanism is NOT known.** The obvious candidate was `cx_bump_free`
-rewinding the frontier when the freed block is topmost, letting a later
-reservation land on written bytes -- bare metal has no equivalent, since
-`__list_snoc` extends in place and nothing hands a byte back. That was tested
-and REFUTED: with `cx_bump_free` made a no-op, so no byte is ever handed out
-twice, the span still reads non-zero. Whatever writes there does so without
-the frontier retreating, and the region itself is one `page_allocator.alloc`
-of lazily-faulted zero pages, so untouched territory should read as zero.
-Finding the writer is the open work. Do not repeat the free-rewind test.
+**FIXED** (`3c4c00d6`), and the mechanism was not the one recorded first.
+
+`std.mem.Allocator.alloc` memsets every allocation to `undefined`, which in a
+Debug build is **0xAA**. The 1.5 GiB region therefore arrived filled with 170s
+rather than zeros. `findings/probe-fresh-span.codex` printed it plainly: 256
+nonzero bytes of 256, `170 170 170 ...`, in two separate spans, where bare
+metal reads all zeros. Reserving with `rawAlloc` instead skips the wrapper's
+memset and the same probe reads zero.
+
+Two things follow that were not about zeroing at all. The memset **touched
+every page of the reservation**, committing all 1.5 GiB up front -- the exact
+opposite of the "resident stays proportional to what is touched" property the
+design comment claims for it. And a top byte of 170 is negative, which is how
+finding 26 got tripped by a qword read from supposedly-fresh memory.
+
+The first mechanism I recorded here -- `cx_bump_free` rewinding the frontier
+so a later reservation lands on written bytes -- was tested and **refuted**
+before the real one was found: with free made a no-op, so no byte is handed
+out twice, the span still read non-zero. Nothing was being reused; the region
+was never zero to begin with. Do not repeat the free-rewind test; it has been
+run twice.
 
 Consequence: any code that assumes a reserved span reads as zero is correct on
 bare metal and wrong here. `init-emit-workspace` reserves the 8 MB code buffer
