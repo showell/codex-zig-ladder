@@ -66,15 +66,20 @@ remote_arm_for() {
 run_unit_remote() {
     local m=$1
     rung_stamp "$m"
-    local out rc
-    out=$($(remote_arm_for "$m") "$m" 2>&1); rc=$?
-    # The bounded slice, and then anything the slice would have eaten. A
-    # rung prints thousands of lines and the verdict is near the end, so the
-    # cut is deliberate -- but CX-DECK and a panic both land on fd 1 well
-    # past line 34, and losing them silently is how a measurement becomes a
-    # measurement of nothing.
-    printf '%s\n' "$out" | head -34
-    printf '%s\n' "$out" | grep -E 'CX-DECK|panic:|cursors met|exhausted' | tail -12 || true
+    local log rc
+    # Everything to a file, a digest to the terminal. The old shape captured
+    # the rung's output into a variable and printed `head -34` of it, which
+    # is a display decision made by throwing data away: it ate a panic
+    # message once and a CX-DECK line once, both silently, and each time the
+    # answer was another grep bolted on beside the cut. The file is cheap and
+    # nothing has to guess in advance which lines will matter.
+    log="$T/logs/rung-$(date -u +%Y%m%dT%H%M%SZ)-$m.log"
+    mkdir -p "$T/logs"
+    $(remote_arm_for "$m") "$m" > "$log" 2>&1; rc=$?
+    grep -E 'ORACLE|MISMATCH|CX-DECK|panic:|cursors met|exhausted|FAILED|CODEGEN-HALTED' \
+        "$log" | head -24
+    echo "  ($(wc -l < "$log") lines: $log)"
+    local out; out=$(cat "$log")
     [ "$rc" -ne 0 ] && return 1
     case "$out" in
         *ORACLE*|*TRANSPORT\ FAILED*) ;;
