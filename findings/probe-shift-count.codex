@@ -1,0 +1,63 @@
+Chapter: ProbeShiftCount
+  cites Foreword chapter Console
+
+ What does a shift by 64 do?
+
+ Findings 28 and 29 both came from asking of a helper "does it FAIL on the
+ same inputs", rather than "does it compute the same answer". This is that
+ question asked of the shifts, and it is the first place the answer is
+ expected to run the OTHER way -- us stricter than the oracle, killing a
+ program bare metal runs.
+
+ Bare metal emits no guard. `emit-bit-shift` (Emit/X86_64Builtins.codex:1180)
+ moves the count into RCX and emits `shl`/`sar`/`shr` in their CL form, and
+ x86 masks CL to six bits for a 64-bit operand. So `bit-shl a 64` is
+ `bit-shl a 0` and answers `a` unchanged; `bit-shl a 65` shifts by one; a
+ negative count shifts by its low six bits, so -1 shifts by 63. Nothing traps
+ and nothing says anything.
+
+ `cx_shl` is `a << @as(u6, @intCast(b))`. `@intCast` of 64 to a u6 does not
+ fit, and `@intCast` of a negative to an unsigned does not either, so both
+ panic in Debug -- which is the mode every native and every emitted rung is
+ built in. In a release mode they are undefined behaviour instead, which is a
+ third answer again and worth stating plainly: **our guarantee here is a
+ property of the build mode, where bare metal's is a property of the emitted
+ instruction.** Finding 27 already showed that distinction biting, when a
+ memset elided in ReleaseFast changed what a fresh span contained.
+
+ So the prediction is that bare metal prints all nine lines and this arm dies
+ at the first out-of-range shift. The in-range assertions come first so that
+ dying costs the least information, and the out-of-range lines are ordered
+ one operator at a time.
+
+ The masked answers are printed as integers rather than as yes/no, because
+ the number IS the finding: `1 << 64` answering 1 is what masking looks like,
+ and a relational assertion would hide which of the two behaviours produced
+ a true.
+
+Section: Instrument
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- in range, expected identical on both arms --"
+   print-line-uni ("shl 1 by 0    " & integer-to-text (bit-shl 1 0))
+   print-line-uni ("shl 1 by 4    " & integer-to-text (bit-shl 1 4))
+   print-line-uni ("shl 1 by 62   " & integer-to-text (bit-shl 1 62))
+   print-line-uni ("shr 256 by 4  " & integer-to-text (bit-shr 256 4))
+   print-line-uni ("shr -256 by 4 " & integer-to-text (bit-shr (0 - 256) 4))
+   print-line-uni ("shru 256 by 4 " & integer-to-text (bit-shru 256 4))
+   print-line-uni ("shr is arith  " & show-yn (bit-shr (0 - 8) 1 == (0 - 4)))
+   print-line-uni "-- out of range: x86 masks the count to six bits --"
+   print-line-uni ("shl 1 by 64   " & integer-to-text (bit-shl 1 64))
+   print-line-uni ("shl 1 by 65   " & integer-to-text (bit-shl 1 65))
+   print-line-uni ("shr 256 by 68 " & integer-to-text (bit-shr 256 68))
+   print-line-uni ("shru 256 by 68" & integer-to-text (bit-shru 256 68))
+   print-line-uni "-- negative counts take their low six bits --"
+   print-line-uni ("shl 1 by -1   " & integer-to-text (bit-shl 1 (0 - 1)))
+   print-line-uni ("shl 1 by -64  " & integer-to-text (bit-shl 1 (0 - 64)))
+   print-line-uni "-- reached the end, so this arm masked rather than trapping --"
+  end

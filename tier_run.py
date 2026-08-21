@@ -30,6 +30,7 @@ wrong-branch artifact and reported it as a pass.
 """
 
 import argparse
+import hashlib
 import pathlib
 import subprocess
 import sys
@@ -85,7 +86,34 @@ def run_zig(src, work):
     return out.stderr.decode('utf-8', 'replace').splitlines()
 
 
+def gold_path(src):
+    return src.parent / 'gold' / f'{src.stem}.txt'
+
+
+def gold_key(src):
+    """What the bare-metal column depends on, and nothing else: the program's
+    own text and the seed that compiles it. The plug is not in that list --
+    bare metal is the oracle precisely because no plug is in its path -- so a
+    banked column stays valid across every emitter change, which is the whole
+    point of banking it. A seed re-pin invalidates every column at once."""
+    import seed_identity
+    return hashlib.sha256(
+        src.read_bytes() + seed_identity.seed_sha256().encode()).hexdigest()[:16]
+
+
 def run_bare(src, work):
+    """QEMU, unless the identical program has already been run against the
+    identical seed, in which case the banked column is the same bytes for
+    four fewer minutes."""
+    gold = gold_path(src)
+    key = gold_key(src)
+    if gold.is_file():
+        head, _, body = gold.read_text().partition('\n')
+        if head == f'# key {key}':
+            print(f'bare metal: banked at {gold}', file=sys.stderr)
+            return body.splitlines()
+        print(f'bare metal: banked column is stale, re-running', file=sys.stderr)
+
     import codex_vm
     import ring_compile
 
@@ -98,7 +126,12 @@ def run_bare(src, work):
     out = codex_vm.run_cdx(str(cdx))
     lines = out.decode('utf-8', 'replace').splitlines()
     # The guest narrates its own state on the same channel as the program.
-    return [l for l in lines if not l.startswith(('WD:', 'HEAP:', 'STACK:'))]
+    lines = [l for l in lines if not l.startswith(('WD:', 'HEAP:', 'STACK:'))]
+
+    gold.parent.mkdir(parents=True, exist_ok=True)
+    gold.write_text(f'# key {key}\n' + '\n'.join(lines) + '\n')
+    print(f'bare metal: banked to {gold}', file=sys.stderr)
+    return lines
 
 
 def report(bare, zig):

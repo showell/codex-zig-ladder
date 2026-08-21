@@ -66,3 +66,4 @@ ringplug-source-check.codex
 *.truth.prov
 .agentgrid
 !logs/INDEX.md
+findings/.tier-run/
