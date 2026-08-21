@@ -10,25 +10,22 @@ Chapter: ProbeDeckSubstring
  the bytes on the deck, and they outlive a rewind of the frontier. That is the
  whole point of the deck.
 
- `cx_substring` allocates nothing. It returns a slice of its argument, so the
- bytes stay exactly where the argument's bytes were -- on the frontier, if
- that is where the source was built. A deck extent cannot move them, because
- there is no allocation for the extent to redirect. The value looks decked and
- is not.
+ Finding 29 was the plug failing that: `cx_substring` returned a slice of its
+ argument and allocated nothing, so a deck extent had nothing to redirect and
+ the bytes stayed on the frontier for the next rewind to reclaim. It is a live
+ corruption rather than a curiosity, because the accumulator tables
+ `emit-all-defs` carries across brackets are `List Text`. Every text-producing
+ helper now allocates, and every assertion here reads yes on both arms; a no
+ means one of them has started aliasing its argument again.
 
- If that is right, the first assertion below says yes on bare metal and no
- here, and it is a live corruption in the emit phase rather than a curiosity:
- the accumulator tables `emit-all-defs` carries across brackets are `List
- Text`, and a text that was supposed to be copied onto the deck but is
- secretly a slice of reclaimed frontier is a table holding garbage.
-
- CONCAT is tested beside it because the reasoning predicts the opposite
- answer, and a prediction that only ever confirms is not worth making. Our
- in-place concat extends a block when the block ends exactly at `cx_hp` --
- and inside an extent `cx_hp` IS the deck cursor, so a frontier-resident left
- operand fails that test and falls back to a copy, which lands on the deck.
- Accidentally correct, for a reason worth writing down: the fast path is
- guarded on the LIVE cursor rather than on a remembered one.
+ CONCAT and REPLACE are tested beside it because the same reasoning predicts
+ different answers for them, and a prediction that only ever confirms is not
+ worth making. Concat was already right: the in-place path extends a block
+ only when the block ends exactly at `cx_hp`, and inside an extent `cx_hp` IS
+ the deck cursor, so a frontier-resident left operand fails that test and
+ falls back to a copy landing on the deck. The rule worth keeping is that the
+ fast path is guarded on the LIVE cursor rather than a remembered one. Replace
+ was wrong in the same way substring was, and for the same one-line reason.
 
  The rewind is made observable rather than assumed. After the restore the
  probe allocates over the reclaimed span, so a dangling slice reads as the
