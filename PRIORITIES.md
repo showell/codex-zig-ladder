@@ -102,12 +102,14 @@ is measured, not assumed. Remaining, in rough order:
 - CODEX_MEM_MB=1300 / CODEX_ACCEL=tcg defaults for droplet sessions
   (a droplet-local env file the scripts source, not per-command
   ceremony).
-- README venue sections rewritten when the model settles: the
-  "appliance holds no logic" principle retires deliberately; the
-  droplet_*.sh straw scripts retire with it or stay as the thin-client
-  option.
-- The two-venue sweep scripts re-aim: canary local for keyboard
-  iteration, everything long droplet-side.
+- README venue sections rewritten when the model settles. BOTH modes
+  persist, deliberately (Steve, 2026-08-20): **the venue follows the
+  mode.** HUNTING stays local or hybrid -- the straw scripts
+  (droplet_compile/droplet_transpile, the two-venue sweep) are the
+  keyboard-tempo tools and are NOT retired. DUE DILIGENCE moves
+  all-on-droplet -- long unattended runs must survive the laptop
+  leaving the wifi. The full-venue checkout and the appliance straw
+  coexist on the same box; the compute lock is the arbiter as ever.
 
 ## 3. Provenance watches one file too many
 
