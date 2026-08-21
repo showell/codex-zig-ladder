@@ -1,4 +1,4 @@
-# Findings: seven closed upstream, eleven standing, four fixed here, one proposal
+# Findings: seven closed upstream, twelve standing, five fixed here, one proposal
 
 This directory holds the findings and the probes that make them runnable.
 It is discussion material rather than a proposed addition to the Codex tree,
@@ -1060,6 +1060,13 @@ So a live object's header is being read as something that is not a header.
 - **Not the deck guard's business.** `cx_frontier_crosses` is compiled in
   and never fires.
 
+**Update 2026-08-21, from tier 5:** the buffer suspect below is EXONERATED as a
+divergence. `findings/prim-buffers.codex` shows an out-of-buffer write lands on
+the neighbour on BOTH arms, so that is upstream's semantics and we mirror it.
+The same run found a better candidate that did not previously exist as a
+hypothesis -- finding 27, a reserved buffer reading as zero on bare metal and
+as dead objects here.
+
 Which leaves one category: **something writes over a live object**, with no
 reuse in play. The only writers into the region besides the allocator are
 the `__buf-*` family, which write at `base + offset` with no bound beyond
@@ -1116,3 +1123,51 @@ from here, and any depot program that does the same.
 Fix is to port the gate: read `deck-record`'s defining chapter and
 `init-phase-allocator`'s, and only intercept when they match. Until then the
 two marked lines in `prim-deck.codex` are the standing detector.
+
+## 26. `peek-qword` trapped on every negative qword
+
+**Found 2026-08-21 by tier 5 of the unit inventory, by accident, before anyone
+thought to test negative values. Ours. FIXED on the branch (`1a5ec700`).**
+
+Bare metal loads eight bytes as one 64-bit value, and every bit pattern is a
+legal `i64`. The plug rebuilt it with checked multiply-and-add:
+
+    while (cx_j >= 0) : (cx_j -= 1) cx_v = cx_v * 256 + cx_heap_mem[...]
+
+which traps whenever the top byte sets the high bit -- that is, on every
+NEGATIVE qword. `findings/probe-peek-qword.codex` isolates it to eight bytes:
+over `00 00 00 00 00 00 00 FF`, bare metal answers `-72057594037927936` and
+the plug panicked with integer overflow. Wrapping arithmetic reproduces the
+load exactly.
+
+## 27. A freshly reserved buffer is zero on bare metal and arbitrary here
+
+**Found 2026-08-21 by `findings/prim-buffers.codex`, both arms, same program.
+Ours to fix. OPEN.**
+
+    assertion                       zig arm   bare metal
+    neighbours undisturbed          NO        yes
+    fresh span is zeroed            NO        yes
+    write past end lands on it      yes       yes
+
+A buffer is a span of the heap reserved by `__heap-save` then
+`__heap-advance`. On bare metal that territory has never been written, so it
+reads as zero -- the plug's own prelude comment claims to match "an arena the
+guest zero-fills at boot". On this arm it reads as whatever was last there.
+
+The mechanism is `cx_bump_free` rewinding the frontier when the freed block is
+topmost. Bare metal has no equivalent -- `__list_snoc` extends in place and
+nothing hands a byte back -- so its frontier only ever advances into untouched
+memory. Ours can retreat over written bytes and then re-reserve them, so a
+"fresh" buffer arrives full of dead objects.
+
+Consequence: any code that assumes a reserved span reads as zero is correct on
+bare metal and wrong here. `init-emit-workspace` reserves the 8 MB code buffer
+and 2 MB data buffer exactly this way. It is also how tier 5 found finding 26:
+a qword read from supposedly-fresh memory had a high top byte.
+
+**Note for finding 24:** the out-of-buffer write is unchecked on BOTH arms, so
+that is upstream's semantics and not a divergence. The last named suspect for
+the `codexir` corruption is therefore exonerated as a *divergence*, though an
+unchecked write remains a possible mechanism on either arm. This zero-fill gap
+is the better candidate and did not exist as a hypothesis before tier 5 ran.
