@@ -81,40 +81,48 @@ what an out-of-region absolute address means (the SMP subjects peek ~2.1 GB
 against RLIMIT_AS caps that count reserved space, not resident pages).
 Sends after 76.
 
-## 1.5 The unit tests -- ONGOING, and currently the best yield per minute
+## 1.5 The unit tests -- INVENTORY COMPLETE 2026-08-21, keep it green
 
 **Objective: instrument work that keeps turning into hunting.** Small Codex
 programs, one per primitive tier, run on BOTH arms through the real
-toolchains and compared. Ordered by what a failure invalidates rather than
-by difficulty: if `__heap-save` does not observe allocation, every cost in
-every other file is a zero that means nothing.
+toolchains and compared. Ordered by what a failure invalidates rather than by
+difficulty: if `__heap-save` does not observe allocation, every cost in every
+other file is a zero that means nothing.
 
-Written and carrying both columns: `findings/prim-deck.codex` (tier 0 the
-meter, tier 1 the two cursors, 16 assertions), `findings/prim-lists.codex`
-(tier 2, and `findings/primitive-costs.md` is its 26-row table),
-`findings/prim-text.codex` (tier 3 text and CCE),
-`findings/prim-buffers.codex` (tier 5 buffers).
-`findings/probe-memory-model.codex` carries the quadratic detector and
-predates the tiers.
+All seven tiers exist and carry both columns:
 
-Not yet written: **tier 4, records and closures** -- record allocation cost,
-`__record-set` mutating and returning the same object, closure capture and
-the `.call(.ctx, ...)` shape. Then **tier 6, the composites** --
-`emit-build`'s reservation, `accum-capacity` pre-sizing, the per-definition
-save/restore bracket -- which are only interpretable once 0-5 are pinned.
+    tier 0/1  findings/prim-deck.codex       the meter, the two cursors    16 assertions
+    tier 2    findings/prim-lists.codex      lists                          26 cost rows
+    tier 3    findings/prim-text.codex       text and CCE
+    tier 4    findings/prim-records.codex    records and closures
+    tier 5    findings/prim-buffers.codex    raw buffers
+    tier 6    findings/prim-composite.codex  emit-all-defs in miniature      9 assertions
+
+`findings/primitive-costs.md` is the cost table; `findings/probe-memory-model.codex`
+carries the quadratic detector and predates the tiers. Small probes that
+isolate one answer live beside them: `probe-peek-qword`, `probe-fresh-span`,
+`prim-cce`.
+
+**What they found, in one day: findings 22, 23, 25, 26 and 27**, of which 25
+was invisible to eleven days of rung sweeps because the ladder's own chapter
+slugs coincide, and 26 and 27 were found by a test tripping over them before
+anyone thought to look. Tier 6 would have caught defect A outright -- when
+`__list-with-capacity` discarded its argument, "table survived 8 brackets"
+would have said no, in about a second.
+
+**Standing work, not a finished task.** Run the tiers after any emitter
+change; they are seconds a side and they are the cheapest signal we have. Add
+a tier row whenever a finding names a primitive that has none.
 
 Rules that make these worth the trouble. Codex whenever the property is
-observable from inside a Codex program, so bare metal is the oracle; zig
-only when it is not, and then it is a regression test with no oracle and
-must be labelled so. Never print an address. Assert the instrument before
-believing it -- every file checks that its own meter reads a known
-reservation. And keep a control: `cat-accum` is quadratic on BOTH arms, so
-it is inherent to the source and not ours, and without that column it would
-have been filed as a plug defect.
-
-Yield so far, in one morning: findings 22, 23, 25, 26 and 27, of which 25
-was invisible to eleven days of rung sweeps because the ladder's own slugs
-coincide.
+observable from inside a Codex program, so bare metal is the oracle; zig only
+when it is not, and then it is a regression test with no oracle and must be
+labelled so. Never print an address. Assert the instrument before believing
+it -- every file checks its own meter against a known reservation. Keep a
+control: `cat-accum` is quadratic on BOTH arms, so it is inherent to the
+source and not ours, and without that column it would have been filed as a
+plug defect. And where the arms legitimately differ, mark the lines and say
+why rather than letting the file claim byte-identity it does not have.
 
 ## 2. The external review, in three batches
 
