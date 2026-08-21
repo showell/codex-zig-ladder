@@ -79,6 +79,36 @@ batch's first act is re-checking its list against the tree:
   census json stays; LICENSE is Steve's call; errors='replace'
   byte-compare rides Batch 3.
 
+## 2.5 The droplet becomes a full venue (DECIDED 2026-08-20 late, Steve)
+
+**Objective: instrument work.** The appliance model dies of its own
+elegance: the held ssh ties every droplet job to the laptop's wifi, and
+today's blip cost a rung. Full checkouts + toolchain on the droplet
+means long jobs run AND SURVIVE there, laptop-free. Gopher stays
+protected by the same rails (nice, the compute lock, 1300 MB guests,
+untouched home dirs).
+
+DONE tonight: git (present), pwsh 7.5.4 at ~/.local/pwsh (the laptop's
+path -- scripts run verbatim), both repos cloned (~/showell_repos/*,
+NR on the verbatim pin), check_paths green mod cycle-built artifacts,
+and **the lex truth arm ran end to end on the droplet, byte-identical
+to the banked u48 truth** -- venue-independence of the truth pipeline
+is measured, not assumed. Remaining, in rough order:
+- zig 0.16.0 (tarball to ~/zig-0.16.0, mirroring the laptop path) --
+  unlocks zig arms, natives, censuses droplet-side.
+- Push credentials (a deploy key) so droplet work commits and pushes.
+- Detached-job discipline droplet-side (the rebank self-detach pattern;
+  tmux or setsid, logs in the droplet ladder's logs/).
+- CODEX_MEM_MB=1300 / CODEX_ACCEL=tcg defaults for droplet sessions
+  (a droplet-local env file the scripts source, not per-command
+  ceremony).
+- README venue sections rewritten when the model settles: the
+  "appliance holds no logic" principle retires deliberately; the
+  droplet_*.sh straw scripts retire with it or stay as the thin-client
+  option.
+- The two-venue sweep scripts re-aim: canary local for keyboard
+  iteration, everything long droplet-side.
+
 ## 3. Provenance watches one file too many
 
 **Objective: instrument work.** The truth sidecars hash `oracle_lib.sh`
