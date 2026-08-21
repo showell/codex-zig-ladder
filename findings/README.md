@@ -1357,3 +1357,52 @@ general in-place path, and that (a) cannot express a slice of somebody else's
 bytes. **The second argument dissolves here** -- after this fix nothing in the
 prelude expresses such a slice, because bare metal does not either. (b) still
 wins, on the concat argument alone, and that argument is untouched.
+
+## 30. The shifts refused counts the hardware simply masks, so we killed programs upstream runs
+
+**Found 2026-08-21 by `findings/probe-shift-count.codex`, both arms, same
+program. Ours. FIXED same day. The first divergence where WE are the stricter
+arm.**
+
+    probe-shift-count            zig arm    bare metal
+    shl 1 by 64                  <died>     1
+    shl 1 by 65                  <died>     2
+    shr 256 by 68                <died>     16
+    shl 1 by -1                  <died>     -9223372036854775808
+    shl 1 by -64                 <died>     1
+    reached the end              no         yes
+
+Bare metal emits no guard. `emit-bit-shift` (`Emit/X86_64Builtins.codex:1180`)
+moves the count into RCX and emits `shl`/`sar`/`shr` in their CL form, and
+`shl r/m64, cl` uses **CL mod 64**. So `bit-shl a 64` answers `a`, `bit-shl a
+65` shifts by one, and a negative count shifts by its low six bits -- `-1`
+becomes 63, `-64` becomes 0. Nothing traps and nothing says anything.
+
+`cx_shl` was `a << @as(u6, @intCast(b))`. `@intCast` of 64 to a u6 does not
+fit, and neither does a negative, so both panic. **The plug was stricter than
+the language it implements**, which is a divergence in the direction nothing
+else on this list points: every other finding here is the plug being laxer
+than the oracle. This one kills a program upstream runs to completion.
+
+**FIXED.** One `cx_shift_count(b) = @truncate(@as(u64, @bitCast(b)))` shared by
+all three shifts, which is exactly the low six bits, negatives included.
+Verified against the banked bare-metal column: all twelve rows match,
+in-range and out.
+
+**Why no sweep could see it, and why that generalises.** A rung compares two
+outputs; if neither arm ever shifts out of range the rung is green and stays
+green, and if one ever does the plug's arm dies with a panic that reads like a
+plug bug rather than a semantic difference. The question that found it is the
+same one that found 28 and 29 -- *does this helper fail on the same inputs?* --
+and it is worth asking of the whole `cx_*` surface rather than one helper at a
+time. Two answers from that sweep are already recorded as clean and should not
+be re-derived: `cx_mod` is faithful (bare metal takes `idiv`'s remainder then
+adds `abs(b)` if it came out negative, the same Euclidean answer), and division
+by zero traps on both arms.
+
+**Standing caveat this one exposes.** `cx_list_at` and `cx_char_at` are
+bounds-checked only by zig's own Debug-mode checks, where bare metal emits
+UD2s into the instruction stream. That is fine today because everything here
+builds Debug, and it is written down in README's "The zig build mode is part
+of the experiment" -- but it is the same class of difference and it is not
+fixed, only documented.
