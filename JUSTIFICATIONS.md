@@ -124,3 +124,47 @@ the droplet CDX and .map are byte-identical to the laptop compile of the
 same blob. Steal time zero during the runs; the 1300 MB guest fits the 2 GB
 box without swap for this workload -- larger subjects (the 2.5 MB codexir
 bundle) are unmeasured there and get their own measurement before any claim.
+
+## Deck usage, both arms (2026-08-21)
+
+Measured because the heap-unification branch died of a deck overrun and
+"how much deck does bare metal actually use" was the question that decides
+whether the fix is frugality or a bigger reservation.
+
+Method: print the main frontier immediately before `x86-64-emit-cdx` --
+which is exactly where `emit-build` places the deck -- and `__deck-pos`
+after emission. Both reads happen OUTSIDE any extent, which matters:
+BuildSettings records that the deck-pos cell is frozen at the deck's base
+inside a phase-wide extent, so a probe taken inside one reads the base and
+says nothing. Bare metal via `truthcycle_fibx.sh` on the u48 pin; zig arm
+by patching the emitted `fibx.zig` prelude to track the high-water at each
+outermost `__deck-exit`. `emit-build` reserves `defs*65536 + 25165824`.
+
+    rung   defs  reservation   bare metal   zig arm     zig/bare  bare headroom
+    fibx      3   25,362,432   23,654,536   33,977,960    1.437×    1,707,896 (6.7%)
+    scale    61   29,163,520   23,708,712   34,027,664    1.435×    5,454,808 (18.7%)
+
+Three things this says:
+
+- **The zig arm needs about 1.44x the deck**, and the ratio is the same to
+  three digits across a 3-definition and a 61-definition subject. That is a
+  per-object representation cost, not a per-definition one: text is a
+  16-byte slice here where bare metal carries a pointer, and every list is
+  a CxList indirection plus an ArrayListUnmanaged header.
+- **The `defs*65536` term barely matters.** Bare metal spends 23.65 MB on
+  three definitions and 23.71 MB on sixty-one -- 54 KB apart. The 25165824
+  constant is doing essentially all the work, on both arms.
+- **Bare metal's own headroom on fibx is 6.7%.** The reservation is tight
+  by design, so there is no slack for a fatter arm to grow into, and no
+  amount of ordinary frugality closes a 44% gap. Worth raising upstream on
+  its own: a 3-definition subject sits at 93.3% of its deck reservation,
+  and the guard that should catch exhaustion cannot fire, because
+  `deck-short-of` reads the frozen cell (BuildSettings' own note: starving
+  the floor "did not raise CDX9002; it crashed in __text_compare on a
+  garbage pointer").
+
+Control, and the reason this is the whole remaining story: with the
+reservation multiplied by four and **nothing else changed**, the branch
+runs to completion and both rungs are byte-identical to the u48 bank
+(fibx 282995 bytes, scale 336800). The heap unification is correct; it is
+sized wrong.
