@@ -39,6 +39,15 @@ Chapter: PrimDeck
 
 Section: Instrument
 
+ deck-record is declared here as the identity it is. The code generator
+ intercepts it BY NAME, so the definition is never called -- but the NAME
+ RESOLVER still needs it in scope, and bare metal refuses CDX3002 without it
+ while codexir emits IR anyway. That asymmetry is worth knowing on its own:
+ the fast loop does not name-check as strictly as the slow one.
+
+  deck-record : a -> a
+  deck-record (x) = x
+
   show-yn : Boolean -> Text
   show-yn (b) = if b then "yes" else "no"
 
