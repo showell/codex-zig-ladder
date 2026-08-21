@@ -9,8 +9,10 @@ Chapter: PrimDeck
 
  Every assertion here is RELATIONAL and prints yes or no. None of them prints
  an address: the arms have different layouts and always will, so an address is
- the one thing that cannot be compared. Whole file must be byte-identical
- across arms.
+ the one thing that cannot be compared.
+
+ All of it is byte-identical across arms EXCEPT the two lines marked below as
+ the intrinsic-gate probe, which currently disagree and are finding 25.
 
  The model. One bump frontier: `__heap-save` reads it, `__heap-restore`
  rewinds it, `__heap-advance` reserves a span and answers Nothing. Objects
@@ -108,7 +110,7 @@ Section: Main
      print-line-uni ("outer exit restores bivy   : " & show-yn (off-deck == bivy))
      print-line-uni ("mark and bivy distinguish  : " & show-yn (mark > bivy))
    end
-   print-line-uni "-- tier 1: the frozen cell, both directions --"
+   print-line-uni "-- tier 1: the frozen cell, and the intrinsic gate (finding 25) --"
    let before = __deck-pos
    in let frozen = deck-record (pos-after-alloc 0)
    in let moved = deck-record (save-after-alloc 0)
@@ -116,6 +118,7 @@ Section: Main
      print-line-uni ("deck-pos frozen in extent  : " & show-yn (frozen == before))
      print-line-uni ("heap-save moves in extent  : " & show-yn (moved > before))
      print-line-uni ("deck-pos advances after    : " & show-yn (__deck-pos > before))
+     print-line-uni ("  (last two: yes = deck-record was intercepted here)")
    end
    print-line-uni "-- tier 1: a decked value outlives a rewind that would reclaim it --"
    let h = __heap-save

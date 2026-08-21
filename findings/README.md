@@ -1,4 +1,4 @@
-# Findings: seven closed upstream, ten standing, four fixed here, one proposal
+# Findings: seven closed upstream, eleven standing, four fixed here, one proposal
 
 This directory holds the findings and the probes that make them runnable.
 It is discussion material rather than a proposed addition to the Codex tree,
@@ -1080,3 +1080,39 @@ in that sandbox: identical crash, identical frames, `cx_list_at` ->
 `bsearch_rename_pos` -> `rename_has_entry` -> `resolve_def_name` ->
 `register_all_defs` -> `check_chapter`. It runs 38 seconds before dying rather
 than 12.7, which is the only difference and is unexplained.
+
+## 25. The zig plug intercepts `deck-record` by name; bare metal gates it on the defining chapter
+
+**Found 2026-08-21 by `findings/prim-deck.codex` on its first bare-metal run.
+Ours to fix -- the plug's arm. Measured on both arms, same program.**
+
+`deck-record` is declared as the identity function and given meaning by the
+code generator, which brackets its argument in `__deck-enter`/`__deck-exit`.
+Bare metal only does that when the intrinsic is ENABLED, and it gates that on
+the defining chapter: `X86_64Chapter.codex:1146-1148` sets
+`deck-record-intrinsic` only when `deck-record`'s chapter slug equals
+`init-phase-allocator`'s. Where they differ, `deck-record` stays the identity
+it is written as. ZigEmitter (`:1999`) intercepts by name alone, with no gate,
+and its prose claims it does this "the same way x86-64 does it" -- which was
+true once and is now stale.
+
+A chapter that declares its own `deck-record` shows the split directly:
+
+    assertion                       zig arm   bare metal
+    deck-pos frozen in extent       yes       yes
+    heap-save moves in extent       yes       NO
+    deck-pos advances after         yes       NO
+
+On bare metal nothing is bracketed, so the allocations land on the main
+frontier and the deck cursor never moves. On the zig arm they land on the
+deck. Same source, two different machines.
+
+The ladder's own rungs do not show it because their slugs coincide, and the
+`subj-deck-record` rename in the bundles is deliberately a pass-through on
+both arms for exactly this reason. So this is latent for the ladder and live
+for any subject that declares the name itself -- which is every probe we write
+from here, and any depot program that does the same.
+
+Fix is to port the gate: read `deck-record`'s defining chapter and
+`init-phase-allocator`'s, and only intercept when they match. Until then the
+two marked lines in `prim-deck.codex` are the standing detector.
