@@ -194,7 +194,7 @@ batch's first act is re-checking its list against the tree:
   census json stays; LICENSE is Steve's call; errors='replace'
   byte-compare rides Batch 3.
 
-## 2.2 The sweep consumes IR it does not create, and nothing checks whose it is
+## 2.2 The sweep consumes IR it does not create -- GUARDED 2026-08-21
 
 **Objective: instrument work, and the wrong-PASS kind.** Found 2026-08-21
 when a sweep was launched in a fresh sandbox and every rung died instantly:
@@ -212,16 +212,27 @@ and compares it against today's bank -- a green that means nothing. That is
 the same failure the provenance sidecars already guard for banked truths
 (`truth_prov.py`), applied to the wrong artifact.
 
-Fix shape, cheapest first: stamp each `<rung>.ir` with the seed sha and the
-`CODEX_ROOT` HEAD that produced it, and have the zig arm refuse a mismatch --
-the sidecar pattern that already exists, pointed at IR. Then `allcycles.sh`
-should either regenerate a missing or mismatched `.ir` or refuse loudly,
-rather than failing at transport with a Python traceback about a missing file.
+**Done.** The truth arm stamps `ast/<unit>.ir.prov` the moment the IR is known
+good, and both `zig_arm` and `ring_arm` refuse before spending a transport --
+so the refusal names the rung about to be judged instead of surfacing as a
+bank mismatch hours later, or not at all.
 
-Until it is fixed, treat any sweep result as provisional unless you know the
-`.ir` files were produced under the same branch and seed. Sweeps to date have
-all run under this model, so this is not a new risk -- it is a newly visible
-one.
+The key is **(seed sha, subject bytes, mode flags)**, which is exactly what
+the IR is a function of. Not the Codex checkout's HEAD, which was the first
+shape proposed here: the plug does not participate in producing IR, so
+keying on HEAD would refuse on every plug commit -- every commit that cannot
+possibly have changed the IR -- and a guard that cries wolf gets switched off.
+
+**One-time cost, and it lands on the next sweep.** Every `.ir` predating the
+guard is refused as UNPROVENANCED, because there is no record to check and
+inferring one from timestamps is the failure `truth_prov` already refuses for
+truths. Regenerating is one `ring_compile.py ast/<unit>-ir-cce.blob
+ast/<unit>.ir` per unit plus a `stamp-ir`, not a full truth arm -- and only
+two units cover all four emit rungs, since `scale` rides `fibx` and `clamp`
+rides `whole`.
+
+Still open from the original item: `allcycles.sh` should REGENERATE a
+refused `.ir` rather than stopping, so a fresh worktree bootstraps itself.
 
 ## 2.5 The droplet becomes a full venue (DECIDED 2026-08-20 late, Steve)
 

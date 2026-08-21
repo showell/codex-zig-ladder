@@ -218,6 +218,12 @@ PY
     fi
     [ -s ast/${m}.ir ] || { echo "COMPILE FAILED: no ${m}.ir"; return 1; }
 
+    # Stamp the IR the moment it is known good. The zig arm READS this file
+    # and never writes it, so in a shared checkout it outlives the run that
+    # made it; the sidecar is what lets the arm tell yesterday's from today's.
+    python3 "$T/truth_prov.py" stamp-ir "$m" "$(mode_flags $m)" \
+        || { echo "IR PROVENANCE STAMP FAILED for $m"; return 1; }
+
     # Judge what the compiler said, not just whether it produced bytes. A
     # compile can succeed and still be telling us something: CDX3006 meant a
     # bundle carried a chapter twice for months, and nobody read it because
@@ -380,6 +386,10 @@ zig_verdict() {
 zig_arm() {
     local m=$1
     cd $T
+    # Refuse IR no run under this seed and this subject produced, before
+    # spending a transport on it. A stale .ir transpiles cleanly and diffs
+    # against today's bank as a green that means nothing.
+    python3 "$T/truth_prov.py" check-ir "$m" "$(mode_flags $m)" || return 1
     rm -f ast/${m}.zig
     # Transport chatter goes to a log, not to the caller: the sweep prints
     # a bounded slice of each rung's output, and a transfer that narrates
@@ -403,6 +413,10 @@ zig_arm() {
 ring_arm() {
     local m=$1
     cd $T
+    # Refuse IR no run under this seed and this subject produced, before
+    # spending a transport on it. A stale .ir transpiles cleanly and diffs
+    # against today's bank as a green that means nothing.
+    python3 "$T/truth_prov.py" check-ir "$m" "$(mode_flags $m)" || return 1
     rm -f ast/${m}.zig
     if ! python3 -u plug_run_ring.py ast/${m}.ir ast/${m}.zig \
         > ast/${m}.transport.log 2>&1; then

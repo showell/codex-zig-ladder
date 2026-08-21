@@ -19,6 +19,20 @@ with the seed and harness content on disk at bank time. Content identity,
 not time: a checkout that changes nothing changes nothing here, and an edit
 that changes anything changes the hash however the clock reads.
 
+The same mechanism guards the other artifact the sweep does not create:
+`ast/<unit>.ir`. `allcycles.sh` READS it and the truth arm WRITES it, so in
+a shared checkout it persists from whatever ran last and the dependency is
+invisible. A stale one means the zig arm transpiles yesterday's IR and diffs
+it against today's bank -- a green that means nothing.
+
+Its key is different from a truth's, and deliberately so. IR is a pure
+function of the seed, the subject's own bytes and the mode flags: the PLUG
+does not participate in producing it. So `ast/<unit>.ir.prov` records those
+three and nothing else. Keying it on the Codex checkout's HEAD instead --
+the first shape proposed -- would refuse on every plug commit, which is
+every commit that cannot possibly have changed the IR, and a guard that
+cries wolf gets switched off.
+
 The composite-unit mapping is duplicated from oracle_lib.sh's unit_rungs
 and cross-checked against LADDER_RUNGS/LADDER_UNITS at import, both
 directions -- the same check oracle_lib performs on its own two lists.
@@ -124,6 +138,57 @@ def check_rung(rung):
                          '(rerun the truth arm)')
 
 
+def ir_sidecar(unit):
+    return AST / f'{unit}.ir.prov'
+
+
+def ir_key(unit, flags):
+    """(seed, subject bytes, mode flags) -- everything the IR depends on."""
+    subject = AST / f'{unit}-subject.codex'
+    if not subject.is_file():
+        raise SystemExit(f'cannot key {unit}.ir: no {subject.name} beside it')
+    return (seed_sha256(),
+            hashlib.sha256(subject.read_bytes()).hexdigest(),
+            flags.strip())
+
+
+def stamp_ir(unit, flags):
+    ir = AST / f'{unit}.ir'
+    if not ir.is_file() or ir.stat().st_size == 0:
+        raise SystemExit(f'cannot stamp {unit}.ir: it is missing or empty')
+    seed, subj, fl = ir_key(unit, flags)
+    ir_sidecar(unit).write_text(f'{seed}\n{subj}\n{fl}\n')
+    return seed, subj
+
+
+def check_ir(unit, flags):
+    """Refuse IR that no run under this seed and this subject produced.
+
+    Called by the zig arm before it transpiles, so the refusal names the
+    rung about to be judged rather than surfacing hours later as a bank
+    mismatch -- or not at all, which is the case this exists for.
+    """
+    ir = AST / f'{unit}.ir'
+    if not ir.is_file() or ir.stat().st_size == 0:
+        raise SystemExit(f'NO IR for {unit}: ast/{unit}.ir is missing or '
+                         'empty, and the zig arm does not produce it '
+                         '(rerun the truth arm)')
+    p = ir_sidecar(unit)
+    if not p.is_file():
+        raise SystemExit(f'UNPROVENANCED IR for {unit}: no {p.name}. It may '
+                         'predate this guard or have been carried in from '
+                         'another checkout (rerun the truth arm)')
+    got = p.read_text().split('\n')
+    want = ir_key(unit, flags)
+    if len(got) < 3 or tuple(x.strip() for x in got[:3]) != want:
+        raise SystemExit(
+            f'STALE IR for {unit}: recorded under seed {got[0][:12]} / '
+            f'subject {got[1][:12] if len(got) > 1 else "?"} / flags '
+            f'"{got[2] if len(got) > 2 else "?"}", disk has '
+            f'{want[0][:12]} / {want[1][:12]} / "{want[2]}" '
+            '(rerun the truth arm)')
+
+
 if __name__ == '__main__':
     if len(sys.argv) == 3 and sys.argv[1] == 'stamp':
         seed, content = stamp_unit(sys.argv[2])
@@ -131,5 +196,12 @@ if __name__ == '__main__':
               f'seed {seed[:12]}, harness {content[:12]}')
     elif len(sys.argv) == 3 and sys.argv[1] == 'check':
         check_rung(sys.argv[2])
+    elif len(sys.argv) in (3, 4) and sys.argv[1] == 'stamp-ir':
+        seed, subj = stamp_ir(sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else '')
+        print(f'IR provenance stamped for {sys.argv[2]}: '
+              f'seed {seed[:12]}, subject {subj[:12]}')
+    elif len(sys.argv) in (3, 4) and sys.argv[1] == 'check-ir':
+        check_ir(sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else '')
     else:
-        raise SystemExit('usage: truth_prov.py stamp|check <unit|rung>')
+        raise SystemExit('usage: truth_prov.py stamp|check <unit|rung>\n'
+                         '       truth_prov.py stamp-ir|check-ir <unit> [flags]')
