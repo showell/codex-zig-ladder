@@ -108,22 +108,12 @@ PY
         || { echo "TRANSPORT FAILED ($name):"; tail -5 "ast/$name.transport.log"; return 1; }
 
     # A marker means the plug could not translate a CONSTRUCT, and the build
-    # must not proceed to a binary that is quietly missing it.
-    #
-    # The prelude's own comptime preconditions are not that, and one of them
-    # (`cx_address_of`, landed 2026-08-21 as f8e97925) blocked every native
-    # build from the moment it landed: a bare `grep -c @compileError` counts
-    # a defensive switch prong in fixed prelude text as a refusal. It is
-    # named here rather than pattern-matched away, so a NEW marker of any
-    # spelling still stops the build.
-    #
-    # Excluding it hides nothing: an @compileError prong is only analysed if
-    # it is actually instantiated, and if it ever is, the `zig build-exe`
-    # eight lines down fails on it loudly. This scan is the early, specific
-    # report, not the only guard.
+    # must not proceed to a binary that is quietly missing it. The prelude's
+    # own comptime preconditions are not that; which ones exist, and why
+    # skipping them hides nothing, is findings/prelude-comptime-guards.txt.
     local markers
     markers=$(grep -o '@compileError("[^"]*")' "ast/$name.zig" \
-        | grep -vxF '@compileError("zig plug: no address-of for this type")' \
+        | grep -vxF -f <(grep -v '^#' "$T/findings/prelude-comptime-guards.txt") \
         | sort | uniq -c || true)
     if [ -n "$markers" ]; then
         echo "REFUSED: untranslated constructs in $name.zig"

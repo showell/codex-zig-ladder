@@ -41,6 +41,15 @@ from ladder_root import LADDER
 CODEXIR = LADDER / 'native' / 'codexir'
 ZIGEMIT = LADDER / 'native' / 'zigemit'
 
+# @compileError texts that are prelude preconditions rather than plug
+# refusals; the file says which and why. Shared with native_build.sh.
+PRELUDE_GUARDS = [
+    ln.strip()
+    for ln in (LADDER / 'findings' / 'prelude-comptime-guards.txt')
+    .read_text().splitlines()
+    if ln.strip() and not ln.startswith('#')
+]
+
 
 def resolved_unit(src):
     """The program with its cites inlined. codexir resolves nothing, so
@@ -74,8 +83,13 @@ def run_zig(src, work):
         # Report them rather than letting `zig run` bury one in a wall of
         # notes: an emitter gap here means the tier is untestable on this arm,
         # which is a different answer from a red line.
+        #
+        # Prelude preconditions are not gaps, and reporting them is worse
+        # than useless: one of them printed on EVERY run from the day it
+        # landed, which is how a real gap would go unread. Same list the
+        # native build's blocking scan uses, so the two cannot drift.
         for line in text.splitlines():
-            if '@compileError' in line:
+            if '@compileError' in line and not any(g in line for g in PRELUDE_GUARDS):
                 print('  gap:', line.strip(), file=sys.stderr)
 
     out = subprocess.run(['zig', 'run', str(zig_path)],

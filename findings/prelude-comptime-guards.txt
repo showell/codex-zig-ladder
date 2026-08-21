@@ -1,0 +1,17 @@
+# Exact @compileError texts that are PRELUDE PRECONDITIONS, not plug
+# refusals.
+#
+# A refusal means the plug could not translate a construct the subject
+# actually uses, and it must stop the build. A precondition is fixed
+# prelude text -- a defensive prong of a comptime type switch, analysed
+# only if something instantiates it, and caught loudly by `zig build-exe`
+# if anything ever does. Counting the second as the first reports a defect
+# that does not exist: `cx_address_of` (landed 2026-08-21 as f8e97925)
+# blocked every native build at the marker scan and printed a spurious
+# `gap:` on every tier run, from a line in the prelude no subject reaches.
+#
+# Read by native_build.sh (blocking scan) and tier_run.py (gap report), so
+# the two cannot drift. Lines starting with # are ignored. Anything NOT
+# listed here still stops the build, whatever its spelling -- add to this
+# file only a marker you have confirmed lives in fixed prelude text.
+@compileError("zig plug: no address-of for this type")
