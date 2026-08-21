@@ -59,9 +59,9 @@ codex_ref="${4:-HEAD}"
 run="$ROOT/$(date -u +%Y%m%dT%H%M%SZ)-$label"
 mkdir -p "$run" || die "cannot create $run"
 
-git -C "$LADDER_SRC" worktree add --detach "$run/ladder" "$ladder_ref" >/dev/null \
+git -C "$LADDER_SRC" worktree add --no-progress --detach "$run/ladder" "$ladder_ref" >/dev/null 2>&1 \
     || die "ladder worktree failed at $ladder_ref"
-git -C "$codex_src" worktree add --detach "$run/codex" "$codex_ref" >/dev/null \
+git -C "$codex_src" worktree add --no-progress --detach "$run/codex" "$codex_ref" >/dev/null 2>&1 \
     || { git -C "$LADDER_SRC" worktree remove --force "$run/ladder"; die "codex worktree failed at $codex_ref"; }
 
 # Sourced by every command in the sandbox. CODEX_ROOT points INSIDE the
