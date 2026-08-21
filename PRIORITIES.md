@@ -40,7 +40,7 @@ whole compiler survive transpilation". Everything below is the cheap loop.
 
 ---
 
-## 1. The heap unification -- five fixes landed 2026-08-21, one crash open
+## 1. The heap unification -- nine fixes landed 2026-08-21, one crash open
 
 **Objective: land our own fix; finishing it is hunting our own plug.**
 `findings/zig-heap-unification.md` for the design and the deck diagnosis;
@@ -56,12 +56,24 @@ true total (6.96 MB of deck), `86675554` text concat extends in place
 rather than refusing (finding 23, which unblocked the native loop on real
 source), `1a5ec700` peek-qword wraps (finding 26), `3c4c00d6` reserve with
 rawAlloc (finding 27 -- and 38.0s/15.3s sys becomes 11.4s/1.8s, because the
-old code committed all 1.5 GiB).
+old code committed all 1.5 GiB), `def42bc7` substring traps out of range
+instead of clamping (finding 28), `dc14ae4f` text results are copies so a
+decked text is really decked (finding 29, three aliasing sites).
 
-**A full heap-branch sweep is running on the droplet** in sandbox
-`20260821T163244Z-heap-sweep` (ladder 0b6ff4d, codex 3c4c00d6), launched
-2026-08-21 16:32Z, ~45 min. It answers whether the five fixes move the
-previous 10/14. Read `$SANDBOX/sweep.log`.
+**BLOCKER: the natives predate the last four changes.** `codexir` and
+`zigemit` were built at 10:36/11:14 and carry the old prelude, so findings 28
+and 29 are verified as standalone zig only, and tier 3's zig column is
+knowingly stale (marked as such in `primitive-costs.md`). `native_build.sh`
+in a sandbox is the gate for everything downstream, and it is the
+>25-minute class.
+
+**The droplet sweep was killed at 10/14 with fibx stalled on stale IR, so
+it answered nothing.** Re-running it is now the question that GATES the Text
+narrowing rather than a status check: seven of the nine fixes landed after
+the last real deck measurement, and if the four emit rungs now fit their
+reservation the narrowing may be unnecessary. Cheaper than the narrowing
+either way, and if they still overflow it says by how much. Needs the
+rebuilt natives first.
 
 **Still open: finding 24**, the `codexir` crash on the 2.5 MB subject, which
 now reproduces natively in 11 seconds instead of eleven minutes through
@@ -103,7 +115,13 @@ carries the quadratic detector and predates the tiers. Small probes that
 isolate one answer live beside them: `probe-peek-qword`, `probe-fresh-span`,
 `prim-cce`.
 
-**What they found, in one day: findings 22, 23, 25, 26 and 27**, of which 25
+**Ask whether a helper FAILS on the same inputs, not just whether it computes
+the same answer.** Findings 28 and 29 both came from that question and neither
+was reachable from a rung sweep. It has not been asked of any other `cx_*`
+helper that takes an index or a length, and asking it is a source read rather
+than compute -- the cheapest open defect hunt on this list.
+
+**What they found, in one day: findings 22, 23, 25, 26, 27, 28 and 29**, of which 25
 was invisible to eleven days of rung sweeps because the ladder's own chapter
 slugs coincide, and 26 and 27 were found by a test tripping over them before
 anyone thought to look. Tier 6 would have caught defect A outright -- when
