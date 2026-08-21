@@ -1182,9 +1182,17 @@ bare metal and wrong here. `init-emit-workspace` reserves the 8 MB code buffer
 and 2 MB data buffer exactly this way. It is also how tier 5 found finding 26:
 a qword read from supposedly-fresh memory had a high top byte.
 
-Also tested and refuted for finding 24: rebuilding `codexir` with
-`cx_bump_free` made a no-op does not change that crash either -- identical
-frames, same site. So frontier retreat is not behind either symptom.
+Also tested and refuted for finding 24, twice over. Rebuilding `codexir` with
+`cx_bump_free` made a no-op does not change that crash -- identical frames,
+same site. Neither does reserving the region with `rawAlloc` so it is
+zero-filled rather than 0xAA: same crash, same frames. **The 0xAA fill is not
+behind finding 24**, which the observed evidence already hinted at -- the
+corrupt length there is pointer-shaped (order 1.3e14), not 0xAAAA-shaped.
+
+That test did confirm the resource half of finding 27 by accident. The same
+compile takes **38.0s real / 15.3s sys** with the 0xAA fill and **11.4s real /
+1.8s sys** with `rawAlloc`. The memset was touching every page of the 1.5 GiB
+reservation, and it cost 13.5 seconds of system time per run.
 
 **Note for finding 24:** the out-of-buffer write is unchecked on BOTH arms, so
 that is upstream's semantics and not a divergence. The last named suspect for
