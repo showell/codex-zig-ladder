@@ -1,4 +1,4 @@
-# Findings: seven closed upstream, eight standing, four fixed here, one proposal
+# Findings: seven closed upstream, nine standing, four fixed here, one proposal
 
 This directory holds the findings and the probes that make them runnable.
 It is discussion material rather than a proposed addition to the Codex tree,
@@ -987,3 +987,39 @@ type emits an undeclared type variable rather than refusing** -- called in an
 unannotated lambda it produced `cx_ll_with_capacity(T52, ...)`, which is the
 "never map an unhandled construct onto a valid-but-different one" failure
 with the marker net silent.
+
+## 23. The plug's CCE encoder refuses U+22A2, which is in the compiler's own source
+
+**Found 2026-08-21 while re-deriving the deck numbers through the native
+loop. Ours to fix -- the plug's arm. Small, sharp, and it blocks a whole
+measurement path.**
+
+`cx_cp_to_cce` walks the CCE table, then the tier-1 ranges, then tier-2, and
+panics if a codepoint matches none: "codepoint outside the CCE tiers". U+22A2
+`⊢` matches none.
+
+Tested one codepoint at a time through `native/codexir`:
+
+    Γ U+0393  ok      τ U+03C4  ok      é U+00E9  ok
+    ⊢ U+22A2  REFUSED ε U+03B5  ok      λ U+03BB  ok
+
+So the gap is one character, not a family. It occurs exactly once in the
+depot, at `codex/compiler/Types/TypeCheckerInference.codex:8` --
+"The judgment is Γ ⊢ e : τ | ε" -- and that single occurrence aborts
+`codexir` on the whole 2,496,998-byte fibx subject, five seconds in, before
+any compilation happens.
+
+Bare metal encodes it: the ladder's fibx and scale rungs pass through the
+ring, where the seed does the encoding, so the plug's tier coverage is
+narrower than bare metal's rather than the character being unencodable.
+
+Consequence worth naming: the native loop is the cheap path (a third of a
+second against eleven minutes through QEMU), and it works on every corpus
+program because those are ASCII. It fails on real compiler source. That is
+the wrong way round -- the cheap path should be the one that handles the
+hard input -- and it is why the deck numbers have been measured on patched
+artifacts rather than emitted ones.
+
+Fix needs bare metal's own tier table read out and matched, not guessed: the
+encoding is observable, so inventing a code for U+22A2 would diverge on
+every text that contains it.
