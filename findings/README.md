@@ -1465,8 +1465,43 @@ the answers are compared against `__heap-save` values, which are offsets from
 be nonsense against those. Slices take `v.ptr`; anything else refuses by name
 rather than returning a number.
 
-**Why no sweep saw it.** 65 call sites and 14/14 green, which is the
-interesting part rather than an embarrassment. Either the rungs do not exercise
-those paths, or a collapsed answer happens not to reach the output they diff.
-Worth answering, because "the ladder is green and this was broken all along" is
-a statement about the ladder's coverage, not only about the plug.
+**Why no sweep saw it: THE LADDER STRUCTURALLY CANNOT.** Asked as an open
+question and answered the same day by an independent read, which also corrected
+the count -- 65 occurrences but **62 real call expressions**, since one is the
+`BuiltinSpec` table entry and two are prose inside comments.
+
+**59 of the 62 are not in the emitted program at all.** IR emission prunes to
+what the `opening` reaches, and every one of those 59 belongs to one of two
+families -- the `copy-sx-*` tree in `Syntax/SyntaxNodes.codex` and the
+`mcopy-*`/`mkey-*`/`*-ordinal` tree in `Types/Unifier.codex`. Each is rooted in
+exactly one caller, and both callers are in `codex/compiler/opening.codex`
+(`:492` and `:675`). **That is the one chapter a rung can never bundle**, because
+a rung replaces it with a harness and two chapters cannot both define `opening`.
+Confirmed in the emitted zig rather than inferred: ten of the fourteen rungs
+contain `cx_address_of` exactly once -- the prelude definition, zero calls --
+and `fn mcopy_type`, `fn mode_ordinal`, `fn copy_sx_text` appear in none of
+them, while a control (`fn deep_resolve`) appears in all.
+
+**The other 3 sit in error branches a clean compile never takes** -- the
+`is otherwise ->` arms of `emit-record` and `emit-field-access`, which fire only
+when `resolve-constructed-ty` fails. `whole.truth` and `fibx.truth` both record
+`emit-errors 0`. Had they fired they WOULD have diverged and gone red, so this
+is "green because the branch is dead", not "green because the divergence is
+invisible".
+
+So the answer is the first of the two branches, and the blindness is structural
+rather than accidental: **the one chapter the ladder is architecturally required
+to exclude is the only chapter that reaches this builtin.** No choice of subject,
+no deck scale and no extra rung on the existing pattern would change it. Only a
+harness that calls `copy-sx-document-guarded` and `mcopy-types` directly would --
+or a unit test with a control row, which is what actually found it.
+
+**Residual, and it is a live trap.** The fix makes `address-of` heap-relative,
+which is coherent with `__heap-save`. But the three surviving sites do
+`show (address-of rec-ty)` and `peek-qword (address-of rec-ty) 0` -- a
+heap-relative offset where bare metal shows an ABSOLUTE address, and a
+`cx_peek_qword` read of a zig struct's raw bytes where bare metal reads a tag
+word. If either error branch ever fires, that rung goes red on those lines, and
+**the first reading will look like an emitter bug rather than a representation
+difference.** Arguably the divergence one wants to see; recorded here so whoever
+meets it does not spend the afternoon it would otherwise cost.
