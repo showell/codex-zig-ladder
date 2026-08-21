@@ -63,13 +63,20 @@ each one bought:
     def42bc7  substring traps out of range            finding 28
     35292021  substring and split copy                finding 29
     2202d3e5  text-replace copies                     finding 29, 4th site
+    c86e66d5  shift counts masked to six bits         finding 30
 
 Finding 23 is the one that unblocked the native loop on real source, and
 finding 27 took a compile from 38.0s real / 15.3s sys to 11.4s / 1.8s,
 because the old code committed all 1.5 GiB.
 
-**The natives must be rebuilt after any of these, and that is the gate for
-everything downstream.** `native_build.sh` in a sandbox, >25 minutes, and
+Natives rebuilt 2026-08-21 in sandbox `20260821T180749Z-natives-f29b`
+through `2202d3e5`, and findings 28, 29 and 30 are confirmed on both arms
+through them. **`c86e66d5` postdates that build and is verified as standalone
+zig only**; `findings/gold/probe-shift-count.txt` holds the bare-metal column
+it must match, so confirming it after the next rebuild is one command.
+
+**The natives must be rebuilt after any emitter change, and that is the gate
+for everything downstream.** `native_build.sh` in a sandbox, >25 minutes, and
 nothing else may touch the CPU while it runs: the guest asks for 3072 MB on
 a 3849 MB box, and a concurrent `zig run` is enough to stall its transport
 mid-transfer.
