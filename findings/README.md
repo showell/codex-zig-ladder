@@ -1406,3 +1406,67 @@ UD2s into the instruction stream. That is fine today because everything here
 builds Debug, and it is written down in README's "The zig build mode is part
 of the experiment" -- but it is the same class of difference and it is not
 fixed, only documented.
+
+## 31. `address-of` answered 0 for everything, so every object was the same object and also null
+
+**Found 2026-08-21 by `findings/prim-identity.codex` (tier 9), which exists
+because a frequency pass ranked `address-of` at 65 uncovered call sites. Ours.
+FIXED same day.**
+
+    prim-identity                          zig arm   bare metal
+    same object, twice asked               yes       yes
+    alias has the same address             yes       yes
+    record-set returned the SAME object    yes       yes
+    equal contents, two objects            **NO**    yes
+    `&` produced a new object              **NO**    yes
+
+`cx_address_of` was `_ = v; return 0;`. Bare metal's is
+`emit-identity-builtin` -- it returns the VALUE, and since records, lists and
+texts are pointers there, the value IS the address.
+
+**The two failing rows are the controls, and without them this file would have
+passed.** Every "yes" above is `0 == 0`, true for the same reason a broken
+implementation would make it true. The rows that ask for two things to DIFFER
+are the only ones a constant cannot satisfy. This is the "keep a control" rule
+from PRIORITIES 1.5 earning its place in the sharpest possible way: a test
+suite made only of agreement assertions certifies a stub.
+
+**What it actually breaks, from the compiler's own source.** Not hypothetical:
+
+- `mode-ordinal (m) = if address-of m == 0 then 0 else when m is OvError -> 1 ...`
+  On this arm `address-of m` is always 0, so the function **always returns 0**
+  and never reaches the `when`. `real-width-ordinal` has the same shape.
+- `copy-sx-text (b) (t) = if address-of t < b then t else substring t 0 (text-length t)`
+  A durability check. `0 < b` is true for any positive bound, so it **always
+  shares and never rematerialises** -- and the comment directly above it says
+  why that matters: "substring copies bytes, so the rebuilt text does not point
+  into the reclaimed region." Sharing instead leaves the text pointing into
+  scratch that is about to be reclaimed. Finding 29's failure mode, arriving by
+  an entirely different route.
+- Memo keys: `cons-mix (cons-mix (cons-mix 12 (address-of ...)) (address-of ...))`
+  builds type-memo keys out of addresses. Every address component is 0, so keys
+  collapse to their constructor tag. Whether that produces a wrong answer
+  depends on whether lookup verifies structurally after hashing, which is NOT
+  established here -- recorded as a question, not a claim.
+
+**The 0 was justified, and the justification does not apply.** The plug's own
+comment read: "address-of answers 0 here by X86_64Compound's own account of
+targets without it". That account says address-of "silently answers 0 on any
+target where `address-of` cannot be modelled: **that cost the C# arm every tag
+in this table**" -- describing the hazard as a cost that had already bitten,
+and upstream's response was to stop depending on it there (they read tags via
+`variant-tag` now), not to bless the 0. And this is not such a target: one flat
+region with pointers into it is exactly the shape bare metal has.
+
+**FIXED.** `cx_address_of` now returns the value for scalars and a
+**heap-relative offset** for pointers. Heap-relative is the load-bearing part:
+the answers are compared against `__heap-save` values, which are offsets from
+`cx_heap_base`, so a raw `@intFromPtr` would order correctly among itself and
+be nonsense against those. Slices take `v.ptr`; anything else refuses by name
+rather than returning a number.
+
+**Why no sweep saw it.** 65 call sites and 14/14 green, which is the
+interesting part rather than an embarrassment. Either the rungs do not exercise
+those paths, or a collapsed answer happens not to reach the output they diff.
+Worth answering, because "the ladder is green and this was broken all along" is
+a statement about the ladder's coverage, not only about the plug.

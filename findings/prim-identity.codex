@@ -1,0 +1,117 @@
+Chapter: PrimIdentity
+  cites Foreword chapter Console
+
+ Tier 9: object identity. `address-of` has 65 call sites in the compiler and
+ had no assertion anywhere.
+
+ It is the only builtin that can ask "are these two names the same object",
+ which is the question finding 10 turned on: records are pointers, all of
+ them, and `__record-set` mutates rather than copying, so a binding taken
+ before an update sees the update. Tier 4 pins that through the VALUE. This
+ file pins it through the ADDRESS, which is the same claim said a second way
+ -- and two independent ways of saying it is what makes a regression test hard
+ to fool. A plug that started copying would have to fake both.
+
+ NO ADDRESS IS EVER PRINTED. The arms have different layouts and always will,
+ so an address is the one thing that cannot be compared between them. Every
+ line below compares two addresses to each other, or an address to itself, and
+ prints yes or no. That is also why this could not simply be folded into tier
+ 4: the cost rows there print numbers, and here a number would be a bug.
+
+ Two things worth predicting before reading the output. Taking the address of
+ the same object twice must give the same answer, or the notion is meaningless.
+ And an address must SURVIVE A MUTATION -- `__record-set` returns the same
+ object, so the address before and the address after are equal, and if they
+ differ then something copied and finding 10 has regressed on that arm.
+
+ The list rows are the sharper ones, because a list is the type where a plug is
+ most tempted to copy: `list-push` may reallocate its backing store, and the
+ question is whether the LIST is still the same object when it does. Bare metal
+ answers yes -- the block is one object and push mutates it. So the address of
+ a list must not move when it grows, even though its contents may.
+
+Section: Types
+
+  mutable Cell = record { v : Integer }
+
+  Pair = record { a : Integer, b : Integer }
+
+Section: Instrument
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+Section: Shapes
+
+  three : Integer -> List Integer
+  three (n) = [n, n + 1, n + 2]
+
+  no-ints : Integer -> List Integer
+  no-ints (n) = []
+
+ Reads the address out of a record FIELD, which the inliner cannot collapse
+ into the caller's own `address-of` the way a one-line wrapper can. The first
+ draft used `addr-of-cell (c) = address-of c` and the emitted zig came out as
+ `cx_address_of(c) == cx_address_of(c)` -- a tautology that would have passed
+ on any arm, including a broken one.
+
+  Boxed = record { held : Cell }
+
+  addr-of-held : Boxed -> Integer
+  addr-of-held (b) = address-of (b.held)
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- an address is stable, or the notion means nothing --"
+   let c = Cell { v = 1 }
+   in act
+     print-line-uni ("same object, twice asked   : " & show-yn (address-of c == address-of c))
+     print-line-uni ("same through a record field: " & show-yn (address-of c == addr-of-held (Boxed { held = c })))
+   end
+   print-line-uni "-- distinct objects, distinct addresses --"
+   let p = Cell { v = 1 }
+   in let q = Cell { v = 1 }
+   in act
+     print-line-uni ("equal contents, two objects: " & show-yn (address-of p == address-of q == False))
+     print-line-uni ("  (yes = same value did not make them the same object)")
+   end
+   print-line-uni "-- finding 10 through the address instead of the value --"
+   let r = Cell { v = 1 }
+   in let alias = r
+   in let before = address-of r
+   in let r2 = __record-set r "v" 99
+   in act
+     print-line-uni ("alias has the same address : " & show-yn (address-of alias == before))
+     print-line-uni ("record-set returned the SAME: " & show-yn (address-of r2 == before))
+     print-line-uni ("the address survived it    : " & show-yn (address-of r == before))
+     print-line-uni ("and the value did change   : " & show-yn (alias.v == 99))
+     print-line-uni ("  (all yes = one object, mutated, not copied)")
+   end
+   print-line-uni "-- a second record type, so this is not one shape's accident --"
+   let s = Pair { a = 1, b = 2 }
+   in let salias = s
+   in act
+     print-line-uni ("alias of a Pair is the same: " & show-yn (address-of salias == address-of s))
+   end
+   print-line-uni "-- lists: does growing move the object? --"
+   let l = three 5
+   in let lalias = l
+   in let lbefore = address-of l
+   in act
+     print-line-uni ("alias shares the address   : " & show-yn (address-of lalias == lbefore))
+     print-line-uni ("set-at does not move it    : " & show-yn (address-of (list-set-at l 1 99) == lbefore))
+   end
+   let g = three 5
+   in let gbefore = address-of g
+   in let g2 = list-push g 42
+   in act
+     print-line-uni ("push returns the same list : " & show-yn (address-of g2 == gbefore))
+     print-line-uni ("and the original agrees    : " & show-yn (address-of g == gbefore))
+     print-line-uni ("  (yes = growing did not make a new object)")
+   end
+   print-line-uni "-- a copy is a different object, which is the control --"
+   let k = three 5
+   in let kcopy = k & (no-ints 0)
+   in print-line-uni ("`&` produced a new object  : " & show-yn (address-of kcopy == address-of k == False))
+  end
