@@ -40,56 +40,64 @@ plug, not a patched artifact. Reproduce with the recipe in
 Measured 2026-08-21, after the cold agent's design review pointed out that
 this family had no row anywhere and that the `Text` narrowing turns on it.
 
-**The zig column below is PRE-FIX and is now wrong.** Measuring it is what
-found finding 29: the zeros are not an optimisation, they are the defect --
-a substring that allocates nothing cannot be placed on the deck, so a value
-that looks decked points at frontier the next rewind reclaims. `cx_substring`
-and every piece of `cx_text_split` now copy. **Re-take this column with the
-rebuilt natives**; the zig side should track bare metal within the usual
-padding, and the rows are kept here meanwhile because the argument they make
-about representation (a) versus (b) does not depend on which column is stale.
+Two zig columns, because measuring the first one is what found finding 29.
+The zeros were not an optimisation: a substring that allocates nothing cannot
+be placed on the deck, so a value that looks decked points at frontier the
+next rewind reclaims. `cx_substring` and every piece of `cx_text_split` now
+copy, and the third column is the same programs through a `zigemit` built
+from that fix.
 
-| shape | bare metal | zig arm | delta |
-|---|---|---|---|
-| substring 4 of 8 | 16 | 0 | **-16** |
-| substring 8 of 8 | 16 | 0 | **-16** |
-| substring 20 of 20 | 32 | 0 | **-32** |
-| substring 0 of 4 | 8 | 0 | **-8** |
-| **scan, 28 pieces of 4** | **448** | **0** | **-448** |
-| text-split, 3 pieces | 112 | 170 | +58 |
-| text-split, 6 pieces | 256 | 173 | **-83** |
+| shape | bare metal | zig, pre-fix | zig, post-fix | delta now |
+|---|---|---|---|---|
+| substring 4 of 8 | 16 | 0 | 4 | -12 |
+| substring 8 of 8 | 16 | 0 | 8 | -8 |
+| substring 20 of 20 | 32 | 0 | 20 | -12 |
+| substring 0 of 4 | 8 | 0 | 0 | -8 |
+| **scan, 28 pieces of 4** | **448** | **0** | **112** | **-336** |
+| text-split, 3 pieces | 112 | 170 | 183 | +71 |
+| text-split, 6 pieces | 256 | 173 | 186 | **-70** |
 
-**Bare metal always copies; we always slice.** `emit-substring-alloc` bumps
-the frontier by `(len + 15) & ~7` and `emit-substring-copy` moves the bytes
-one at a time (`Emit/X86_64Builtins.codex:610`, `:618`), so a substring costs
+**Both arms copy now, and the residual gap is one rule.**
+`emit-substring-alloc` bumps the frontier by `(len + 15) & ~7` and
+`emit-substring-copy` moves the bytes one at a time
+(`Emit/X86_64Builtins.codex:610`, `:618`), so on bare metal a substring costs
 exactly what a text of that length costs -- the four single rows are `8 +
-align8(len)` on the nose, and the scan is 28 x 16 = 448 with no residue.
-`cx_substring` returns a sub-slice of its argument and allocates nothing.
+align8(len)` on the nose, and the scan is 28 x 16 = 448 with no residue. We now
+allocate too, but a bare byte run with no length word and no rounding, so we
+pay exactly `len`: 4, 8, 20, 0, and 28 x 4 = 112.
 
-So this is a family where **we are cheaper than the oracle**, and on the shape
-real subjects actually use: a tokenizer takes many small pieces out of one
-buffer, and every one of them is free to us and 16 bytes to bare metal. It
-moves the deck estimate in our favour, which is the opposite of what the
-list-constructor and `List Text` rows do, and it had been counted as neither.
+**The difference is a flat 12 bytes a piece, and that is the whole `Text`
+narrowing in one number** -- 8 of length word plus 4 of alignment padding on a
+4-byte piece. It is the same header-and-padding rule every other text row in
+this file pays, which is the point: after finding 29 this family is no longer a
+semantic divergence that happened to look like a saving, it is the ordinary
+representation gap, and it will close when the representation does.
 
-Split crosses over. At three pieces we are dearer by 58, because our list
-grows geometrically while bare metal's is sized once; at six we are cheaper by
-83, because the pieces themselves are free. Bare metal's marginal cost is 48 a
-piece (16 of text plus 32 of list) against our roughly nothing, so past about
-four pieces the slice wins and keeps winning.
+Split crosses over, and copying moved the crossing only slightly. At three
+pieces we are dearer by 71, because our list grows geometrically while bare
+metal's is sized once; at six we are cheaper by 70, because bare metal's
+marginal cost is 48 a piece (16 of text plus 32 of list) and ours is the piece
+alone. Past about four pieces we win and keep winning.
 
-**This is the cost argument for representation (b).** A handle that is a
-pointer AT a length word, the way bare metal does it, cannot describe a slice
-of somebody else's bytes -- there is nowhere to put the shorter length -- so
-adopting it converts every one of these zeros into `8 + align8(len)`. The
-scan row prices that decision at 448 bytes per 28 tokens.
+**What the pre-fix column was worth.** It priced representation (a) -- a handle
+that is a pointer AT a length word -- at 448 bytes per 28 tokens, on the
+argument that (a) cannot describe a slice of somebody else's bytes. Finding 29
+retired that argument by removing every such slice from the prelude, because
+bare metal has none either. (b) is still the right choice; it rests on
+`cx_concat`'s in-place path, which is untouched by any of this.
 
 All fifteen semantic assertions -- seven substring, eight split/replace --
 are identical on both arms, including the empty-source and trailing-separator
-split counts and the `text-concat-list . text-split` round trip. The one
-divergence is out of range, where bare metal traps and we clamp: finding 28,
-probed separately in `findings/probe-substring-trap.codex` because a tier file
-that trapped would take its other assertions down with it.
+split counts and the `text-concat-list . text-split` round trip. Out of range
+they now agree too: finding 28's fix makes us trap where we clamped, probed
+separately in `findings/probe-substring-trap.codex` because a tier file that
+trapped would take its other assertions down with it.
+
+**Provenance of the post-fix column.** Measured through a `zigemit` built from
+`35292021` paired with a `codexir` from the previous build, because that
+sandbox's own `codexir` transpile stalled. Legitimate for these rows -- the
+prelude comes from `zigemit` and `codexir` only turns `.codex` into IR -- and
+recorded rather than smoothed over. To be re-taken from a clean pair.
 
 ### Tier 4: records and closures (`findings/prim-records.codex`)
 
