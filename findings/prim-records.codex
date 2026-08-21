@@ -1,0 +1,111 @@
+Chapter: PrimRecords
+  cites Foreword chapter Console
+
+ Tier 4: records and closures. Two questions -- what they cost, and what they
+ MEAN, because the semantics here are the ones that have bitten hardest.
+
+ Records are pointers. All of them, not the ones spelled `mutable`.
+ `__record-set` stores through the record's pointer and returns the same
+ object; nothing copies. The `mutable` keyword promises value semantics that
+ the implementation never delivers, and only ALIASING distinguishes the two --
+ reading a binding made BEFORE an update. That is finding 10, and it hid
+ behind 354 `__record-set` calls in one subject because none of them aliased.
+ The aliasing section below is that finding as a standing test: if a plug ever
+ starts copying, `alias sees the update` flips to no on one arm.
+
+ Every function value is a closure struct, so applying one is a call through
+ its context and never plain call syntax. A lambda captures the enclosing
+ locals its body mentions; a parameter that SHADOWS an enclosing local is not
+ a capture.
+
+ Costs are `__heap-save` deltas and are expected to differ between arms.
+ Semantics are relational and must be byte-identical.
+
+ Every lambda below is written at a call site whose signature supplies its
+ type. A lambda bound to an unannotated `let` has no type context and the plug
+ emits `@compileError("zig plug: no zig type for this codex type")` -- the
+ refusal net working as designed, but a real gap, since bare metal infers it
+ and compiles the same source. Worth a line in the refusal-gaps work.
+
+Section: Types
+
+  One = record { a : Integer }
+
+  Two = record { a : Integer, b : Integer }
+
+  Four = record { a : Integer, b : Integer, c : Integer, d : Integer }
+
+  Eight = record { a : Integer, b : Integer, c : Integer, d : Integer, e : Integer, f : Integer, g : Integer, h : Integer }
+
+  mutable Cell = record { v : Integer }
+
+Section: Instrument
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+  measure : (Integer -> Integer) -> Integer
+  measure (f) =
+   let h0 = __heap-save
+   in let r = f 0
+   in let h1 = __heap-save
+   in let back = __heap-restore h0
+   in if r >= 0 then h1 - h0 else 0 - 1
+
+Section: Shapes
+
+  mk-one : Integer -> Integer
+  mk-one (n) = (One { a = n }).a
+
+  mk-two : Integer -> Integer
+  mk-two (n) = (Two { a = n, b = n }).a
+
+  mk-four : Integer -> Integer
+  mk-four (n) = (Four { a = n, b = n, c = n, d = n }).a
+
+  mk-eight : Integer -> Integer
+  mk-eight (n) = (Eight { a = n, b = n, c = n, d = n, e = n, f = n, g = n, h = n }).a
+
+  apply1 : (Integer -> Integer), Integer -> Integer
+  apply1 (f) (x) = f x
+
+  twice : (Integer -> Integer), Integer -> Integer
+  twice (f) (x) = f (f x)
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- record allocation cost by field count --"
+   print-line-uni ("record 1 field " & integer-to-text (measure (\z -> mk-one z)))
+   print-line-uni ("record 2 fields" & integer-to-text (measure (\z -> mk-two z)))
+   print-line-uni ("record 4 fields" & integer-to-text (measure (\z -> mk-four z)))
+   print-line-uni ("record 8 fields" & integer-to-text (measure (\z -> mk-eight z)))
+   print-line-uni "-- finding 10: records are pointers, record-set mutates --"
+   let c = Cell { v = 1 }
+   in let alias = c
+   in let c2 = __record-set c "v" 99
+   in act
+     print-line-uni ("update is visible on it    : " & show-yn (c2.v == 99))
+     print-line-uni ("alias sees the update      : " & show-yn (alias.v == 99))
+     print-line-uni ("original name sees it too  : " & show-yn (c.v == 99))
+     print-line-uni ("  (yes on all three = one object, mutated in place)")
+   end
+   print-line-uni "-- a second record is a second object --"
+   let p = Cell { v = 5 }
+   in let q = Cell { v = 5 }
+   in let p2 = __record-set p "v" 7
+   in act
+     print-line-uni ("sibling is undisturbed     : " & show-yn (q.v == 5))
+   end
+   print-line-uni "-- closures --"
+   let k = 10
+   in act
+     print-line-uni ("lambda captures a local    : " & show-yn (apply1 (\x -> x + k) 5 == 15))
+     print-line-uni ("shadowing param is not one : " & show-yn (apply1 (\k -> k + 1) 5 == 6))
+     print-line-uni ("closure applies twice      : " & show-yn (twice (\x -> x + k) 5 == 25))
+     print-line-uni ("closure passes through     : " & show-yn (apply1 (\x -> x) 42 == 42))
+   end
+   print-line-uni "-- closure allocation cost --"
+   print-line-uni ("capturing lambda " & integer-to-text (measure (\z -> apply1 (\x -> x + z) 1)))
+   print-line-uni ("non-capturing    " & integer-to-text (measure (\z -> apply1 (\x -> x + 1) 1)))
+  end
