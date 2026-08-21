@@ -1,0 +1,108 @@
+Chapter: PrimBuffers
+  cites Foreword chapter Console
+
+ Tier 5: raw buffers. A buffer is not an object -- it is a span of the same
+ heap, reserved by taking `__heap-save` and then `__heap-advance`-ing past it,
+ and addressed by integer offsets from that base. `poke-byte`, `peek-byte`,
+ `poke-16`, `peek-16`, `poke-32`, `peek-32`, `peek-qword` and the `__buf-*`
+ family all take a base and an offset and go straight to memory.
+
+ This tier exists because finding 24 has one suspect left. A `codexir` built
+ from the heap branch dies on a large subject reading a `CxList` whose header
+ is not a header, and everything else was ruled out by measurement: nothing is
+ reclaimed (that binary never calls `__heap-restore`), nothing is reused (making
+ free never rewind changes nothing), the argument is not wrong (the pointer is
+ identical at creation and at use). What is left is that something WRITES over
+ a live object, and the only writers into the region besides the allocator are
+ these. `cx_buf_want` bounds an address against the whole reservation and
+ nothing bounds it against the buffer's own capacity.
+
+ So the question this file asks is not "do buffers work" but "what does an
+ out-of-buffer write DO, on each arm". The last section reserves two buffers,
+ writes past the end of the first, and reads the second. If both arms report
+ the same answer the semantics are upstream's and we mirror them. If they
+ differ, that is the writer.
+
+ Written against the narrow set every branch has: `__buf-write-byte`,
+ `__buf-write-bytes`, `__buf-read-bytes`, `peek-byte`, `peek-qword`. The
+ `poke-*` and `peek-16/32` family exists upstream but has no emitter on
+ `zig-plug-heap-unification` -- it arrived with the refusal-gaps batch on a
+ different branch -- so using it here would make the file unrunnable on the
+ arm we are trying to test. Little-endian is asserted rather than trusted.
+
+ Everything here is relational or a small integer. No addresses are printed.
+
+Section: Instrument
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+Section: Shapes
+
+ Each of these reserves its own span, so no two touch the same bytes.
+
+  fresh-buf : Integer -> Integer
+  fresh-buf (size) =
+   let b = __heap-save
+   in let adv = __heap-advance size
+   in b
+
+  fill-bytes : Integer, Integer, Integer -> Integer
+  fill-bytes (b) (i) (n) =
+   if i >= n then 0
+   else let p = __buf-write-byte b i 255
+   in fill-bytes b (i + 1) n
+
+  all-are : Integer, Integer, Integer, Integer -> Boolean
+  all-are (b) (i) (n) (v) =
+   if i >= n then True
+   else if peek-byte b i == v then all-are b (i + 1) n v
+   else False
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- reservation --"
+   let b1 = fresh-buf 4096
+   in let b2 = fresh-buf 4096
+   in act
+     print-line-uni ("two buffers are distinct   : " & show-yn (b2 > b1))
+     print-line-uni ("second sits after the first: " & show-yn (b2 - b1 >= 4096))
+   end
+   print-line-uni "-- byte round trip --"
+   let b = fresh-buf 4096
+   in let p0 = __buf-write-byte b 0 7
+   in let p1 = __buf-write-byte b 1 8
+   in let p2 = __buf-write-byte b 4095 9
+   in act
+     print-line-uni ("byte at 0 reads back       : " & show-yn (peek-byte b 0 == 7))
+     print-line-uni ("byte at 1 reads back       : " & show-yn (peek-byte b 1 == 8))
+     print-line-uni ("last byte reads back       : " & show-yn (peek-byte b 4095 == 9))
+     print-line-uni ("neighbours undisturbed     : " & show-yn (peek-byte b 2 == 0))
+     print-line-uni ("write-byte answers next off: " & show-yn (p0 == 1))
+   end
+   print-line-uni "-- write-bytes and qword, little-endian --"
+   let b = fresh-buf 4096
+   in let e = __buf-write-bytes b 0 [1, 2, 3, 4, 0, 0, 0, 0]
+   in act
+     print-line-uni ("write-bytes answers end    : " & show-yn (e == 8))
+     print-line-uni ("first byte is the low byte : " & show-yn (peek-byte b 0 == 1))
+     print-line-uni ("qword is little-endian     : " & show-yn (peek-qword b 0 == 67305985))
+     print-line-uni ("read-bytes round trips     : " & show-yn (list-length (__buf-read-bytes b 0 4) == 4))
+     print-line-uni ("zeroed where untouched     : " & show-yn (peek-qword b 16 == 0))
+   end
+   print-line-uni "-- a fresh reservation reads as zero --"
+   let b = fresh-buf 256
+   in print-line-uni ("fresh span is zeroed       : " & show-yn (all-are b 0 256 0))
+   print-line-uni "-- finding 24: what does a write PAST a buffer do? --"
+   let ba = fresh-buf 128
+   in let bb = fresh-buf 128
+   in let seed = fill-bytes bb 0 128
+   in let gap = bb - ba
+   in let over = __buf-write-byte ba gap 42
+   in act
+     print-line-uni ("neighbour was seeded 255   : " & show-yn (peek-byte bb 1 == 255))
+     print-line-uni ("write past end LANDS on it : " & show-yn (peek-byte bb 0 == 42))
+     print-line-uni ("  (yes = out-of-buffer writes are unchecked on this arm)")
+   end
+  end

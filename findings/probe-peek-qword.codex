@@ -1,0 +1,16 @@
+Chapter: QwordProbe
+  cites Foreword chapter Console
+
+ peek-qword over a byte pattern whose top byte has the high bit set, i.e. a
+ negative i64. Bare metal loads eight bytes; the zig plug rebuilds the value
+ with multiply-and-add, which traps on overflow.
+
+  opening : [Console] Nothing = act
+   let b = __heap-save
+   in let adv = __heap-advance 64
+   in let e = __buf-write-bytes b 0 [0, 0, 0, 0, 0, 0, 0, 255]
+   in act
+     print-line-uni "wrote 00 00 00 00 00 00 00 FF"
+     print-line-uni ("peek-qword answers " & integer-to-text (peek-qword b 0))
+   end
+  end
