@@ -1,4 +1,4 @@
-# Findings: seven closed upstream, seven standing, four fixed here, one proposal
+# Findings: seven closed upstream, eight standing, four fixed here, one proposal
 
 This directory holds the findings and the probes that make them runnable.
 It is discussion material rather than a proposed addition to the Codex tree,
@@ -940,3 +940,50 @@ Full diagnosis, the open second escape, and -- importantly -- the false
 lead that was ruled out (the deck nesting counter going negative is
 FAITHFUL; `X86_64Builtins.codex:1030` does the same) are in
 `findings/zig-heap-unification.md`, section "The ladder run, 2026-08-21".
+
+## 22. Text accumulation is linear on bare metal and quadratic on the zig arm
+
+**Found 2026-08-21 with `findings/probe-memory-model.codex`, measured on
+both arms the same day. Ours to fix -- the plug's arm. Asymptotic, not a
+constant factor, which makes it the most consequential plug divergence
+found so far.**
+
+Bare metal selects `__str_concat_inplace` (`Emit/X86_64TextHelpers.codex:287`)
+for a text accumulator, via the tail-recursion analysis at
+`Emit/X86_64.codex:2376-2396` (`is-inplace-append`) and `:225-250`
+(`inplace-accumulators`) -- the Update 43 change that took a quadratic
+selfhost path to linear. ZigEmitter has no equivalent: it always emits a
+fresh `cx_concat`, so an accumulator loop copies the whole accumulator every
+iteration.
+
+The probe builds a text by repeated concatenation at n = 64, 128, 256 and
+prints the bytes consumed and the ratios:
+
+    bare metal   72   136    264    ratios 1.9 1.9 -> LINEAR
+    zig arm    2080  8256  32896    ratios 4.0 4.0 -> QUADRATIC
+
+The zig figures are exactly the triangular numbers `n(n+1)/2` (2080 =
+64*65/2, and so on), which is what copying the accumulator each step costs.
+Bare metal is `n + 8`. At n = 256 that is 264 bytes against 32,896 -- 125x
+-- and the gap grows without bound, so it will dominate any constant-factor
+difference on a large enough subject.
+
+Two controls in the same run say this is a real divergence and not the
+probe's shape. `push-accum` is linear on both arms (528/1040/2064 against
+681/1145/2889). `cat-accum` -- building a LIST by repeated `&` -- is
+quadratic on **both** (20240/73232/277520 against 44065/137249/471073), so
+that one is inherent to the source and not ours to fix.
+
+The same run independently reproduces finding 21 from the other direction:
+`__list-with-capacity` costs bare metal exactly `cap*8 + 16` (16, 144, 2064
+at capacities 0, 16, 256 -- the rule read out of
+`emit-list-with-capacity-builtin-bivy`) and costs the unfixed zig plug a flat
+~25 bytes at every capacity, because it discarded its argument.
+
+Filed with it, from writing the probe: **`__deck-alloc` has no zig emitter
+at all** (`zigemit` plants `@compileError`; the builtin appears nowhere in
+`codex/plugs/zig/`), and **`__list-with-capacity` with an uninferable element
+type emits an undeclared type variable rather than refusing** -- called in an
+unannotated lambda it produced `cx_ll_with_capacity(T52, ...)`, which is the
+"never map an unhandled construct onto a valid-but-different one" failure
+with the marker net silent.
