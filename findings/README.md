@@ -1155,16 +1155,24 @@ A buffer is a span of the heap reserved by `__heap-save` then
 reads as zero -- the plug's own prelude comment claims to match "an arena the
 guest zero-fills at boot". On this arm it reads as whatever was last there.
 
-The mechanism is `cx_bump_free` rewinding the frontier when the freed block is
-topmost. Bare metal has no equivalent -- `__list_snoc` extends in place and
-nothing hands a byte back -- so its frontier only ever advances into untouched
-memory. Ours can retreat over written bytes and then re-reserve them, so a
-"fresh" buffer arrives full of dead objects.
+**The mechanism is NOT known.** The obvious candidate was `cx_bump_free`
+rewinding the frontier when the freed block is topmost, letting a later
+reservation land on written bytes -- bare metal has no equivalent, since
+`__list_snoc` extends in place and nothing hands a byte back. That was tested
+and REFUTED: with `cx_bump_free` made a no-op, so no byte is ever handed out
+twice, the span still reads non-zero. Whatever writes there does so without
+the frontier retreating, and the region itself is one `page_allocator.alloc`
+of lazily-faulted zero pages, so untouched territory should read as zero.
+Finding the writer is the open work. Do not repeat the free-rewind test.
 
 Consequence: any code that assumes a reserved span reads as zero is correct on
 bare metal and wrong here. `init-emit-workspace` reserves the 8 MB code buffer
 and 2 MB data buffer exactly this way. It is also how tier 5 found finding 26:
 a qword read from supposedly-fresh memory had a high top byte.
+
+Also tested and refuted for finding 24: rebuilding `codexir` with
+`cx_bump_free` made a no-op does not change that crash either -- identical
+frames, same site. So frontier retreat is not behind either symptom.
 
 **Note for finding 24:** the out-of-buffer write is unchecked on BOTH arms, so
 that is upstream's semantics and not a divergence. The last named suspect for
