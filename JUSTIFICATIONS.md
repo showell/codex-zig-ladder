@@ -186,3 +186,17 @@ top-level placements used 103,127 and 1,392,861 bytes of their 109 MB.
 With the slack and nothing else changed, both rungs run to completion
 byte-identical to the u48 bank -- the correct-but-sized-wrong verdict
 holds at `86f6fae9`.
+
+The whole unit, same experiment (`ast/whole-slack.zig`, slack only): both
+rungs run to completion byte-identical to the bank -- the sweep's
+`Segmentation fault at address 0x9` was deck exhaustion in disguise, not
+a pointer defect. Its emit placements, zig arm at `86f6fae9`:
+
+    rung   defs  reservation   zig arm     vs reservation
+    whole     5   25,493,504   27,016,144   over by 1,522,640 (6.0%)
+    clamp    25   26,804,224   27,036,504   over by 232,280 (0.9%)
+
+All four emit rungs now cluster at 27.0-27.1 MB across 3, 5, 25 and 61
+definitions: the zig arm's flat cost is ~27 MB against the formula's
+25,165,824 flat term. A ~2 MB bump to the flat term covers every measured
+rung; the defs term can stay.

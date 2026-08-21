@@ -110,8 +110,12 @@ the console verdict died with a WSL crash at ~21:37Z. What this buys:
   With slack alone both rungs are byte-identical to the bank -- correct
   but sized wrong still holds. A 1.65 MB shortfall is reservation-sizing
   territory, not narrowing territory.
-- whole's segfault at 0x9 is a near-null address, not a deck symptom --
-  a new datum for the finding-24 pointer-shaped-value lead list.
+- whole's segfault at 0x9 looked like a pointer defect and is NOT one:
+  the slack re-run completes byte-identical on both rungs, so it was deck
+  exhaustion in disguise. Do not put it on the finding-24 lead list. All
+  four emit rungs cluster at 27.0-27.1 MB across 3-61 defs
+  (JUSTIFICATIONS); a ~2 MB bump to the formula's flat term covers every
+  measured rung, and the sweep should then run 14/14 with no narrowing.
 - The droplet sweep-prep gap is real: a fresh droplet sandbox carries no
   `ast/*.ir` and the sweep fails 0/14 in 71s. Unattended droplet sweeps
   (item 2.5) need the prep step to ship or regenerate the `.ir` files.
