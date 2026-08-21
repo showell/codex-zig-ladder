@@ -40,12 +40,10 @@ Chapter: ProbeDeckSubstring
  `init-phase-allocator`'s and this chapter is neither -- finding 25. The
  decomposition is honoured by every arm.
 
- One deck reservation serves both sections, and it is set AT the base with the
- frontier lifted above it. The first draft set the mark at `base + 8388608`
- and then advanced the frontier by the same 8388608, which puts both cursors
- on the same address; `cx_frontier_crosses` said so and named both. Worth
- recording because the guard doing its job looks exactly like a finding until
- you read the numbers it prints.
+ One deck reservation serves both sections, set AT the base with the frontier
+ lifted above it. Setting the mark and advancing the frontier by the same
+ amount puts both cursors on one address, and `cx_frontier_crosses` refuses
+ with both numbers in the message.
 
 Section: Instrument
 

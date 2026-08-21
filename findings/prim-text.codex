@@ -30,30 +30,24 @@ Chapter: PrimText
  `char-code-at` is the one that answers in CCE. The codes below are CCE, so
  they are the same number on every arm or one of the arms is wrong.
 
- SUBSTRING AND SPLIT are the rows nobody had measured, and they are the ones
- the `Text` narrowing turns on. Bare metal always COPIES: `emit-substring-alloc`
- bumps the frontier by `(len + 15) & ~7` and `emit-substring-copy` moves the
- bytes one at a time (Emit/X86_64Builtins.codex:610 and :618), so a substring
- costs exactly what a text of that length costs. The zig plug returns a
- SUB-SLICE of its argument and allocates nothing, and `text-split` likewise
- hands back slices of the source. So on this family we are CHEAPER than the
- oracle, not dearer, and the scan below says by how much.
+ SUBSTRING AND SPLIT cost what a text of that length costs, on both arms.
+ Bare metal copies: `emit-substring-alloc` bumps the frontier by
+ `(len + 15) & ~7` and `emit-substring-copy` moves the bytes one at a time
+ (Emit/X86_64Builtins.codex:610 and :618). So does the plug, since finding 29
+ -- a substring that allocates nothing cannot be placed on the deck, and a
+ value that looks decked and is not is a table full of reclaimed bytes.
 
- That asymmetry decides the representation question. A handle that is a
- pointer AT a length word cannot express a slice of somebody else's bytes --
- there is nowhere to put the shorter length -- so adopting it would make every
- substring allocate and copy, which is a cost these rows now price. A handle
- carrying its own offset and length keeps the slice.
+ What is left is the representation gap and nothing else: bare metal pays a
+ length word and rounds to eight, we pay the bytes. A flat twelve on a
+ four-byte piece. The scan is the shape that matters, because real subjects
+ tokenize rather than take one substring -- 28 four-byte pieces out of a
+ 32-byte literal, 448 against 112.
 
- The scan is the shape that matters, because real subjects tokenize rather
- than take one substring: 28 four-byte pieces out of a 32-byte literal, where
- bare metal pays 16 bytes a piece and we pay nothing.
-
- In-range only, deliberately. Bare metal TRAPS on an out-of-range substring --
- UD2, at Damian's ruling, because a clamp turns a program's bug into quietly
- wrong data (Emit/X86_64Builtins.codex:640-666). `cx_substring` clamps with
- `@min` instead, which is that guarantee silently degraded; it is finding 28
- and it gets its own probe, since a file that asserted it would kill one arm.
+ In-range only, deliberately. Bare metal traps on an out-of-range substring,
+ at Damian's ruling that a clamp turns a program's bug into quietly wrong data
+ (Emit/X86_64Builtins.codex:640-666), and so does the plug since finding 28.
+ The out-of-range case has its own probe: a file that asserted it here would
+ take these forty assertions down with it.
 
  measure rewinds after reading, so each line is independent and only the
  Integer escapes the window.
@@ -151,13 +145,13 @@ Section: Main
    print-line-uni ("sub at the end" & show-yn (text-length (substring "abcd" 4 0) == 0))
    print-line-uni ("sub whole text" & show-yn (text-compare (substring "abcd" 0 4) "abcd" == 0))
    print-line-uni ("sub of a built" & show-yn (text-compare (substring ("ab" & "cd") 1 2) "bc" == 0))
-   print-line-uni "-- cost: bare metal copies, expect 8 + align8(len); zig slices, expect 0 --"
+   print-line-uni "-- cost: both copy; bare metal 8 + align8(len), the plug the bytes --"
    print-line-uni ("sub 4 of 8    " & integer-to-text (measure (\z -> sub-len "abcdefgh" z 4)))
    print-line-uni ("sub 8 of 8    " & integer-to-text (measure (\z -> sub-len "abcdefgh" z 8)))
    print-line-uni ("sub 20 of 20  " & integer-to-text (measure (\z -> sub-len "abcdefghijklmnopqrst" z 20)))
    print-line-uni ("sub 0 of 4    " & integer-to-text (measure (\z -> sub-len "abcd" z 0)))
    print-line-uni ("scan 28 x 4   " & integer-to-text (measure (\z -> sub-scan z 28)))
-   print-line-uni "-- split: pieces are slices on one arm and copies on the other --"
+   print-line-uni "-- split: pieces are copies on both arms; the list growth differs --"
    print-line-uni ("split abc     " & integer-to-text (split-count "a,b,c" ","))
    print-line-uni ("split none    " & integer-to-text (split-count "abc" ","))
    print-line-uni ("split empty   " & integer-to-text (split-count "" ","))

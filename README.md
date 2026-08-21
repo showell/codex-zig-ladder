@@ -542,13 +542,11 @@ The top two rows are measured, one program per cell. The bottom two follow
 zig's documented safety-check placement and have not been measured cell by
 cell here, though they are the ones this ladder leans on hardest.
 
-The first row is a narrower claim than it looks and is **not** the same
-question as finding 27's. That finding is about `Allocator.alloc`'s
-`@memset(_, undefined)` on a runtime-sized buffer surviving optimisation; this
-row is about a fixed-size local, which a release build is free to fold away
-whether or not the memset elsewhere survives. Do not read one as evidence for
-the other -- they were conflated once already while this table was being
-written.
+The first row is a narrower claim than it looks, and is **not** finding 27's
+question. That finding is about `Allocator.alloc`'s `@memset(_, undefined)` on
+a runtime-sized buffer surviving optimisation; this row is about a fixed-size
+local, which a release build may fold away whether or not the memset elsewhere
+survives. Neither is evidence for the other.
 
 **The asymmetry with bare metal is the part worth internalising.** Bare metal
 has no build mode. Its guarantees are *in the instruction stream*:

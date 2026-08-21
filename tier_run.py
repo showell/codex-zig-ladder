@@ -24,9 +24,8 @@ Both emitted programs print to stderr, because `print-text` is
 `std.debug.print` in the emitted runtime and the bare-metal console lands
 there too; that is a wart the plug should fix, not a design.
 
-Existed because the alternative was composing the same six commands by hand
-every time, which is how 2026-08-21 produced a number measured against a
-wrong-branch artifact and reported it as a pass.
+One command, so that which natives ran and which seed answered are properties
+of the script rather than of whoever typed the pipeline that day.
 """
 
 import argparse
