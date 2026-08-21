@@ -123,7 +123,25 @@ is measured, not assumed. Remaining, in rough order:
   cleanest trust posture beside the live site, revisit only if it
   chafes.
 - Detached-job discipline droplet-side (the rebank self-detach pattern;
-  tmux or setsid, logs in the droplet ladder's logs/).
+  tmux or setsid, logs in the droplet ladder's logs/). DONE 2026-08-21:
+  `PHASE_FROM=C nice -n 15 setsid nohup ./overnight_verify.sh > log 2>&1 &`
+  survives the ssh going away. Caution: do not let the backgrounded chain
+  inherit the ssh session's stdout, or ssh holds the channel open and
+  looks hung while the job runs fine.
+- **MEASURED LIMIT 2026-08-21: the droplet runs SWEEPS but not NATIVE
+  BUILDS at CODEX_MEM_MB=1300.** The gaps sweep went 14/14 green, then
+  phase D stalled compiling zigemit to IR through the seed: QEMU burned
+  4 seconds of CPU in 28 minutes with both it and `ring_compile.py`
+  parked in `do_poll` and both chardev sockets ESTABLISHED -- the guest
+  ran briefly and stopped. Same silent-death class as the TCP plug's
+  measured 1600 MB floor. Note `ringplug.cdx` (237865 bytes) DID build
+  in that same phase at the same cap, and zigemit is 236876 bytes, so
+  this is about what the seed's IR compile costs, not blob size; the
+  floor is not bisected. Diagnose stalls by CPU TIME, not elapsed --
+  `ps -o etime,time` separates "slow" from "dead" in one line.
+  Consequence: censuses and native builds stay laptop-side until the
+  floor is measured. Raising the cap toward 1600 on a 1968 MB box that
+  also serves the live site is not something to gamble unattended.
 - CODEX_MEM_MB=1300 / CODEX_ACCEL=tcg defaults for droplet sessions
   (a droplet-local env file the scripts source, not per-command
   ceremony).
