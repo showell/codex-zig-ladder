@@ -301,13 +301,25 @@ inside an extent the bound is `cx_bivy`, outside it `cx_dptr`, both live
 cursors because the program chooses where the deck goes.
 
 **Still open, and now a sizing question rather than a mystery:** the zig
-arm needs more deck than bare metal reserves for the same program (8.6 MB
-more on fibx, against a 25 MB reservation -- roughly a third over). The
-likely reason is representation width: text is a 16-byte slice here where
-bare metal carries a pointer, and every list adds a CxList indirection
-plus an ArrayList header. Options are to shrink deck consumption or to
-scale the reservation on this arm; the second diverges from a number the
-depot can observe (`__deck-pos`), so it is not a free choice.
+arm needed 8613088 bytes more deck than bare metal reserves for fibx,
+against a 25 MB reservation -- roughly a third over.
+
+Representation width was the suspected reason and is now measured rather
+than guessed: `findings/primitive-costs.md` prices every shape on both arms.
+The floor is +8 per list, our `CxList` header against bare metal's inline
+one; `List Text` is 1.94x because a text is a 16-byte slice here and one
+word there; and the `&`-chain rows are superlinear because bare metal
+flattens where we materialise every prefix.
+
+**The 8613088 is stale as a target.** It was taken before the list
+constructors stopped over-reserving (`c09cd892`, 6.96 MB of deck on its
+own) and before four more fixes landed. Re-measuring it is PRIORITIES
+item 1's gate, and it decides whether the `Text` narrowing is needed at
+all rather than merely desirable.
+
+Options if it still overruns are to shrink deck consumption or to scale the
+reservation on this arm; the second diverges from a number the depot can
+observe (`__deck-pos`), so it is not a free choice.
 
 ### Correction: how the earlier exclusion went wrong
 
