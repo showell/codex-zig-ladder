@@ -19,6 +19,11 @@ T="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 remote_ring_arm() {
     local m=$1
     cd "$T"
+    # The same refusal the local arms make. This path is a THIRD consumer of
+    # ast/<m>.ir and produces none of it, so without the check here the guard
+    # has a hole exactly where the two-venue sweep runs -- which is the venue
+    # that found the stale-IR problem in the first place.
+    python3 "$T/truth_prov.py" check-ir "$m" "$(mode_flags $m)" || return 1
     rm -f "ast/${m}.zig"
     # One labeled retry: the straw adds a failure mode the local arms do
     # not have (a dropped link kills the remote session and its guest --
