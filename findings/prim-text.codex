@@ -1,0 +1,107 @@
+Chapter: PrimText
+  cites Foreword chapter Console
+
+ The text and CCE tier of the primitive-cost table, and a regression test for
+ two findings that live here. One shape per line, small enough that the
+ expected number can be worked out on paper before the program runs.
+
+ Bare metal's rules, so the numbers can be checked rather than trusted. A
+ text is one block of `8 + align8(len)` -- a length word then the bytes
+ (`emit-str-concat-slow-alloc`, Emit/X86_64TextHelpers.codex:223). An append
+ onto an accumulator costs only the appended bytes, because bare metal
+ recognises a tail-recursive accumulator parameter and calls
+ `__str_concat_inplace` (`is-inplace-append`, Emit/X86_64.codex:2376). So a
+ loop appending one byte n times costs `8 + align8(n)`, not `n(n+1)/2`.
+
+ Finding 22 is the asymptotic one: the zig plug had no equivalent of that
+ in-place path and always emitted a fresh concat, so the same loop cost
+ exactly the triangular numbers -- 2080 / 8256 / 32896 at n = 64 / 128 / 256
+ against bare metal's 72 / 136 / 264. The accumulator section below is that
+ finding as a standing test: it prints LINEAR or QUADRATIC and says which.
+
+ Finding 23 is the encoding one. A codepoint no CCE tier covers becomes `?`,
+ CCE 68, silently -- that is upstream's choice and it is observable, so the
+ plug has to make the same substitution rather than refuse. The character
+ codes below assert it on both arms. U+22A2 occurs exactly once in the whole
+ depot, in type-theory prose, and refusing it aborted the native loop five
+ seconds into a 2.5 MB subject while bare metal compiled the same file.
+
+ A char is a codepoint in the zig plug and a CCE code in the C# plug, and
+ `char-code-at` is the one that answers in CCE. The codes below are CCE, so
+ they are the same number on every arm or one of the arms is wrong.
+
+ measure rewinds after reading, so each line is independent and only the
+ Integer escapes the window.
+
+Section: Instrument
+
+  measure : (Integer -> Integer) -> Integer
+  measure (f) =
+   let h0 = __heap-save
+   in let r = f 0
+   in let h1 = __heap-save
+   in let back = __heap-restore h0
+   in if r >= 0 then h1 - h0 else 0 - 1
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+  ratio-text : Integer, Integer -> Text
+  ratio-text (prev) (cur) =
+   if prev <= 0 then "n/a"
+   else let t = (cur * 10 + prev / 2) / prev
+   in integer-to-text (t / 10) & "." & integer-to-text (t - (t / 10) * 10)
+
+  verdict : Integer, Integer, Integer -> Text
+  verdict (a) (b) (c) =
+   if a <= 0 then "UNMEASURED"
+   else let r1 = (b * 10 + a / 2) / a
+   in let r2 = (c * 10 + b / 2) / b
+   in if (r1 >= 30) & (r2 >= 30) then "QUADRATIC"
+   else if (r1 < 30) & (r2 < 30) then "LINEAR"
+   else "MIXED"
+
+Section: Shapes
+
+  text-loop : Integer, Text -> Text
+  text-loop (n) (acc) =
+   if n <= 0 then acc else text-loop (n - 1) (acc & "x")
+
+  cat-pair : Text, Text -> Integer
+  cat-pair (a) (b) = text-length (a & b)
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni ("frontier observes allocation: " & show-yn (measure (\z -> text-length ("abcd" & "efgh")) > 0))
+   print-line-uni ("meter reads a 1024 reserve  : " & show-yn (measure (\z -> let a = __heap-advance (z + 1024) in z) == 1024))
+   print-line-uni "-- CCE codes: identical on every arm, or an arm is wrong --"
+   print-line-uni ("code A        " & integer-to-text (char-code-at "A" 0))
+   print-line-uni ("code z        " & integer-to-text (char-code-at "z" 0))
+   print-line-uni ("code space    " & integer-to-text (char-code-at " " 0))
+   print-line-uni ("code question " & integer-to-text (char-code-at "?" 0))
+   print-line-uni ("code Gamma    " & integer-to-text (char-code-at "Γ" 0))
+   print-line-uni ("code tau      " & integer-to-text (char-code-at "τ" 0))
+   print-line-uni ("code eacute   " & integer-to-text (char-code-at "é" 0))
+   print-line-uni "-- finding 23: an uncovered codepoint substitutes, it does not refuse --"
+   print-line-uni ("turnstile code" & integer-to-text (char-code-at "⊢" 0))
+   print-line-uni ("substitutes   " & show-yn (char-code-at "⊢" 0 == char-code-at "?" 0))
+   print-line-uni ("length is one " & show-yn (text-length "⊢" == 1))
+   print-line-uni "-- lengths --"
+   print-line-uni ("len abcd      " & integer-to-text (text-length "abcd"))
+   print-line-uni ("len empty     " & integer-to-text (text-length ""))
+   print-line-uni ("len concat    " & integer-to-text (cat-pair "abcd" "efgh"))
+   print-line-uni "-- cost: expect 8 + align8(len) --"
+   print-line-uni ("cat 4 & 4     " & integer-to-text (measure (\z -> cat-pair "abcd" "efgh")))
+   print-line-uni ("cat 8 & 8     " & integer-to-text (measure (\z -> cat-pair "abcdefgh" "ijklmnop")))
+   print-line-uni ("cat 1 & 1     " & integer-to-text (measure (\z -> cat-pair "a" "b")))
+   print-line-uni ("cat empty     " & integer-to-text (measure (\z -> cat-pair "" "abcd")))
+   print-line-uni "-- finding 22: accumulate one byte at a time, n / 2n / 4n --"
+   let t1 = measure (\z -> text-length (text-loop (z + 64) ""))
+   in let t2 = measure (\z -> text-length (text-loop (z + 128) ""))
+   in let t3 = measure (\z -> text-length (text-loop (z + 256) ""))
+   in act
+     print-line-uni ("text-accum " & integer-to-text t1 & " " & integer-to-text t2 & " " & integer-to-text t3
+       & "  ratios " & ratio-text t1 t2 & " " & ratio-text t2 t3 & " -> " & verdict t1 t2 t3)
+   end
+  end
