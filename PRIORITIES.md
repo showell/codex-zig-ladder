@@ -96,7 +96,11 @@ to the banked u48 truth** -- venue-independence of the truth pipeline
 is measured, not assumed. Remaining, in rough order:
 - zig 0.16.0 (tarball to ~/zig-0.16.0, mirroring the laptop path) --
   unlocks zig arms, natives, censuses droplet-side.
-- Push credentials (a deploy key) so droplet work commits and pushes.
+- ~~Push credentials~~ DECIDED (Steve): the droplet is FETCH-ONLY --
+  it holds no git credentials, pulls the public repos anonymously, and
+  results come home by scp; commits and pushes stay laptop-side. The
+  cleanest trust posture beside the live site, revisit only if it
+  chafes.
 - Detached-job discipline droplet-side (the rebank self-detach pattern;
   tmux or setsid, logs in the droplet ladder's logs/).
 - CODEX_MEM_MB=1300 / CODEX_ACCEL=tcg defaults for droplet sessions
