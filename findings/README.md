@@ -1,4 +1,4 @@
-# Findings: seven closed upstream, seven standing, three fixed here, one proposal
+# Findings: seven closed upstream, seven standing, four fixed here, one proposal
 
 This directory holds the findings and the probes that make them runnable.
 It is discussion material rather than a proposed addition to the Codex tree,
@@ -917,3 +917,26 @@ Fix shape (ours, rides the next emitter batch with the gap families): a
 distance-4 test, with IrApproxEq routed to it; whether IrApproxEqExact
 keeps `==` is a question for the IR's own definition of exactness --
 read `ir-expr-type`'s chapter before assuming.
+
+## 21. The zig plug discarded `__list-with-capacity`, corrupting the emit tables
+
+**Found 2026-08-21 by the heap-unification branch's own ladder run. Ours
+to fix -- the plug's arm, not an upstream defect. Fixed on the branch at
+`14b2b8b6`; the branch is still red on a second, open escape.**
+
+`cx_ll_with_capacity` was `_ = n; return cx_ll_empty(T)`. The emit tables
+are pre-sized to `accum_capacity()` so a push inside `emit-all-defs`'
+per-definition save/restore bracket never reallocates; ours grew
+geometrically from zero, so a push moved the backing array into scratch
+the bracket then reclaimed. The compiler predicts this failure verbatim in
+the guard beside that bracket ("a push past it reallocates into scratch
+that this loop reclaims, corrupting the table").
+
+Invisible until `__heap-restore` did something: the arena never reclaimed,
+so the moved array stayed valid forever. This is the second defect the
+arena was masking rather than causing.
+
+Full diagnosis, the open second escape, and -- importantly -- the false
+lead that was ruled out (the deck nesting counter going negative is
+FAITHFUL; `X86_64Builtins.codex:1030` does the same) are in
+`findings/zig-heap-unification.md`, section "The ladder run, 2026-08-21".

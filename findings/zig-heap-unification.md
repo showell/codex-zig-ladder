@@ -119,3 +119,142 @@ cap from 29 lines of source. Two consequences for this design:
   output. They are census-classification work (a hardware-only bucket),
   and they are cited here only as proof that out-of-region peeks occur in
   real depot code.
+
+---
+
+# The ladder run, 2026-08-21: what verification found
+
+The unification was built on 2026-08-20 (branch `zig-plug-heap-unification`,
+`d44f483f`) and verified overnight. **It is not ready to send.** Ten of
+fourteen rungs came back byte-identical to the u48 bank; `fibx` and `whole`
+-- the two scale units, two rungs each -- died. This section is the diagnosis
+so far, written down because it outlived the session that produced it.
+
+## The reproduction loop, which is the reusable part
+
+The rung costs ~11 minutes on the droplet, and almost all of that is the ring
+transpile. Re-running the **already emitted** subject is ten seconds:
+
+    zig run ast/fibx.zig 2> raw          # the subject writes its output to STDERR
+    # sections between "=== subject fibx ===" / "=== end fibx ===" and
+    # "=== subject scale ===" / "=== end scale ===" compare byte-for-byte
+    # against truth/u48/u48-fibx.truth and u48-scale.truth
+
+Two facts make this work and are worth keeping:
+
+- **The truth stream is stderr**, because `cx_print_line` is
+  `std.debug.print`. `cx_write_all` (fd 1) carries only binary output, so
+  **stdout is free for instrumentation** and never touches the comparison.
+- The prelude is plain text in the emitted `.zig`, so a hypothesis about
+  allocator or deck behaviour can be tested by patching that file directly,
+  with no emitter rebuild and no QEMU. Thirteen experiments ran this way in
+  one evening.
+
+## Confirmed: the reclaim is the trigger, and the rest of the arm is correct
+
+With `cx_heap_restore` made a no-op -- the pre-unification arena behaviour --
+`fibx` and `scale` are **byte-identical to the u48 bank**
+(`ac577dd0e628`, `614ab3e8608d`). So nothing else about the branch is wrong.
+The failure is entirely in objects that outlive a reclaim.
+
+Corollary worth stating: **the arena was load-bearing.** Not reclaiming is
+what kept pre-existing escapes harmless.
+
+## Defect A -- `cx_ll_with_capacity` discarded its argument (FIXED, `14b2b8b6`)
+
+    fn cx_ll_with_capacity(comptime T: type, n: i64) *CxList(T) {
+        _ = n;                     // discarded
+        return cx_ll_empty(T);
+    }
+
+`x86_64_init_codegen_sorted` pre-sizes every emit table to
+`accum_capacity()` (65536, and 2x/4x for some), precisely so a push inside
+`emit_all_defs`' per-definition save/restore bracket never reallocates. The
+compiler's own guard sits on that same line and says what happens otherwise:
+
+> *"the emit tables are pre-allocated to accum-capacity and a push past it
+> reallocates into scratch that this loop reclaims, corrupting the table.
+> Raise accum-capacity in BuildSettings and rebuild the seed."*
+
+Our tables started at capacity zero and grew geometrically, so a push inside
+the bracket moved the backing array into the bracket's scratch; `restore`
+reclaimed it; the list header survived pointing at bytes the next definition
+overwrote. Symptom: `fibx` segfaults at address **0x11** inside `djb2_hash`,
+hashing a `func_map` key whose slice pointer had become a small integer.
+
+Fixed with `ensureTotalCapacityPrecise` -- precise rather than rounded,
+because "pre-allocated to accum-capacity" is a statement about a number.
+
+**Necessary, not sufficient.** With the capacity honoured, `fibx` still dies,
+at address **0x896**, in the same call chain. Something else escapes.
+
+## RULED OUT: the deck nesting model (this cost hours; do not re-derive it)
+
+`check_chapter` issues a bare `__deck-exit` with no matching enter, driving
+the nesting counter to **-1**, after which every per-definition `deck-record`
+in the walk declines to swap. This looks damning, and
+`TypeChecker.codex:2455` explains the intent in prose --
+
+> *"check-chapter issues a `__deck-exit` immediately before this walk and a
+> `__deck-enter` after it, so the walk runs OUTSIDE the phase-wide extent.
+> The cell is therefore live -- each per-definition `deck-record` inside the
+> loop enters and exits on its own and writes the frontier back."*
+
+-- so it reads like our arm losing the extent. **It is not a divergence.**
+Bare metal does exactly the same thing. Read
+`X86_64Builtins.codex:1030` (`emit-deck-exit-builtin`): it loads the counter,
+adds -1, stores it, and `jcc cc-ne` **skips** the write-back unless the
+decremented value is zero. At zero it goes to -1 and skips, identically to
+`cx_deck_exit`. `Arm64CodeGen2.codex:1492` is the same shape with `cbnz`.
+Enter matches too, on both arms: the swap happens iff the *pre-increment*
+value was zero, which is what `if (cx_nest == 0)` before `cx_nest += 1` does.
+
+Two fixes were tried against this false lead and both are recorded as
+**wrong**, because each looks attractive:
+
+- **Hold the counter at zero on an unmatched exit.** `fibx` goes
+  byte-identical -- and `scale` then dies, because the bare `__deck-enter`
+  never gets a matching exit, so the counter is left at 1 and the next
+  subject starts inside a phantom extent. It was masking, not fixing: it
+  moved routing *away* from bare metal's.
+- **A debt counter** (an unmatched exit owes one enter). Worse: the debt is
+  consumed by the first unrelated `deck-record` bracket in the walk.
+
+## Open: what still escapes a bracket
+
+Unidentified. The shape to look for is an allocation made inside
+`emit_all_defs`' bracket that is still referenced after the restore. Since
+the deck routing is faithful and the emit tables are now pre-sized, the
+prime suspect is **growth schedule**: the compiler manages headroom
+explicitly (`copy-list-with-headroom (env3.state.expr-types) (def-count * 56)`
+in `check-chapter`, and `__list-with-capacity` elsewhere), while
+`std.ArrayListUnmanaged` also grows geometrically on its own account. A list
+bare metal never reallocates inside a bracket may still reallocate in ours.
+
+Next instrument, in order:
+
+1. **Poison on restore.** Fill the reclaimed span with a recognizable
+   pattern so the *first* dangling read fails immediately and legibly
+   instead of hundreds of allocations later in a hash function. Encode the
+   restore's sequence number in the pattern and the faulting address names
+   the bracket that reclaimed the object. (0xDEAD-prefixed values are
+   non-canonical, so they fault rather than being read as data.)
+2. **A per-bracket allocation census** -- what is allocated between a save
+   and its restore, and which of those addresses is read afterwards.
+3. Only then re-run the rung through the ladder.
+
+## Also landed on the branch
+
+`cx_bump_alloc` now refuses when the frontier would climb into a deck placed
+above it, rather than writing through it in silence. The bound is read from
+the live cursor and never a constant, because `__deck-set` places the deck at
+run time and the program chooses where. Only the outside-an-extent direction
+is checked: the mirror test would read `cx_bivy`, which is stale whenever the
+counter and the swap disagree -- as they legitimately do at -1.
+
+## The standing lesson
+
+Ten rungs green would have signed off on both defects. Only `fibx` and
+`whole` allocate enough for a reclaim to be reached by a later allocation.
+That is the argument for keeping expensive scale rungs in the ladder,
+stated as a measurement rather than a preference.

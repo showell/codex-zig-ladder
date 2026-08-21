@@ -40,17 +40,38 @@ whole compiler survive transpilation". Everything below is the cheap loop.
 
 ---
 
-## 1. The heap unification
+## 1. The heap unification -- VERIFIED RED, one defect fixed, one open
 
-**Objective: land our own fix; the verification is due diligence.**
-`findings/zig-heap-unification.md`. Closes `__heap-restore` being a
-no-op on the zig arm; the arena is the interim. Pre-approved in shape by
-Damian ("send it as its own PR when the hunt settles" -- it has), as are
-the `cx_show_int` double allocation and the per-instruction throwaway
-list. The design must first answer what an out-of-region absolute
-address means (the SMP subjects peek ~2.1 GB against RLIMIT_AS caps that
-count reserved space, not resident pages). Next PR after 76, off
-whatever base is current when it goes.
+**Objective: land our own fix. The verification stopped being due
+diligence the moment it went red; finishing it is now hunting our own
+plug.** `findings/zig-heap-unification.md` -- the design note, plus the
+2026-08-21 section that is the live diagnosis. Read that section before
+touching this; it records what is ruled out as well as what is known,
+and one of the exclusions (the deck nesting model) cost hours and looks
+exactly like a cause.
+
+State: 10/14 rungs byte-identical to the u48 bank, `fibx` and `whole`
+red. With reclaim disabled both are byte-identical, so the rest of the
+branch is correct. **Defect A fixed** (`14b2b8b6`, `cx_ll_with_capacity`
+discarded its argument -- the emit tables were reallocating inside
+`emit_all_defs`' bracket, exactly the corruption the compiler's own
+guard text predicts). **A second escape is open**, symptom 0x896;
+prime suspect is list growth schedule against bare metal's explicit
+headroom. Next instrument is poison-on-restore -- the plan is in the
+findings doc.
+
+Cheap loop, established 2026-08-21: patch the emitted `ast/fibx.zig`
+prelude and `zig run` it -- **ten seconds**, versus ~11 minutes for the
+rung, because the ring transpile is what costs. Truth rides stderr, so
+stdout is free for instrumentation.
+
+Still unanswered from the original design, and still required before the
+PR: what an out-of-region absolute address means (the SMP subjects peek
+~2.1 GB against RLIMIT_AS caps that count reserved space, not resident
+pages). Pre-approved in shape by Damian ("send it as its own PR when the
+hunt settles"), as are the `cx_show_int` double allocation and the
+per-instruction throwaway list. Sends after 76, off whatever base is
+current when it goes.
 
 ## 2. The external review, in three batches
 
