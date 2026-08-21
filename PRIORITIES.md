@@ -64,6 +64,10 @@ each one bought:
     35292021  substring and split copy                finding 29
     2202d3e5  text-replace copies                     finding 29, 4th site
     c86e66d5  shift counts masked to six bits         finding 30
+    f8e97925  address-of returns an identity           finding 31
+    d6443946  the deck high-water instrument
+    9bef20b1  instrument v2, corrected by its own run
+    23118fa5  instrument v3, corrected by a review
 
 Finding 23 is the one that unblocked the native loop on real source, and
 finding 27 took a compile from 38.0s real / 15.3s sys to 11.4s / 1.8s,
@@ -140,10 +144,32 @@ other forty assertions with it, so a guarantee question gets its own probe and
 the tier keeps the in-range rows.
 
 **Ask whether a helper FAILS on the same inputs, not just whether it computes
-the same answer.** Findings 28 and 29 both came from that question and neither
-was reachable from a rung sweep. It has not been asked of any other `cx_*`
-helper that takes an index or a length, and asking it is a source read rather
-than compute -- the cheapest open defect hunt on this list.
+the same answer.** Findings 28, 29 and 30 came from that question. A cold agent
+has since swept the whole prelude for helpers that discard an argument or
+return a bare constant and found **none remaining** -- `cx_heap_advance` and
+`cx_heap_restore` returning 0 are FAITHFUL (bare metal's emitters end in
+`li rd, 0`), and `cx_deck_enter`/`exit`/`set` are marked unchecked rather than
+cleared. That question is now answered; do not re-run it.
+
+**THE OPEN QUESTION THAT REPLACED IT: the plug fails in registers the census
+cannot count.** Three separate findings today -- the type-variable leak
+(`probe-tyvar-leak`), polymorphic `show` (`probe-show-types`) and `IrTry`
+(finding 32) -- all fail as a raw zig error rather than a
+`@compileError("zig plug: ...")` marker. Two mechanisms read only markers:
+`zig-is-unmapped` decides recoverability by testing for one, and
+`corpus_run.py --transpile` histograms them to rank which gap to fix first. So
+each of these scores ZERO in the ranking that sets priorities, however often it
+bites. Three instances in one day is a pattern, not three accidents, and the
+systemic fix -- every unhandled construct refuses by name -- is worth more than
+any of them individually.
+
+**Coverage is chosen by counting, and the count now has a reachability column.**
+`tier_coverage.py` reads the emitted `ast/*.zig`, not just the subject, because
+IR emission prunes to what the `opening` reaches -- a quarter of
+`whole-subject.codex` is dead in every rung built from it. A builtin heavy in
+source and absent from every emitted rung is one **no rung can reach**, and a
+unit test is the only thing that will ever cover it. `address-of` was 65 in
+source and 4 emitted, which is why finding 31 sat undetected.
 
 **What they found, in one day: findings 22, 23, 25, 26, 27, 28 and 29**, of which 25
 was invisible to eleven days of rung sweeps because the ladder's own chapter
