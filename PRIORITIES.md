@@ -57,7 +57,7 @@ rather than refusing (finding 23, which unblocked the native loop on real
 source), `1a5ec700` peek-qword wraps (finding 26), `3c4c00d6` reserve with
 rawAlloc (finding 27 -- and 38.0s/15.3s sys becomes 11.4s/1.8s, because the
 old code committed all 1.5 GiB), `def42bc7` substring traps out of range
-instead of clamping (finding 28), `dc14ae4f` text results are copies so a
+instead of clamping (finding 28), `35292021` text results are copies so a
 decked text is really decked (finding 29, three aliasing sites).
 
 **BLOCKER: the natives predate the last four changes.** `codexir` and
