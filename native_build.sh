@@ -23,6 +23,31 @@ T="$(cd "$(dirname "$0")" && pwd)"
 . "$T/ast/oracle_lib.sh"
 take_compute_lock
 OUT="$T/native"
+
+# VENUE. CODEX_NATIVE_VENUE=droplet sends the two QEMU stages to the
+# appliance instead of running them here, which is the split sweep_long has
+# used all along -- the droplet is a dedicated box and this laptop is 3.8 GB
+# shared with everything else. Default stays local so the known-good path is
+# the one you get by typing nothing.
+#
+# It is not only about speed. A native build is the longest QEMU job here and
+# it stalled once today because a `zig run` was started beside it; the compute
+# lock only binds scripts that ask for it. Moving the guest to another machine
+# removes that failure mode rather than documenting it.
+seed_compile() {   # <blob> <out>
+    if [ "${CODEX_NATIVE_VENUE:-local}" = droplet ]; then
+        "$T/droplet_compile.sh" "$1" "$2"
+    else
+        python3 -u "$T/ring_compile.py" "$1" "$2" 2>&1 | tail -3
+    fi
+}
+ring_transpile() {  # <ir> <zig> <log>
+    if [ "${CODEX_NATIVE_VENUE:-local}" = droplet ]; then
+        "$T/droplet_transpile.sh" "$1" "$2" ring > "$3" 2>&1
+    else
+        python3 -u "$T/plug_run_ring.py" "$1" "$2" > "$3" 2>&1
+    fi
+}
 mkdir -p "$OUT"
 
 # The transpile step boots the RING plug, so a stale ringplug.cdx silently
@@ -50,14 +75,14 @@ print(f"blob: {len(src)} bytes of source")
 PY
 
     cd "$T"
-    echo "--- compiling $name to IR (seed, in QEMU)"
+    echo "--- compiling $name to IR (seed, QEMU, venue: ${CODEX_NATIVE_VENUE:-local})"
     rm -f "ast/$name.ir"
-    python3 -u ring_compile.py "ast/$name-ir.blob" "ast/$name.ir" 2>&1 | tail -3
+    seed_compile "ast/$name-ir.blob" "ast/$name.ir"
     [ -s "ast/$name.ir" ] || { echo "COMPILE FAILED: no $name.ir"; return 1; }
 
-    echo "--- transpiling $name through the plug (in QEMU, for the last time)"
+    echo "--- transpiling $name through the plug (QEMU, venue: ${CODEX_NATIVE_VENUE:-local})"
     rm -f "ast/$name.zig"
-    python3 -u plug_run_ring.py "ast/$name.ir" "ast/$name.zig" > "ast/$name.transport.log" 2>&1 \
+    ring_transpile "ast/$name.ir" "ast/$name.zig" "ast/$name.transport.log" \
         || { echo "TRANSPORT FAILED ($name):"; tail -5 "ast/$name.transport.log"; return 1; }
 
     local markers
