@@ -1,4 +1,10 @@
-# Findings: seven closed upstream, eleven standing, nine fixed here, one proposal
+# Findings
+
+Twenty-nine, numbered in the order they were filed. **Each finding's own
+opening paragraph states where it was found, whose arm it is, and whether it
+is fixed -- that paragraph is the authority.** No summary tally lives on this
+line, because a tally maintained by hand beside twenty-nine free-form status
+paragraphs says whatever it last said rather than what is true.
 
 This directory holds the findings and the probes that make them runnable.
 It is discussion material rather than a proposed addition to the Codex tree,
@@ -11,14 +17,16 @@ The probes are Codex chapters and still compile with the depot's own tooling:
 
     build/compile.ps1 -Src findings/<probe>.codex -Out <out>.cdx
 
-**Status: the ladder is banked at Update 47 (2026-08-19); Update 48
-(`b643e7c`) is released and the re-pin is in progress (2026-08-20).**
-Update 48 absorbed PR 75 (finding 16's fix, credited) and implements
-match guards natively -- finding 15 / issue 72 closes pending the
-re-pinned sweep's confirmation. Findings 18 and 19 (below) were fixed on
-the u47 pin and filed as PR 76. Earlier status: findings 1-5 fixed by
-Update 43; finding 11's remainder closed by Update 46; findings 6, 8, 9
-were measured on 2,798,031 and are recorded as found.
+**What is banked, and against which seed, lives in the ladder's own README
+and only there.** This page says what happened to findings, not what the
+ladder is pinned to; when the two disagreed it was always this copy that had
+gone stale.
+
+Which Update absorbed what: findings 1-5 by Update 43, finding 11's remainder
+by Update 46, finding 16 by Update 48 (as PR 75, credited), and finding 15 /
+issue 72 by Update 48's native match guards. Findings 18 and 19 were fixed on
+the u47 pin and sent as PR 76, which is still open and unabsorbed. Findings
+6, 8 and 9 are recorded as found rather than fixed.
 
 Findings 1 through 5 were fixed by Update 43 and each is marked at its
 heading. Finding 1's fix is verified present in this seed: `emit-net-recv-raw-helper`
@@ -483,7 +491,7 @@ strength of the declaration, which is why the divergence appeared at all
 -- and it is now one representation, a pointer, matching bare metal and
 C#. Seed F3722EAC (Update 43), QEMU/TCG, 2026-08-16.
 
-## Finding 11 (WITHDRAWN as filed; what is left is narrower)
+## 11. WITHDRAWN as filed: the diagnostics-count claim was our harness
 
 **The original claim was wrong and the cause was ours.** It reported a
 DiagnosticBag reporting 72 errors with an empty diagnostics list, and asked why
