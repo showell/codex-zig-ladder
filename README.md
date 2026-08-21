@@ -618,6 +618,15 @@ Then the smaller pieces:
   rung is worth running -- a warmup diff fails the cycle; `cycle.sh` with no
   arguments, which is how
   `allcycles.sh` invokes it, rebuilds the plug and runs no warmups at all.
+- `tier_run.py <program.codex>` -- one small Codex program on BOTH arms, side
+  by side, with a marker on every line that moved. This is the unit-test loop
+  rather than the rung loop: the tier files (`findings/prim-*.codex`) price and
+  pin one primitive family each, and the probes beside them isolate a single
+  question. Seconds on the plug's side; the bare-metal column is banked under
+  `findings/gold/`, keyed on the program's bytes plus the seed sha, so it costs
+  QEMU once and re-runs itself when either changes. Most of the findings
+  numbered 21 and up came from here rather than from a sweep -- a rung says
+  which of fourteen programs disagreed, a tier says which primitive did.
 - `ring_compile.py` -- compile through the seed under QEMU via the codex-vm ring
   contract. This is the compile path, not the transport of the same name. Blobs
   larger than the 1 MB ring stream through it: the host refills behind the
