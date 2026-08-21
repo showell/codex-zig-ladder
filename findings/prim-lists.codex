@@ -1,0 +1,110 @@
+Chapter: PrimLists
+  cites Foreword chapter Console
+
+ The list half of a primitive-cost table. One allocation shape per line,
+ priced on whichever arm runs it, and small enough that the expected number
+ can be worked out on paper before the program is run. This exists because
+ the alternative -- inferring primitive costs from a 2.5 MB subject where
+ every quantity is a sum of a dozen effects -- let a wrong mechanism survive
+ several experiments in a row.
+
+ Bare metal's rules, so the numbers below can be checked rather than
+ trusted. A list is ONE block of `16 + cap*8`, whatever the element type: a
+ List Text costs what a List Integer costs, because a text is one word
+ (`emit-list-with-capacity-builtin-bivy`, Emit/X86_64Builtins.codex:1058).
+ `&` over k operands totalling t elements pays `k*8` for an operand pointer
+ array plus `16 + t*8` for the result, and the chain is FLATTENED first, so
+ `a & b & c & d` is one concat of four operands rather than three of two
+ (`flatten-append-chain`, Emit/X86_64.codex:2284). `::` onto a list of n pays
+ `16 + max(2*(n+1), 4)*8` (`__list_cons`, X86_64ListHelpers.codex:66).
+ `list-push` extends its block in place when that block is on top of the
+ heap and otherwise reallocates (`__list_snoc`, X86_64ListHelpers.codex:245).
+
+ So, on paper: a literal of n costs `16 + 8n`; capacity c costs `16 + 8c`;
+ `[a,b,c,d] & [e,f,g,h]` costs the two operands (48 each) plus 16 for the
+ pointer array plus 80 for the result, or 192; and a push loop of n costs
+ `16 + 8n` if the in-place path holds.
+
+ Every measurement is a `__heap-save` delta, which measures anything only on
+ an arm where objects come from the frontier. An arm that allocates
+ elsewhere reads zero on every line, and the first line says whether that is
+ the case, so a zero table is an answer rather than a broken instrument.
+
+ measure rewinds after reading, so each line is independent and the peak
+ footprint is one line rather than the sum. Only the Integer escapes.
+
+Section: Instrument
+
+  measure : (Integer -> Integer) -> Integer
+  measure (f) =
+   let h0 = __heap-save
+   in let r = f 0
+   in let h1 = __heap-save
+   in let back = __heap-restore h0
+   in if r >= 0 then h1 - h0 else 0 - 1
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+Section: Shapes
+
+ cap-list carries an annotation on purpose. Called inline in an unannotated
+ lambda, __list-with-capacity's element type cannot be inferred and the zig
+ plug emits an undeclared type variable rather than refusing -- so the
+ annotation is load-bearing, not decoration.
+
+  cap-list : Integer -> List Integer
+  cap-list (n) = __list-with-capacity n
+
+  push-n : Integer, List Integer -> List Integer
+  push-n (n) (acc) =
+   if n <= 0 then acc else push-n (n - 1) (list-push acc n)
+
+  cons-n : Integer, List Integer -> List Integer
+  cons-n (n) (acc) =
+   if n <= 0 then acc else cons-n (n - 1) (n :: acc)
+
+  cat-n : Integer, List Integer -> List Integer
+  cat-n (n) (acc) =
+   if n <= 0 then acc else cat-n (n - 1) (acc & [n])
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni ("frontier observes allocation: " & show-yn (measure (\z -> list-length [z, 1, 2, 3]) > 0))
+   print-line-uni ("meter reads a 1024 reserve  : " & show-yn (measure (\z -> let a = __heap-advance (z + 1024) in z) == 1024))
+   print-line-uni "-- literal: expect 16 + 8n --"
+   print-line-uni ("literal 1     " & integer-to-text (measure (\z -> list-length [z])))
+   print-line-uni ("literal 2     " & integer-to-text (measure (\z -> list-length [z, 1])))
+   print-line-uni ("literal 3     " & integer-to-text (measure (\z -> list-length [z, 1, 2])))
+   print-line-uni ("literal 4     " & integer-to-text (measure (\z -> list-length [z, 1, 2, 3])))
+   print-line-uni ("literal 8     " & integer-to-text (measure (\z -> list-length [z, 1, 2, 3, 4, 5, 6, 7])))
+   print-line-uni "-- with-capacity: expect 16 + 8c --"
+   print-line-uni ("capacity 0    " & integer-to-text (measure (\z -> list-length (cap-list z))))
+   print-line-uni ("capacity 1    " & integer-to-text (measure (\z -> list-length (cap-list (z + 1)))))
+   print-line-uni ("capacity 16   " & integer-to-text (measure (\z -> list-length (cap-list (z + 16)))))
+   print-line-uni ("capacity 256  " & integer-to-text (measure (\z -> list-length (cap-list (z + 256)))))
+   print-line-uni "-- element width: a List Text should cost a List Integer --"
+   print-line-uni ("List Integer 4 " & integer-to-text (measure (\z -> list-length [z, 1, 2, 3])))
+   print-line-uni ("List Text 4   " & integer-to-text (measure (\z -> list-length ["a", "b", "c", "d"])))
+   print-line-uni "-- concat: operands, then k*8 for the pointer array, then 16 + 8t --"
+   print-line-uni ("cat 1 & 1     " & integer-to-text (measure (\z -> list-length ([z] & [1]))))
+   print-line-uni ("cat 4 & 4     " & integer-to-text (measure (\z -> list-length ([z, 1, 2, 3] & [4, 5, 6, 7]))))
+   print-line-uni ("cat 8 & 8     " & integer-to-text (measure (\z -> list-length ([z, 1, 2, 3, 4, 5, 6, 7] & [8, 9, 10, 11, 12, 13, 14, 15]))))
+   print-line-uni "-- chain: flattened on bare metal, so 2 and 4 differ by one operand --"
+   print-line-uni ("chain a&b     " & integer-to-text (measure (\z -> list-length ([z] & [1]))))
+   print-line-uni ("chain a&b&c   " & integer-to-text (measure (\z -> list-length ([z] & [1] & [2]))))
+   print-line-uni ("chain a&b&c&d " & integer-to-text (measure (\z -> list-length ([z] & [1] & [2] & [3]))))
+   print-line-uni "-- cons: expect 16 + max(2*(n+1),4)*8 onto a list of n --"
+   print-line-uni ("cons onto 1   " & integer-to-text (measure (\z -> list-length (z :: [1]))))
+   print-line-uni ("cons onto 4   " & integer-to-text (measure (\z -> list-length (z :: [1, 2, 3, 4]))))
+   print-line-uni ("cons loop 16  " & integer-to-text (measure (\z -> list-length (cons-n (z + 16) [0]))))
+   print-line-uni "-- push: in place when the block is on top, so expect 16 + 8n --"
+   print-line-uni ("push loop 4   " & integer-to-text (measure (\z -> list-length (push-n (z + 4) [0]))))
+   print-line-uni ("push loop 16  " & integer-to-text (measure (\z -> list-length (push-n (z + 16) [0]))))
+   print-line-uni ("push loop 64  " & integer-to-text (measure (\z -> list-length (push-n (z + 64) [0]))))
+   print-line-uni "-- accumulate by concat: quadratic on both arms, the control --"
+   print-line-uni ("cat loop 16   " & integer-to-text (measure (\z -> list-length (cat-n (z + 16) [0]))))
+   print-line-uni ("cat loop 32   " & integer-to-text (measure (\z -> list-length (cat-n (z + 32) [0]))))
+   print-line-uni ("cat loop 64   " & integer-to-text (measure (\z -> list-length (cat-n (z + 64) [0]))))
+  end
