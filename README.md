@@ -94,8 +94,9 @@ are running when you run the Codex compiler.
 
 ## Why this exists
 
-Five objectives, ranked by how much of the repo serves each. A change that
-serves none of them probably belongs somewhere else.
+Six objectives, ranked by how much of the repo serves each -- roughly, since
+the sixth earns its place by yield rather than by volume. A change that serves
+none of them probably belongs somewhere else.
 
 1. **Prove the zig transpilation of the Codex compiler faithful, to the
    byte.** The rungs, the two arms, the banks and the provenance guards all
@@ -114,6 +115,17 @@ serves none of them probably belongs somewhere else.
 5. **Turn the Codex compiler into an ordinary, fast Linux process.** `zigc`
    and the native loop make the compile step seconds instead of a VM boot,
    which changes what is cheap for everything above.
+6. **Unit-test the primitives, on both arms, as a standing instrument.** The
+   rungs answer "which of fourteen programs disagreed"; the tiers
+   (`findings/prim-*.codex`, run by `tier_run.py`) answer "which primitive
+   did", in seconds rather than an hour. They are the newest objective and the
+   highest-yield one so far -- findings 21 through 30 came almost entirely from
+   here, several of them invisible to a sweep by construction, and one of them
+   would have caught a defect that cost a day. Coverage is chosen by COUNTING,
+   not by taste: a frequency pass over the whole compiler ranks the builtins by
+   real call sites, and the gap between that ranking and what the tiers assert
+   is the work list. A primitive with hundreds of uses and no assertion is a
+   bug waiting for a subject large enough to expose it.
 
 Side products worth knowing about even though no objective claims them: the
 QEMU drivers are the only non-Windows implementation of the author's host

@@ -1,0 +1,119 @@
+Chapter: PrimArith
+  cites Foreword chapter Console
+
+ Tier 7: integers, bits, and the number formatter. Chosen by counting, not by
+ taste. A frequency pass over `whole-subject.codex` -- 2.6 MB of real compiler
+ across 55,682 lines -- against what the tiers already assert found 606 builtin
+ call sites with no coverage anywhere, and this file takes the arithmetic half
+ of them: `bit-and` at 177 uses, `int-mod` at 71, `bit-or` at 55, `max` at 39,
+ none of them tested by anything until now.
+
+ INTEGER-TO-TEXT IS THE INSTRUMENT, AND IT HAD NEVER BEEN THE SUBJECT. Every
+ cost row in every other tier prints through it -- 110 uses across the tier
+ files -- and one of this project's own rules is to assert the instrument
+ before believing it. Nobody had. If it disagrees between arms then every
+ number in `primitive-costs.md` is suspect, so it is asserted here first and
+ by ROUND TRIP: `text-to-integer (integer-to-text n) == n` needs neither arm's
+ formatter to be trusted, only the two to be inverse. Digit counts are checked
+ beside it, because a round trip alone would pass if both directions were
+ wrong in the same way.
+
+ The plug's formatter is hand-rolled and worth suspecting: it prints through
+ zig's own `{d}` into ASCII and then maps each byte to CCE by hand --
+ `if (cx_ch == '-') 73 else 3 + (cx_ch - '0')`. Two constants, one branch, and
+ a whole tier's numbers riding on it.
+
+ Sign is where integer code goes wrong, so every operator below is asked about
+ negatives explicitly. `int-mod` is the one with a documented answer: bare
+ metal takes `idiv`'s remainder and then ADDS the divisor's magnitude if the
+ result came out negative (`emit-int-mod-reg-locals`,
+ Emit/X86_64Builtins.codex:440-455), so the answer is Euclidean and never
+ negative. A truncating implementation agrees on positives and disagrees on
+ exactly half the inputs, which is why the negative rows matter more than the
+ positive ones.
+
+ The bit operators are asked about negatives for the same reason: they are
+ i64, so `bit-and n (0 - 1)` is a sign-extension question, not a masking one.
+
+ EDGES LIVE ELSEWHERE. `abs` at the minimum integer, `__narrow`, and the
+ out-of-range shifts have no negation, no representation and no answer
+ respectively, and each kills one arm. A tier file cannot hold a trap -- one
+ takes the other forty assertions with it -- so those are
+ `probe-arith-edges.codex` and `probe-shift-count.codex`.
+
+Section: Instrument
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+Section: Shapes
+
+ A round trip that trusts neither direction, only that they invert.
+
+  round-trips : Integer -> Boolean
+  round-trips (n) = text-to-integer (integer-to-text n) == n
+
+  digits : Integer -> Integer
+  digits (n) = text-length (integer-to-text n)
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- the instrument: integer-to-text, asserted before it is believed --"
+   print-line-uni ("round trip 0               : " & show-yn (round-trips 0))
+   print-line-uni ("round trip 1               : " & show-yn (round-trips 1))
+   print-line-uni ("round trip -1              : " & show-yn (round-trips (0 - 1)))
+   print-line-uni ("round trip 7               : " & show-yn (round-trips 7))
+   print-line-uni ("round trip -7              : " & show-yn (round-trips (0 - 7)))
+   print-line-uni ("round trip 1000000         : " & show-yn (round-trips 1000000))
+   print-line-uni ("round trip -1000000        : " & show-yn (round-trips (0 - 1000000)))
+   print-line-uni ("round trip 4611686018427387904: " & show-yn (round-trips 4611686018427387904))
+   print-line-uni ("digits of 0 is 1           : " & show-yn (digits 0 == 1))
+   print-line-uni ("digits of 7 is 1           : " & show-yn (digits 7 == 1))
+   print-line-uni ("digits of -7 is 2          : " & show-yn (digits (0 - 7) == 2))
+   print-line-uni ("digits of 1000000 is 7     : " & show-yn (digits 1000000 == 7))
+   print-line-uni ("digits of -1000000 is 8    : " & show-yn (digits (0 - 1000000) == 8))
+   print-line-uni ("minus sign is one character: " & show-yn (digits (0 - 7) == digits 7 + 1))
+   print-line-uni ("zero has no sign           : " & show-yn (text-compare (integer-to-text 0) (integer-to-text (0 - 0)) == 0))
+   print-line-uni "-- int-mod: Euclidean on both arms, or half the inputs disagree --"
+   print-line-uni ("7 mod 3                    : " & integer-to-text (int-mod 7 3))
+   print-line-uni ("-7 mod 3                   : " & integer-to-text (int-mod (0 - 7) 3))
+   print-line-uni ("7 mod -3                   : " & integer-to-text (int-mod 7 (0 - 3)))
+   print-line-uni ("-7 mod -3                  : " & integer-to-text (int-mod (0 - 7) (0 - 3)))
+   print-line-uni ("0 mod 5                    : " & integer-to-text (int-mod 0 5))
+   print-line-uni ("-1 mod 8                   : " & integer-to-text (int-mod (0 - 1) 8))
+   print-line-uni ("never negative             : " & show-yn (int-mod (0 - 7) 3 >= 0))
+   print-line-uni ("agrees on positives        : " & show-yn (int-mod 17 5 == 2))
+   print-line-uni "-- max and min --"
+   print-line-uni ("max 3 9                    : " & integer-to-text (max 3 9))
+   print-line-uni ("max -3 -9                  : " & integer-to-text (max (0 - 3) (0 - 9)))
+   print-line-uni ("min 3 9                    : " & integer-to-text (min 3 9))
+   print-line-uni ("min -3 -9                  : " & integer-to-text (min (0 - 3) (0 - 9)))
+   print-line-uni ("max of equals              : " & show-yn (max 4 4 == 4))
+   print-line-uni ("min across zero            : " & show-yn (min (0 - 1) 1 == (0 - 1)))
+   print-line-uni "-- abs, away from the edge (the edge is in probe-arith-edges) --"
+   print-line-uni ("abs 5                      : " & integer-to-text (abs 5))
+   print-line-uni ("abs -5                     : " & integer-to-text (abs (0 - 5)))
+   print-line-uni ("abs 0                      : " & integer-to-text (abs 0))
+   print-line-uni "-- bits: i64, so negatives are a sign-extension question --"
+   print-line-uni ("and 12 10                  : " & integer-to-text (bit-and 12 10))
+   print-line-uni ("or 12 10                   : " & integer-to-text (bit-or 12 10))
+   print-line-uni ("xor 12 10                  : " & integer-to-text (bit-xor 12 10))
+   print-line-uni ("and n -1 is n              : " & show-yn (bit-and 12345 (0 - 1) == 12345))
+   print-line-uni ("or n 0 is n                : " & show-yn (bit-or 12345 0 == 12345))
+   print-line-uni ("xor n n is 0               : " & show-yn (bit-xor 12345 12345 == 0))
+   print-line-uni ("xor n 0 is n               : " & show-yn (bit-xor 12345 0 == 12345))
+   print-line-uni ("and of two negatives       : " & integer-to-text (bit-and (0 - 12) (0 - 10)))
+   print-line-uni ("or of two negatives        : " & integer-to-text (bit-or (0 - 12) (0 - 10)))
+   print-line-uni ("xor of two negatives       : " & integer-to-text (bit-xor (0 - 12) (0 - 10)))
+   print-line-uni ("and -1 -1                  : " & integer-to-text (bit-and (0 - 1) (0 - 1)))
+   print-line-uni ("xor -1 -1                  : " & integer-to-text (bit-xor (0 - 1) (0 - 1)))
+   print-line-uni ("or -1 0                    : " & integer-to-text (bit-or (0 - 1) 0))
+   print-line-uni ("low byte of a negative     : " & integer-to-text (bit-and (0 - 1) 255))
+   print-line-uni ("masking clears the sign    : " & show-yn (bit-and (0 - 1) 255 == 255))
+   print-line-uni "-- the identities that must hold whatever the representation --"
+   print-line-uni ("de Morgan via xor -1       : " & show-yn (bit-xor (bit-and 12 10) (0 - 1) == bit-or (bit-xor 12 (0 - 1)) (bit-xor 10 (0 - 1))))
+   print-line-uni ("and is commutative         : " & show-yn (bit-and 12 10 == bit-and 10 12))
+   print-line-uni ("or distributes over and    : " & show-yn (bit-or 12 (bit-and 10 6) == bit-and (bit-or 12 10) (bit-or 12 6)))
+   print-line-uni ("shift then mask round trips: " & show-yn (bit-and (bit-shr (bit-shl 200 8) 8) 255 == 200))
+  end

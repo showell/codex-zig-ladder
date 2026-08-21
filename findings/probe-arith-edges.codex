@@ -1,0 +1,58 @@
+Chapter: ProbeArithEdges
+  cites Foreword chapter Console
+
+ The arithmetic edges, which a tier file cannot hold because each one kills an
+ arm.
+
+ ABS AT THE MINIMUM INTEGER has no answer. The magnitude of -9223372036854775808
+ is 9223372036854775808, which is one past what an i64 can hold, so every
+ implementation has to choose: wrap, saturate, or refuse.
+
+ Bare metal wraps, silently and by construction. `emit-abs-builtin`
+ (Emit/X86_64Builtins.codex:387) is three instructions -- `test`, `jge`, `neg`
+ -- and two's-complement `neg` of the minimum is the minimum again. The
+ overflow flag is set and nothing reads it. So `abs minInt` answers minInt, a
+ NEGATIVE number from a function whose whole contract is to return a
+ non-negative one, and no diagnostic anywhere.
+
+ The plug emits `@as(i64, @intCast(@abs(x)))`. `@abs` widens to the unsigned
+ type, so the magnitude is representable and it is `@intCast` that cannot take
+ it back -- a panic in Debug, undefined in a release mode.
+
+ So this is finding 30's shape a second time: the plug stricter than the
+ language it implements, killing a program upstream runs. The prediction is
+ that bare metal prints `-9223372036854775808` and carries on to the last line,
+ and this arm dies at the abs.
+
+ The rows before it are the safe neighbourhood, so that a death at the edge
+ still leaves evidence that everything approaching it agreed.
+
+ __NARROW IS CLEAN, and it is recorded here so nobody re-derives it. It reads
+ like a checked narrowing and the plug emits it as a bare pass-through, which
+ is the exact shape of finding 28. It is not: `emit-narrow-builtin`
+ (Emit/X86_64Builtins.codex:362) is `emit-expr st (list-at args 0)` and nothing
+ else. Both arms pass the value through untouched, so its 42 call sites across
+ the compiler carry no divergence. The check it is named for lives in the type
+ checker, not in the emitted code.
+
+Section: Instrument
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- the safe neighbourhood --"
+   print-line-uni ("abs 5                      : " & integer-to-text (abs 5))
+   print-line-uni ("abs -5                     : " & integer-to-text (abs (0 - 5)))
+   print-line-uni ("abs of minInt + 1          : " & integer-to-text (abs (0 - 9223372036854775807)))
+   print-line-uni ("that one is positive       : " & show-yn (abs (0 - 9223372036854775807) > 0))
+   print-line-uni "-- __narrow is a pass-through on both arms --"
+   print-line-uni ("narrow keeps the value     : " & show-yn (__narrow 12345 == 12345))
+   print-line-uni ("narrow keeps a negative    : " & show-yn (__narrow (0 - 12345) == (0 - 12345)))
+   print-line-uni "-- the edge: abs of the minimum integer --"
+   print-line-uni ("abs minInt                 : " & integer-to-text (abs (0 - 9223372036854775807 - 1)))
+   print-line-uni ("it came back NEGATIVE      : " & show-yn (abs (0 - 9223372036854775807 - 1) < 0))
+   print-line-uni "-- reached the end, so this arm wrapped rather than refusing --"
+  end

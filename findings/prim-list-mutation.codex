@@ -1,0 +1,146 @@
+Chapter: PrimListMutation
+  cites Foreword chapter Console
+
+ Tier 8: what list operations do to the list you passed them.
+
+ Chosen by counting. `list-at` and `list-length` are the two most-used builtins
+ in the whole compiler at 1595 and 1505 call sites, `list-push` is third at 718,
+ and `list-set-at` and `list-insert-at` add 126 more -- and until now not one
+ assertion anywhere said what any of them does to its argument. Tier 2 priced
+ them; nothing pinned their meaning.
+
+ CODEX LISTS MUTATE IN PLACE. `list-set-at`, `list-insert-at` and `list-push`
+ all change the list they are given and return that same list; they are not
+ functional updates. A plug that copies instead is not making an optimisation
+ choice, it is changing the semantics -- and **no type checker can see it**,
+ because both versions have the same signature and both compile. It has already
+ happened once here: copying broke `SkipListText`, where forward pointers were
+ written into a discarded copy, so the size counter stayed right and traversal
+ came back empty. That is the failure this file exists to catch, as a standing
+ test rather than a memory.
+
+ ONLY ALIASING DISTINGUISHES THEM. A binding taken BEFORE the update is the
+ only observer that can tell a mutation from a copy, which is exactly why this
+ hid: the same distinction hid finding 10 behind 354 `__record-set` calls in
+ one subject, because none of them aliased. Every group below therefore takes
+ the alias first and reads it after.
+
+ The escape hatch is tested beside them, because a rule with no exception is
+ usually a rule nobody has looked at. `xs & [v]` COPIES -- it is what to write
+ when a copy is what you want -- so the alias must NOT see that one. If both
+ the mutating and the copying form behaved the same, one of them would be
+ wrong, and the file would not say which.
+
+ Everything here is relational and prints yes or no, so both arms must be
+ byte-identical. No addresses, no counts that depend on a representation.
+
+Section: Instrument
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+Section: Shapes
+
+  three : Integer -> List Integer
+  three (n) = [n, n + 1, n + 2]
+
+ A helper that pushes onto a list the caller still holds. If push mutates,
+ the caller's own binding grows -- which is the shape that leaked a rename map
+ across every definition once.
+
+  push-onto : List Integer, Integer -> List Integer
+  push-onto (xs) (v) = list-push xs v
+
+  sum-to : List Integer, Integer, Integer -> Integer
+  sum-to (l) (i) (acc) =
+   if i >= list-length l then acc
+   else sum-to l (i + 1) (acc + list-at l i)
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- reading: list-at and list-length, the two most-used builtins --"
+   print-line-uni ("length of three            : " & show-yn (list-length (three 5) == 3))
+   print-line-uni ("first element              : " & show-yn (list-at (three 5) 0 == 5))
+   print-line-uni ("last element               : " & show-yn (list-at (three 5) 2 == 7))
+   print-line-uni ("length of empty            : " & show-yn (list-length [] == 0))
+   print-line-uni ("sum walks every element    : " & show-yn (sum-to (three 5) 0 0 == 18))
+   print-line-uni "-- list-set-at MUTATES: the alias is the only witness --"
+   let a = three 5
+   in let alias = a
+   in let b = list-set-at a 1 99
+   in act
+     print-line-uni ("update is visible on it    : " & show-yn (list-at b 1 == 99))
+     print-line-uni ("ALIAS sees the update      : " & show-yn (list-at alias 1 == 99))
+     print-line-uni ("original name sees it too  : " & show-yn (list-at a 1 == 99))
+     print-line-uni ("neighbours undisturbed     : " & show-yn (list-at alias 0 == 5))
+     print-line-uni ("length unchanged           : " & show-yn (list-length alias == 3))
+     print-line-uni ("  (yes on all = one list, mutated in place)")
+   end
+   print-line-uni "-- list-push MUTATES the list the caller still holds --"
+   let p = three 5
+   in let palias = p
+   in let q = push-onto p 42
+   in act
+     print-line-uni ("pushed list is longer      : " & show-yn (list-length q == 4))
+     print-line-uni ("ALIAS grew too             : " & show-yn (list-length palias == 4))
+     print-line-uni ("alias sees the new element : " & show-yn (list-at palias 3 == 42))
+     print-line-uni ("old elements survive       : " & show-yn (list-at palias 0 == 5))
+   end
+   print-line-uni "-- pushing onto an EMPTY list, where there may be nothing to mutate --"
+   let e = []
+   in let ealias = e
+   in let e2 = list-push e 7
+   in act
+     print-line-uni ("push produced one element  : " & show-yn (list-length e2 == 1))
+     print-line-uni ("alias of empty grew        : " & show-yn (list-length ealias == 1))
+     print-line-uni ("  (the arms may honestly differ here -- an empty list has no block)")
+   end
+   print-line-uni "-- list-insert-at MUTATES --"
+   let i0 = three 5
+   in let ialias = i0
+   in let i1 = list-insert-at i0 1 88
+   in act
+     print-line-uni ("insert made it longer      : " & show-yn (list-length i1 == 4))
+     print-line-uni ("ALIAS grew too             : " & show-yn (list-length ialias == 4))
+     print-line-uni ("inserted at the right index: " & show-yn (list-at ialias 1 == 88))
+     print-line-uni ("the displaced one moved up : " & show-yn (list-at ialias 2 == 6))
+   end
+   print-line-uni "-- the escape hatch: `&` COPIES, and the alias must NOT see it --"
+   let c = three 5
+   in let calias = c
+   in let d = c & [77]
+   in act
+     print-line-uni ("the copy is longer         : " & show-yn (list-length d == 4))
+     print-line-uni ("ALIAS did NOT grow         : " & show-yn (list-length calias == 3))
+     print-line-uni ("  (no here and yes above = the two forms really differ)")
+   end
+   print-line-uni "-- list-snoc --"
+   let s = three 5
+   in let salias = s
+   in let s2 = list-snoc s 55
+   in act
+     print-line-uni ("snoc appended              : " & show-yn (list-at s2 3 == 55))
+     print-line-uni ("snoc alias grew            : " & show-yn (list-length salias == 4))
+   end
+   print-line-uni "-- linked lists: 198 call sites, and no assertion until now --"
+   let ll = __linked-list-empty 4
+   in let l1 = __linked-list-push ll 10
+   in let l2 = __linked-list-push l1 20
+   in let l3 = __linked-list-push l2 30
+   in let flat = __linked-list-to-list l3
+   in act
+     print-line-uni ("three pushes, three out    : " & show-yn (list-length flat == 3))
+     print-line-uni ("sum survives the flatten   : " & show-yn (sum-to flat 0 0 == 60))
+     print-line-uni ("empty flattens to empty    : " & show-yn (list-length (__linked-list-to-list (__linked-list-empty 4)) == 0))
+   end
+   print-line-uni "-- capacity is a hint, not a bound (finding 21 as a standing test) --"
+   let cap = __list-with-capacity 2
+   in let c1 = list-push cap 1
+   in let c2 = list-push c1 2
+   in let c3 = list-push c2 3
+   in act
+     print-line-uni ("grew past its capacity     : " & show-yn (list-length c3 == 3))
+     print-line-uni ("contents survived growth   : " & show-yn (sum-to c3 0 0 == 6))
+   end
+  end
