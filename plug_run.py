@@ -8,7 +8,7 @@ import time
 
 import codex_vm
 
-def run_plug(plug_cdx, ir_path, out_path, port=9145, mem_mb=3072, timeout=180,
+def run_plug(plug_cdx, ir_path, out_path, port=9145, mem_mb=None, timeout=180,
              chunk_size=4096, pcap=None, legacy=False, stall=120):
     ir = open(ir_path, "rb").read()
     # The guest loses the last byte of any odd-length frame (see

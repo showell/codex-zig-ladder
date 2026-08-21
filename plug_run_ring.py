@@ -45,7 +45,9 @@ def refuse_stale_ringplug(here):
                          "plug sources; run ast/ringplug_build.sh")
 
 
-def run_ring_plug(ir_path, out_path, plug_cdx=None, mem_mb=3072, timeout=1800):
+def run_ring_plug(ir_path, out_path, plug_cdx=None, mem_mb=None, timeout=1800):
+    if mem_mb is None:
+        mem_mb = ring_compile.MEM_MB
     here = pathlib.Path(__file__).parent
     if plug_cdx is None:
         refuse_stale_ringplug(here)

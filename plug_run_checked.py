@@ -29,7 +29,7 @@ import plug_run
 CHUNK_SIZES = [3000, 1500, 3500, 2500]
 
 def run_verified(plug_cdx, ir_path, out_path, port=9145, attempts=3,
-                 timeout=420, chunk_size=4096, stall=120, mem_mb=3072):
+                 timeout=420, chunk_size=4096, stall=120, mem_mb=None):
 
     """One transfer plus a proof. Falls back to agreement if the proof keeps
     failing, which would mean the kernel is segmenting somewhere we did not
@@ -85,7 +85,7 @@ def run_verified(plug_cdx, ir_path, out_path, port=9145, attempts=3,
                       stall=stall, mem_mb=mem_mb)
 
 def run_agreed(plug_cdx, ir_path, out_path, port=9145, attempts=4, timeout=420,
-               stall=120, mem_mb=3072):
+               stall=120, mem_mb=None):
     fd, tmp = tempfile.mkstemp(suffix=".plug-attempt")
     os.close(fd)
     seen = {}
