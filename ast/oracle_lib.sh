@@ -353,7 +353,15 @@ zig_verdict() {
     # of a dead VM. ulimit is per-subshell, so nothing else inherits it.
     if ! (ulimit -v $((2560 * 1024)) && timeout 600 zig run ${m}.zig 2> ${m}.zigraw); then
         echo "--- zig compile/run errors:"
-        head -40 ${m}.zigraw
+        # The MESSAGE, then context. A run that dies late has thousands of
+        # lines of ordinary output before the panic, so `head` shows the
+        # program starting up and never the reason it stopped -- which is
+        # exactly how a `cursors met` message with the deck numbers in it
+        # gets lost. Grep first, head second, both bounded.
+        grep -E 'panic:|error:|CODEGEN-HALTED|cursors met|exhausted' ${m}.zigraw | head -6 \
+            || head -20 ${m}.zigraw
+        echo "--- first lines, for context:"
+        head -12 ${m}.zigraw
         return 1
     fi
     # The unit ran once and answered for every subject it carries, exactly as

@@ -68,7 +68,13 @@ run_unit_remote() {
     rung_stamp "$m"
     local out rc
     out=$($(remote_arm_for "$m") "$m" 2>&1); rc=$?
+    # The bounded slice, and then anything the slice would have eaten. A
+    # rung prints thousands of lines and the verdict is near the end, so the
+    # cut is deliberate -- but CX-DECK and a panic both land on fd 1 well
+    # past line 34, and losing them silently is how a measurement becomes a
+    # measurement of nothing.
     printf '%s\n' "$out" | head -34
+    printf '%s\n' "$out" | grep -E 'CX-DECK|panic:|cursors met|exhausted' | tail -12 || true
     [ "$rc" -ne 0 ] && return 1
     case "$out" in
         *ORACLE*|*TRANSPORT\ FAILED*) ;;
