@@ -83,4 +83,16 @@ Section: Main
      print-line-uni ("concat bytes survived     : " & show-yn (text-compare joined "abcdefghXY" == 0))
      print-line-uni ("  (yes = the in-place path is guarded on the live cursor)")
    end
+   print-line-uni "-- replace with an empty pattern, the fourth aliasing site --"
+   let h3 = __heap-save
+   in let src3 = "abcdefgh" & "ijklmnop"
+   in let d5 = __deck-enter
+   in let kept3 = text-replace src3 "" "-"
+   in let d6 = __deck-exit
+   in let back3 = __heap-restore h3
+   in let clobber3 = "ZZZZZZZZ" & "ZZZZZZZZ"
+   in act
+     print-line-uni ("replace bytes survived    : " & show-yn (text-compare kept3 "abcdefghijklmnop" == 0))
+     print-line-uni ("  (bare metal copies every byte through even with no pattern)")
+   end
   end
