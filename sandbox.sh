@@ -59,10 +59,18 @@ codex_ref="${4:-HEAD}"
 run="$ROOT/$(date -u +%Y%m%dT%H%M%SZ)-$label"
 mkdir -p "$run" || die "cannot create $run"
 
-git -C "$LADDER_SRC" worktree add --no-progress --detach "$run/ladder" "$ladder_ref" >/dev/null 2>&1 \
-    || die "ladder worktree failed at $ladder_ref"
-git -C "$codex_src" worktree add --no-progress --detach "$run/codex" "$codex_ref" >/dev/null 2>&1 \
-    || { git -C "$LADDER_SRC" worktree remove --force "$run/ladder"; die "codex worktree failed at $codex_ref"; }
+# -q, not --no-progress: the latter is not an option to `worktree add` on
+# every git, and swallowing stderr hid that for a whole debugging round.
+# Errors are captured and reported, never discarded.
+if ! err=$(git -C "$LADDER_SRC" worktree add -q --detach "$run/ladder" "$ladder_ref" 2>&1); then
+    rmdir "$run" 2>/dev/null
+    die "ladder worktree failed at $ladder_ref: $err"
+fi
+if ! err=$(git -C "$codex_src" worktree add -q --detach "$run/codex" "$codex_ref" 2>&1); then
+    git -C "$LADDER_SRC" worktree remove --force "$run/ladder" 2>/dev/null
+    rmdir "$run" 2>/dev/null
+    die "codex worktree failed at $codex_ref: $err"
+fi
 
 # Sourced by every command in the sandbox. CODEX_ROOT points INSIDE the
 # sandbox on purpose: a pull in the shared checkout mid-run is then not a
