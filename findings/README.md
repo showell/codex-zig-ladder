@@ -1221,3 +1221,56 @@ that is upstream's semantics and not a divergence. The last named suspect for
 the `codexir` corruption is therefore exonerated as a *divergence*, though an
 unchecked write remains a possible mechanism on either arm. This zero-fill gap
 is the better candidate and did not exist as a hypothesis before tier 5 ran.
+
+## 28. `substring` traps on bare metal and clamps here, so a killed program keeps running
+
+**Found 2026-08-21 by `findings/prim-text.codex` measuring a family that had
+no row anywhere. Ours. FIXED same day.**
+
+    findings/probe-substring-trap.codex        zig arm    bare metal
+    "about to ask for 40 bytes of a 5-byte"    printed    printed
+    answered length                            5          <died>
+    "still running, so this arm clamped"       printed    <died>
+
+Bare metal dies with `EXC=06` -- invalid opcode, the UD2 -- and the request is
+still on the stack at the fault: `S[10]=5` the source length, `S[20]=0x28` the
+40 that was asked for. It never reaches the second print.
+
+**Upstream ruled on this deliberately and wrote down why.** Substring once
+took its start and length on trust; `substring a 0 40` on a five-byte string
+answered `abcde   s       PASSWORD-1234567890     ` -- the whole of the next
+allocation, returned verbatim. The fix traps rather than clamps, at Damian's
+ruling, "because a clamp turns a program's bug into quietly wrong data, and
+this project's virtues say a safety guarantee is never silently degraded"
+(`Emit/X86_64Builtins.codex:640`; `emit-substring-bounds` at `:666` is three
+UD2s -- negative start, negative length, and length past the end).
+
+`cx_substring` clamped with `@min` on both ends. So the plug took a program
+upstream kills and ran it on quietly wrong data: **the exact outcome the
+ruling exists to prevent, reintroduced by the backend that was supposed to
+mirror it.** Asked for 40 bytes of a 5-byte text, it answered 5 and carried on.
+
+**FIXED.** Three checks mirroring bare metal's, in the same order, including
+the one that is easy to get wrong: the third compares by SUBTRACTING rather
+than adding, because `start + len` can wrap and the input that wraps it is the
+one an attacker picks. `s.len - cx_a` cannot wrap because the guard above pins
+`cx_a` to `[0, s.len]`. Verified standalone on 0.16.0: all seven in-range
+shapes the tier file asserts still answer identically, and `substring s 1
+maxInt(i64)` now panics where it used to return the tail.
+
+**No rung can have depended on the clamp**, which is why this was invisible to
+eleven days of sweeps: a subject that went out of range would trap on bare
+metal, so its truth would be broken and the rung red before the comparison
+ever ran. Only a test that deliberately goes out of range can see it, and no
+tier file could hold one -- a trap would take that file's other assertions
+down with it, which is why this probe lives on its own.
+
+**The general shape is worth more than the instance.** This is a bounds check
+the plug weakened without anybody choosing to. The refusal net catches
+constructs the emitter cannot render; it says nothing about a helper that
+renders a construct with a *weaker guarantee* than the original. Ranked by
+what it costs to find: sweeps cannot see it, the corpus can only see it if a
+test program is deliberately out of range, and a source read finds it in
+minutes once you know to compare guarantee to guarantee. Worth a pass over
+every `cx_*` helper that takes an index or a length, asking not "does it
+compute the same answer" but "does it fail on the same inputs".
