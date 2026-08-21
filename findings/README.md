@@ -1,4 +1,4 @@
-# Findings: seven closed upstream, eleven standing, six fixed here, one proposal
+# Findings: seven closed upstream, eleven standing, seven fixed here, one proposal
 
 This directory holds the findings and the probes that make them runnable.
 It is discussion material rather than a proposed addition to the Codex tree,
