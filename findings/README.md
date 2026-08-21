@@ -1541,6 +1541,18 @@ already carries a standing warning about from the `IrVecPat` defect: an
 unhandled construct mapped onto a valid-but-different one, producing a wrong
 program with no diagnostic.
 
+**Measured, both arms, same program:**
+
+    probe-trying-fail                       bare metal          zig arm
+    body ran once                           printed             <no compile>
+    attempt                                 printed TWICE       <no compile>
+    fell back, and the program is alive     printed             <no compile>
+    reached the end                         printed             <no compile>
+
+The oracle retries the body the full 2 times, runs the fallback, and carries on
+to the end. That is the whole construct working, and it is what the plug turns
+into a dead program.
+
 **And it does not even compile.** `@panic` diverges, so any statement after a
 `fail` -- including everything after the enclosing `trying` block -- is
 unreachable, and zig refuses with
