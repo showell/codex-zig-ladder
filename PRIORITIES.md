@@ -85,13 +85,32 @@ nothing else may touch the CPU while it runs: the guest asks for 3072 MB on
 a 3849 MB box, and a concurrent `zig run` is enough to stall its transport
 mid-transfer.
 
-**The droplet sweep was killed at 10/14 with fibx stalled on stale IR, so
-it answered nothing.** Re-running it is now the question that GATES the Text
-narrowing rather than a status check: most of these fixes landed after the
-last real deck measurement, and if the four emit rungs now fit their
-reservation the narrowing may be unnecessary. Cheaper than the narrowing
-either way, and if they still overflow it says by how much. Needs the
-rebuilt natives first.
+**The sweep re-ran locally 2026-08-21 and answered: 10/12 green, both emit
+rungs still red -- but red LOUDLY now.** Sandbox
+`20260821T204032Z-longsweep` (ladder `5a881b0`, codex `86f6fae9`, fresh
+`.ir` for all twelve units under seed 930ff7f1, handed in by hand -- the
+droplet attempt earlier that day died at launch on missing gitignored
+`.ir`). The ten non-emit units are byte-identical against the banked
+truths. The two emit units:
+
+    fibx   panic: cx heap: the two cursors met -- alloc at 141181824 + 24
+           crosses (hp=141181824 dptr=115819408 bivy=141181840 nest=1)
+    whole  Segmentation fault at address 0x9
+
+Transport was clean for both (rings refilled fully, CCE sizes matched), so
+both failures are in the running program. Neither zigraw carries a single
+CX-DECK line. The sandbox ladder predates the sweep-digest commit
+(`00cf4bd`), so these artifacts under `ladder/ast/` are the only record --
+the console verdict died with a WSL crash at ~21:37Z. What this buys:
+
+- The Text-narrowing question stays open but is sharper: the emit rungs
+  still do not fit, and the refusal now names the exact cursor positions
+  at collision instead of corrupting silently.
+- whole's segfault at 0x9 is a near-null address, not a deck symptom --
+  a new datum for the finding-24 pointer-shaped-value lead list.
+- The droplet sweep-prep gap is real: a fresh droplet sandbox carries no
+  `ast/*.ir` and the sweep fails 0/14 in 71s. Unattended droplet sweeps
+  (item 2.5) need the prep step to ship or regenerate the `.ir` files.
 
 **Still open: finding 24**, the `codexir` crash on the 2.5 MB subject, which
 now reproduces natively in 11 seconds instead of eleven minutes through
