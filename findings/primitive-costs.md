@@ -40,6 +40,15 @@ plug, not a patched artifact. Reproduce with the recipe in
 Measured 2026-08-21, after the cold agent's design review pointed out that
 this family had no row anywhere and that the `Text` narrowing turns on it.
 
+**The zig column below is PRE-FIX and is now wrong.** Measuring it is what
+found finding 29: the zeros are not an optimisation, they are the defect --
+a substring that allocates nothing cannot be placed on the deck, so a value
+that looks decked points at frontier the next rewind reclaims. `cx_substring`
+and every piece of `cx_text_split` now copy. **Re-take this column with the
+rebuilt natives**; the zig side should track bare metal within the usual
+padding, and the rows are kept here meanwhile because the argument they make
+about representation (a) versus (b) does not depend on which column is stale.
+
 | shape | bare metal | zig arm | delta |
 |---|---|---|---|
 | substring 4 of 8 | 16 | 0 | **-16** |

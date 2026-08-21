@@ -1,4 +1,4 @@
-# Findings: seven closed upstream, eleven standing, seven fixed here, one proposal
+# Findings: seven closed upstream, eleven standing, nine fixed here, one proposal
 
 This directory holds the findings and the probes that make them runnable.
 It is discussion material rather than a proposed addition to the Codex tree,
@@ -1274,3 +1274,73 @@ test program is deliberately out of range, and a source read finds it in
 minutes once you know to compare guarantee to guarantee. Worth a pass over
 every `cx_*` helper that takes an index or a length, asking not "does it
 compute the same answer" but "does it fail on the same inputs".
+
+## 29. A substring put on the deck was never on the deck
+
+**Found 2026-08-21 by `findings/probe-deck-substring.codex`, both arms, same
+program. Ours. FIXED same day, pending a native rebuild to confirm end to end.**
+
+    probe-deck-substring                zig arm   bare metal
+    length survived                     yes       yes
+    BYTES survived                      NO        yes
+    concat bytes survived               yes       yes
+
+**A corruption, not a cost curiosity, and the sharper half of finding 28's
+family.** Bare metal's substring copies, and it bumps `r10` -- the LIVE
+allocation register, which between `__deck-enter` and `__deck-exit` is the
+deck cursor. So a substring taken inside a deck extent lands ON THE DECK and
+outlives a rewind of the frontier. That is the entire purpose of the deck.
+
+`cx_substring` allocated nothing. It returned a slice of its argument, so the
+bytes stayed where the argument's bytes were -- on the frontier, if that is
+where the source was built. **A deck extent cannot move them, because there is
+no allocation for the extent to redirect.** The value looks decked, reports the
+right length, and points at memory the next `__heap-restore` hands back. The
+probe allocates over the reclaimed span afterwards so the dangling read is
+visible instead of accidentally still correct.
+
+**Live in the shape that matters.** `emit-all-defs` brackets every definition
+and carries accumulator tables across the brackets, and the tables that
+motivated the whole `Text` narrowing are `List Text`. A text that was supposed
+to be copied onto the deck but is secretly a slice of reclaimed frontier is a
+table holding garbage -- and it would present as a length or a pointer read
+out of whatever object landed there next, which is the shape finding 24 has
+been chasing. Not a claim that it IS finding 24: `codexir` never calls
+`__heap-restore`, so nothing is reclaimed in that binary. It is the same
+failure mode in a different phase.
+
+**Three aliasing sites, all fixed:**
+
+- `cx_substring` now copies through a new `cx_text_dup`, which allocates from
+  `cx_gpa` and therefore from the live cursor -- deck inside an extent,
+  frontier outside, which is exactly bare metal's rule.
+- `cx_text_split` returned a slice per piece; every piece now copies. Bare
+  metal's `__text_split` builds real text blocks.
+- `cx_concat` opened with `if (b.len == 0) return a;`. Bare metal has no such
+  case: both `emit-str-concat-fast-bump` and `emit-str-concat-slow-alloc` bump
+  `r10` unconditionally, so `a & ""` is always a fresh block at the live
+  cursor. The short-circuit is gone.
+
+**Concat was tested beside it and came out CLEAN on both arms, which is why
+the test was worth running.** Our in-place path fires when the left operand
+ends exactly at `cx_hp` -- and inside an extent `cx_hp` IS the deck cursor, so
+a frontier-resident operand fails that test and falls back to a copy that
+lands on the deck. Accidentally correct, for a reason worth keeping: **the
+fast path is guarded on the LIVE cursor rather than on a remembered one.** A
+prediction that only ever confirms is not worth making, and this one predicted
+opposite answers for the two operations and got both.
+
+**Cost consequence, stated plainly.** The tier 3 rows measured the day this
+was found show substring at 0 bytes on our arm against bare metal's `8 +
+align8(len)` -- 448 against 0 for a 28-piece scan. That saving was the defect.
+After the fix those rows become copy costs and the zig column should track
+bare metal's within the usual padding. **The table's tier 3 section is marked
+as measured pre-fix and needs re-taking with the rebuilt natives.**
+
+**What it says about the `Text` narrowing.** The cold agent's design review
+gave two arguments for the packed-offset representation (b) over a
+pointer-at-a-length-word (a): that (a) is incompatible with `cx_concat`'s
+general in-place path, and that (a) cannot express a slice of somebody else's
+bytes. **The second argument dissolves here** -- after this fix nothing in the
+prelude expresses such a slice, because bare metal does not either. (b) still
+wins, on the concat argument alone, and that argument is untouched.

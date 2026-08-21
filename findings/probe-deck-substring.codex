@@ -1,0 +1,86 @@
+Chapter: ProbeDeckSubstring
+  cites Foreword chapter Console
+
+ Does a text put on the DECK actually go on the deck?
+
+ This question only became askable once tier 3 measured substring. Bare metal
+ always copies a substring, and the copy is bumped off `r10` -- the LIVE
+ allocation register, which inside a deck extent is the deck cursor. So on
+ bare metal, taking a substring between `__deck-enter` and `__deck-exit` puts
+ the bytes on the deck, and they outlive a rewind of the frontier. That is the
+ whole point of the deck.
+
+ `cx_substring` allocates nothing. It returns a slice of its argument, so the
+ bytes stay exactly where the argument's bytes were -- on the frontier, if
+ that is where the source was built. A deck extent cannot move them, because
+ there is no allocation for the extent to redirect. The value looks decked and
+ is not.
+
+ If that is right, the first assertion below says yes on bare metal and no
+ here, and it is a live corruption in the emit phase rather than a curiosity:
+ the accumulator tables `emit-all-defs` carries across brackets are `List
+ Text`, and a text that was supposed to be copied onto the deck but is
+ secretly a slice of reclaimed frontier is a table holding garbage.
+
+ CONCAT is tested beside it because the reasoning predicts the opposite
+ answer, and a prediction that only ever confirms is not worth making. Our
+ in-place concat extends a block when the block ends exactly at `cx_hp` --
+ and inside an extent `cx_hp` IS the deck cursor, so a frontier-resident left
+ operand fails that test and falls back to a copy, which lands on the deck.
+ Accidentally correct, for a reason worth writing down: the fast path is
+ guarded on the LIVE cursor rather than on a remembered one.
+
+ The rewind is made observable rather than assumed. After the restore the
+ probe allocates over the reclaimed span, so a dangling slice reads as the
+ clobber instead of quietly still reading correctly because nothing happened
+ to touch it yet.
+
+ Explicit `__deck-enter`/`__deck-exit` rather than `deck-record`, because bare
+ metal only intercepts `deck-record` when its defining chapter matches
+ `init-phase-allocator`'s and this chapter is neither -- finding 25. The
+ decomposition is honoured by every arm.
+
+ One deck reservation serves both sections, and it is set AT the base with the
+ frontier lifted above it. The first draft set the mark at `base + 8388608`
+ and then advanced the frontier by the same 8388608, which puts both cursors
+ on the same address; `cx_frontier_crosses` said so and named both. Worth
+ recording because the guard doing its job looks exactly like a finding until
+ you read the numbers it prints.
+
+Section: Instrument
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- a substring taken inside a deck extent, then the frontier rewound --"
+   let base = __heap-save
+   in let m = __deck-set base
+   in let lift = __heap-advance 1048576
+   in let h = __heap-save
+   in let src = "abcdefgh" & "ijklmnop"
+   in let d1 = __deck-enter
+   in let kept = substring src 2 4
+   in let d2 = __deck-exit
+   in let back = __heap-restore h
+   in let clobber = "ZZZZZZZZ" & "ZZZZZZZZ"
+   in act
+     print-line-uni ("length survived           : " & show-yn (text-length kept == 4))
+     print-line-uni ("BYTES survived            : " & show-yn (text-compare kept "cdef" == 0))
+     print-line-uni ("  (no = it was a slice of the frontier, not a copy on the deck)")
+   end
+   print-line-uni "-- the same shape with concat, which is predicted to survive --"
+   let h2 = __heap-save
+   in let a = "abcd" & "efgh"
+   in let d3 = __deck-enter
+   in let joined = a & "XY"
+   in let d4 = __deck-exit
+   in let back2 = __heap-restore h2
+   in let clobber2 = "ZZZZZZZZ" & "ZZZZZZZZ"
+   in act
+     print-line-uni ("concat bytes survived     : " & show-yn (text-compare joined "abcdefghXY" == 0))
+     print-line-uni ("  (yes = the in-place path is guarded on the live cursor)")
+   end
+  end
