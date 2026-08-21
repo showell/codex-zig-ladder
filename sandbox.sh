@@ -70,8 +70,11 @@ git -C "$codex_src" worktree add --no-progress --detach "$run/codex" "$codex_ref
 cat > "$run/env" <<EOF
 export CODEX_ROOT="$run/codex"
 export SANDBOX="$run"
-export CODEX_MEM_MB="\${CODEX_MEM_MB:-1300}"
-export CODEX_ACCEL="\${CODEX_ACCEL:-tcg}"
+# Host tuning belongs to the host, not to the experiment. The droplet caps
+# guests at 1300 MB and pins TCG; the laptop wants the tool defaults, and a
+# native build inside a 1300 MB guest does not finish. Baking one venue's
+# numbers into a host-agnostic script is how that failure arrives silently.
+[ -f "\$HOME/.codex_ladder_env" ] && . "\$HOME/.codex_ladder_env"
 EOF
 
 {
