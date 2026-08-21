@@ -1071,3 +1071,12 @@ buffer it names.
 Worth its own line: this reproduces in **12 seconds natively** where the
 equivalent rung is eleven minutes through QEMU, which is the whole return on
 finding 23.
+
+**Confirmed on a clean build, 2026-08-21.** The first sighting was on a
+hand-patched `codexir.zig`, which is not evidence about the toolchain. Rebuilt
+from scratch in a sandbox (ladder `4349606`, codex `6fe3f49d`) with the CCE fix
+coming from the emitter rather than a patch, and with the subject regenerated
+in that sandbox: identical crash, identical frames, `cx_list_at` ->
+`bsearch_rename_pos` -> `rename_has_entry` -> `resolve_def_name` ->
+`register_all_defs` -> `check_chapter`. It runs 38 seconds before dying rather
+than 12.7, which is the only difference and is unexplained.
