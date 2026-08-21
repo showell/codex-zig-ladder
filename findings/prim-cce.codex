@@ -1,0 +1,19 @@
+Chapter: PrimCce
+  cites Foreword chapter Console
+
+ What does each arm do with a codepoint the CCE tiers do not obviously
+ cover? U+22A2 turnstile occurs once in the depot, in type-theory prose at
+ Types/TypeCheckerInference.codex:8, and the zig plug's cx_cp_to_cce panics
+ on it while bare metal compiles the file containing it. This asks bare metal
+ what code it assigns, so the plug can match rather than invent -- the
+ encoding is observable, so a made-up code diverges on every text carrying
+ the character.
+
+  opening : [Console] Nothing = act
+   print-line-uni ("ascii A       " & integer-to-text (char-code-at "A" 0))
+   print-line-uni ("greek Gamma   " & integer-to-text (char-code-at "Γ" 0))
+   print-line-uni ("greek tau     " & integer-to-text (char-code-at "τ" 0))
+   print-line-uni ("turnstile     " & integer-to-text (char-code-at "⊢" 0))
+   print-line-uni ("turnstile len " & integer-to-text (text-length "⊢"))
+   print-line-uni ("roundtrip     " & "⊢")
+  end

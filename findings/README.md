@@ -1,4 +1,4 @@
-# Findings: seven closed upstream, nine standing, four fixed here, one proposal
+# Findings: seven closed upstream, ten standing, four fixed here, one proposal
 
 This directory holds the findings and the probes that make them runnable.
 It is discussion material rather than a proposed addition to the Codex tree,
@@ -1023,3 +1023,51 @@ artifacts rather than emitted ones.
 Fix needs bare metal's own tier table read out and matched, not guessed: the
 encoding is observable, so inventing a code for U+22A2 would diverge on
 every text that contains it.
+
+## 24. codexir dies on a large subject, and it is not a lifetime bug
+
+**Found 2026-08-21 with the native loop, once finding 23's CCE fix let it
+ingest real compiler source. OPEN. Ours to fix, arm unknown -- the evidence
+rules out every mechanism we have chased this week.**
+
+`native/codexir` built from `zig-plug-heap-unification` aborts 12.7 seconds
+into the 2,496,998-byte fibx subject:
+
+    check_chapter -> register_all_defs -> resolve_def_name
+      -> rename_has_entry -> bsearch_rename_pos -> cx_list_at
+
+`cx_list_at` reads a `CxList` whose metadata is impossible. One run:
+`len 131,892,766,817,456`, `cap 131,892,689,737,336` -- **capacity smaller
+than length**, which no ArrayList can produce. Another: `len` equal to the
+list's own data pointer minus 1080, i.e. pointer-shaped. The binary search
+then takes `mid = len/2` and indexes 66 trillion elements past the region.
+
+So a live object's header is being read as something that is not a header.
+
+**What it is not**, each ruled out by measurement rather than argument:
+
+- **Not use-after-reclaim.** `codexir.zig` contains exactly one
+  `cx_heap_restore` -- the definition. It never calls it. Nothing is
+  reclaimed.
+- **Not reuse of freed memory.** Making `cx_bump_free` never rewind the
+  frontier, so no byte is ever handed out twice, changes nothing.
+- **Not the in-place text concat** landed in `86675554`. Reverting it to the
+  copying form changes nothing.
+- **Not a wrong argument.** Printed at both ends: `renames` is the same
+  pointer at creation and at the `register_all_defs` call, with `len 0`. A
+  bsearch over a zero-length list never indexes at all, so the header is
+  intact at the call and garbage by the time it is read.
+- **Not the deck guard's business.** `cx_frontier_crosses` is compiled in
+  and never fires.
+
+Which leaves one category: **something writes over a live object**, with no
+reuse in play. The only writers into the region besides the allocator are
+the `__buf-*` family, which write at `base + offset` with no bound beyond
+the whole reservation -- `cx_buf_want` checks the address against
+`cx_heap_reserve` and nothing checks it against the buffer's own capacity.
+That is the next instrument: refuse a buffer write that lands outside the
+buffer it names.
+
+Worth its own line: this reproduces in **12 seconds natively** where the
+equivalent rung is eleven minutes through QEMU, which is the whole return on
+finding 23.
