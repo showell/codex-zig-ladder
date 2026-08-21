@@ -1278,7 +1278,9 @@ compute the same answer" but "does it fail on the same inputs".
 ## 29. A substring put on the deck was never on the deck
 
 **Found 2026-08-21 by `findings/probe-deck-substring.codex`, both arms, same
-program. Ours. FIXED same day, pending a native rebuild to confirm end to end.**
+program. Ours. FIXED same day and CONFIRMED end to end** through a `zigemit`
+built from the fix: `BYTES survived` reads yes, and the concat control still
+reads yes on both arms.
 
     probe-deck-substring                zig arm   bare metal
     length survived                     yes       yes
@@ -1330,12 +1332,15 @@ fast path is guarded on the LIVE cursor rather than on a remembered one.** A
 prediction that only ever confirms is not worth making, and this one predicted
 opposite answers for the two operations and got both.
 
-**Cost consequence, stated plainly.** The tier 3 rows measured the day this
-was found show substring at 0 bytes on our arm against bare metal's `8 +
-align8(len)` -- 448 against 0 for a 28-piece scan. That saving was the defect.
-After the fix those rows become copy costs and the zig column should track
-bare metal's within the usual padding. **The table's tier 3 section is marked
-as measured pre-fix and needs re-taking with the rebuilt natives.**
+**Cost consequence, measured after the fix.** The tier 3 rows found this by
+showing substring at 0 bytes on our arm against bare metal's `8 + align8(len)`
+-- 448 against 0 for a 28-piece scan. That saving WAS the defect. Re-measured
+through a `zigemit` carrying the fix, the same rows read 4, 8, 20, 0 and 112:
+we allocate a bare byte run where bare metal allocates a length word plus
+8-aligned bytes, so the gap is now a flat **12 bytes a piece**, which is the
+ordinary header-and-padding rule every other text row in the table pays. That
+is the healthier failure -- an explainable representation gap rather than a
+semantic divergence wearing the costume of a saving.
 
 **What it says about the `Text` narrowing.** The cold agent's design review
 gave two arguments for the packed-offset representation (b) over a
