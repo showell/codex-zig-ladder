@@ -34,8 +34,13 @@ for m in $units; do
     # thousands of lines of compiler output on the way past.
     printf '%s\n' "$out" | grep -E 'CX-DECK|ORACLE|MISMATCH|FAILED|STALE IR|UNPROVENANCED|panic:' || true
     if [ "$rc" -ne 0 ]; then
-        echo "  -- $m did not complete; last lines:"
-        printf '%s\n' "$out" | tail -6
+        # The panic MESSAGE, not the tail. A zig panic prints the message first
+        # and then a stack trace, so `tail` reliably catches the trace and
+        # misses the only line that says anything -- which is how `whole`'s
+        # crossing numbers were lost on the first run.
+        echo "  -- $m did not complete. The line that matters:"
+        printf '%s\n' "$out" | grep -E 'panic:|CODEGEN-HALTED|MISMATCH|error:' | head -3 \
+            || printf '%s\n' "$out" | tail -4
         fail=1
     fi
 done
