@@ -1,0 +1,102 @@
+Chapter: PrimTextSemantics
+  cites Foreword chapter Console
+
+ A before-picture for the `Text` narrowing. Tier 3 measures what text COSTS;
+ this pins what it MEANS, so that changing the representation from a 16-byte
+ slice to an 8-byte handle can be judged semantics-preserving rather than
+ merely still-compiling.
+
+ Every line is relational and prints yes or no, so the whole file must be
+ byte-identical across the two arms AND across the change. If any line moves
+ when the representation moves, the change was not a representation change.
+
+ Three groups deserve naming.
+
+ IMMUTABILITY is load-bearing beyond the obvious. `cx_concat` has a fast path
+ that, when its left operand sits at the frontier, appends past its end
+ instead of copying -- which is only sound because text is immutable and a
+ holder of the shorter text still sees identical bytes. The aliasing lines
+ below are the standing proof of that, and they are the ones most likely to
+ break under a handle representation that stores a length inline.
+
+ STORAGE matters because the tables that motivate the change are `List Text`.
+ A text pushed into a list and read back, or stored in a record field and read
+ back, must compare equal to what went in -- that is the property the
+ narrowing is really trading against.
+
+ Ordering is CCE ordering, not ASCII. `text-compare "abc" "abd"` is NOT
+ negative here, because CCE orders letters by frequency and `c` outranks `d`.
+ The lines below assert antisymmetry and inequality instead of a direction,
+ which is what a representation change has to preserve; asserting the
+ direction would have pinned an ASCII assumption that was never true.
+
+ CCE identity: `char-code-at` answers in CCE, and the codes are the same
+ number on every arm. `E` is 39, not 69: the encoding orders letters by
+ frequency and is Codex semantics rather than a storage choice.
+
+Section: Instrument
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+Section: Types
+
+  Holder = record { t : Text, n : Integer }
+
+Section: Shapes
+
+  push4 : Text, Text, Text, Text -> List Text
+  push4 (a) (b) (c) (d) = [a, b, c, d]
+
+  build : Integer, Text -> Text
+  build (n) (acc) =
+   if n <= 0 then acc else build (n - 1) (acc & "ab")
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- length --"
+   print-line-uni ("empty is zero              : " & show-yn (text-length "" == 0))
+   print-line-uni ("literal counts characters  : " & show-yn (text-length "abcd" == 4))
+   print-line-uni ("concat adds lengths        : " & show-yn (text-length ("abcd" & "efg") == 7))
+   print-line-uni ("built text has right length: " & show-yn (text-length (build 5 "") == 10))
+   print-line-uni "-- character access, answers in CCE --"
+   print-line-uni ("code at 0                  : " & show-yn (char-code-at "abcd" 0 == char-code-at "a" 0))
+   print-line-uni ("code at last               : " & show-yn (char-code-at "abcd" 3 == char-code-at "d" 0))
+   print-line-uni ("E is 39, not 69            : " & show-yn (char-code-at "E" 0 == 39))
+   print-line-uni ("across a concat boundary   : " & show-yn (char-code-at ("ab" & "cd") 2 == char-code-at "c" 0))
+   print-line-uni "-- comparison and search --"
+   print-line-uni ("equal texts compare equal  : " & show-yn (text-compare "abc" "abc" == 0))
+   print-line-uni ("compare is antisymmetric   : " & show-yn (text-compare "abc" "abd" == 0 - text-compare "abd" "abc"))
+   print-line-uni ("unequal texts differ       : " & show-yn (text-compare "abc" "abd" == 0 == False))
+   print-line-uni ("prefix sorts first         : " & show-yn (text-compare "ab" "abc" < 0))
+   print-line-uni ("starts-with true           : " & show-yn (text-starts-with "abcdef" "abc"))
+   print-line-uni ("starts-with false          : " & show-yn (text-starts-with "abcdef" "bcd" == False))
+   print-line-uni ("built equals literal       : " & show-yn (text-compare ("ab" & "cd") "abcd" == 0))
+   print-line-uni "-- concat identities --"
+   print-line-uni ("empty on the left          : " & show-yn (text-compare ("" & "abc") "abc" == 0))
+   print-line-uni ("empty on the right         : " & show-yn (text-compare ("abc" & "") "abc" == 0))
+   print-line-uni ("associative                : " & show-yn (text-compare (("a" & "b") & "c") ("a" & ("b" & "c")) == 0))
+   print-line-uni "-- immutability: the in-place concat depends on this --"
+   let a = "abcd" & "efgh"
+   in let alias = a
+   in let grown = a & "XY"
+   in act
+     print-line-uni ("operand keeps its length   : " & show-yn (text-length a == 8))
+     print-line-uni ("operand keeps its bytes    : " & show-yn (text-compare a "abcdefgh" == 0))
+     print-line-uni ("alias is undisturbed       : " & show-yn (text-compare alias "abcdefgh" == 0))
+     print-line-uni ("the grown text is right    : " & show-yn (text-compare grown "abcdefghXY" == 0))
+     print-line-uni ("growing twice is stable    : " & show-yn (text-compare (a & "ZZ") "abcdefghZZ" == 0))
+   end
+   print-line-uni "-- storage: this is what the narrowing trades against --"
+   let h = Holder { t = "stored" & " text", n = 3 }
+   in let l = push4 "one" ("tw" & "o") "three" ""
+   in act
+     print-line-uni ("record field round trips   : " & show-yn (text-compare (h.t) "stored text" == 0))
+     print-line-uni ("record sibling undisturbed : " & show-yn (h.n == 3))
+     print-line-uni ("list entry 0 round trips   : " & show-yn (text-compare (list-at l 0) "one" == 0))
+     print-line-uni ("list entry 1 was built     : " & show-yn (text-compare (list-at l 1) "two" == 0))
+     print-line-uni ("list entry 3 is empty      : " & show-yn (text-length (list-at l 3) == 0))
+     print-line-uni ("list keeps its length      : " & show-yn (list-length l == 4))
+   end
+  end
