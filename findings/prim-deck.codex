@@ -1,0 +1,123 @@
+Chapter: PrimDeck
+  cites Foreword chapter Console
+
+ Tier 0 and tier 1 of the primitive-cost table: the meter itself, then the two
+ cursors. These come first because everything downstream is measured in terms
+ of them -- if `__heap-save` does not observe allocation, every cost in every
+ other prim-* file is a zero that means nothing, and if the deck contracts do
+ not hold, the numbers are measured against a machine we do not understand.
+
+ Every assertion here is RELATIONAL and prints yes or no. None of them prints
+ an address: the arms have different layouts and always will, so an address is
+ the one thing that cannot be compared. Whole file must be byte-identical
+ across arms.
+
+ The model. One bump frontier: `__heap-save` reads it, `__heap-restore`
+ rewinds it, `__heap-advance` reserves a span and answers Nothing. Objects
+ that must outlive a rewind go on the deck, a second cursor into the same
+ heap. `__deck-set` places it; `__deck-enter` swaps it into the allocation
+ register while parking the frontier in a cell called the bivy;
+ `__deck-exit` swaps back. Both swaps happen only at nesting depth zero, on
+ every arm -- bare metal skips them with `jcc cc-ne` / `cbnz`, C# with
+ `if (_nest++ == 0)`, and the zig plug with the same test.
+
+ `deck-record expr` is sugar: the code generator intercepts it BY NAME and
+ brackets the evaluation of its argument in enter/exit, so the argument is
+ built on the deck and survives.
+
+ The frozen cell is the subtle one and it has bitten this project twice. The
+ deck-pos CELL is only written back when the nesting counter returns to zero,
+ so INSIDE an extent `__deck-pos` reads the deck's base and does not move,
+ while `__heap-save` reads the live cursor and does. That is why
+ `deck-short-of` cannot fire inside a phase-wide extent and why
+ `deck-bound-short-of` exists. Two assertions below pin it in both directions.
+
+ `__deck-alloc` is asserted through its decomposition rather than directly:
+ the zig plug has no emitter for it and answers `@compileError`, so a direct
+ use would make the whole file unrunnable on one arm instead of testing the
+ other nine claims.
+
+Section: Instrument
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+  measure : (Integer -> Integer) -> Integer
+  measure (f) =
+   let h0 = __heap-save
+   in let r = f 0
+   in let h1 = __heap-save
+   in let back = __heap-restore h0
+   in if r >= 0 then h1 - h0 else 0 - 1
+
+Section: Shapes
+
+ Evaluated inside a deck-record extent by the callers below, so each reports
+ what its cursor answers while the extent is open.
+
+  pos-after-alloc : Integer -> Integer
+  pos-after-alloc (n) =
+   let junk = [n, 1, 2, 3, 4, 5, 6, 7]
+   in let more = [n, 9, 9, 9, 9, 9, 9, 9]
+   in __deck-pos
+
+  save-after-alloc : Integer -> Integer
+  save-after-alloc (n) =
+   let junk = [n, 1, 2, 3, 4, 5, 6, 7]
+   in let more = [n, 9, 9, 9, 9, 9, 9, 9]
+   in __heap-save
+
+  keep : Integer -> List Integer
+  keep (n) = [n, n, n, n]
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- tier 0: the meter itself --"
+   print-line-uni ("advance moves by exactly n : " & show-yn (measure (\z -> let a = __heap-advance (z + 1024) in z) == 1024))
+   print-line-uni ("advance by zero moves none : " & show-yn (measure (\z -> let a = __heap-advance z in z) == 0))
+   print-line-uni ("frontier observes a list   : " & show-yn (measure (\z -> list-length [z, 1, 2, 3]) > 0))
+   print-line-uni ("same shape costs the same  : " & show-yn (measure (\z -> list-length [z, 1, 2, 3]) == measure (\z -> list-length [z, 1, 2, 3])))
+   print-line-uni ("bigger shape costs more    : " & show-yn (measure (\z -> list-length [z, 1, 2, 3, 4, 5, 6, 7]) > measure (\z -> list-length [z, 1])))
+   print-line-uni ("save round trips           : " & show-yn (let h = __heap-save in let j = [1, 2, 3] in let b = __heap-restore h in __heap-save == h))
+   print-line-uni "-- tier 1: the two cursors --"
+   let bivy = __heap-save
+   in let mark = bivy + 8388608
+   in let m = __deck-set mark
+   in let e1 = __deck-enter
+   in let on-deck = __heap-save
+   in let e2 = __deck-enter
+   in let inner = __heap-save
+   in let x2 = __deck-exit
+   in let still-on-deck = __heap-save
+   in let x1 = __deck-exit
+   in let off-deck = __heap-save
+   in act
+     print-line-uni ("enter switches to the mark : " & show-yn (on-deck == mark))
+     print-line-uni ("inner enter does not switch: " & show-yn (inner == on-deck))
+     print-line-uni ("inner exit does not restore: " & show-yn (still-on-deck == on-deck))
+     print-line-uni ("outer exit restores bivy   : " & show-yn (off-deck == bivy))
+     print-line-uni ("mark and bivy distinguish  : " & show-yn (mark > bivy))
+   end
+   print-line-uni "-- tier 1: the frozen cell, both directions --"
+   let before = __deck-pos
+   in let frozen = deck-record (pos-after-alloc 0)
+   in let moved = deck-record (save-after-alloc 0)
+   in act
+     print-line-uni ("deck-pos frozen in extent  : " & show-yn (frozen == before))
+     print-line-uni ("heap-save moves in extent  : " & show-yn (moved > before))
+     print-line-uni ("deck-pos advances after    : " & show-yn (__deck-pos > before))
+   end
+   print-line-uni "-- tier 1: a decked value outlives a rewind that would reclaim it --"
+   let h = __heap-save
+   in let kept = deck-record (keep 7)
+   in let back = __heap-restore h
+   in print-line-uni ("deck-record survives rewind: " & show-yn (list-length kept == 4))
+   print-line-uni "-- tier 1: deck reserve, via the decomposition every arm has --"
+   let d1 = __deck-enter
+   in let a = __heap-save
+   in let adv = __heap-advance 64
+   in let b = __heap-save
+   in let d2 = __deck-exit
+   in print-line-uni ("reserve bumps by its size  : " & show-yn (b - a == 64))
+  end
