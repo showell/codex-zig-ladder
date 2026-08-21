@@ -34,6 +34,28 @@ OUT="$T/native"
 # it stalled once today because a `zig run` was started beside it; the compute
 # lock only binds scripts that ask for it. Moving the guest to another machine
 # removes that failure mode rather than documenting it.
+# ...except that the droplet cannot actually host THIS job, and finding that
+# out costs a silent twenty minutes: droplet_compile.sh pins the guest at
+# 1300 MB (2 GB box, no swap, shared with the live site) where a native build
+# takes the 3072 MB default. 2026-08-21: sent here by hand, the first
+# venue-routed stage primed its ring, printed `detaching`, and then burned
+# THREE SECONDS of CPU in eighteen minutes. No error, no exit -- the guest
+# just stopped. Ordinary rungs at 1300 MB are proven (the lex truth arm ran
+# droplet-side byte-identical); this job is a bigger subject and is not.
+#
+# Refused here rather than documented, because a comment did not stop it --
+# the warning was already in the sandbox env file, in these words, and the
+# run was launched anyway. When the droplet grows or droplet_compile.sh stops
+# pinning 1300, delete this block; until then the toggle is a trap for the
+# stage that needs the most memory.
+if [ "${CODEX_NATIVE_VENUE:-local}" = droplet ]; then
+    echo "native_build: REFUSING the droplet venue." >&2
+    echo "  droplet_compile.sh pins CODEX_MEM_MB=1300; a native build takes" >&2
+    echo "  the 3072 MB default. It does not fail there, it HANGS." >&2
+    echo "  Run it here (no CODEX_NATIVE_VENUE), or grow the droplet first." >&2
+    exit 1
+fi
+
 seed_compile() {   # <blob> <out>
     if [ "${CODEX_NATIVE_VENUE:-local}" = droplet ]; then
         "$T/droplet_compile.sh" "$1" "$2"
