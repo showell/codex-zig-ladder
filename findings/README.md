@@ -1157,12 +1157,32 @@ guest zero-fills at boot". On this arm it reads as whatever was last there.
 
 **FIXED** (`3c4c00d6`), and the mechanism was not the one recorded first.
 
-`std.mem.Allocator.alloc` memsets every allocation to `undefined`, which in a
-Debug build is **0xAA**. The 1.5 GiB region therefore arrived filled with 170s
-rather than zeros. `findings/probe-fresh-span.codex` printed it plainly: 256
+`std.mem.Allocator.alloc` memsets every allocation to `undefined`
+(`~/zig-0.16.0/lib/std/mem/Allocator.zig:301`, in `allocBytesWithAlignment`,
+which every `alloc`/`create` funnels through), and `undefined` is **0xAA** in
+Debug and ReleaseSafe. The 1.5 GiB region therefore arrived filled with 170s
+rather than zeros.
+
+**Build-mode dependent, which is why it hid.** That `@memset(_, undefined)` is
+elided in ReleaseFast and ReleaseSmall, so the old code was zero-and-lazy in a
+release build and 0xAA-and-committed only in Debug/ReleaseSafe. `zig build-exe`
+defaults to Debug, which is what the natives are built with.
+
+**Scope, precisely.** The fix zeroes the RESERVATION. Sub-allocations through
+`cx_gpa` -- `cx_ll_empty`, `cx_new`, `cx_concat` and friends -- still go
+through `Allocator.alloc` and still get memset to 0xAA individually. They are
+initialised immediately so that is believed benign, but the claim to make is
+"spans carved by `__heap-advance` now read as zero", which is what the probe
+measures, not "no 0xAA anywhere". `findings/probe-fresh-span.codex` printed it plainly: 256
 nonzero bytes of 256, `170 170 170 ...`, in two separate spans, where bare
 metal reads all zeros. Reserving with `rawAlloc` instead skips the wrapper's
-memset and the same probe reads zero.
+memset and the same probe reads zero. `rawAlloc`'s doc warns it is "not
+intended to be called except from within the implementation of an
+`Allocator`" -- which is exactly where we are, since `cx_bump_alloc` and
+`cx_heap_vtable` are one. Worth knowing: the zeroing is an **OS** guarantee
+(Linux `mmap(MAP_ANONYMOUS)`, Windows committed pages), not an `Allocator`
+interface guarantee, and on wasm `page_allocator` is a reusing pool that makes
+no such promise.
 
 Two things follow that were not about zeroing at all. The memset **touched
 every page of the reservation**, committing all 1.5 GiB up front -- the exact
@@ -1192,7 +1212,9 @@ corrupt length there is pointer-shaped (order 1.3e14), not 0xAAAA-shaped.
 That test did confirm the resource half of finding 27 by accident. The same
 compile takes **38.0s real / 15.3s sys** with the 0xAA fill and **11.4s real /
 1.8s sys** with `rawAlloc`. The memset was touching every page of the 1.5 GiB
-reservation, and it cost 13.5 seconds of system time per run.
+reservation, and it cost 13.5 seconds of system time per run. Independently
+measured at 512 MiB: `Allocator.alloc` gives 525,952 KB max RSS and 131,178
+minor faults, `rawAlloc` gives 1,664 KB and 107.
 
 **Note for finding 24:** the out-of-buffer write is unchecked on BOTH arms, so
 that is upstream's semantics and not a divergence. The last named suspect for
