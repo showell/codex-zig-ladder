@@ -10,7 +10,7 @@ column on its own, it is which lines DISAGREE. This script produces that.
 
 Two arms, neither involving a ladder rung:
 
-  bare metal   cite-resolve, wrap as a `CDX map` blob, compile with the u48
+  bare metal   cite-resolve, wrap as a `CDX map` blob, compile with the pinned
                seed under QEMU via ring_compile, run the .cdx. ~4s+ per
                program. This is the ORACLE: it is upstream's own compiler
                answering, with no plug in the path.

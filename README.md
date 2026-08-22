@@ -903,10 +903,13 @@ blobs are gitignored, so a fresh tree has none until `ast/arithcycle.sh`
 (which writes `ast/arith-cdx.blob` in its first seconds) or any rung has
 run once -- and run the pair:
 
-    git -C $CODEX_ROOT show <old>:seed/Codex.cdx > /tmp/seed-old.cdx
-    git -C $CODEX_ROOT show <new>:seed/Codex.cdx > /tmp/seed-new.cdx
+    git -C $CODEX_ROOT show <old>:seed/Codex.cdx > $SANDBOX/seed-old.cdx
+    git -C $CODEX_ROOT show <new>:seed/Codex.cdx > $SANDBOX/seed-new.cdx
     python3 -c "import ring_compile as r; \
-      r.compile_ring('ast/arith-cdx.blob', '/tmp/probe.cdx', seed='/tmp/seed-new.cdx')"
+      r.compile_ring('ast/arith-cdx.blob', '$SANDBOX/probe.cdx', seed='$SANDBOX/seed-new.cdx')"
+
+(`$SANDBOX` is what `sandbox.sh`'s env file exports; probe artifacts belong
+to the experiment's directory, not `/tmp`.)
 
 and the same line with the old seed for the baseline. This confirms the new
 seed boots under our QEMU flags, takes the ring preload, and produces output
@@ -935,9 +938,10 @@ diff.
   records the bundle sha in `ast/ringplug.cdx.fp` and `plug_run_ring.py`
   re-bundles and refuses a mismatch before booting. Banking refuses a moved
   seed or moved harness content after the fact (the `truth_prov` sidecars),
-  but nothing detects the seed moving MID-run
-  (`seed_identity.require_match` exists for exactly that and nothing calls
-  it yet). Everything beyond that is operator discipline:
+  and the truth arm records the seed as it begins and refuses its own
+  truths if `seed_identity.require_match` finds it moved by the split
+  (`oracle_lib.sh`). The zig arms have no such check. Everything beyond
+  that is operator discipline:
   do not touch the clone until the run finishes or is killed. The clone is
   not PR scratch space during a sweep -- build PRs in a worktree elsewhere.
 - **`seed_identity.py` says the right thing** (seed hash, Update number,
@@ -984,11 +988,11 @@ arena entry in `JUSTIFICATIONS.md`.
   end on the new checkout in minutes. `rebank_all.sh` does not run them --
   its first plug exercise is the sweep at the END, hours in, so a gross
   plug-side breakage found there was findable at the start.
-- Then the rebank, detached so a hung VM cannot take the verdicts with it
-  (the script itself neither detaches nor logs):
-
-      mkdir -p logs
-      setsid nohup ast/rebank_all.sh > logs/rebank-uNN.log 2>&1 < /dev/null &
+- Then the rebank. `ast/rebank_all.sh` detaches itself (nohup, a log
+  under `logs/rebank-<stamp>.log`, the compute lock taken first) so a
+  hung VM cannot take the verdicts with it; run it plainly and tail the
+  log it names. Run it in a sandbox (`./sandbox.sh uNN-rebank`), never in
+  the shared checkout.
 
   Truth arms run cheapest-first and stop on the first failure; a CDX9002 on
   a big rung usually means the deck scale -- the seed's compile-time memory
