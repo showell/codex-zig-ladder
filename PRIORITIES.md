@@ -358,6 +358,27 @@ the fibx-subject chain (sandbox `20260822T014639Z-f24-volume` has the
 subject and the numbers) as the proof: zigemit should get past
 tokenizing on the stock 512 MB stack.
 
+## 1.9 Update 49 is out -- the u49 ceremony, and PR 76's eight reds
+
+**Objective: due diligence (the ceremony) that ends in a hunt (the
+census).** Upstream `bdf0049b` is Update 49 and absorbed PR 76 (Steve,
+2026-08-22). In order, after item 2's verdict lands:
+
+1. Pin branch `u49-rebank` per the README's "The checkout"; the ladder's
+   "Processing a new Update" is the step list. `rebank_all.sh` is ~87
+   minutes; the droplet is the venue for it (item 2.5's prep gap
+   permitting), the laptop otherwise with the cold-agent brief.
+2. Bank `truth/u49`, diff against `truth/u48` -- the bank diff is the
+   Update's artifact, as u48's "Four Moved Truths" was.
+3. The corpus census on the branch natives rebuilt against u49. **The
+   eight reds** -- stringbuilder-test, stats-wrap-test, validation-rules
+   (char-CCE `ea8d51ac`), the carried text-fold-indexed differ, and the
+   three integer-overflow crashes bloom-spread, consistent-hash-balance,
+   particle-spread (`78e8da1b`) -- were all attributed to unabsorbed
+   PR 76. Every one should flip green; a survivor is a new finding and
+   the attribution was wrong for it.
+4. Rebase `zig-plug-heap-unification` onto the u49 pin before sending.
+
 ## 2. The external review, in three batches
 
 **Objective: instrument work.** The review's high findings are wrong-bank
