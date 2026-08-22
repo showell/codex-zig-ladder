@@ -1,0 +1,5342 @@
+tokens 5339
+TypeIdentifier 0+7 L1C1 |Chapter|
+Colon 7+1 L1C8 |:|
+TypeIdentifier 9+5 L1C10 |Lexer|
+Newline 14+1 L1C15
+Newline 15+1 L2C1
+TypeIdentifier 16+7 L3C1 |Section|
+Colon 23+1 L3C8 |:|
+TypeIdentifier 25+9 L3C10 |Character|
+TypeIdentifier 35+4 L3C20 |Code|
+TypeIdentifier 40+9 L3C25 |Constants|
+Newline 49+1 L3C34
+Identifier 52+10 L4C3 |cc-newline|
+Colon 63+1 L4C14 |:|
+TypeIdentifier 65+7 L4C16 |Integer|
+Equals 73+1 L4C24 |=|
+Identifier 75+9 L4C26 |char-code|
+CharLiteral 85+4 L4C36 |'\n'|
+Newline 89+1 L4C40
+Identifier 92+5 L5C3 |cc-cr|
+Colon 98+1 L5C9 |:|
+TypeIdentifier 100+7 L5C11 |Integer|
+Equals 108+1 L5C19 |=|
+Minus 110+1 L5C21 |-|
+IntegerLiteral 111+1 L5C22 |1|
+Newline 112+1 L5C23
+Identifier 115+8 L6C3 |cc-space|
+Colon 124+1 L6C12 |:|
+TypeIdentifier 126+7 L6C14 |Integer|
+Equals 134+1 L6C22 |=|
+Identifier 136+9 L6C24 |char-code|
+CharLiteral 146+3 L6C34 |' '|
+Newline 149+1 L6C37
+Identifier 152+15 L7C3 |cc-double-quote|
+Colon 168+1 L7C19 |:|
+TypeIdentifier 170+7 L7C21 |Integer|
+Equals 178+1 L7C29 |=|
+Identifier 180+9 L7C31 |char-code|
+CharLiteral 190+3 L7C41 |'"'|
+Newline 193+1 L7C44
+Identifier 196+15 L8C3 |cc-single-quote|
+Colon 212+1 L8C19 |:|
+TypeIdentifier 214+7 L8C21 |Integer|
+Equals 222+1 L8C29 |=|
+Identifier 224+9 L8C31 |char-code|
+CharLiteral 234+4 L8C41 |'\''|
+Newline 238+1 L8C45
+Identifier 241+12 L9C3 |cc-ampersand|
+Colon 254+1 L9C16 |:|
+TypeIdentifier 256+7 L9C18 |Integer|
+Equals 264+1 L9C26 |=|
+Identifier 266+9 L9C28 |char-code|
+CharLiteral 276+3 L9C38 |'&'|
+Newline 279+1 L9C41
+Identifier 282+13 L10C3 |cc-left-paren|
+Colon 296+1 L10C17 |:|
+TypeIdentifier 298+7 L10C19 |Integer|
+Equals 306+1 L10C27 |=|
+Identifier 308+9 L10C29 |char-code|
+CharLiteral 318+3 L10C39 |'('|
+Newline 321+1 L10C42
+Identifier 324+14 L11C3 |cc-right-paren|
+Colon 339+1 L11C18 |:|
+TypeIdentifier 341+7 L11C20 |Integer|
+Equals 349+1 L11C28 |=|
+Identifier 351+9 L11C30 |char-code|
+CharLiteral 361+3 L11C40 |')'|
+Newline 364+1 L11C43
+Identifier 367+7 L12C3 |cc-star|
+Colon 375+1 L12C11 |:|
+TypeIdentifier 377+7 L12C13 |Integer|
+Equals 385+1 L12C21 |=|
+Identifier 387+9 L12C23 |char-code|
+CharLiteral 397+3 L12C33 |'*'|
+Newline 400+1 L12C36
+Identifier 403+7 L13C3 |cc-plus|
+Colon 411+1 L13C11 |:|
+TypeIdentifier 413+7 L13C13 |Integer|
+Equals 421+1 L13C21 |=|
+Identifier 423+9 L13C23 |char-code|
+CharLiteral 433+3 L13C33 |'+'|
+Newline 436+1 L13C36
+Identifier 439+8 L14C3 |cc-comma|
+Colon 448+1 L14C12 |:|
+TypeIdentifier 450+7 L14C14 |Integer|
+Equals 458+1 L14C22 |=|
+Identifier 460+9 L14C24 |char-code|
+CharLiteral 470+3 L14C34 |','|
+Newline 473+1 L14C37
+Identifier 476+8 L15C3 |cc-minus|
+Colon 485+1 L15C12 |:|
+TypeIdentifier 487+7 L15C14 |Integer|
+Equals 495+1 L15C22 |=|
+Identifier 497+9 L15C24 |char-code|
+CharLiteral 507+3 L15C34 |'-'|
+Newline 510+1 L15C37
+Identifier 513+6 L16C3 |cc-dot|
+Colon 520+1 L16C10 |:|
+TypeIdentifier 522+7 L16C12 |Integer|
+Equals 530+1 L16C20 |=|
+Identifier 532+9 L16C22 |char-code|
+CharLiteral 542+3 L16C32 |'.'|
+Newline 545+1 L16C35
+Identifier 548+8 L17C3 |cc-slash|
+Colon 557+1 L17C12 |:|
+TypeIdentifier 559+7 L17C14 |Integer|
+Equals 567+1 L17C22 |=|
+Identifier 569+9 L17C24 |char-code|
+CharLiteral 579+3 L17C34 |'/'|
+Newline 582+1 L17C37
+Identifier 585+7 L18C3 |cc-zero|
+Colon 593+1 L18C11 |:|
+TypeIdentifier 595+7 L18C13 |Integer|
+Equals 603+1 L18C21 |=|
+Identifier 605+9 L18C23 |char-code|
+CharLiteral 615+3 L18C33 |'0'|
+Newline 618+1 L18C36
+Identifier 621+7 L19C3 |cc-nine|
+Colon 629+1 L19C11 |:|
+TypeIdentifier 631+7 L19C13 |Integer|
+Equals 639+1 L19C21 |=|
+Identifier 641+9 L19C23 |char-code|
+CharLiteral 651+3 L19C33 |'9'|
+Newline 654+1 L19C36
+Identifier 657+8 L20C3 |cc-colon|
+Colon 666+1 L20C12 |:|
+TypeIdentifier 668+7 L20C14 |Integer|
+Equals 676+1 L20C22 |=|
+Identifier 678+9 L20C24 |char-code|
+CharLiteral 688+3 L20C34 |':'|
+Newline 691+1 L20C37
+Identifier 694+7 L21C3 |cc-less|
+Colon 702+1 L21C11 |:|
+TypeIdentifier 704+7 L21C13 |Integer|
+Equals 712+1 L21C21 |=|
+Identifier 714+9 L21C23 |char-code|
+CharLiteral 724+3 L21C33 |'<'|
+Newline 727+1 L21C36
+Identifier 730+9 L22C3 |cc-equals|
+Colon 740+1 L22C13 |:|
+TypeIdentifier 742+7 L22C15 |Integer|
+Equals 750+1 L22C23 |=|
+Identifier 752+9 L22C25 |char-code|
+CharLiteral 762+3 L22C35 |'='|
+Newline 765+1 L22C38
+Identifier 768+10 L23C3 |cc-greater|
+Colon 779+1 L23C14 |:|
+TypeIdentifier 781+7 L23C16 |Integer|
+Equals 789+1 L23C24 |=|
+Identifier 791+9 L23C26 |char-code|
+CharLiteral 801+3 L23C36 |'>'|
+Newline 804+1 L23C39
+Identifier 807+14 L24C3 |cc-first-upper|
+Colon 822+1 L24C18 |:|
+TypeIdentifier 824+7 L24C20 |Integer|
+Equals 832+1 L24C28 |=|
+Identifier 834+9 L24C30 |char-code|
+CharLiteral 844+3 L24C40 |'E'|
+Newline 847+1 L24C43
+Identifier 850+10 L25C3 |cc-upper-z|
+Colon 861+1 L25C14 |:|
+TypeIdentifier 863+7 L25C16 |Integer|
+Equals 871+1 L25C24 |=|
+Identifier 873+9 L25C26 |char-code|
+CharLiteral 883+3 L25C36 |'Z'|
+Newline 886+1 L25C39
+Identifier 889+15 L26C3 |cc-left-bracket|
+Colon 905+1 L26C19 |:|
+TypeIdentifier 907+7 L26C21 |Integer|
+Equals 915+1 L26C29 |=|
+Identifier 917+9 L26C31 |char-code|
+CharLiteral 927+3 L26C41 |'['|
+Newline 930+1 L26C44
+Identifier 933+12 L27C3 |cc-backslash|
+Colon 946+1 L27C16 |:|
+TypeIdentifier 948+7 L27C18 |Integer|
+Equals 956+1 L27C26 |=|
+Identifier 958+9 L27C28 |char-code|
+CharLiteral 968+4 L27C38 |'\\'|
+Newline 972+1 L27C42
+Identifier 975+16 L28C3 |cc-right-bracket|
+Colon 992+1 L28C20 |:|
+TypeIdentifier 994+7 L28C22 |Integer|
+Equals 1002+1 L28C30 |=|
+Identifier 1004+9 L28C32 |char-code|
+CharLiteral 1014+3 L28C42 |']'|
+Newline 1017+1 L28C45
+Identifier 1020+8 L29C3 |cc-caret|
+Colon 1029+1 L29C12 |:|
+TypeIdentifier 1031+7 L29C14 |Integer|
+Equals 1039+1 L29C22 |=|
+Identifier 1041+9 L29C24 |char-code|
+CharLiteral 1051+3 L29C34 |'^'|
+Newline 1054+1 L29C37
+Identifier 1057+13 L30C3 |cc-underscore|
+Colon 1071+1 L30C17 |:|
+TypeIdentifier 1073+7 L30C19 |Integer|
+Equals 1081+1 L30C27 |=|
+Identifier 1083+9 L30C29 |char-code|
+CharLiteral 1093+3 L30C39 |'_'|
+Newline 1096+1 L30C42
+Identifier 1099+10 L31C3 |cc-lower-a|
+Colon 1110+1 L31C14 |:|
+TypeIdentifier 1112+7 L31C16 |Integer|
+Equals 1120+1 L31C24 |=|
+Identifier 1122+9 L31C26 |char-code|
+CharLiteral 1132+3 L31C36 |'a'|
+Newline 1135+1 L31C39
+Identifier 1138+10 L32C3 |cc-lower-n|
+Colon 1149+1 L32C14 |:|
+TypeIdentifier 1151+7 L32C16 |Integer|
+Equals 1159+1 L32C24 |=|
+Identifier 1161+9 L32C26 |char-code|
+CharLiteral 1171+3 L32C36 |'n'|
+Newline 1174+1 L32C39
+Identifier 1177+10 L33C3 |cc-lower-r|
+Colon 1188+1 L33C14 |:|
+TypeIdentifier 1190+7 L33C16 |Integer|
+Equals 1198+1 L33C24 |=|
+Identifier 1200+9 L33C26 |char-code|
+CharLiteral 1210+3 L33C36 |'r'|
+Newline 1213+1 L33C39
+Identifier 1216+10 L34C3 |cc-lower-t|
+Colon 1227+1 L34C14 |:|
+TypeIdentifier 1229+7 L34C16 |Integer|
+Equals 1237+1 L34C24 |=|
+Identifier 1239+9 L34C26 |char-code|
+CharLiteral 1249+3 L34C36 |'t'|
+Newline 1252+1 L34C39
+Identifier 1255+10 L35C3 |cc-lower-z|
+Colon 1266+1 L35C14 |:|
+TypeIdentifier 1268+7 L35C16 |Integer|
+Equals 1276+1 L35C24 |=|
+Identifier 1278+9 L35C26 |char-code|
+CharLiteral 1288+3 L35C36 |'z'|
+Newline 1291+1 L35C39
+Identifier 1294+7 L36C3 |cc-hash|
+Colon 1302+1 L36C11 |:|
+TypeIdentifier 1304+7 L36C13 |Integer|
+Equals 1312+1 L36C21 |=|
+Identifier 1314+9 L36C23 |char-code|
+CharLiteral 1324+3 L36C33 |'#'|
+Newline 1327+1 L36C36
+Identifier 1330+13 L37C3 |cc-left-brace|
+Colon 1344+1 L37C17 |:|
+TypeIdentifier 1346+7 L37C19 |Integer|
+Equals 1354+1 L37C27 |=|
+Identifier 1356+9 L37C29 |char-code|
+CharLiteral 1366+3 L37C39 |'{'|
+Newline 1369+1 L37C42
+Identifier 1372+7 L38C3 |cc-pipe|
+Colon 1380+1 L38C11 |:|
+TypeIdentifier 1382+7 L38C13 |Integer|
+Equals 1390+1 L38C21 |=|
+Identifier 1392+9 L38C23 |char-code|
+CharLiteral 1402+3 L38C33 |'|'|
+Newline 1405+1 L38C36
+Identifier 1408+14 L39C3 |cc-right-brace|
+Colon 1423+1 L39C18 |:|
+TypeIdentifier 1425+7 L39C20 |Integer|
+Equals 1433+1 L39C28 |=|
+Identifier 1435+9 L39C30 |char-code|
+CharLiteral 1445+3 L39C40 |'}'|
+Newline 1448+1 L39C43
+Identifier 1451+8 L40C3 |cc-tilde|
+Colon 1460+1 L40C12 |:|
+TypeIdentifier 1462+7 L40C14 |Integer|
+Equals 1470+1 L40C22 |=|
+Identifier 1472+9 L40C24 |char-code|
+CharLiteral 1482+3 L40C34 |'~'|
+Newline 1485+1 L40C37
+Newline 1486+1 L41C1
+TypeIdentifier 1487+7 L42C1 |Section|
+Colon 1494+1 L42C8 |:|
+TypeIdentifier 1496+9 L42C10 |Character|
+TypeIdentifier 1506+14 L42C20 |Classification|
+LeftParen 1521+1 L42C35 |(|
+TypeIdentifier 1522+7 L42C36 |Integer|
+RightParen 1529+1 L42C43 |)|
+Newline 1530+1 L42C44
+Identifier 1533+14 L43C3 |is-letter-code|
+Colon 1548+1 L43C18 |:|
+TypeIdentifier 1550+7 L43C20 |Integer|
+Arrow 1558+2 L43C28 |->|
+TypeIdentifier 1561+7 L43C31 |Boolean|
+Newline 1568+1 L43C38
+Identifier 1571+14 L44C3 |is-letter-code|
+LeftParen 1586+1 L44C18 |(|
+Identifier 1587+1 L44C19 |c|
+RightParen 1588+1 L44C20 |)|
+Equals 1590+1 L44C22 |=|
+Identifier 1592+9 L44C24 |is-letter|
+LeftParen 1602+1 L44C34 |(|
+Identifier 1603+12 L44C35 |code-to-char|
+Identifier 1616+1 L44C48 |c|
+RightParen 1617+1 L44C49 |)|
+Newline 1618+1 L44C50
+Newline 1619+1 L45C1
+Identifier 1622+13 L46C3 |is-digit-code|
+Colon 1636+1 L46C17 |:|
+TypeIdentifier 1638+7 L46C19 |Integer|
+Arrow 1646+2 L46C27 |->|
+TypeIdentifier 1649+7 L46C30 |Boolean|
+Newline 1656+1 L46C37
+Identifier 1659+13 L47C3 |is-digit-code|
+LeftParen 1673+1 L47C17 |(|
+Identifier 1674+1 L47C18 |c|
+RightParen 1675+1 L47C19 |)|
+Equals 1677+1 L47C21 |=|
+Identifier 1679+8 L47C23 |is-digit|
+LeftParen 1688+1 L47C32 |(|
+Identifier 1689+12 L47C33 |code-to-char|
+Identifier 1702+1 L47C46 |c|
+RightParen 1703+1 L47C47 |)|
+Newline 1704+1 L47C48
+Newline 1705+1 L48C1
+Identifier 1708+14 L49C3 |is-tier1-start|
+Colon 1723+1 L49C18 |:|
+TypeIdentifier 1725+7 L49C20 |Integer|
+Arrow 1733+2 L49C28 |->|
+TypeIdentifier 1736+7 L49C31 |Boolean|
+Newline 1743+1 L49C38
+Identifier 1746+14 L50C3 |is-tier1-start|
+LeftParen 1761+1 L50C18 |(|
+Identifier 1762+1 L50C19 |b|
+RightParen 1763+1 L50C20 |)|
+Equals 1765+1 L50C22 |=|
+IfKeyword 1767+2 L50C24 |if|
+Identifier 1770+7 L50C27 |bit-and|
+Identifier 1778+1 L50C35 |b|
+IntegerLiteral 1780+3 L50C37 |224|
+DoubleEquals 1784+2 L50C41 |==|
+IntegerLiteral 1787+3 L50C44 |192|
+ThenKeyword 1791+4 L50C48 |then|
+TrueKeyword 1796+4 L50C53 |True|
+ElseKeyword 1801+4 L50C58 |else|
+FalseKeyword 1806+5 L50C63 |False|
+Newline 1811+1 L50C68
+Newline 1812+1 L51C1
+Identifier 1815+13 L52C3 |cce-decode-cp|
+Colon 1829+1 L52C17 |:|
+TypeIdentifier 1831+4 L52C19 |Text|
+Comma 1835+1 L52C23 |,|
+TypeIdentifier 1837+7 L52C25 |Integer|
+Arrow 1845+2 L52C33 |->|
+TypeIdentifier 1848+7 L52C36 |Integer|
+Newline 1855+1 L52C43
+Identifier 1858+13 L53C3 |cce-decode-cp|
+LeftParen 1872+1 L53C17 |(|
+Identifier 1873+1 L53C18 |s|
+RightParen 1874+1 L53C19 |)|
+LeftParen 1876+1 L53C21 |(|
+Identifier 1877+3 L53C22 |off|
+RightParen 1880+1 L53C25 |)|
+Equals 1882+1 L53C27 |=|
+Newline 1883+1 L53C28
+LetKeyword 1888+3 L54C5 |let|
+Identifier 1892+2 L54C9 |b0|
+Equals 1895+1 L54C12 |=|
+Identifier 1897+12 L54C14 |char-code-at|
+Identifier 1910+1 L54C27 |s|
+Identifier 1912+3 L54C29 |off|
+Newline 1915+1 L54C32
+InKeyword 1920+2 L55C5 |in|
+IfKeyword 1923+2 L55C8 |if|
+Identifier 1926+7 L55C11 |bit-and|
+Identifier 1934+2 L55C19 |b0|
+IntegerLiteral 1937+3 L55C22 |224|
+DoubleEquals 1941+2 L55C26 |==|
+IntegerLiteral 1944+3 L55C29 |192|
+ThenKeyword 1948+4 L55C33 |then|
+Newline 1952+1 L55C37
+LetKeyword 1959+3 L56C7 |let|
+Identifier 1963+2 L56C11 |b1|
+Equals 1966+1 L56C14 |=|
+Identifier 1968+12 L56C16 |char-code-at|
+Identifier 1981+1 L56C29 |s|
+LeftParen 1983+1 L56C31 |(|
+Identifier 1984+3 L56C32 |off|
+Plus 1988+1 L56C36 |+|
+IntegerLiteral 1990+1 L56C38 |1|
+RightParen 1991+1 L56C39 |)|
+Newline 1992+1 L56C40
+InKeyword 1999+2 L57C7 |in|
+IntegerLiteral 2002+3 L57C10 |128|
+Plus 2006+1 L57C14 |+|
+Identifier 2008+7 L57C16 |bit-shl|
+LeftParen 2016+1 L57C24 |(|
+Identifier 2017+7 L57C25 |bit-and|
+Identifier 2025+2 L57C33 |b0|
+IntegerLiteral 2028+2 L57C36 |31|
+RightParen 2030+1 L57C38 |)|
+IntegerLiteral 2032+1 L57C40 |6|
+Plus 2034+1 L57C42 |+|
+Identifier 2036+7 L57C44 |bit-and|
+Identifier 2044+2 L57C52 |b1|
+IntegerLiteral 2047+2 L57C55 |63|
+Newline 2049+1 L57C57
+ElseKeyword 2054+4 L58C5 |else|
+IfKeyword 2059+2 L58C10 |if|
+Identifier 2062+7 L58C13 |bit-and|
+Identifier 2070+2 L58C21 |b0|
+IntegerLiteral 2073+3 L58C24 |240|
+DoubleEquals 2077+2 L58C28 |==|
+IntegerLiteral 2080+3 L58C31 |224|
+ThenKeyword 2084+4 L58C35 |then|
+Newline 2088+1 L58C39
+LetKeyword 2095+3 L59C7 |let|
+Identifier 2099+2 L59C11 |b1|
+Equals 2102+1 L59C14 |=|
+Identifier 2104+12 L59C16 |char-code-at|
+Identifier 2117+1 L59C29 |s|
+LeftParen 2119+1 L59C31 |(|
+Identifier 2120+3 L59C32 |off|
+Plus 2124+1 L59C36 |+|
+IntegerLiteral 2126+1 L59C38 |1|
+RightParen 2127+1 L59C39 |)|
+Newline 2128+1 L59C40
+InKeyword 2135+2 L60C7 |in|
+LetKeyword 2138+3 L60C10 |let|
+Identifier 2142+2 L60C14 |b2|
+Equals 2145+1 L60C17 |=|
+Identifier 2147+12 L60C19 |char-code-at|
+Identifier 2160+1 L60C32 |s|
+LeftParen 2162+1 L60C34 |(|
+Identifier 2163+3 L60C35 |off|
+Plus 2167+1 L60C39 |+|
+IntegerLiteral 2169+1 L60C41 |2|
+RightParen 2170+1 L60C42 |)|
+Newline 2171+1 L60C43
+InKeyword 2178+2 L61C7 |in|
+IntegerLiteral 2181+4 L61C10 |2176|
+Plus 2186+1 L61C15 |+|
+Identifier 2188+7 L61C17 |bit-shl|
+LeftParen 2196+1 L61C25 |(|
+Identifier 2197+7 L61C26 |bit-and|
+Identifier 2205+2 L61C34 |b0|
+IntegerLiteral 2208+2 L61C37 |15|
+RightParen 2210+1 L61C39 |)|
+IntegerLiteral 2212+2 L61C41 |12|
+Plus 2215+1 L61C44 |+|
+Identifier 2217+7 L61C46 |bit-shl|
+LeftParen 2225+1 L61C54 |(|
+Identifier 2226+7 L61C55 |bit-and|
+Identifier 2234+2 L61C63 |b1|
+IntegerLiteral 2237+2 L61C66 |63|
+RightParen 2239+1 L61C68 |)|
+IntegerLiteral 2241+1 L61C70 |6|
+Plus 2243+1 L61C72 |+|
+Identifier 2245+7 L61C74 |bit-and|
+Identifier 2253+2 L61C82 |b2|
+IntegerLiteral 2256+2 L61C85 |63|
+Newline 2258+1 L61C87
+ElseKeyword 2263+4 L62C5 |else|
+Identifier 2268+2 L62C10 |b0|
+Newline 2270+1 L62C12
+Newline 2271+1 L63C1
+Identifier 2274+12 L64C3 |cce-byte-len|
+Colon 2287+1 L64C16 |:|
+TypeIdentifier 2289+7 L64C18 |Integer|
+Arrow 2297+2 L64C26 |->|
+TypeIdentifier 2300+7 L64C29 |Integer|
+Newline 2307+1 L64C36
+Identifier 2310+12 L65C3 |cce-byte-len|
+LeftParen 2323+1 L65C16 |(|
+Identifier 2324+1 L65C17 |b|
+RightParen 2325+1 L65C18 |)|
+Equals 2327+1 L65C20 |=|
+Newline 2328+1 L65C21
+IfKeyword 2333+2 L66C5 |if|
+Identifier 2336+7 L66C8 |bit-and|
+Identifier 2344+1 L66C16 |b|
+IntegerLiteral 2346+3 L66C18 |128|
+DoubleEquals 2350+2 L66C22 |==|
+IntegerLiteral 2353+1 L66C25 |0|
+ThenKeyword 2355+4 L66C27 |then|
+IntegerLiteral 2360+1 L66C32 |1|
+Newline 2361+1 L66C33
+ElseKeyword 2366+4 L67C5 |else|
+IfKeyword 2371+2 L67C10 |if|
+Identifier 2374+7 L67C13 |bit-and|
+Identifier 2382+1 L67C21 |b|
+IntegerLiteral 2384+3 L67C23 |224|
+DoubleEquals 2388+2 L67C27 |==|
+IntegerLiteral 2391+3 L67C30 |192|
+ThenKeyword 2395+4 L67C34 |then|
+IntegerLiteral 2400+1 L67C39 |2|
+Newline 2401+1 L67C40
+ElseKeyword 2406+4 L68C5 |else|
+IfKeyword 2411+2 L68C10 |if|
+Identifier 2414+7 L68C13 |bit-and|
+Identifier 2422+1 L68C21 |b|
+IntegerLiteral 2424+3 L68C23 |240|
+DoubleEquals 2428+2 L68C27 |==|
+IntegerLiteral 2431+3 L68C30 |224|
+ThenKeyword 2435+4 L68C34 |then|
+IntegerLiteral 2440+1 L68C39 |3|
+Newline 2441+1 L68C40
+ElseKeyword 2446+4 L69C5 |else|
+IntegerLiteral 2451+1 L69C10 |4|
+Newline 2452+1 L69C11
+Newline 2453+1 L70C1
+Identifier 2456+18 L71C3 |is-tier1-letter-cp|
+Colon 2475+1 L71C22 |:|
+TypeIdentifier 2477+7 L71C24 |Integer|
+Arrow 2485+2 L71C32 |->|
+TypeIdentifier 2488+7 L71C35 |Boolean|
+Newline 2495+1 L71C42
+Identifier 2498+18 L72C3 |is-tier1-letter-cp|
+LeftParen 2517+1 L72C22 |(|
+Identifier 2518+2 L72C23 |cp|
+RightParen 2520+1 L72C25 |)|
+Equals 2522+1 L72C27 |=|
+Newline 2523+1 L72C28
+LetKeyword 2528+3 L73C5 |let|
+Identifier 2532+1 L73C9 |v|
+Equals 2534+1 L73C11 |=|
+Identifier 2536+2 L73C13 |cp|
+Minus 2539+1 L73C16 |-|
+IntegerLiteral 2541+3 L73C18 |128|
+Newline 2544+1 L73C21
+InKeyword 2549+2 L74C5 |in|
+IfKeyword 2552+2 L74C8 |if|
+Identifier 2555+1 L74C11 |v|
+LessThan 2557+1 L74C13 |<|
+IntegerLiteral 2559+3 L74C15 |256|
+ThenKeyword 2563+4 L74C19 |then|
+TrueKeyword 2568+4 L74C24 |True|
+Newline 2572+1 L74C28
+ElseKeyword 2577+4 L75C5 |else|
+IfKeyword 2582+2 L75C10 |if|
+Identifier 2585+1 L75C13 |v|
+LessThan 2587+1 L75C15 |<|
+IntegerLiteral 2589+3 L75C17 |896|
+ThenKeyword 2593+4 L75C21 |then|
+TrueKeyword 2598+4 L75C26 |True|
+Newline 2602+1 L75C30
+ElseKeyword 2607+4 L76C5 |else|
+FalseKeyword 2612+5 L76C10 |False|
+Newline 2617+1 L76C15
+Newline 2618+1 L77C1
+TypeIdentifier 2619+7 L78C1 |Section|
+Colon 2626+1 L78C8 |:|
+TypeIdentifier 2628+5 L78C10 |Lexer|
+TypeIdentifier 2634+5 L78C16 |State|
+Newline 2639+1 L78C21
+MutableKeyword 2642+7 L79C3 |mutable|
+TypeIdentifier 2650+8 L79C11 |LexState|
+Equals 2659+1 L79C20 |=|
+RecordKeyword 2661+6 L79C22 |record|
+LeftBrace 2668+1 L79C29 |{|
+Newline 2669+1 L79C30
+Identifier 2673+6 L80C4 |source|
+Colon 2680+1 L80C11 |:|
+TypeIdentifier 2682+4 L80C13 |Text|
+Comma 2686+1 L80C17 |,|
+Newline 2687+1 L80C18
+Identifier 2691+6 L81C4 |offset|
+Colon 2698+1 L81C11 |:|
+TypeIdentifier 2700+7 L81C13 |Integer|
+BetweenKeyword 2708+7 L81C21 |between|
+IntegerLiteral 2716+1 L81C29 |0|
+AndKeyword 2718+3 L81C31 |and|
+IntegerLiteral 2722+10 L81C35 |4294967295|
+Comma 2732+1 L81C45 |,|
+Newline 2733+1 L81C46
+Identifier 2737+4 L82C4 |line|
+Colon 2742+1 L82C9 |:|
+TypeIdentifier 2744+7 L82C11 |Integer|
+BetweenKeyword 2752+7 L82C19 |between|
+IntegerLiteral 2760+1 L82C27 |0|
+AndKeyword 2762+3 L82C29 |and|
+IntegerLiteral 2766+6 L82C33 |131071|
+Comma 2772+1 L82C39 |,|
+Newline 2773+1 L82C40
+Identifier 2777+6 L83C4 |column|
+Colon 2784+1 L83C11 |:|
+TypeIdentifier 2786+7 L83C13 |Integer|
+BetweenKeyword 2794+7 L83C21 |between|
+IntegerLiteral 2802+1 L83C29 |0|
+AndKeyword 2804+3 L83C31 |and|
+IntegerLiteral 2808+10 L83C35 |4294967295|
+Comma 2818+1 L83C45 |,|
+Newline 2819+1 L83C46
+Identifier 2823+7 L84C4 |file-id|
+Colon 2831+1 L84C12 |:|
+TypeIdentifier 2833+7 L84C14 |Integer|
+BetweenKeyword 2841+7 L84C22 |between|
+IntegerLiteral 2849+1 L84C30 |0|
+AndKeyword 2851+3 L84C32 |and|
+IntegerLiteral 2855+5 L84C36 |65535|
+Comma 2860+1 L84C41 |,|
+Newline 2861+1 L84C42
+Identifier 2865+6 L85C4 |errors|
+Colon 2872+1 L85C11 |:|
+TypeIdentifier 2874+10 L85C13 |LinkedList|
+TypeIdentifier 2885+10 L85C24 |Diagnostic|
+Comma 2895+1 L85C34 |,|
+Newline 2896+1 L85C35
+Identifier 2900+10 L86C4 |prose-mode|
+Colon 2911+1 L86C15 |:|
+TypeIdentifier 2913+7 L86C17 |Boolean|
+Newline 2920+1 L86C24
+RightBrace 2923+1 L87C3 |}|
+Newline 2924+1 L87C4
+Newline 2925+1 L88C1
+Identifier 2928+14 L89C3 |make-lex-state|
+Colon 2943+1 L89C18 |:|
+TypeIdentifier 2945+4 L89C20 |Text|
+Comma 2949+1 L89C24 |,|
+TypeIdentifier 2951+7 L89C26 |Integer|
+BetweenKeyword 2959+7 L89C34 |between|
+IntegerLiteral 2967+1 L89C42 |0|
+AndKeyword 2969+3 L89C44 |and|
+IntegerLiteral 2973+5 L89C48 |65535|
+Comma 2978+1 L89C53 |,|
+TypeIdentifier 2980+10 L89C55 |LinkedList|
+TypeIdentifier 2991+10 L89C66 |Diagnostic|
+Arrow 3002+2 L89C77 |->|
+TypeIdentifier 3005+8 L89C80 |LexState|
+Newline 3013+1 L89C88
+Identifier 3016+14 L90C3 |make-lex-state|
+LeftParen 3031+1 L90C18 |(|
+Identifier 3032+3 L90C19 |src|
+RightParen 3035+1 L90C22 |)|
+LeftParen 3037+1 L90C24 |(|
+Identifier 3038+3 L90C25 |fid|
+RightParen 3041+1 L90C28 |)|
+LeftParen 3043+1 L90C30 |(|
+Identifier 3044+10 L90C31 |pre-errors|
+RightParen 3054+1 L90C41 |)|
+Equals 3056+1 L90C43 |=|
+Newline 3057+1 L90C44
+TypeIdentifier 3061+8 L91C4 |LexState|
+LeftBrace 3070+1 L91C13 |{|
+Newline 3071+1 L91C14
+Identifier 3076+6 L92C5 |source|
+Equals 3083+1 L92C12 |=|
+Identifier 3085+3 L92C14 |src|
+Comma 3088+1 L92C17 |,|
+Newline 3089+1 L92C18
+Identifier 3094+6 L93C5 |offset|
+Equals 3101+1 L93C12 |=|
+IntegerLiteral 3103+1 L93C14 |0|
+Comma 3104+1 L93C15 |,|
+Newline 3105+1 L93C16
+Identifier 3110+4 L94C5 |line|
+Equals 3115+1 L94C10 |=|
+IntegerLiteral 3117+1 L94C12 |1|
+Comma 3118+1 L94C13 |,|
+Newline 3119+1 L94C14
+Identifier 3124+6 L95C5 |column|
+Equals 3131+1 L95C12 |=|
+IntegerLiteral 3133+1 L95C14 |1|
+Comma 3134+1 L95C15 |,|
+Newline 3135+1 L95C16
+Identifier 3140+7 L96C5 |file-id|
+Equals 3148+1 L96C13 |=|
+Identifier 3150+3 L96C15 |fid|
+Comma 3153+1 L96C18 |,|
+Newline 3154+1 L96C19
+Identifier 3159+6 L97C5 |errors|
+Equals 3166+1 L97C12 |=|
+Identifier 3168+10 L97C14 |pre-errors|
+Comma 3178+1 L97C24 |,|
+Newline 3179+1 L97C25
+Identifier 3184+10 L98C5 |prose-mode|
+Equals 3195+1 L98C16 |=|
+FalseKeyword 3197+5 L98C18 |False|
+Newline 3202+1 L98C23
+RightBrace 3206+1 L99C4 |}|
+Newline 3207+1 L99C5
+Newline 3208+1 L100C1
+Identifier 3211+20 L101C3 |make-lex-state-prose|
+Colon 3232+1 L101C24 |:|
+TypeIdentifier 3234+4 L101C26 |Text|
+Comma 3238+1 L101C30 |,|
+TypeIdentifier 3240+7 L101C32 |Integer|
+BetweenKeyword 3248+7 L101C40 |between|
+IntegerLiteral 3256+1 L101C48 |0|
+AndKeyword 3258+3 L101C50 |and|
+IntegerLiteral 3262+5 L101C54 |65535|
+Comma 3267+1 L101C59 |,|
+TypeIdentifier 3269+10 L101C61 |LinkedList|
+TypeIdentifier 3280+10 L101C72 |Diagnostic|
+Comma 3290+1 L101C82 |,|
+TypeIdentifier 3292+7 L101C84 |Boolean|
+Arrow 3300+2 L101C92 |->|
+TypeIdentifier 3303+8 L101C95 |LexState|
+Newline 3311+1 L101C103
+Identifier 3314+20 L102C3 |make-lex-state-prose|
+LeftParen 3335+1 L102C24 |(|
+Identifier 3336+3 L102C25 |src|
+RightParen 3339+1 L102C28 |)|
+LeftParen 3341+1 L102C30 |(|
+Identifier 3342+3 L102C31 |fid|
+RightParen 3345+1 L102C34 |)|
+LeftParen 3347+1 L102C36 |(|
+Identifier 3348+10 L102C37 |pre-errors|
+RightParen 3358+1 L102C47 |)|
+LeftParen 3360+1 L102C49 |(|
+Identifier 3361+5 L102C50 |prose|
+RightParen 3366+1 L102C55 |)|
+Equals 3368+1 L102C57 |=|
+Newline 3369+1 L102C58
+TypeIdentifier 3373+8 L103C4 |LexState|
+LeftBrace 3382+1 L103C13 |{|
+Newline 3383+1 L103C14
+Identifier 3388+6 L104C5 |source|
+Equals 3395+1 L104C12 |=|
+Identifier 3397+3 L104C14 |src|
+Comma 3400+1 L104C17 |,|
+Newline 3401+1 L104C18
+Identifier 3406+6 L105C5 |offset|
+Equals 3413+1 L105C12 |=|
+IntegerLiteral 3415+1 L105C14 |0|
+Comma 3416+1 L105C15 |,|
+Newline 3417+1 L105C16
+Identifier 3422+4 L106C5 |line|
+Equals 3427+1 L106C10 |=|
+IntegerLiteral 3429+1 L106C12 |1|
+Comma 3430+1 L106C13 |,|
+Newline 3431+1 L106C14
+Identifier 3436+6 L107C5 |column|
+Equals 3443+1 L107C12 |=|
+IntegerLiteral 3445+1 L107C14 |1|
+Comma 3446+1 L107C15 |,|
+Newline 3447+1 L107C16
+Identifier 3452+7 L108C5 |file-id|
+Equals 3460+1 L108C13 |=|
+Identifier 3462+3 L108C15 |fid|
+Comma 3465+1 L108C18 |,|
+Newline 3466+1 L108C19
+Identifier 3471+6 L109C5 |errors|
+Equals 3478+1 L109C12 |=|
+Identifier 3480+10 L109C14 |pre-errors|
+Comma 3490+1 L109C24 |,|
+Newline 3491+1 L109C25
+Identifier 3496+10 L110C5 |prose-mode|
+Equals 3507+1 L110C16 |=|
+Identifier 3509+5 L110C18 |prose|
+Newline 3514+1 L110C23
+RightBrace 3518+1 L111C4 |}|
+Newline 3519+1 L111C5
+Newline 3520+1 L112C1
+Identifier 3523+13 L113C3 |add-lex-error|
+Colon 3537+1 L113C17 |:|
+TypeIdentifier 3539+8 L113C19 |LexState|
+Comma 3547+1 L113C27 |,|
+TypeIdentifier 3549+7 L113C29 |Integer|
+BetweenKeyword 3557+7 L113C37 |between|
+IntegerLiteral 3565+1 L113C45 |0|
+AndKeyword 3567+3 L113C47 |and|
+IntegerLiteral 3571+5 L113C51 |65535|
+Comma 3576+1 L113C56 |,|
+TypeIdentifier 3578+4 L113C58 |Text|
+Comma 3582+1 L113C62 |,|
+TypeIdentifier 3584+10 L113C64 |SourceSpan|
+Arrow 3595+2 L113C75 |->|
+TypeIdentifier 3598+8 L113C78 |LexState|
+Newline 3606+1 L113C86
+Identifier 3609+13 L114C3 |add-lex-error|
+LeftParen 3623+1 L114C17 |(|
+Identifier 3624+2 L114C18 |st|
+RightParen 3626+1 L114C20 |)|
+LeftParen 3628+1 L114C22 |(|
+Identifier 3629+4 L114C23 |code|
+RightParen 3633+1 L114C27 |)|
+LeftParen 3635+1 L114C29 |(|
+Identifier 3636+3 L114C30 |msg|
+RightParen 3639+1 L114C33 |)|
+LeftParen 3641+1 L114C35 |(|
+Identifier 3642+4 L114C36 |span|
+RightParen 3646+1 L114C40 |)|
+Equals 3648+1 L114C42 |=|
+Newline 3649+1 L114C43
+LetKeyword 3653+3 L115C4 |let|
+Identifier 3657+5 L115C8 |__seq|
+Equals 3663+1 L115C14 |=|
+Identifier 3665+2 L115C16 |st|
+Dot 3667+1 L115C18 |.|
+Identifier 3668+6 L115C19 |errors|
+Equals 3675+1 L115C26 |=|
+Identifier 3677+18 L115C28 |__linked-list-push|
+LeftParen 3696+1 L115C47 |(|
+Identifier 3697+2 L115C48 |st|
+Dot 3699+1 L115C50 |.|
+Identifier 3700+6 L115C51 |errors|
+RightParen 3706+1 L115C57 |)|
+LeftParen 3708+1 L115C59 |(|
+Identifier 3709+10 L115C60 |make-error|
+Identifier 3720+4 L115C71 |code|
+Identifier 3725+3 L115C76 |msg|
+Identifier 3729+4 L115C80 |span|
+RightParen 3733+1 L115C84 |)|
+Newline 3734+1 L115C85
+InKeyword 3738+2 L116C4 |in|
+Identifier 3741+2 L116C7 |st|
+Newline 3743+1 L116C9
+Newline 3744+1 L117C1
+Identifier 3747+9 L118C3 |is-at-end|
+Colon 3757+1 L118C13 |:|
+TypeIdentifier 3759+8 L118C15 |LexState|
+Arrow 3768+2 L118C24 |->|
+TypeIdentifier 3771+7 L118C27 |Boolean|
+Newline 3778+1 L118C34
+Identifier 3781+9 L119C3 |is-at-end|
+LeftParen 3791+1 L119C13 |(|
+Identifier 3792+2 L119C14 |st|
+RightParen 3794+1 L119C16 |)|
+Equals 3796+1 L119C18 |=|
+Newline 3797+1 L119C19
+Identifier 3801+2 L120C4 |st|
+Dot 3803+1 L120C6 |.|
+Identifier 3804+6 L120C7 |offset|
+GreaterOrEqual 3811+2 L120C14 |>=|
+Identifier 3814+11 L120C17 |text-length|
+LeftParen 3826+1 L120C29 |(|
+Identifier 3827+2 L120C30 |st|
+Dot 3829+1 L120C32 |.|
+Identifier 3830+6 L120C33 |source|
+RightParen 3836+1 L120C39 |)|
+Newline 3837+1 L120C40
+Newline 3838+1 L121C1
+Identifier 3841+9 L122C3 |peek-code|
+Colon 3851+1 L122C13 |:|
+TypeIdentifier 3853+8 L122C15 |LexState|
+Arrow 3862+2 L122C24 |->|
+TypeIdentifier 3865+7 L122C27 |Integer|
+Newline 3872+1 L122C34
+Identifier 3875+9 L123C3 |peek-code|
+LeftParen 3885+1 L123C13 |(|
+Identifier 3886+2 L123C14 |st|
+RightParen 3888+1 L123C16 |)|
+Equals 3890+1 L123C18 |=|
+Newline 3891+1 L123C19
+IfKeyword 3895+2 L124C4 |if|
+Identifier 3898+9 L124C7 |is-at-end|
+Identifier 3908+2 L124C17 |st|
+ThenKeyword 3911+4 L124C20 |then|
+IntegerLiteral 3916+1 L124C25 |0|
+Newline 3917+1 L124C26
+ElseKeyword 3921+4 L125C4 |else|
+Identifier 3926+12 L125C9 |char-code-at|
+LeftParen 3939+1 L125C22 |(|
+Identifier 3940+2 L125C23 |st|
+Dot 3942+1 L125C25 |.|
+Identifier 3943+6 L125C26 |source|
+RightParen 3949+1 L125C32 |)|
+LeftParen 3951+1 L125C34 |(|
+Identifier 3952+2 L125C35 |st|
+Dot 3954+1 L125C37 |.|
+Identifier 3955+6 L125C38 |offset|
+RightParen 3961+1 L125C44 |)|
+Newline 3962+1 L125C45
+Newline 3963+1 L126C1
+Identifier 3966+12 L127C3 |advance-char|
+Colon 3979+1 L127C16 |:|
+TypeIdentifier 3981+8 L127C18 |LexState|
+Arrow 3990+2 L127C27 |->|
+TypeIdentifier 3993+8 L127C30 |LexState|
+Newline 4001+1 L127C38
+Identifier 4004+12 L128C3 |advance-char|
+LeftParen 4017+1 L128C16 |(|
+Identifier 4018+2 L128C17 |st|
+RightParen 4020+1 L128C19 |)|
+Equals 4022+1 L128C21 |=|
+Newline 4023+1 L128C22
+IfKeyword 4027+2 L129C4 |if|
+Identifier 4030+9 L129C7 |peek-code|
+Identifier 4040+2 L129C17 |st|
+DoubleEquals 4043+2 L129C20 |==|
+Identifier 4046+10 L129C23 |cc-newline|
+ThenKeyword 4057+4 L129C34 |then|
+TypeIdentifier 4062+8 L129C39 |LexState|
+LeftBrace 4071+1 L129C48 |{|
+Newline 4072+1 L129C49
+Identifier 4078+6 L130C6 |source|
+Equals 4085+1 L130C13 |=|
+Identifier 4087+2 L130C15 |st|
+Dot 4089+1 L130C17 |.|
+Identifier 4090+6 L130C18 |source|
+Comma 4096+1 L130C24 |,|
+Newline 4097+1 L130C25
+Identifier 4103+6 L131C6 |offset|
+Equals 4110+1 L131C13 |=|
+Identifier 4112+2 L131C15 |st|
+Dot 4114+1 L131C17 |.|
+Identifier 4115+6 L131C18 |offset|
+Plus 4122+1 L131C25 |+|
+IntegerLiteral 4124+1 L131C27 |1|
+Comma 4125+1 L131C28 |,|
+Newline 4126+1 L131C29
+Identifier 4132+4 L132C6 |line|
+Equals 4137+1 L132C11 |=|
+Identifier 4139+2 L132C13 |st|
+Dot 4141+1 L132C15 |.|
+Identifier 4142+4 L132C16 |line|
+Plus 4147+1 L132C21 |+|
+IntegerLiteral 4149+1 L132C23 |1|
+Comma 4150+1 L132C24 |,|
+Newline 4151+1 L132C25
+Identifier 4157+6 L133C6 |column|
+Equals 4164+1 L133C13 |=|
+IntegerLiteral 4166+1 L133C15 |1|
+Comma 4167+1 L133C16 |,|
+Newline 4168+1 L133C17
+Identifier 4174+7 L134C6 |file-id|
+Equals 4182+1 L134C14 |=|
+Identifier 4184+2 L134C16 |st|
+Dot 4186+1 L134C18 |.|
+Identifier 4187+7 L134C19 |file-id|
+Comma 4194+1 L134C26 |,|
+Newline 4195+1 L134C27
+Identifier 4201+6 L135C6 |errors|
+Equals 4208+1 L135C13 |=|
+Identifier 4210+2 L135C15 |st|
+Dot 4212+1 L135C17 |.|
+Identifier 4213+6 L135C18 |errors|
+Comma 4219+1 L135C24 |,|
+Newline 4220+1 L135C25
+Identifier 4226+10 L136C6 |prose-mode|
+Equals 4237+1 L136C17 |=|
+Identifier 4239+2 L136C19 |st|
+Dot 4241+1 L136C21 |.|
+Identifier 4242+10 L136C22 |prose-mode|
+Newline 4252+1 L136C32
+RightBrace 4257+1 L137C5 |}|
+Newline 4258+1 L137C6
+ElseKeyword 4263+4 L138C5 |else|
+TypeIdentifier 4268+8 L138C10 |LexState|
+LeftBrace 4277+1 L138C19 |{|
+Newline 4278+1 L138C20
+Identifier 4284+6 L139C6 |source|
+Equals 4291+1 L139C13 |=|
+Identifier 4293+2 L139C15 |st|
+Dot 4295+1 L139C17 |.|
+Identifier 4296+6 L139C18 |source|
+Comma 4302+1 L139C24 |,|
+Newline 4303+1 L139C25
+Identifier 4309+6 L140C6 |offset|
+Equals 4316+1 L140C13 |=|
+Identifier 4318+2 L140C15 |st|
+Dot 4320+1 L140C17 |.|
+Identifier 4321+6 L140C18 |offset|
+Plus 4328+1 L140C25 |+|
+IntegerLiteral 4330+1 L140C27 |1|
+Comma 4331+1 L140C28 |,|
+Newline 4332+1 L140C29
+Identifier 4338+4 L141C6 |line|
+Equals 4343+1 L141C11 |=|
+Identifier 4345+2 L141C13 |st|
+Dot 4347+1 L141C15 |.|
+Identifier 4348+4 L141C16 |line|
+Comma 4352+1 L141C20 |,|
+Newline 4353+1 L141C21
+Identifier 4359+6 L142C6 |column|
+Equals 4366+1 L142C13 |=|
+Identifier 4368+2 L142C15 |st|
+Dot 4370+1 L142C17 |.|
+Identifier 4371+6 L142C18 |column|
+Plus 4378+1 L142C25 |+|
+IntegerLiteral 4380+1 L142C27 |1|
+Comma 4381+1 L142C28 |,|
+Newline 4382+1 L142C29
+Identifier 4388+7 L143C6 |file-id|
+Equals 4396+1 L143C14 |=|
+Identifier 4398+2 L143C16 |st|
+Dot 4400+1 L143C18 |.|
+Identifier 4401+7 L143C19 |file-id|
+Comma 4408+1 L143C26 |,|
+Newline 4409+1 L143C27
+Identifier 4415+6 L144C6 |errors|
+Equals 4422+1 L144C13 |=|
+Identifier 4424+2 L144C15 |st|
+Dot 4426+1 L144C17 |.|
+Identifier 4427+6 L144C18 |errors|
+Comma 4433+1 L144C24 |,|
+Newline 4434+1 L144C25
+Identifier 4440+10 L145C6 |prose-mode|
+Equals 4451+1 L145C17 |=|
+Identifier 4453+2 L145C19 |st|
+Dot 4455+1 L145C21 |.|
+Identifier 4456+10 L145C22 |prose-mode|
+Newline 4466+1 L145C32
+RightBrace 4471+1 L146C5 |}|
+Newline 4472+1 L146C6
+Newline 4473+1 L147C1
+Identifier 4476+13 L148C3 |advance-bytes|
+Colon 4490+1 L148C17 |:|
+TypeIdentifier 4492+8 L148C19 |LexState|
+Comma 4500+1 L148C27 |,|
+TypeIdentifier 4502+7 L148C29 |Integer|
+Arrow 4510+2 L148C37 |->|
+TypeIdentifier 4513+8 L148C40 |LexState|
+Newline 4521+1 L148C48
+Identifier 4524+13 L149C3 |advance-bytes|
+LeftParen 4538+1 L149C17 |(|
+Identifier 4539+2 L149C18 |st|
+RightParen 4541+1 L149C20 |)|
+LeftParen 4543+1 L149C22 |(|
+Identifier 4544+1 L149C23 |n|
+RightParen 4545+1 L149C24 |)|
+Equals 4547+1 L149C26 |=|
+Newline 4548+1 L149C27
+TypeIdentifier 4552+8 L150C4 |LexState|
+LeftBrace 4561+1 L150C13 |{|
+Newline 4562+1 L150C14
+Identifier 4568+6 L151C6 |source|
+Equals 4575+1 L151C13 |=|
+Identifier 4577+2 L151C15 |st|
+Dot 4579+1 L151C17 |.|
+Identifier 4580+6 L151C18 |source|
+Comma 4586+1 L151C24 |,|
+Newline 4587+1 L151C25
+Identifier 4593+6 L152C6 |offset|
+Equals 4600+1 L152C13 |=|
+Identifier 4602+2 L152C15 |st|
+Dot 4604+1 L152C17 |.|
+Identifier 4605+6 L152C18 |offset|
+Plus 4612+1 L152C25 |+|
+Identifier 4614+1 L152C27 |n|
+Comma 4615+1 L152C28 |,|
+Newline 4616+1 L152C29
+Identifier 4622+4 L153C6 |line|
+Equals 4627+1 L153C11 |=|
+Identifier 4629+2 L153C13 |st|
+Dot 4631+1 L153C15 |.|
+Identifier 4632+4 L153C16 |line|
+Comma 4636+1 L153C20 |,|
+Newline 4637+1 L153C21
+Identifier 4643+6 L154C6 |column|
+Equals 4650+1 L154C13 |=|
+Identifier 4652+2 L154C15 |st|
+Dot 4654+1 L154C17 |.|
+Identifier 4655+6 L154C18 |column|
+Plus 4662+1 L154C25 |+|
+IntegerLiteral 4664+1 L154C27 |1|
+Comma 4665+1 L154C28 |,|
+Newline 4666+1 L154C29
+Identifier 4672+7 L155C6 |file-id|
+Equals 4680+1 L155C14 |=|
+Identifier 4682+2 L155C16 |st|
+Dot 4684+1 L155C18 |.|
+Identifier 4685+7 L155C19 |file-id|
+Comma 4692+1 L155C26 |,|
+Newline 4693+1 L155C27
+Identifier 4699+6 L156C6 |errors|
+Equals 4706+1 L156C13 |=|
+Identifier 4708+2 L156C15 |st|
+Dot 4710+1 L156C17 |.|
+Identifier 4711+6 L156C18 |errors|
+Comma 4717+1 L156C24 |,|
+Newline 4718+1 L156C25
+Identifier 4724+10 L157C6 |prose-mode|
+Equals 4735+1 L157C17 |=|
+Identifier 4737+2 L157C19 |st|
+Dot 4739+1 L157C21 |.|
+Identifier 4740+10 L157C22 |prose-mode|
+Newline 4750+1 L157C32
+RightBrace 4754+1 L158C4 |}|
+Newline 4755+1 L158C5
+Newline 4756+1 L159C1
+TypeIdentifier 4757+7 L160C1 |Section|
+Colon 4764+1 L160C8 |:|
+TypeIdentifier 4766+10 L160C10 |Whitespace|
+Newline 4776+1 L160C20
+Identifier 4779+15 L161C3 |skip-spaces-end|
+Colon 4795+1 L161C19 |:|
+TypeIdentifier 4797+4 L161C21 |Text|
+Comma 4801+1 L161C25 |,|
+TypeIdentifier 4803+7 L161C27 |Integer|
+Comma 4810+1 L161C34 |,|
+TypeIdentifier 4812+7 L161C36 |Integer|
+Arrow 4820+2 L161C44 |->|
+TypeIdentifier 4823+7 L161C47 |Integer|
+Newline 4830+1 L161C54
+Identifier 4833+15 L162C3 |skip-spaces-end|
+LeftParen 4849+1 L162C19 |(|
+Identifier 4850+6 L162C20 |source|
+RightParen 4856+1 L162C26 |)|
+LeftParen 4858+1 L162C28 |(|
+Identifier 4859+6 L162C29 |offset|
+RightParen 4865+1 L162C35 |)|
+LeftParen 4867+1 L162C37 |(|
+Identifier 4868+3 L162C38 |len|
+RightParen 4871+1 L162C41 |)|
+Equals 4873+1 L162C43 |=|
+Newline 4874+1 L162C44
+IfKeyword 4878+2 L163C4 |if|
+Identifier 4881+6 L163C7 |offset|
+GreaterOrEqual 4888+2 L163C14 |>=|
+Identifier 4891+3 L163C17 |len|
+ThenKeyword 4895+4 L163C21 |then|
+Identifier 4900+6 L163C26 |offset|
+Newline 4906+1 L163C32
+ElseKeyword 4910+4 L164C4 |else|
+IfKeyword 4915+2 L164C9 |if|
+Identifier 4918+12 L164C12 |char-code-at|
+Identifier 4931+6 L164C25 |source|
+Identifier 4938+6 L164C32 |offset|
+DoubleEquals 4945+2 L164C39 |==|
+Identifier 4948+8 L164C42 |cc-space|
+ThenKeyword 4957+4 L164C51 |then|
+Identifier 4962+15 L164C56 |skip-spaces-end|
+Identifier 4978+6 L164C72 |source|
+LeftParen 4985+1 L164C79 |(|
+Identifier 4986+6 L164C80 |offset|
+Plus 4993+1 L164C87 |+|
+IntegerLiteral 4995+1 L164C89 |1|
+RightParen 4996+1 L164C90 |)|
+Identifier 4998+3 L164C92 |len|
+Newline 5001+1 L164C95
+ElseKeyword 5005+4 L165C4 |else|
+Identifier 5010+6 L165C9 |offset|
+Newline 5016+1 L165C15
+Newline 5017+1 L166C1
+Identifier 5020+11 L167C3 |skip-spaces|
+Colon 5032+1 L167C15 |:|
+TypeIdentifier 5034+8 L167C17 |LexState|
+Arrow 5043+2 L167C26 |->|
+TypeIdentifier 5046+8 L167C29 |LexState|
+Newline 5054+1 L167C37
+Identifier 5057+11 L168C3 |skip-spaces|
+LeftParen 5069+1 L168C15 |(|
+Identifier 5070+2 L168C16 |st|
+RightParen 5072+1 L168C18 |)|
+Equals 5074+1 L168C20 |=|
+Newline 5075+1 L168C21
+LetKeyword 5079+3 L169C4 |let|
+Identifier 5083+3 L169C8 |len|
+Equals 5087+1 L169C12 |=|
+Identifier 5089+11 L169C14 |text-length|
+LeftParen 5101+1 L169C26 |(|
+Identifier 5102+2 L169C27 |st|
+Dot 5104+1 L169C29 |.|
+Identifier 5105+6 L169C30 |source|
+RightParen 5111+1 L169C36 |)|
+Newline 5112+1 L169C37
+InKeyword 5116+2 L170C4 |in|
+LetKeyword 5119+3 L170C7 |let|
+Identifier 5123+4 L170C11 |stop|
+Equals 5128+1 L170C16 |=|
+Identifier 5130+15 L170C18 |skip-spaces-end|
+LeftParen 5146+1 L170C34 |(|
+Identifier 5147+2 L170C35 |st|
+Dot 5149+1 L170C37 |.|
+Identifier 5150+6 L170C38 |source|
+RightParen 5156+1 L170C44 |)|
+LeftParen 5158+1 L170C46 |(|
+Identifier 5159+2 L170C47 |st|
+Dot 5161+1 L170C49 |.|
+Identifier 5162+6 L170C50 |offset|
+RightParen 5168+1 L170C56 |)|
+Identifier 5170+3 L170C58 |len|
+Newline 5173+1 L170C61
+InKeyword 5177+2 L171C4 |in|
+IfKeyword 5180+2 L171C7 |if|
+Identifier 5183+4 L171C10 |stop|
+DoubleEquals 5188+2 L171C15 |==|
+Identifier 5191+2 L171C18 |st|
+Dot 5193+1 L171C20 |.|
+Identifier 5194+6 L171C21 |offset|
+ThenKeyword 5201+4 L171C28 |then|
+Identifier 5206+2 L171C33 |st|
+Newline 5208+1 L171C35
+ElseKeyword 5215+4 L172C7 |else|
+LetKeyword 5220+3 L172C12 |let|
+Identifier 5224+7 L172C16 |new-col|
+Equals 5232+1 L172C24 |=|
+Identifier 5234+2 L172C26 |st|
+Dot 5236+1 L172C28 |.|
+Identifier 5237+6 L172C29 |column|
+Plus 5244+1 L172C36 |+|
+LeftParen 5246+1 L172C38 |(|
+Identifier 5247+4 L172C39 |stop|
+Minus 5252+1 L172C44 |-|
+Identifier 5254+2 L172C46 |st|
+Dot 5256+1 L172C48 |.|
+Identifier 5257+6 L172C49 |offset|
+RightParen 5263+1 L172C55 |)|
+Newline 5264+1 L172C56
+InKeyword 5271+2 L173C7 |in|
+LetKeyword 5274+3 L173C10 |let|
+Identifier 5278+5 L173C14 |__seq|
+Equals 5284+1 L173C20 |=|
+Identifier 5286+2 L173C22 |st|
+Dot 5288+1 L173C24 |.|
+Identifier 5289+6 L173C25 |offset|
+Equals 5296+1 L173C32 |=|
+Identifier 5298+4 L173C34 |stop|
+Newline 5302+1 L173C38
+InKeyword 5309+2 L174C7 |in|
+LetKeyword 5312+3 L174C10 |let|
+Identifier 5316+5 L174C14 |__seq|
+Equals 5322+1 L174C20 |=|
+Identifier 5324+2 L174C22 |st|
+Dot 5326+1 L174C24 |.|
+Identifier 5327+6 L174C25 |column|
+Equals 5334+1 L174C32 |=|
+Identifier 5336+7 L174C34 |new-col|
+Newline 5343+1 L174C41
+InKeyword 5350+2 L175C7 |in|
+Identifier 5353+2 L175C10 |st|
+Newline 5355+1 L175C12
+Newline 5356+1 L176C1
+TypeIdentifier 5357+7 L177C1 |Section|
+Colon 5364+1 L177C8 |:|
+TypeIdentifier 5366+9 L177C10 |Character|
+TypeIdentifier 5376+8 L177C20 |Scanning|
+Newline 5384+1 L177C28
+Newline 5385+1 L178C1
+Newline 5459+1 L179C74
+Newline 5535+1 L180C76
+Newline 5608+1 L181C73
+Newline 5684+1 L182C76
+Newline 5760+1 L183C76
+Newline 5835+1 L184C75
+Newline 5851+1 L185C16
+Newline 5852+1 L186C1
+Identifier 5855+14 L187C3 |scan-ident-end|
+Colon 5870+1 L187C18 |:|
+TypeIdentifier 5872+4 L187C20 |Text|
+Comma 5876+1 L187C24 |,|
+TypeIdentifier 5878+7 L187C26 |Integer|
+Comma 5885+1 L187C33 |,|
+TypeIdentifier 5887+7 L187C35 |Integer|
+Arrow 5895+2 L187C43 |->|
+TypeIdentifier 5898+7 L187C46 |Integer|
+Newline 5905+1 L187C53
+Identifier 5908+14 L188C3 |scan-ident-end|
+LeftParen 5923+1 L188C18 |(|
+Identifier 5924+6 L188C19 |source|
+RightParen 5930+1 L188C25 |)|
+LeftParen 5932+1 L188C27 |(|
+Identifier 5933+6 L188C28 |offset|
+RightParen 5939+1 L188C34 |)|
+LeftParen 5941+1 L188C36 |(|
+Identifier 5942+3 L188C37 |len|
+RightParen 5945+1 L188C40 |)|
+Equals 5947+1 L188C42 |=|
+Newline 5948+1 L188C43
+IfKeyword 5952+2 L189C4 |if|
+Identifier 5955+6 L189C7 |offset|
+GreaterOrEqual 5962+2 L189C14 |>=|
+Identifier 5965+3 L189C17 |len|
+ThenKeyword 5969+4 L189C21 |then|
+Identifier 5974+6 L189C26 |offset|
+Newline 5980+1 L189C32
+ElseKeyword 5984+4 L190C4 |else|
+LetKeyword 5989+3 L190C9 |let|
+Identifier 5993+1 L190C13 |c|
+Equals 5995+1 L190C15 |=|
+Identifier 5997+12 L190C17 |char-code-at|
+Identifier 6010+6 L190C30 |source|
+Identifier 6017+6 L190C37 |offset|
+Newline 6023+1 L190C43
+InKeyword 6027+2 L191C4 |in|
+IfKeyword 6030+2 L191C7 |if|
+Identifier 6033+14 L191C10 |is-letter-code|
+Identifier 6048+1 L191C25 |c|
+ThenKeyword 6050+4 L191C27 |then|
+Identifier 6055+14 L191C32 |scan-ident-end|
+Identifier 6070+6 L191C47 |source|
+LeftParen 6077+1 L191C54 |(|
+Identifier 6078+6 L191C55 |offset|
+Plus 6085+1 L191C62 |+|
+IntegerLiteral 6087+1 L191C64 |1|
+RightParen 6088+1 L191C65 |)|
+Identifier 6090+3 L191C67 |len|
+Newline 6093+1 L191C70
+ElseKeyword 6100+4 L192C7 |else|
+IfKeyword 6105+2 L192C12 |if|
+Identifier 6108+13 L192C15 |is-digit-code|
+Identifier 6122+1 L192C29 |c|
+ThenKeyword 6124+4 L192C31 |then|
+Identifier 6129+14 L192C36 |scan-ident-end|
+Identifier 6144+6 L192C51 |source|
+LeftParen 6151+1 L192C58 |(|
+Identifier 6152+6 L192C59 |offset|
+Plus 6159+1 L192C66 |+|
+IntegerLiteral 6161+1 L192C68 |1|
+RightParen 6162+1 L192C69 |)|
+Identifier 6164+3 L192C71 |len|
+Newline 6167+1 L192C74
+ElseKeyword 6174+4 L193C7 |else|
+IfKeyword 6179+2 L193C12 |if|
+Identifier 6182+1 L193C15 |c|
+DoubleEquals 6184+2 L193C17 |==|
+Identifier 6187+13 L193C20 |cc-underscore|
+ThenKeyword 6201+4 L193C34 |then|
+Identifier 6206+14 L193C39 |scan-ident-end|
+Identifier 6221+6 L193C54 |source|
+LeftParen 6228+1 L193C61 |(|
+Identifier 6229+6 L193C62 |offset|
+Plus 6236+1 L193C69 |+|
+IntegerLiteral 6238+1 L193C71 |1|
+RightParen 6239+1 L193C72 |)|
+Identifier 6241+3 L193C74 |len|
+Newline 6244+1 L193C77
+ElseKeyword 6251+4 L194C7 |else|
+IfKeyword 6256+2 L194C12 |if|
+Identifier 6259+14 L194C15 |is-tier1-start|
+Identifier 6274+1 L194C30 |c|
+ThenKeyword 6276+4 L194C32 |then|
+Newline 6280+1 L194C36
+LetKeyword 6289+3 L195C9 |let|
+Identifier 6293+2 L195C13 |cp|
+Equals 6296+1 L195C16 |=|
+Identifier 6298+13 L195C18 |cce-decode-cp|
+Identifier 6312+6 L195C32 |source|
+Identifier 6319+6 L195C39 |offset|
+Newline 6325+1 L195C45
+InKeyword 6334+2 L196C9 |in|
+IfKeyword 6337+2 L196C12 |if|
+Identifier 6340+18 L196C15 |is-tier1-letter-cp|
+Identifier 6359+2 L196C34 |cp|
+ThenKeyword 6362+4 L196C37 |then|
+Identifier 6367+14 L196C42 |scan-ident-end|
+Identifier 6382+6 L196C57 |source|
+LeftParen 6389+1 L196C64 |(|
+Identifier 6390+6 L196C65 |offset|
+Plus 6397+1 L196C72 |+|
+Identifier 6399+12 L196C74 |cce-byte-len|
+Identifier 6412+1 L196C87 |c|
+RightParen 6413+1 L196C88 |)|
+Identifier 6415+3 L196C90 |len|
+Newline 6418+1 L196C93
+ElseKeyword 6427+4 L197C9 |else|
+Identifier 6432+6 L197C14 |offset|
+Newline 6438+1 L197C20
+ElseKeyword 6445+4 L198C7 |else|
+IfKeyword 6450+2 L198C12 |if|
+Identifier 6453+1 L198C15 |c|
+DoubleEquals 6455+2 L198C17 |==|
+Identifier 6458+8 L198C20 |cc-minus|
+ThenKeyword 6467+4 L198C29 |then|
+Newline 6471+1 L198C33
+IfKeyword 6480+2 L199C9 |if|
+Identifier 6483+6 L199C12 |offset|
+Plus 6490+1 L199C19 |+|
+IntegerLiteral 6492+1 L199C21 |1|
+GreaterOrEqual 6494+2 L199C23 |>=|
+Identifier 6497+3 L199C26 |len|
+ThenKeyword 6501+4 L199C30 |then|
+Identifier 6506+14 L199C35 |scan-ident-end|
+Identifier 6521+6 L199C50 |source|
+LeftParen 6528+1 L199C57 |(|
+Identifier 6529+6 L199C58 |offset|
+Plus 6536+1 L199C65 |+|
+IntegerLiteral 6538+1 L199C67 |1|
+RightParen 6539+1 L199C68 |)|
+Identifier 6541+3 L199C70 |len|
+Newline 6544+1 L199C73
+ElseKeyword 6553+4 L200C9 |else|
+IfKeyword 6558+2 L200C14 |if|
+Identifier 6561+12 L200C17 |char-code-at|
+Identifier 6574+6 L200C30 |source|
+LeftParen 6581+1 L200C37 |(|
+Identifier 6582+6 L200C38 |offset|
+Plus 6589+1 L200C45 |+|
+IntegerLiteral 6591+1 L200C47 |1|
+RightParen 6592+1 L200C48 |)|
+DoubleEquals 6594+2 L200C50 |==|
+Identifier 6597+10 L200C53 |cc-greater|
+ThenKeyword 6608+4 L200C64 |then|
+Identifier 6613+6 L200C69 |offset|
+Newline 6619+1 L200C75
+ElseKeyword 6628+4 L201C9 |else|
+Identifier 6633+14 L201C14 |scan-ident-end|
+Identifier 6648+6 L201C29 |source|
+LeftParen 6655+1 L201C36 |(|
+Identifier 6656+6 L201C37 |offset|
+Plus 6663+1 L201C44 |+|
+IntegerLiteral 6665+1 L201C46 |1|
+RightParen 6666+1 L201C47 |)|
+Identifier 6668+3 L201C49 |len|
+Newline 6671+1 L201C52
+ElseKeyword 6678+4 L202C7 |else|
+Identifier 6683+6 L202C12 |offset|
+Newline 6689+1 L202C18
+Newline 6690+1 L203C1
+Identifier 6693+15 L204C3 |scan-ident-rest|
+Colon 6709+1 L204C19 |:|
+TypeIdentifier 6711+8 L204C21 |LexState|
+Arrow 6720+2 L204C30 |->|
+TypeIdentifier 6723+8 L204C33 |LexState|
+Newline 6731+1 L204C41
+Identifier 6734+15 L205C3 |scan-ident-rest|
+LeftParen 6750+1 L205C19 |(|
+Identifier 6751+2 L205C20 |st|
+RightParen 6753+1 L205C22 |)|
+Equals 6755+1 L205C24 |=|
+Newline 6756+1 L205C25
+LetKeyword 6760+3 L206C4 |let|
+Identifier 6764+3 L206C8 |len|
+Equals 6768+1 L206C12 |=|
+Identifier 6770+11 L206C14 |text-length|
+LeftParen 6782+1 L206C26 |(|
+Identifier 6783+2 L206C27 |st|
+Dot 6785+1 L206C29 |.|
+Identifier 6786+6 L206C30 |source|
+RightParen 6792+1 L206C36 |)|
+Newline 6793+1 L206C37
+InKeyword 6797+2 L207C4 |in|
+LetKeyword 6800+3 L207C7 |let|
+Identifier 6804+4 L207C11 |stop|
+Equals 6809+1 L207C16 |=|
+Identifier 6811+14 L207C18 |scan-ident-end|
+LeftParen 6826+1 L207C33 |(|
+Identifier 6827+2 L207C34 |st|
+Dot 6829+1 L207C36 |.|
+Identifier 6830+6 L207C37 |source|
+RightParen 6836+1 L207C43 |)|
+LeftParen 6838+1 L207C45 |(|
+Identifier 6839+2 L207C46 |st|
+Dot 6841+1 L207C48 |.|
+Identifier 6842+6 L207C49 |offset|
+RightParen 6848+1 L207C55 |)|
+Identifier 6850+3 L207C57 |len|
+Newline 6853+1 L207C60
+InKeyword 6857+2 L208C4 |in|
+IfKeyword 6860+2 L208C7 |if|
+Identifier 6863+4 L208C10 |stop|
+DoubleEquals 6868+2 L208C15 |==|
+Identifier 6871+2 L208C18 |st|
+Dot 6873+1 L208C20 |.|
+Identifier 6874+6 L208C21 |offset|
+ThenKeyword 6881+4 L208C28 |then|
+Identifier 6886+2 L208C33 |st|
+Newline 6888+1 L208C35
+ElseKeyword 6895+4 L209C7 |else|
+LetKeyword 6900+3 L209C12 |let|
+Identifier 6904+7 L209C16 |new-col|
+Equals 6912+1 L209C24 |=|
+Identifier 6914+2 L209C26 |st|
+Dot 6916+1 L209C28 |.|
+Identifier 6917+6 L209C29 |column|
+Plus 6924+1 L209C36 |+|
+LeftParen 6926+1 L209C38 |(|
+Identifier 6927+4 L209C39 |stop|
+Minus 6932+1 L209C44 |-|
+Identifier 6934+2 L209C46 |st|
+Dot 6936+1 L209C48 |.|
+Identifier 6937+6 L209C49 |offset|
+RightParen 6943+1 L209C55 |)|
+Newline 6944+1 L209C56
+InKeyword 6951+2 L210C7 |in|
+LetKeyword 6954+3 L210C10 |let|
+Identifier 6958+5 L210C14 |__seq|
+Equals 6964+1 L210C20 |=|
+Identifier 6966+2 L210C22 |st|
+Dot 6968+1 L210C24 |.|
+Identifier 6969+6 L210C25 |offset|
+Equals 6976+1 L210C32 |=|
+Identifier 6978+4 L210C34 |stop|
+Newline 6982+1 L210C38
+InKeyword 6989+2 L211C7 |in|
+LetKeyword 6992+3 L211C10 |let|
+Identifier 6996+5 L211C14 |__seq|
+Equals 7002+1 L211C20 |=|
+Identifier 7004+2 L211C22 |st|
+Dot 7006+1 L211C24 |.|
+Identifier 7007+6 L211C25 |column|
+Equals 7014+1 L211C32 |=|
+Identifier 7016+7 L211C34 |new-col|
+Newline 7023+1 L211C41
+InKeyword 7030+2 L212C7 |in|
+Identifier 7033+2 L212C10 |st|
+Newline 7035+1 L212C12
+Newline 7036+1 L213C1
+Identifier 7039+15 L214C3 |scan-digits-end|
+Colon 7055+1 L214C19 |:|
+TypeIdentifier 7057+4 L214C21 |Text|
+Comma 7061+1 L214C25 |,|
+TypeIdentifier 7063+7 L214C27 |Integer|
+Comma 7070+1 L214C34 |,|
+TypeIdentifier 7072+7 L214C36 |Integer|
+Arrow 7080+2 L214C44 |->|
+TypeIdentifier 7083+7 L214C47 |Integer|
+Newline 7090+1 L214C54
+Identifier 7093+15 L215C3 |scan-digits-end|
+LeftParen 7109+1 L215C19 |(|
+Identifier 7110+6 L215C20 |source|
+RightParen 7116+1 L215C26 |)|
+LeftParen 7118+1 L215C28 |(|
+Identifier 7119+6 L215C29 |offset|
+RightParen 7125+1 L215C35 |)|
+LeftParen 7127+1 L215C37 |(|
+Identifier 7128+3 L215C38 |len|
+RightParen 7131+1 L215C41 |)|
+Equals 7133+1 L215C43 |=|
+Newline 7134+1 L215C44
+IfKeyword 7138+2 L216C4 |if|
+Identifier 7141+6 L216C7 |offset|
+GreaterOrEqual 7148+2 L216C14 |>=|
+Identifier 7151+3 L216C17 |len|
+ThenKeyword 7155+4 L216C21 |then|
+Identifier 7160+6 L216C26 |offset|
+Newline 7166+1 L216C32
+ElseKeyword 7170+4 L217C4 |else|
+LetKeyword 7175+3 L217C9 |let|
+Identifier 7179+1 L217C13 |c|
+Equals 7181+1 L217C15 |=|
+Identifier 7183+12 L217C17 |char-code-at|
+Identifier 7196+6 L217C30 |source|
+Identifier 7203+6 L217C37 |offset|
+Newline 7209+1 L217C43
+InKeyword 7213+2 L218C4 |in|
+IfKeyword 7216+2 L218C7 |if|
+Identifier 7219+13 L218C10 |is-digit-code|
+Identifier 7233+1 L218C24 |c|
+ThenKeyword 7235+4 L218C26 |then|
+Identifier 7240+15 L218C31 |scan-digits-end|
+Identifier 7256+6 L218C47 |source|
+LeftParen 7263+1 L218C54 |(|
+Identifier 7264+6 L218C55 |offset|
+Plus 7271+1 L218C62 |+|
+IntegerLiteral 7273+1 L218C64 |1|
+RightParen 7274+1 L218C65 |)|
+Identifier 7276+3 L218C67 |len|
+Newline 7279+1 L218C70
+ElseKeyword 7286+4 L219C7 |else|
+IfKeyword 7291+2 L219C12 |if|
+Identifier 7294+1 L219C15 |c|
+DoubleEquals 7296+2 L219C17 |==|
+Identifier 7299+13 L219C20 |cc-underscore|
+ThenKeyword 7313+4 L219C34 |then|
+Identifier 7318+15 L219C39 |scan-digits-end|
+Identifier 7334+6 L219C55 |source|
+LeftParen 7341+1 L219C62 |(|
+Identifier 7342+6 L219C63 |offset|
+Plus 7349+1 L219C70 |+|
+IntegerLiteral 7351+1 L219C72 |1|
+RightParen 7352+1 L219C73 |)|
+Identifier 7354+3 L219C75 |len|
+Newline 7357+1 L219C78
+ElseKeyword 7364+4 L220C7 |else|
+Identifier 7369+6 L220C12 |offset|
+Newline 7375+1 L220C18
+Newline 7376+1 L221C1
+Identifier 7379+11 L222C3 |scan-digits|
+Colon 7391+1 L222C15 |:|
+TypeIdentifier 7393+8 L222C17 |LexState|
+Arrow 7402+2 L222C26 |->|
+TypeIdentifier 7405+8 L222C29 |LexState|
+Newline 7413+1 L222C37
+Identifier 7416+11 L223C3 |scan-digits|
+LeftParen 7428+1 L223C15 |(|
+Identifier 7429+2 L223C16 |st|
+RightParen 7431+1 L223C18 |)|
+Equals 7433+1 L223C20 |=|
+Newline 7434+1 L223C21
+LetKeyword 7438+3 L224C4 |let|
+Identifier 7442+3 L224C8 |len|
+Equals 7446+1 L224C12 |=|
+Identifier 7448+11 L224C14 |text-length|
+LeftParen 7460+1 L224C26 |(|
+Identifier 7461+2 L224C27 |st|
+Dot 7463+1 L224C29 |.|
+Identifier 7464+6 L224C30 |source|
+RightParen 7470+1 L224C36 |)|
+Newline 7471+1 L224C37
+InKeyword 7475+2 L225C4 |in|
+LetKeyword 7478+3 L225C7 |let|
+Identifier 7482+4 L225C11 |stop|
+Equals 7487+1 L225C16 |=|
+Identifier 7489+15 L225C18 |scan-digits-end|
+LeftParen 7505+1 L225C34 |(|
+Identifier 7506+2 L225C35 |st|
+Dot 7508+1 L225C37 |.|
+Identifier 7509+6 L225C38 |source|
+RightParen 7515+1 L225C44 |)|
+LeftParen 7517+1 L225C46 |(|
+Identifier 7518+2 L225C47 |st|
+Dot 7520+1 L225C49 |.|
+Identifier 7521+6 L225C50 |offset|
+RightParen 7527+1 L225C56 |)|
+Identifier 7529+3 L225C58 |len|
+Newline 7532+1 L225C61
+InKeyword 7536+2 L226C4 |in|
+IfKeyword 7539+2 L226C7 |if|
+Identifier 7542+4 L226C10 |stop|
+DoubleEquals 7547+2 L226C15 |==|
+Identifier 7550+2 L226C18 |st|
+Dot 7552+1 L226C20 |.|
+Identifier 7553+6 L226C21 |offset|
+ThenKeyword 7560+4 L226C28 |then|
+Identifier 7565+2 L226C33 |st|
+Newline 7567+1 L226C35
+ElseKeyword 7574+4 L227C7 |else|
+LetKeyword 7579+3 L227C12 |let|
+Identifier 7583+7 L227C16 |new-col|
+Equals 7591+1 L227C24 |=|
+Identifier 7593+2 L227C26 |st|
+Dot 7595+1 L227C28 |.|
+Identifier 7596+6 L227C29 |column|
+Plus 7603+1 L227C36 |+|
+LeftParen 7605+1 L227C38 |(|
+Identifier 7606+4 L227C39 |stop|
+Minus 7611+1 L227C44 |-|
+Identifier 7613+2 L227C46 |st|
+Dot 7615+1 L227C48 |.|
+Identifier 7616+6 L227C49 |offset|
+RightParen 7622+1 L227C55 |)|
+Newline 7623+1 L227C56
+InKeyword 7630+2 L228C7 |in|
+LetKeyword 7633+3 L228C10 |let|
+Identifier 7637+5 L228C14 |__seq|
+Equals 7643+1 L228C20 |=|
+Identifier 7645+2 L228C22 |st|
+Dot 7647+1 L228C24 |.|
+Identifier 7648+6 L228C25 |offset|
+Equals 7655+1 L228C32 |=|
+Identifier 7657+4 L228C34 |stop|
+Newline 7661+1 L228C38
+InKeyword 7668+2 L229C7 |in|
+LetKeyword 7671+3 L229C10 |let|
+Identifier 7675+5 L229C14 |__seq|
+Equals 7681+1 L229C20 |=|
+Identifier 7683+2 L229C22 |st|
+Dot 7685+1 L229C24 |.|
+Identifier 7686+6 L229C25 |column|
+Equals 7693+1 L229C32 |=|
+Identifier 7695+7 L229C34 |new-col|
+Newline 7702+1 L229C41
+InKeyword 7709+2 L230C7 |in|
+Identifier 7712+2 L230C10 |st|
+Newline 7714+1 L230C12
+Newline 7715+1 L231C1
+Identifier 7718+12 L232C3 |scan-hex-end|
+Colon 7731+1 L232C16 |:|
+TypeIdentifier 7733+4 L232C18 |Text|
+Comma 7737+1 L232C22 |,|
+TypeIdentifier 7739+7 L232C24 |Integer|
+Comma 7746+1 L232C31 |,|
+TypeIdentifier 7748+7 L232C33 |Integer|
+Arrow 7756+2 L232C41 |->|
+TypeIdentifier 7759+7 L232C44 |Integer|
+Newline 7766+1 L232C51
+Identifier 7769+12 L233C3 |scan-hex-end|
+LeftParen 7782+1 L233C16 |(|
+Identifier 7783+6 L233C17 |source|
+RightParen 7789+1 L233C23 |)|
+LeftParen 7791+1 L233C25 |(|
+Identifier 7792+6 L233C26 |offset|
+RightParen 7798+1 L233C32 |)|
+LeftParen 7800+1 L233C34 |(|
+Identifier 7801+3 L233C35 |len|
+RightParen 7804+1 L233C38 |)|
+Equals 7806+1 L233C40 |=|
+Newline 7807+1 L233C41
+IfKeyword 7811+2 L234C4 |if|
+Identifier 7814+6 L234C7 |offset|
+GreaterOrEqual 7821+2 L234C14 |>=|
+Identifier 7824+3 L234C17 |len|
+ThenKeyword 7828+4 L234C21 |then|
+Identifier 7833+6 L234C26 |offset|
+Newline 7839+1 L234C32
+ElseKeyword 7843+4 L235C4 |else|
+LetKeyword 7848+3 L235C9 |let|
+Identifier 7852+1 L235C13 |c|
+Equals 7854+1 L235C15 |=|
+Identifier 7856+12 L235C17 |char-code-at|
+Identifier 7869+6 L235C30 |source|
+Identifier 7876+6 L235C37 |offset|
+Newline 7882+1 L235C43
+InKeyword 7886+2 L236C4 |in|
+IfKeyword 7889+2 L236C7 |if|
+Identifier 7892+15 L236C10 |hex-digit-value|
+Identifier 7908+1 L236C26 |c|
+GreaterOrEqual 7910+2 L236C28 |>=|
+IntegerLiteral 7913+1 L236C31 |0|
+ThenKeyword 7915+4 L236C33 |then|
+Identifier 7920+12 L236C38 |scan-hex-end|
+Identifier 7933+6 L236C51 |source|
+LeftParen 7940+1 L236C58 |(|
+Identifier 7941+6 L236C59 |offset|
+Plus 7948+1 L236C66 |+|
+IntegerLiteral 7950+1 L236C68 |1|
+RightParen 7951+1 L236C69 |)|
+Identifier 7953+3 L236C71 |len|
+Newline 7956+1 L236C74
+ElseKeyword 7963+4 L237C7 |else|
+IfKeyword 7968+2 L237C12 |if|
+Identifier 7971+1 L237C15 |c|
+DoubleEquals 7973+2 L237C17 |==|
+Identifier 7976+13 L237C20 |cc-underscore|
+ThenKeyword 7990+4 L237C34 |then|
+Identifier 7995+12 L237C39 |scan-hex-end|
+Identifier 8008+6 L237C52 |source|
+LeftParen 8015+1 L237C59 |(|
+Identifier 8016+6 L237C60 |offset|
+Plus 8023+1 L237C67 |+|
+IntegerLiteral 8025+1 L237C69 |1|
+RightParen 8026+1 L237C70 |)|
+Identifier 8028+3 L237C72 |len|
+Newline 8031+1 L237C75
+ElseKeyword 8038+4 L238C7 |else|
+Identifier 8043+6 L238C12 |offset|
+Newline 8049+1 L238C18
+Newline 8050+1 L239C1
+Identifier 8053+15 L240C3 |scan-hex-digits|
+Colon 8069+1 L240C19 |:|
+TypeIdentifier 8071+8 L240C21 |LexState|
+Arrow 8080+2 L240C30 |->|
+TypeIdentifier 8083+8 L240C33 |LexState|
+Newline 8091+1 L240C41
+Identifier 8094+15 L241C3 |scan-hex-digits|
+LeftParen 8110+1 L241C19 |(|
+Identifier 8111+2 L241C20 |st|
+RightParen 8113+1 L241C22 |)|
+Equals 8115+1 L241C24 |=|
+Newline 8116+1 L241C25
+LetKeyword 8120+3 L242C4 |let|
+Identifier 8124+3 L242C8 |len|
+Equals 8128+1 L242C12 |=|
+Identifier 8130+11 L242C14 |text-length|
+LeftParen 8142+1 L242C26 |(|
+Identifier 8143+2 L242C27 |st|
+Dot 8145+1 L242C29 |.|
+Identifier 8146+6 L242C30 |source|
+RightParen 8152+1 L242C36 |)|
+Newline 8153+1 L242C37
+InKeyword 8157+2 L243C4 |in|
+LetKeyword 8160+3 L243C7 |let|
+Identifier 8164+4 L243C11 |stop|
+Equals 8169+1 L243C16 |=|
+Identifier 8171+12 L243C18 |scan-hex-end|
+LeftParen 8184+1 L243C31 |(|
+Identifier 8185+2 L243C32 |st|
+Dot 8187+1 L243C34 |.|
+Identifier 8188+6 L243C35 |source|
+RightParen 8194+1 L243C41 |)|
+LeftParen 8196+1 L243C43 |(|
+Identifier 8197+2 L243C44 |st|
+Dot 8199+1 L243C46 |.|
+Identifier 8200+6 L243C47 |offset|
+RightParen 8206+1 L243C53 |)|
+Identifier 8208+3 L243C55 |len|
+Newline 8211+1 L243C58
+InKeyword 8215+2 L244C4 |in|
+IfKeyword 8218+2 L244C7 |if|
+Identifier 8221+4 L244C10 |stop|
+DoubleEquals 8226+2 L244C15 |==|
+Identifier 8229+2 L244C18 |st|
+Dot 8231+1 L244C20 |.|
+Identifier 8232+6 L244C21 |offset|
+ThenKeyword 8239+4 L244C28 |then|
+Identifier 8244+2 L244C33 |st|
+Newline 8246+1 L244C35
+ElseKeyword 8253+4 L245C7 |else|
+LetKeyword 8258+3 L245C12 |let|
+Identifier 8262+7 L245C16 |new-col|
+Equals 8270+1 L245C24 |=|
+Identifier 8272+2 L245C26 |st|
+Dot 8274+1 L245C28 |.|
+Identifier 8275+6 L245C29 |column|
+Plus 8282+1 L245C36 |+|
+LeftParen 8284+1 L245C38 |(|
+Identifier 8285+4 L245C39 |stop|
+Minus 8290+1 L245C44 |-|
+Identifier 8292+2 L245C46 |st|
+Dot 8294+1 L245C48 |.|
+Identifier 8295+6 L245C49 |offset|
+RightParen 8301+1 L245C55 |)|
+Newline 8302+1 L245C56
+InKeyword 8309+2 L246C7 |in|
+LetKeyword 8312+3 L246C10 |let|
+Identifier 8316+5 L246C14 |__seq|
+Equals 8322+1 L246C20 |=|
+Identifier 8324+2 L246C22 |st|
+Dot 8326+1 L246C24 |.|
+Identifier 8327+6 L246C25 |offset|
+Equals 8334+1 L246C32 |=|
+Identifier 8336+4 L246C34 |stop|
+Newline 8340+1 L246C38
+InKeyword 8347+2 L247C7 |in|
+LetKeyword 8350+3 L247C10 |let|
+Identifier 8354+5 L247C14 |__seq|
+Equals 8360+1 L247C20 |=|
+Identifier 8362+2 L247C22 |st|
+Dot 8364+1 L247C24 |.|
+Identifier 8365+6 L247C25 |column|
+Equals 8372+1 L247C32 |=|
+Identifier 8374+7 L247C34 |new-col|
+Newline 8381+1 L247C41
+InKeyword 8388+2 L248C7 |in|
+Identifier 8391+2 L248C10 |st|
+Newline 8393+1 L248C12
+Newline 8394+1 L249C1
+Identifier 8397+15 L250C3 |scan-string-end|
+Colon 8413+1 L250C19 |:|
+TypeIdentifier 8415+4 L250C21 |Text|
+Comma 8419+1 L250C25 |,|
+TypeIdentifier 8421+7 L250C27 |Integer|
+Comma 8428+1 L250C34 |,|
+TypeIdentifier 8430+7 L250C36 |Integer|
+Arrow 8438+2 L250C44 |->|
+TypeIdentifier 8441+7 L250C47 |Integer|
+Newline 8448+1 L250C54
+Identifier 8451+15 L251C3 |scan-string-end|
+LeftParen 8467+1 L251C19 |(|
+Identifier 8468+6 L251C20 |source|
+RightParen 8474+1 L251C26 |)|
+LeftParen 8476+1 L251C28 |(|
+Identifier 8477+6 L251C29 |offset|
+RightParen 8483+1 L251C35 |)|
+LeftParen 8485+1 L251C37 |(|
+Identifier 8486+3 L251C38 |len|
+RightParen 8489+1 L251C41 |)|
+Equals 8491+1 L251C43 |=|
+Newline 8492+1 L251C44
+IfKeyword 8496+2 L252C4 |if|
+Identifier 8499+6 L252C7 |offset|
+GreaterOrEqual 8506+2 L252C14 |>=|
+Identifier 8509+3 L252C17 |len|
+ThenKeyword 8513+4 L252C21 |then|
+Identifier 8518+6 L252C26 |offset|
+Newline 8524+1 L252C32
+ElseKeyword 8528+4 L253C4 |else|
+LetKeyword 8533+3 L253C9 |let|
+Identifier 8537+1 L253C13 |c|
+Equals 8539+1 L253C15 |=|
+Identifier 8541+12 L253C17 |char-code-at|
+Identifier 8554+6 L253C30 |source|
+Identifier 8561+6 L253C37 |offset|
+Newline 8567+1 L253C43
+InKeyword 8571+2 L254C4 |in|
+IfKeyword 8574+2 L254C7 |if|
+Identifier 8577+1 L254C10 |c|
+DoubleEquals 8579+2 L254C12 |==|
+Identifier 8582+15 L254C15 |cc-double-quote|
+ThenKeyword 8598+4 L254C31 |then|
+Identifier 8603+6 L254C36 |offset|
+Plus 8610+1 L254C43 |+|
+IntegerLiteral 8612+1 L254C45 |1|
+Newline 8613+1 L254C46
+ElseKeyword 8620+4 L255C7 |else|
+IfKeyword 8625+2 L255C12 |if|
+Identifier 8628+1 L255C15 |c|
+DoubleEquals 8630+2 L255C17 |==|
+Identifier 8633+10 L255C20 |cc-newline|
+ThenKeyword 8644+4 L255C31 |then|
+Identifier 8649+6 L255C36 |offset|
+Newline 8655+1 L255C42
+ElseKeyword 8662+4 L256C7 |else|
+IfKeyword 8667+2 L256C12 |if|
+Identifier 8670+1 L256C15 |c|
+DoubleEquals 8672+2 L256C17 |==|
+Identifier 8675+12 L256C20 |cc-backslash|
+ThenKeyword 8688+4 L256C33 |then|
+Identifier 8693+15 L256C38 |scan-string-end|
+Identifier 8709+6 L256C54 |source|
+LeftParen 8716+1 L256C61 |(|
+Identifier 8717+6 L256C62 |offset|
+Plus 8724+1 L256C69 |+|
+IntegerLiteral 8726+1 L256C71 |2|
+RightParen 8727+1 L256C72 |)|
+Identifier 8729+3 L256C74 |len|
+Newline 8732+1 L256C77
+ElseKeyword 8739+4 L257C7 |else|
+Identifier 8744+15 L257C12 |scan-string-end|
+Identifier 8760+6 L257C28 |source|
+LeftParen 8767+1 L257C35 |(|
+Identifier 8768+6 L257C36 |offset|
+Plus 8775+1 L257C43 |+|
+IntegerLiteral 8777+1 L257C45 |1|
+RightParen 8778+1 L257C46 |)|
+Identifier 8780+3 L257C48 |len|
+Newline 8783+1 L257C51
+Newline 8784+1 L258C1
+Identifier 8787+16 L259C3 |scan-string-body|
+Colon 8804+1 L259C20 |:|
+TypeIdentifier 8806+8 L259C22 |LexState|
+Arrow 8815+2 L259C31 |->|
+TypeIdentifier 8818+8 L259C34 |LexState|
+Newline 8826+1 L259C42
+Identifier 8829+16 L260C3 |scan-string-body|
+LeftParen 8846+1 L260C20 |(|
+Identifier 8847+2 L260C21 |st|
+RightParen 8849+1 L260C23 |)|
+Equals 8851+1 L260C25 |=|
+Newline 8852+1 L260C26
+LetKeyword 8856+3 L261C4 |let|
+Identifier 8860+3 L261C8 |len|
+Equals 8864+1 L261C12 |=|
+Identifier 8866+11 L261C14 |text-length|
+LeftParen 8878+1 L261C26 |(|
+Identifier 8879+2 L261C27 |st|
+Dot 8881+1 L261C29 |.|
+Identifier 8882+6 L261C30 |source|
+RightParen 8888+1 L261C36 |)|
+Newline 8889+1 L261C37
+InKeyword 8893+2 L262C4 |in|
+LetKeyword 8896+3 L262C7 |let|
+Identifier 8900+4 L262C11 |stop|
+Equals 8905+1 L262C16 |=|
+Identifier 8907+15 L262C18 |scan-string-end|
+LeftParen 8923+1 L262C34 |(|
+Identifier 8924+2 L262C35 |st|
+Dot 8926+1 L262C37 |.|
+Identifier 8927+6 L262C38 |source|
+RightParen 8933+1 L262C44 |)|
+LeftParen 8935+1 L262C46 |(|
+Identifier 8936+2 L262C47 |st|
+Dot 8938+1 L262C49 |.|
+Identifier 8939+6 L262C50 |offset|
+RightParen 8945+1 L262C56 |)|
+Identifier 8947+3 L262C58 |len|
+Newline 8950+1 L262C61
+InKeyword 8954+2 L263C4 |in|
+IfKeyword 8957+2 L263C7 |if|
+Identifier 8960+4 L263C10 |stop|
+DoubleEquals 8965+2 L263C15 |==|
+Identifier 8968+2 L263C18 |st|
+Dot 8970+1 L263C20 |.|
+Identifier 8971+6 L263C21 |offset|
+ThenKeyword 8978+4 L263C28 |then|
+Identifier 8983+2 L263C33 |st|
+Newline 8985+1 L263C35
+ElseKeyword 8992+4 L264C7 |else|
+LetKeyword 8997+3 L264C12 |let|
+Identifier 9001+7 L264C16 |new-col|
+Equals 9009+1 L264C24 |=|
+Identifier 9011+2 L264C26 |st|
+Dot 9013+1 L264C28 |.|
+Identifier 9014+6 L264C29 |column|
+Plus 9021+1 L264C36 |+|
+LeftParen 9023+1 L264C38 |(|
+Identifier 9024+4 L264C39 |stop|
+Minus 9029+1 L264C44 |-|
+Identifier 9031+2 L264C46 |st|
+Dot 9033+1 L264C48 |.|
+Identifier 9034+6 L264C49 |offset|
+RightParen 9040+1 L264C55 |)|
+Newline 9041+1 L264C56
+InKeyword 9048+2 L265C7 |in|
+LetKeyword 9051+3 L265C10 |let|
+Identifier 9055+5 L265C14 |__seq|
+Equals 9061+1 L265C20 |=|
+Identifier 9063+2 L265C22 |st|
+Dot 9065+1 L265C24 |.|
+Identifier 9066+6 L265C25 |offset|
+Equals 9073+1 L265C32 |=|
+Identifier 9075+4 L265C34 |stop|
+Newline 9079+1 L265C38
+InKeyword 9086+2 L266C7 |in|
+LetKeyword 9089+3 L266C10 |let|
+Identifier 9093+5 L266C14 |__seq|
+Equals 9099+1 L266C20 |=|
+Identifier 9101+2 L266C22 |st|
+Dot 9103+1 L266C24 |.|
+Identifier 9104+6 L266C25 |column|
+Equals 9111+1 L266C32 |=|
+Identifier 9113+7 L266C34 |new-col|
+Newline 9120+1 L266C41
+InKeyword 9127+2 L267C7 |in|
+LetKeyword 9130+3 L267C10 |let|
+Identifier 9134+10 L267C14 |terminated|
+Equals 9145+1 L267C25 |=|
+Identifier 9147+4 L267C27 |stop|
+LessOrEqual 9152+2 L267C32 |<=|
+Identifier 9155+3 L267C35 |len|
+Ampersand 9159+1 L267C39 |&|
+Identifier 9161+4 L267C41 |stop|
+GreaterThan 9166+1 L267C46 |>|
+IntegerLiteral 9168+1 L267C48 |0|
+Ampersand 9170+1 L267C50 |&|
+Identifier 9172+12 L267C52 |char-code-at|
+LeftParen 9185+1 L267C65 |(|
+Identifier 9186+2 L267C66 |st|
+Dot 9188+1 L267C68 |.|
+Identifier 9189+6 L267C69 |source|
+RightParen 9195+1 L267C75 |)|
+LeftParen 9197+1 L267C77 |(|
+Identifier 9198+4 L267C78 |stop|
+Minus 9203+1 L267C83 |-|
+IntegerLiteral 9205+1 L267C85 |1|
+RightParen 9206+1 L267C86 |)|
+DoubleEquals 9208+2 L267C88 |==|
+Identifier 9211+15 L267C91 |cc-double-quote|
+Newline 9226+1 L267C106
+InKeyword 9233+2 L268C7 |in|
+IfKeyword 9236+2 L268C10 |if|
+Identifier 9239+10 L268C13 |terminated|
+ThenKeyword 9250+4 L268C24 |then|
+Identifier 9255+2 L268C29 |st|
+Newline 9257+1 L268C31
+ElseKeyword 9267+4 L269C10 |else|
+LetKeyword 9272+3 L269C15 |let|
+Identifier 9276+9 L269C19 |open-span|
+Equals 9286+1 L269C29 |=|
+Identifier 9288+7 L269C31 |span-at|
+LeftParen 9296+1 L269C39 |(|
+Identifier 9297+2 L269C40 |st|
+Dot 9299+1 L269C42 |.|
+Identifier 9300+4 L269C43 |line|
+RightParen 9304+1 L269C47 |)|
+LeftParen 9306+1 L269C49 |(|
+Identifier 9307+2 L269C50 |st|
+Dot 9309+1 L269C52 |.|
+Identifier 9310+6 L269C53 |column|
+Minus 9317+1 L269C60 |-|
+IntegerLiteral 9319+1 L269C62 |1|
+RightParen 9320+1 L269C63 |)|
+LeftParen 9322+1 L269C65 |(|
+Identifier 9323+2 L269C66 |st|
+Dot 9325+1 L269C68 |.|
+Identifier 9326+6 L269C69 |offset|
+Minus 9333+1 L269C76 |-|
+IntegerLiteral 9335+1 L269C78 |1|
+RightParen 9336+1 L269C79 |)|
+IntegerLiteral 9338+1 L269C81 |1|
+LeftParen 9340+1 L269C83 |(|
+Identifier 9341+2 L269C84 |st|
+Dot 9343+1 L269C86 |.|
+Identifier 9344+7 L269C87 |file-id|
+RightParen 9351+1 L269C94 |)|
+Newline 9352+1 L269C95
+InKeyword 9362+2 L270C10 |in|
+LetKeyword 9365+3 L270C13 |let|
+Identifier 9369+3 L270C17 |err|
+Equals 9373+1 L270C21 |=|
+Identifier 9375+10 L270C23 |make-error|
+Identifier 9386+21 L270C34 |cdx-unterminated-text|
+TextLiteral 9408+64 L270C56 |"Unterminated text literal: hit end of line before closing '\"'"|
+Identifier 9473+9 L270C121 |open-span|
+Newline 9482+1 L270C130
+InKeyword 9492+2 L271C10 |in|
+LetKeyword 9495+3 L271C13 |let|
+Identifier 9499+5 L271C17 |__seq|
+Equals 9505+1 L271C23 |=|
+Identifier 9507+2 L271C25 |st|
+Dot 9509+1 L271C27 |.|
+Identifier 9510+6 L271C28 |errors|
+Equals 9517+1 L271C35 |=|
+Identifier 9519+18 L271C37 |__linked-list-push|
+LeftParen 9538+1 L271C56 |(|
+Identifier 9539+2 L271C57 |st|
+Dot 9541+1 L271C59 |.|
+Identifier 9542+6 L271C60 |errors|
+RightParen 9548+1 L271C66 |)|
+Identifier 9550+3 L271C68 |err|
+Newline 9553+1 L271C71
+InKeyword 9563+2 L272C10 |in|
+Identifier 9566+2 L272C13 |st|
+Newline 9568+1 L272C15
+Newline 9569+1 L273C1
+Identifier 9572+21 L274C3 |validate-escapes-into|
+Colon 9594+1 L274C25 |:|
+TypeIdentifier 9596+4 L274C27 |Text|
+Comma 9600+1 L274C31 |,|
+TypeIdentifier 9602+7 L274C33 |Integer|
+BetweenKeyword 9610+7 L274C41 |between|
+IntegerLiteral 9618+1 L274C49 |0|
+AndKeyword 9620+3 L274C51 |and|
+IntegerLiteral 9624+6 L274C55 |131071|
+Comma 9630+1 L274C61 |,|
+TypeIdentifier 9632+7 L274C63 |Integer|
+BetweenKeyword 9640+7 L274C71 |between|
+IntegerLiteral 9648+1 L274C79 |0|
+AndKeyword 9650+3 L274C81 |and|
+IntegerLiteral 9654+10 L274C85 |4294967295|
+Comma 9664+1 L274C95 |,|
+TypeIdentifier 9666+7 L274C97 |Integer|
+BetweenKeyword 9674+7 L274C105 |between|
+IntegerLiteral 9682+1 L274C113 |0|
+AndKeyword 9684+3 L274C115 |and|
+IntegerLiteral 9688+10 L274C119 |4294967295|
+Comma 9698+1 L274C129 |,|
+TypeIdentifier 9700+7 L274C131 |Integer|
+BetweenKeyword 9708+7 L274C139 |between|
+IntegerLiteral 9716+1 L274C147 |0|
+AndKeyword 9718+3 L274C149 |and|
+IntegerLiteral 9722+5 L274C153 |65535|
+Comma 9727+1 L274C158 |,|
+TypeIdentifier 9729+10 L274C160 |LinkedList|
+TypeIdentifier 9740+10 L274C171 |Diagnostic|
+Arrow 9751+2 L274C182 |->|
+TypeIdentifier 9754+10 L274C185 |LinkedList|
+TypeIdentifier 9765+10 L274C196 |Diagnostic|
+Newline 9775+1 L274C206
+Identifier 9778+21 L275C3 |validate-escapes-into|
+LeftParen 9800+1 L275C25 |(|
+Identifier 9801+1 L275C26 |s|
+RightParen 9802+1 L275C27 |)|
+LeftParen 9804+1 L275C29 |(|
+Identifier 9805+9 L275C30 |base-line|
+RightParen 9814+1 L275C39 |)|
+LeftParen 9816+1 L275C41 |(|
+Identifier 9817+8 L275C42 |base-col|
+RightParen 9825+1 L275C50 |)|
+LeftParen 9827+1 L275C52 |(|
+Identifier 9828+8 L275C53 |base-off|
+RightParen 9836+1 L275C61 |)|
+LeftParen 9838+1 L275C63 |(|
+Identifier 9839+3 L275C64 |fid|
+RightParen 9842+1 L275C67 |)|
+LeftParen 9844+1 L275C69 |(|
+Identifier 9845+4 L275C70 |errs|
+RightParen 9849+1 L275C74 |)|
+Equals 9851+1 L275C76 |=|
+Newline 9852+1 L275C77
+Identifier 9856+21 L276C4 |validate-escapes-loop|
+Identifier 9878+1 L276C26 |s|
+IntegerLiteral 9880+1 L276C28 |0|
+LeftParen 9882+1 L276C30 |(|
+Identifier 9883+11 L276C31 |text-length|
+Identifier 9895+1 L276C43 |s|
+RightParen 9896+1 L276C44 |)|
+Identifier 9898+9 L276C46 |base-line|
+Identifier 9908+8 L276C56 |base-col|
+Identifier 9917+8 L276C65 |base-off|
+Identifier 9926+3 L276C74 |fid|
+Identifier 9930+4 L276C78 |errs|
+Newline 9934+1 L276C82
+Newline 9935+1 L277C1
+Identifier 9938+21 L278C3 |validate-escapes-loop|
+Colon 9960+1 L278C25 |:|
+TypeIdentifier 9962+4 L278C27 |Text|
+Comma 9966+1 L278C31 |,|
+TypeIdentifier 9968+7 L278C33 |Integer|
+Comma 9975+1 L278C40 |,|
+TypeIdentifier 9977+7 L278C42 |Integer|
+Comma 9984+1 L278C49 |,|
+TypeIdentifier 9986+7 L278C51 |Integer|
+BetweenKeyword 9994+7 L278C59 |between|
+IntegerLiteral 10002+1 L278C67 |0|
+AndKeyword 10004+3 L278C69 |and|
+IntegerLiteral 10008+6 L278C73 |131071|
+Comma 10014+1 L278C79 |,|
+TypeIdentifier 10016+7 L278C81 |Integer|
+BetweenKeyword 10024+7 L278C89 |between|
+IntegerLiteral 10032+1 L278C97 |0|
+AndKeyword 10034+3 L278C99 |and|
+IntegerLiteral 10038+10 L278C103 |4294967295|
+Comma 10048+1 L278C113 |,|
+TypeIdentifier 10050+7 L278C115 |Integer|
+BetweenKeyword 10058+7 L278C123 |between|
+IntegerLiteral 10066+1 L278C131 |0|
+AndKeyword 10068+3 L278C133 |and|
+IntegerLiteral 10072+10 L278C137 |4294967295|
+Comma 10082+1 L278C147 |,|
+TypeIdentifier 10084+7 L278C149 |Integer|
+BetweenKeyword 10092+7 L278C157 |between|
+IntegerLiteral 10100+1 L278C165 |0|
+AndKeyword 10102+3 L278C167 |and|
+IntegerLiteral 10106+5 L278C171 |65535|
+Comma 10111+1 L278C176 |,|
+TypeIdentifier 10113+10 L278C178 |LinkedList|
+TypeIdentifier 10124+10 L278C189 |Diagnostic|
+Arrow 10135+2 L278C200 |->|
+TypeIdentifier 10138+10 L278C203 |LinkedList|
+TypeIdentifier 10149+10 L278C214 |Diagnostic|
+Newline 10159+1 L278C224
+Identifier 10162+21 L279C3 |validate-escapes-loop|
+LeftParen 10184+1 L279C25 |(|
+Identifier 10185+1 L279C26 |s|
+RightParen 10186+1 L279C27 |)|
+LeftParen 10188+1 L279C29 |(|
+Identifier 10189+1 L279C30 |i|
+RightParen 10190+1 L279C31 |)|
+LeftParen 10192+1 L279C33 |(|
+Identifier 10193+3 L279C34 |len|
+RightParen 10196+1 L279C37 |)|
+LeftParen 10198+1 L279C39 |(|
+Identifier 10199+4 L279C40 |line|
+RightParen 10203+1 L279C44 |)|
+LeftParen 10205+1 L279C46 |(|
+Identifier 10206+3 L279C47 |col|
+RightParen 10209+1 L279C50 |)|
+LeftParen 10211+1 L279C52 |(|
+Identifier 10212+3 L279C53 |off|
+RightParen 10215+1 L279C56 |)|
+LeftParen 10217+1 L279C58 |(|
+Identifier 10218+3 L279C59 |fid|
+RightParen 10221+1 L279C62 |)|
+LeftParen 10223+1 L279C64 |(|
+Identifier 10224+4 L279C65 |errs|
+RightParen 10228+1 L279C69 |)|
+Equals 10230+1 L279C71 |=|
+Newline 10231+1 L279C72
+IfKeyword 10235+2 L280C4 |if|
+Identifier 10238+1 L280C7 |i|
+GreaterOrEqual 10240+2 L280C9 |>=|
+Identifier 10243+3 L280C12 |len|
+ThenKeyword 10247+4 L280C16 |then|
+Identifier 10252+4 L280C21 |errs|
+Newline 10256+1 L280C25
+ElseKeyword 10260+4 L281C4 |else|
+LetKeyword 10265+3 L281C9 |let|
+Identifier 10269+1 L281C13 |c|
+Equals 10271+1 L281C15 |=|
+Identifier 10273+12 L281C17 |char-code-at|
+Identifier 10286+1 L281C30 |s|
+Identifier 10288+1 L281C32 |i|
+Newline 10289+1 L281C33
+InKeyword 10293+2 L282C4 |in|
+IfKeyword 10296+2 L282C7 |if|
+Identifier 10299+1 L282C10 |c|
+DoubleEquals 10301+2 L282C12 |==|
+Identifier 10304+12 L282C15 |cc-backslash|
+ThenKeyword 10317+4 L282C28 |then|
+IfKeyword 10322+2 L282C33 |if|
+Identifier 10325+1 L282C36 |i|
+Plus 10327+1 L282C38 |+|
+IntegerLiteral 10329+1 L282C40 |1|
+LessThan 10331+1 L282C42 |<|
+Identifier 10333+3 L282C44 |len|
+ThenKeyword 10337+4 L282C48 |then|
+LetKeyword 10342+3 L282C53 |let|
+Identifier 10346+2 L282C57 |nc|
+Equals 10349+1 L282C60 |=|
+Identifier 10351+12 L282C62 |char-code-at|
+Identifier 10364+1 L282C75 |s|
+LeftParen 10366+1 L282C77 |(|
+Identifier 10367+1 L282C78 |i|
+Plus 10369+1 L282C80 |+|
+IntegerLiteral 10371+1 L282C82 |1|
+RightParen 10372+1 L282C83 |)|
+Newline 10373+1 L282C84
+InKeyword 10377+2 L283C4 |in|
+LetKeyword 10380+3 L283C7 |let|
+Identifier 10384+8 L283C11 |esc-span|
+Equals 10393+1 L283C20 |=|
+Identifier 10395+7 L283C22 |span-at|
+Identifier 10403+4 L283C30 |line|
+LeftParen 10408+1 L283C35 |(|
+Identifier 10409+3 L283C36 |col|
+Plus 10413+1 L283C40 |+|
+Identifier 10415+1 L283C42 |i|
+RightParen 10416+1 L283C43 |)|
+LeftParen 10418+1 L283C45 |(|
+Identifier 10419+3 L283C46 |off|
+Plus 10423+1 L283C50 |+|
+Identifier 10425+1 L283C52 |i|
+RightParen 10426+1 L283C53 |)|
+IntegerLiteral 10428+1 L283C55 |2|
+Identifier 10430+3 L283C57 |fid|
+Newline 10433+1 L283C60
+InKeyword 10437+2 L284C4 |in|
+IfKeyword 10440+2 L284C7 |if|
+Identifier 10443+2 L284C10 |nc|
+DoubleEquals 10446+2 L284C13 |==|
+Identifier 10449+10 L284C16 |cc-lower-t|
+ThenKeyword 10460+4 L284C27 |then|
+Identifier 10465+21 L284C32 |validate-escapes-loop|
+Identifier 10487+1 L284C54 |s|
+LeftParen 10489+1 L284C56 |(|
+Identifier 10490+1 L284C57 |i|
+Plus 10492+1 L284C59 |+|
+IntegerLiteral 10494+1 L284C61 |2|
+RightParen 10495+1 L284C62 |)|
+Identifier 10497+3 L284C64 |len|
+Identifier 10501+4 L284C68 |line|
+Identifier 10506+3 L284C73 |col|
+Identifier 10510+3 L284C77 |off|
+Identifier 10514+3 L284C81 |fid|
+LeftParen 10518+1 L284C85 |(|
+Identifier 10519+18 L284C86 |__linked-list-push|
+Identifier 10538+4 L284C105 |errs|
+LeftParen 10543+1 L284C110 |(|
+Identifier 10544+10 L284C111 |make-error|
+Identifier 10555+22 L284C122 |cdx-invalid-tab-escape|
+TextLiteral 10578+53 L284C145 |"\\t escape is not valid in CCE; use spaces directly"|
+Identifier 10632+8 L284C199 |esc-span|
+RightParen 10640+1 L284C207 |)|
+RightParen 10641+1 L284C208 |)|
+Newline 10642+1 L284C209
+ElseKeyword 10653+4 L285C11 |else|
+IfKeyword 10658+2 L285C16 |if|
+Identifier 10661+2 L285C19 |nc|
+DoubleEquals 10664+2 L285C22 |==|
+Identifier 10667+10 L285C25 |cc-lower-r|
+ThenKeyword 10678+4 L285C36 |then|
+Identifier 10683+21 L285C41 |validate-escapes-loop|
+Identifier 10705+1 L285C63 |s|
+LeftParen 10707+1 L285C65 |(|
+Identifier 10708+1 L285C66 |i|
+Plus 10710+1 L285C68 |+|
+IntegerLiteral 10712+1 L285C70 |2|
+RightParen 10713+1 L285C71 |)|
+Identifier 10715+3 L285C73 |len|
+Identifier 10719+4 L285C77 |line|
+Identifier 10724+3 L285C82 |col|
+Identifier 10728+3 L285C86 |off|
+Identifier 10732+3 L285C90 |fid|
+LeftParen 10736+1 L285C94 |(|
+Identifier 10737+18 L285C95 |__linked-list-push|
+Identifier 10756+4 L285C114 |errs|
+LeftParen 10761+1 L285C119 |(|
+Identifier 10762+10 L285C120 |make-error|
+Identifier 10773+34 L285C131 |cdx-invalid-carriage-return-escape|
+TextLiteral 10808+54 L285C166 |"\\r escape is not valid in CCE; use \\n for newlines"|
+Identifier 10863+8 L285C221 |esc-span|
+RightParen 10871+1 L285C229 |)|
+RightParen 10872+1 L285C230 |)|
+Newline 10873+1 L285C231
+ElseKeyword 10884+4 L286C11 |else|
+Identifier 10889+21 L286C16 |validate-escapes-loop|
+Identifier 10911+1 L286C38 |s|
+LeftParen 10913+1 L286C40 |(|
+Identifier 10914+1 L286C41 |i|
+Plus 10916+1 L286C43 |+|
+IntegerLiteral 10918+1 L286C45 |2|
+RightParen 10919+1 L286C46 |)|
+Identifier 10921+3 L286C48 |len|
+Identifier 10925+4 L286C52 |line|
+Identifier 10930+3 L286C57 |col|
+Identifier 10934+3 L286C61 |off|
+Identifier 10938+3 L286C65 |fid|
+Identifier 10942+4 L286C69 |errs|
+Newline 10946+1 L286C73
+ElseKeyword 10954+4 L287C8 |else|
+Identifier 10959+4 L287C13 |errs|
+Newline 10963+1 L287C17
+ElseKeyword 10970+4 L288C7 |else|
+Identifier 10975+21 L288C12 |validate-escapes-loop|
+Identifier 10997+1 L288C34 |s|
+LeftParen 10999+1 L288C36 |(|
+Identifier 11000+1 L288C37 |i|
+Plus 11002+1 L288C39 |+|
+IntegerLiteral 11004+1 L288C41 |1|
+RightParen 11005+1 L288C42 |)|
+Identifier 11007+3 L288C44 |len|
+Identifier 11011+4 L288C48 |line|
+Identifier 11016+3 L288C53 |col|
+Identifier 11020+3 L288C57 |off|
+Identifier 11024+3 L288C61 |fid|
+Identifier 11028+4 L288C65 |errs|
+Newline 11032+1 L288C69
+Newline 11033+1 L289C1
+Identifier 11036+14 L290C3 |decode-escapes|
+Colon 11051+1 L290C18 |:|
+TypeIdentifier 11053+4 L290C20 |Text|
+Arrow 11058+2 L290C25 |->|
+TypeIdentifier 11061+4 L290C28 |Text|
+Newline 11065+1 L290C32
+Identifier 11068+14 L291C3 |decode-escapes|
+LeftParen 11083+1 L291C18 |(|
+Identifier 11084+1 L291C19 |s|
+RightParen 11085+1 L291C20 |)|
+Equals 11087+1 L291C22 |=|
+Newline 11088+1 L291C23
+Identifier 11092+16 L292C4 |text-concat-list|
+LeftParen 11109+1 L292C21 |(|
+Identifier 11110+19 L292C22 |decode-escapes-loop|
+Identifier 11130+1 L292C42 |s|
+IntegerLiteral 11132+1 L292C44 |0|
+LeftParen 11134+1 L292C46 |(|
+Identifier 11135+11 L292C47 |text-length|
+Identifier 11147+1 L292C59 |s|
+RightParen 11148+1 L292C60 |)|
+LeftBracket 11150+1 L292C62 |[|
+RightBracket 11151+1 L292C63 |]|
+RightParen 11152+1 L292C64 |)|
+Newline 11153+1 L292C65
+Newline 11154+1 L293C1
+Identifier 11157+19 L294C3 |decode-escapes-loop|
+Colon 11177+1 L294C23 |:|
+TypeIdentifier 11179+4 L294C25 |Text|
+Comma 11183+1 L294C29 |,|
+TypeIdentifier 11185+7 L294C31 |Integer|
+Comma 11192+1 L294C38 |,|
+TypeIdentifier 11194+7 L294C40 |Integer|
+Comma 11201+1 L294C47 |,|
+TypeIdentifier 11203+4 L294C49 |List|
+TypeIdentifier 11208+4 L294C54 |Text|
+Arrow 11213+2 L294C59 |->|
+TypeIdentifier 11216+4 L294C62 |List|
+TypeIdentifier 11221+4 L294C67 |Text|
+Newline 11225+1 L294C71
+Identifier 11228+19 L295C3 |decode-escapes-loop|
+LeftParen 11248+1 L295C23 |(|
+Identifier 11249+1 L295C24 |s|
+RightParen 11250+1 L295C25 |)|
+LeftParen 11252+1 L295C27 |(|
+Identifier 11253+1 L295C28 |i|
+RightParen 11254+1 L295C29 |)|
+LeftParen 11256+1 L295C31 |(|
+Identifier 11257+3 L295C32 |len|
+RightParen 11260+1 L295C35 |)|
+LeftParen 11262+1 L295C37 |(|
+Identifier 11263+3 L295C38 |acc|
+RightParen 11266+1 L295C41 |)|
+Equals 11268+1 L295C43 |=|
+Newline 11269+1 L295C44
+IfKeyword 11273+2 L296C4 |if|
+Identifier 11276+1 L296C7 |i|
+GreaterOrEqual 11278+2 L296C9 |>=|
+Identifier 11281+3 L296C12 |len|
+ThenKeyword 11285+4 L296C16 |then|
+Identifier 11290+3 L296C21 |acc|
+Newline 11293+1 L296C24
+ElseKeyword 11297+4 L297C4 |else|
+LetKeyword 11302+3 L297C9 |let|
+Identifier 11306+1 L297C13 |c|
+Equals 11308+1 L297C15 |=|
+Identifier 11310+12 L297C17 |char-code-at|
+Identifier 11323+1 L297C30 |s|
+Identifier 11325+1 L297C32 |i|
+Newline 11326+1 L297C33
+InKeyword 11330+2 L298C4 |in|
+IfKeyword 11333+2 L298C7 |if|
+Identifier 11336+1 L298C10 |c|
+DoubleEquals 11338+2 L298C12 |==|
+Identifier 11341+12 L298C15 |cc-backslash|
+ThenKeyword 11354+4 L298C28 |then|
+IfKeyword 11359+2 L298C33 |if|
+Identifier 11362+1 L298C36 |i|
+Plus 11364+1 L298C38 |+|
+IntegerLiteral 11366+1 L298C40 |1|
+LessThan 11368+1 L298C42 |<|
+Identifier 11370+3 L298C44 |len|
+ThenKeyword 11374+4 L298C48 |then|
+LetKeyword 11379+3 L298C53 |let|
+Identifier 11383+2 L298C57 |nc|
+Equals 11386+1 L298C60 |=|
+Identifier 11388+12 L298C62 |char-code-at|
+Identifier 11401+1 L298C75 |s|
+LeftParen 11403+1 L298C77 |(|
+Identifier 11404+1 L298C78 |i|
+Plus 11406+1 L298C80 |+|
+IntegerLiteral 11408+1 L298C82 |1|
+RightParen 11409+1 L298C83 |)|
+Newline 11410+1 L298C84
+InKeyword 11414+2 L299C4 |in|
+IfKeyword 11417+2 L299C7 |if|
+Identifier 11420+2 L299C10 |nc|
+DoubleEquals 11423+2 L299C13 |==|
+Identifier 11426+10 L299C16 |cc-lower-n|
+ThenKeyword 11437+4 L299C27 |then|
+Identifier 11442+19 L299C32 |decode-escapes-loop|
+Identifier 11462+1 L299C52 |s|
+LeftParen 11464+1 L299C54 |(|
+Identifier 11465+1 L299C55 |i|
+Plus 11467+1 L299C57 |+|
+IntegerLiteral 11469+1 L299C59 |2|
+RightParen 11470+1 L299C60 |)|
+Identifier 11472+3 L299C62 |len|
+LeftParen 11476+1 L299C66 |(|
+Identifier 11477+9 L299C67 |list-push|
+Identifier 11487+3 L299C77 |acc|
+LeftParen 11491+1 L299C81 |(|
+Identifier 11492+12 L299C82 |char-to-text|
+CharLiteral 11505+4 L299C95 |'\n'|
+RightParen 11509+1 L299C99 |)|
+RightParen 11510+1 L299C100 |)|
+Newline 11511+1 L299C101
+ElseKeyword 11522+4 L300C11 |else|
+IfKeyword 11527+2 L300C16 |if|
+Identifier 11530+2 L300C19 |nc|
+DoubleEquals 11533+2 L300C22 |==|
+Identifier 11536+10 L300C25 |cc-lower-t|
+ThenKeyword 11547+4 L300C36 |then|
+Identifier 11552+19 L300C41 |decode-escapes-loop|
+Identifier 11572+1 L300C61 |s|
+LeftParen 11574+1 L300C63 |(|
+Identifier 11575+1 L300C64 |i|
+Plus 11577+1 L300C66 |+|
+IntegerLiteral 11579+1 L300C68 |2|
+RightParen 11580+1 L300C69 |)|
+Identifier 11582+3 L300C71 |len|
+LeftParen 11586+1 L300C75 |(|
+Identifier 11587+9 L300C76 |list-push|
+Identifier 11597+3 L300C86 |acc|
+TextLiteral 11601+4 L300C90 |"  "|
+RightParen 11605+1 L300C94 |)|
+Newline 11606+1 L300C95
+ElseKeyword 11617+4 L301C11 |else|
+IfKeyword 11622+2 L301C16 |if|
+Identifier 11625+2 L301C19 |nc|
+DoubleEquals 11628+2 L301C22 |==|
+Identifier 11631+10 L301C25 |cc-lower-r|
+ThenKeyword 11642+4 L301C36 |then|
+Identifier 11647+19 L301C41 |decode-escapes-loop|
+Identifier 11667+1 L301C61 |s|
+LeftParen 11669+1 L301C63 |(|
+Identifier 11670+1 L301C64 |i|
+Plus 11672+1 L301C66 |+|
+IntegerLiteral 11674+1 L301C68 |2|
+RightParen 11675+1 L301C69 |)|
+Identifier 11677+3 L301C71 |len|
+Identifier 11681+3 L301C75 |acc|
+Newline 11684+1 L301C78
+ElseKeyword 11695+4 L302C11 |else|
+IfKeyword 11700+2 L302C16 |if|
+Identifier 11703+2 L302C19 |nc|
+DoubleEquals 11706+2 L302C22 |==|
+Identifier 11709+12 L302C25 |cc-backslash|
+ThenKeyword 11722+4 L302C38 |then|
+Identifier 11727+19 L302C43 |decode-escapes-loop|
+Identifier 11747+1 L302C63 |s|
+LeftParen 11749+1 L302C65 |(|
+Identifier 11750+1 L302C66 |i|
+Plus 11752+1 L302C68 |+|
+IntegerLiteral 11754+1 L302C70 |2|
+RightParen 11755+1 L302C71 |)|
+Identifier 11757+3 L302C73 |len|
+LeftParen 11761+1 L302C77 |(|
+Identifier 11762+9 L302C78 |list-push|
+Identifier 11772+3 L302C88 |acc|
+TextLiteral 11776+4 L302C92 |"\\"|
+RightParen 11780+1 L302C96 |)|
+Newline 11781+1 L302C97
+ElseKeyword 11792+4 L303C11 |else|
+IfKeyword 11797+2 L303C16 |if|
+Identifier 11800+2 L303C19 |nc|
+DoubleEquals 11803+2 L303C22 |==|
+Identifier 11806+15 L303C25 |cc-double-quote|
+ThenKeyword 11822+4 L303C41 |then|
+Identifier 11827+19 L303C46 |decode-escapes-loop|
+Identifier 11847+1 L303C66 |s|
+LeftParen 11849+1 L303C68 |(|
+Identifier 11850+1 L303C69 |i|
+Plus 11852+1 L303C71 |+|
+IntegerLiteral 11854+1 L303C73 |2|
+RightParen 11855+1 L303C74 |)|
+Identifier 11857+3 L303C76 |len|
+LeftParen 11861+1 L303C80 |(|
+Identifier 11862+9 L303C81 |list-push|
+Identifier 11872+3 L303C91 |acc|
+TextLiteral 11876+4 L303C95 |"\""|
+RightParen 11880+1 L303C99 |)|
+Newline 11881+1 L303C100
+ElseKeyword 11892+4 L304C11 |else|
+Identifier 11897+19 L304C16 |decode-escapes-loop|
+Identifier 11917+1 L304C36 |s|
+LeftParen 11919+1 L304C38 |(|
+Identifier 11920+1 L304C39 |i|
+Plus 11922+1 L304C41 |+|
+IntegerLiteral 11924+1 L304C43 |2|
+RightParen 11925+1 L304C44 |)|
+Identifier 11927+3 L304C46 |len|
+LeftParen 11931+1 L304C50 |(|
+Identifier 11932+9 L304C51 |list-push|
+Identifier 11942+3 L304C61 |acc|
+LeftParen 11946+1 L304C65 |(|
+Identifier 11947+12 L304C66 |char-to-text|
+LeftParen 11960+1 L304C79 |(|
+Identifier 11961+7 L304C80 |char-at|
+Identifier 11969+1 L304C88 |s|
+LeftParen 11971+1 L304C90 |(|
+Identifier 11972+1 L304C91 |i|
+Plus 11974+1 L304C93 |+|
+IntegerLiteral 11976+1 L304C95 |1|
+RightParen 11977+1 L304C96 |)|
+RightParen 11978+1 L304C97 |)|
+RightParen 11979+1 L304C98 |)|
+RightParen 11980+1 L304C99 |)|
+Newline 11981+1 L304C100
+ElseKeyword 11989+4 L305C8 |else|
+Identifier 11994+9 L305C13 |list-push|
+Identifier 12004+3 L305C23 |acc|
+LeftParen 12008+1 L305C27 |(|
+Identifier 12009+12 L305C28 |char-to-text|
+LeftParen 12022+1 L305C41 |(|
+Identifier 12023+7 L305C42 |char-at|
+Identifier 12031+1 L305C50 |s|
+Identifier 12033+1 L305C52 |i|
+RightParen 12034+1 L305C53 |)|
+RightParen 12035+1 L305C54 |)|
+Newline 12036+1 L305C55
+ElseKeyword 12043+4 L306C7 |else|
+Identifier 12048+19 L306C12 |decode-escapes-loop|
+Identifier 12068+1 L306C32 |s|
+LeftParen 12070+1 L306C34 |(|
+Identifier 12071+1 L306C35 |i|
+Plus 12073+1 L306C37 |+|
+IntegerLiteral 12075+1 L306C39 |1|
+RightParen 12076+1 L306C40 |)|
+Identifier 12078+3 L306C42 |len|
+LeftParen 12082+1 L306C46 |(|
+Identifier 12083+9 L306C47 |list-push|
+Identifier 12093+3 L306C57 |acc|
+LeftParen 12097+1 L306C61 |(|
+Identifier 12098+12 L306C62 |char-to-text|
+LeftParen 12111+1 L306C75 |(|
+Identifier 12112+7 L306C76 |char-at|
+Identifier 12120+1 L306C84 |s|
+Identifier 12122+1 L306C86 |i|
+RightParen 12123+1 L306C87 |)|
+RightParen 12124+1 L306C88 |)|
+RightParen 12125+1 L306C89 |)|
+Newline 12126+1 L306C90
+Newline 12127+1 L307C1
+TypeIdentifier 12128+7 L308C1 |Section|
+Colon 12135+1 L308C8 |:|
+TypeIdentifier 12137+7 L308C10 |Keyword|
+TypeIdentifier 12145+14 L308C18 |Classification|
+Newline 12159+1 L308C32
+Identifier 12162+13 L309C3 |classify-word|
+Colon 12176+1 L309C17 |:|
+TypeIdentifier 12178+4 L309C19 |Text|
+Arrow 12183+2 L309C24 |->|
+TypeIdentifier 12186+9 L309C27 |TokenKind|
+Newline 12195+1 L309C36
+Identifier 12198+13 L310C3 |classify-word|
+LeftParen 12212+1 L310C17 |(|
+Identifier 12213+1 L310C18 |w|
+RightParen 12214+1 L310C19 |)|
+Equals 12216+1 L310C21 |=|
+Newline 12217+1 L310C22
+Identifier 12221+16 L311C4 |subj-deck-record|
+LeftParen 12238+1 L311C21 |(|
+Newline 12239+1 L311C22
+IfKeyword 12244+2 L312C5 |if|
+Identifier 12247+1 L312C8 |w|
+DoubleEquals 12249+2 L312C10 |==|
+TextLiteral 12252+5 L312C13 |"let"|
+ThenKeyword 12258+4 L312C19 |then|
+TypeIdentifier 12263+10 L312C24 |LetKeyword|
+Newline 12273+1 L312C34
+ElseKeyword 12278+4 L313C5 |else|
+IfKeyword 12283+2 L313C10 |if|
+Identifier 12286+1 L313C13 |w|
+DoubleEquals 12288+2 L313C15 |==|
+TextLiteral 12291+4 L313C18 |"in"|
+ThenKeyword 12296+4 L313C23 |then|
+TypeIdentifier 12301+9 L313C28 |InKeyword|
+Newline 12310+1 L313C37
+ElseKeyword 12315+4 L314C5 |else|
+IfKeyword 12320+2 L314C10 |if|
+Identifier 12323+1 L314C13 |w|
+DoubleEquals 12325+2 L314C15 |==|
+TextLiteral 12328+9 L314C18 |"between"|
+ThenKeyword 12338+4 L314C28 |then|
+TypeIdentifier 12343+14 L314C33 |BetweenKeyword|
+Newline 12357+1 L314C47
+ElseKeyword 12361+4 L315C4 |else|
+IfKeyword 12366+2 L315C9 |if|
+Identifier 12369+1 L315C12 |w|
+DoubleEquals 12371+2 L315C14 |==|
+TextLiteral 12374+5 L315C17 |"and"|
+ThenKeyword 12380+4 L315C23 |then|
+TypeIdentifier 12385+10 L315C28 |AndKeyword|
+Newline 12395+1 L315C38
+ElseKeyword 12399+4 L316C4 |else|
+IfKeyword 12404+2 L316C9 |if|
+Identifier 12407+1 L316C12 |w|
+DoubleEquals 12409+2 L316C14 |==|
+TextLiteral 12412+4 L316C17 |"or"|
+ThenKeyword 12417+4 L316C22 |then|
+TypeIdentifier 12422+9 L316C27 |OrKeyword|
+Newline 12431+1 L316C36
+ElseKeyword 12435+4 L317C4 |else|
+IfKeyword 12440+2 L317C9 |if|
+Identifier 12443+1 L317C12 |w|
+DoubleEquals 12445+2 L317C14 |==|
+TextLiteral 12448+5 L317C17 |"xor"|
+ThenKeyword 12454+4 L317C23 |then|
+TypeIdentifier 12459+10 L317C28 |XorKeyword|
+Newline 12469+1 L317C38
+ElseKeyword 12473+4 L318C4 |else|
+IfKeyword 12478+2 L318C9 |if|
+Identifier 12481+1 L318C12 |w|
+DoubleEquals 12483+2 L318C14 |==|
+TextLiteral 12486+5 L318C17 |"not"|
+ThenKeyword 12492+4 L318C23 |then|
+TypeIdentifier 12497+10 L318C28 |NotKeyword|
+Newline 12507+1 L318C38
+ElseKeyword 12512+4 L319C5 |else|
+IfKeyword 12517+2 L319C10 |if|
+Identifier 12520+1 L319C13 |w|
+DoubleEquals 12522+2 L319C15 |==|
+TextLiteral 12525+4 L319C18 |"if"|
+ThenKeyword 12530+4 L319C23 |then|
+TypeIdentifier 12535+9 L319C28 |IfKeyword|
+Newline 12544+1 L319C37
+ElseKeyword 12549+4 L320C5 |else|
+IfKeyword 12554+2 L320C10 |if|
+Identifier 12557+1 L320C13 |w|
+DoubleEquals 12559+2 L320C15 |==|
+TextLiteral 12562+4 L320C18 |"is"|
+ThenKeyword 12567+4 L320C23 |then|
+TypeIdentifier 12572+9 L320C28 |IsKeyword|
+Newline 12581+1 L320C37
+ElseKeyword 12586+4 L321C5 |else|
+IfKeyword 12591+2 L321C10 |if|
+Identifier 12594+1 L321C13 |w|
+DoubleEquals 12596+2 L321C15 |==|
+TextLiteral 12599+11 L321C18 |"otherwise"|
+ThenKeyword 12611+4 L321C30 |then|
+TypeIdentifier 12616+16 L321C35 |OtherwiseKeyword|
+Newline 12632+1 L321C51
+ElseKeyword 12637+4 L322C5 |else|
+IfKeyword 12642+2 L322C10 |if|
+Identifier 12645+1 L322C13 |w|
+DoubleEquals 12647+2 L322C15 |==|
+TextLiteral 12650+6 L322C18 |"then"|
+ThenKeyword 12657+4 L322C25 |then|
+TypeIdentifier 12662+11 L322C30 |ThenKeyword|
+Newline 12673+1 L322C41
+ElseKeyword 12678+4 L323C5 |else|
+IfKeyword 12683+2 L323C10 |if|
+Identifier 12686+1 L323C13 |w|
+DoubleEquals 12688+2 L323C15 |==|
+TextLiteral 12691+6 L323C18 |"else"|
+ThenKeyword 12698+4 L323C25 |then|
+TypeIdentifier 12703+11 L323C30 |ElseKeyword|
+Newline 12714+1 L323C41
+ElseKeyword 12719+4 L324C5 |else|
+IfKeyword 12724+2 L324C10 |if|
+Identifier 12727+1 L324C13 |w|
+DoubleEquals 12729+2 L324C15 |==|
+TextLiteral 12732+6 L324C18 |"when"|
+ThenKeyword 12739+4 L324C25 |then|
+TypeIdentifier 12744+11 L324C30 |WhenKeyword|
+Newline 12755+1 L324C41
+ElseKeyword 12760+4 L325C5 |else|
+IfKeyword 12765+2 L325C10 |if|
+Identifier 12768+1 L325C13 |w|
+DoubleEquals 12770+2 L325C15 |==|
+TextLiteral 12773+7 L325C18 |"where"|
+ThenKeyword 12781+4 L325C26 |then|
+TypeIdentifier 12786+12 L325C31 |WhereKeyword|
+Newline 12798+1 L325C43
+ElseKeyword 12803+4 L326C5 |else|
+IfKeyword 12808+2 L326C10 |if|
+Identifier 12811+1 L326C13 |w|
+DoubleEquals 12813+2 L326C15 |==|
+TextLiteral 12816+5 L326C18 |"act"|
+ThenKeyword 12822+4 L326C24 |then|
+TypeIdentifier 12827+10 L326C29 |ActKeyword|
+Newline 12837+1 L326C39
+ElseKeyword 12842+4 L327C5 |else|
+IfKeyword 12847+2 L327C10 |if|
+Identifier 12850+1 L327C13 |w|
+DoubleEquals 12852+2 L327C15 |==|
+TextLiteral 12855+5 L327C18 |"end"|
+ThenKeyword 12861+4 L327C24 |then|
+TypeIdentifier 12866+10 L327C29 |EndKeyword|
+Newline 12876+1 L327C39
+ElseKeyword 12881+4 L328C5 |else|
+IfKeyword 12886+2 L328C10 |if|
+Identifier 12889+1 L328C13 |w|
+DoubleEquals 12891+2 L328C15 |==|
+TextLiteral 12894+8 L328C18 |"record"|
+ThenKeyword 12903+4 L328C27 |then|
+TypeIdentifier 12908+13 L328C32 |RecordKeyword|
+Newline 12921+1 L328C45
+ElseKeyword 12926+4 L329C5 |else|
+IfKeyword 12931+2 L329C10 |if|
+Identifier 12934+1 L329C13 |w|
+DoubleEquals 12936+2 L329C15 |==|
+TextLiteral 12939+7 L329C18 |"cites"|
+ThenKeyword 12947+4 L329C26 |then|
+TypeIdentifier 12952+12 L329C31 |CitesKeyword|
+Newline 12964+1 L329C43
+ElseKeyword 12969+4 L330C5 |else|
+IfKeyword 12974+2 L330C10 |if|
+Identifier 12977+1 L330C13 |w|
+DoubleEquals 12979+2 L330C15 |==|
+TextLiteral 12982+9 L330C18 |"grounds"|
+ThenKeyword 12992+4 L330C28 |then|
+TypeIdentifier 12997+14 L330C33 |GroundsKeyword|
+Newline 13011+1 L330C47
+ElseKeyword 13016+4 L331C5 |else|
+IfKeyword 13021+2 L331C10 |if|
+Identifier 13024+1 L331C13 |w|
+DoubleEquals 13026+2 L331C15 |==|
+TextLiteral 13029+8 L331C18 |"quotes"|
+ThenKeyword 13038+4 L331C27 |then|
+TypeIdentifier 13043+13 L331C32 |QuotesKeyword|
+Newline 13056+1 L331C45
+ElseKeyword 13061+4 L332C5 |else|
+IfKeyword 13066+2 L332C10 |if|
+Identifier 13069+1 L332C13 |w|
+DoubleEquals 13071+2 L332C15 |==|
+TextLiteral 13074+10 L332C18 |"trusting"|
+ThenKeyword 13085+4 L332C29 |then|
+TypeIdentifier 13090+15 L332C34 |TrustingKeyword|
+Newline 13105+1 L332C49
+ElseKeyword 13110+4 L333C5 |else|
+IfKeyword 13115+2 L333C10 |if|
+Identifier 13118+1 L333C13 |w|
+DoubleEquals 13120+2 L333C15 |==|
+TextLiteral 13123+7 L333C18 |"above"|
+ThenKeyword 13131+4 L333C26 |then|
+TypeIdentifier 13136+12 L333C31 |AboveKeyword|
+Newline 13148+1 L333C43
+ElseKeyword 13153+4 L334C5 |else|
+IfKeyword 13158+2 L334C10 |if|
+Identifier 13161+1 L334C13 |w|
+DoubleEquals 13163+2 L334C15 |==|
+TextLiteral 13166+7 L334C18 |"claim"|
+ThenKeyword 13174+4 L334C26 |then|
+TypeIdentifier 13179+12 L334C31 |ClaimKeyword|
+Newline 13191+1 L334C43
+ElseKeyword 13196+4 L335C5 |else|
+IfKeyword 13201+2 L335C10 |if|
+Identifier 13204+1 L335C13 |w|
+DoubleEquals 13206+2 L335C15 |==|
+TextLiteral 13209+7 L335C18 |"proof"|
+ThenKeyword 13217+4 L335C26 |then|
+TypeIdentifier 13222+12 L335C31 |ProofKeyword|
+Newline 13234+1 L335C43
+ElseKeyword 13239+4 L336C5 |else|
+IfKeyword 13244+2 L336C10 |if|
+Identifier 13247+1 L336C13 |w|
+DoubleEquals 13249+2 L336C15 |==|
+TextLiteral 13252+5 L336C18 |"qed"|
+ThenKeyword 13258+4 L336C24 |then|
+TypeIdentifier 13263+10 L336C29 |QedKeyword|
+Newline 13273+1 L336C39
+ElseKeyword 13278+4 L337C5 |else|
+IfKeyword 13283+2 L337C10 |if|
+Identifier 13286+1 L337C13 |w|
+DoubleEquals 13288+2 L337C15 |==|
+TextLiteral 13291+11 L337C18 |"induction"|
+ThenKeyword 13303+4 L337C30 |then|
+TypeIdentifier 13308+16 L337C35 |InductionKeyword|
+Newline 13324+1 L337C51
+ElseKeyword 13329+4 L338C5 |else|
+IfKeyword 13334+2 L338C10 |if|
+Identifier 13337+1 L338C13 |w|
+DoubleEquals 13339+2 L338C15 |==|
+TextLiteral 13342+8 L338C18 |"forall"|
+ThenKeyword 13351+4 L338C27 |then|
+TypeIdentifier 13356+13 L338C32 |ForAllKeyword|
+Newline 13369+1 L338C45
+ElseKeyword 13374+4 L339C5 |else|
+IfKeyword 13379+2 L339C10 |if|
+Identifier 13382+1 L339C13 |w|
+DoubleEquals 13384+2 L339C15 |==|
+TextLiteral 13387+8 L339C18 |"exists"|
+ThenKeyword 13396+4 L339C27 |then|
+TypeIdentifier 13401+18 L339C32 |ThereExistsKeyword|
+Newline 13419+1 L339C50
+ElseKeyword 13424+4 L340C5 |else|
+IfKeyword 13429+2 L340C10 |if|
+Identifier 13432+1 L340C13 |w|
+DoubleEquals 13434+2 L340C15 |==|
+TextLiteral 13437+8 L340C18 |"linear"|
+ThenKeyword 13446+4 L340C27 |then|
+TypeIdentifier 13451+13 L340C32 |LinearKeyword|
+Newline 13464+1 L340C45
+ElseKeyword 13469+4 L341C5 |else|
+IfKeyword 13474+2 L341C10 |if|
+Identifier 13477+1 L341C13 |w|
+DoubleEquals 13479+2 L341C15 |==|
+TextLiteral 13482+9 L341C18 |"mutable"|
+ThenKeyword 13492+4 L341C28 |then|
+TypeIdentifier 13497+14 L341C33 |MutableKeyword|
+Newline 13511+1 L341C47
+ElseKeyword 13516+4 L342C5 |else|
+IfKeyword 13521+2 L342C10 |if|
+Identifier 13524+1 L342C13 |w|
+DoubleEquals 13526+2 L342C15 |==|
+TextLiteral 13529+10 L342C18 |"punctual"|
+ThenKeyword 13540+4 L342C29 |then|
+TypeIdentifier 13545+15 L342C34 |PunctualKeyword|
+Newline 13560+1 L342C49
+ElseKeyword 13565+4 L343C5 |else|
+IfKeyword 13570+2 L343C10 |if|
+Identifier 13573+1 L343C13 |w|
+DoubleEquals 13575+2 L343C15 |==|
+TextLiteral 13578+9 L343C18 |"bounded"|
+ThenKeyword 13588+4 L343C28 |then|
+TypeIdentifier 13593+14 L343C33 |BoundedKeyword|
+Newline 13607+1 L343C47
+ElseKeyword 13612+4 L344C5 |else|
+IfKeyword 13617+2 L344C10 |if|
+Identifier 13620+1 L344C13 |w|
+DoubleEquals 13622+2 L344C15 |==|
+TextLiteral 13625+6 L344C18 |"unit"|
+ThenKeyword 13632+4 L344C25 |then|
+TypeIdentifier 13637+11 L344C30 |UnitKeyword|
+Newline 13648+1 L344C41
+ElseKeyword 13653+4 L345C5 |else|
+IfKeyword 13658+2 L345C10 |if|
+Identifier 13661+1 L345C13 |w|
+DoubleEquals 13663+2 L345C15 |==|
+TextLiteral 13666+8 L345C18 |"effect"|
+ThenKeyword 13675+4 L345C27 |then|
+TypeIdentifier 13680+13 L345C32 |EffectKeyword|
+Newline 13693+1 L345C45
+ElseKeyword 13698+4 L346C5 |else|
+IfKeyword 13703+2 L346C10 |if|
+Identifier 13706+1 L346C13 |w|
+DoubleEquals 13708+2 L346C15 |==|
+TextLiteral 13711+7 L346C18 |"class"|
+ThenKeyword 13719+4 L346C26 |then|
+TypeIdentifier 13724+12 L346C31 |ClassKeyword|
+Newline 13736+1 L346C43
+ElseKeyword 13741+4 L347C5 |else|
+IfKeyword 13746+2 L347C10 |if|
+Identifier 13749+1 L347C13 |w|
+DoubleEquals 13751+2 L347C15 |==|
+TextLiteral 13754+10 L347C18 |"instance"|
+ThenKeyword 13765+4 L347C29 |then|
+TypeIdentifier 13770+15 L347C34 |InstanceKeyword|
+Newline 13785+1 L347C49
+ElseKeyword 13790+4 L348C5 |else|
+IfKeyword 13795+2 L348C10 |if|
+Identifier 13798+1 L348C13 |w|
+DoubleEquals 13800+2 L348C15 |==|
+TextLiteral 13803+6 L348C18 |"with"|
+ThenKeyword 13810+4 L348C25 |then|
+TypeIdentifier 13815+11 L348C30 |WithKeyword|
+Newline 13826+1 L348C41
+ElseKeyword 13831+4 L349C5 |else|
+IfKeyword 13836+2 L349C10 |if|
+Identifier 13839+1 L349C13 |w|
+DoubleEquals 13841+2 L349C15 |==|
+TextLiteral 13844+14 L349C18 |"with-timeout"|
+ThenKeyword 13859+4 L349C33 |then|
+TypeIdentifier 13864+18 L349C38 |WithTimeoutKeyword|
+Newline 13882+1 L349C56
+ElseKeyword 13887+4 L350C5 |else|
+IfKeyword 13892+2 L350C10 |if|
+Identifier 13895+1 L350C13 |w|
+DoubleEquals 13897+2 L350C15 |==|
+TextLiteral 13900+8 L350C18 |"trying"|
+ThenKeyword 13909+4 L350C27 |then|
+TypeIdentifier 13914+13 L350C32 |TryingKeyword|
+Newline 13927+1 L350C45
+ElseKeyword 13932+4 L351C5 |else|
+IfKeyword 13937+2 L351C10 |if|
+Identifier 13940+1 L351C13 |w|
+DoubleEquals 13942+2 L351C15 |==|
+TextLiteral 13945+6 L351C18 |"lazy"|
+ThenKeyword 13952+4 L351C25 |then|
+TypeIdentifier 13957+11 L351C30 |LazyKeyword|
+Newline 13968+1 L351C41
+ElseKeyword 13973+4 L352C5 |else|
+IfKeyword 13978+2 L352C10 |if|
+Identifier 13981+1 L352C13 |w|
+DoubleEquals 13983+2 L352C15 |==|
+TextLiteral 13986+9 L352C18 |"revised"|
+ThenKeyword 13996+4 L352C28 |then|
+TypeIdentifier 14001+14 L352C33 |RevisedKeyword|
+Newline 14015+1 L352C47
+ElseKeyword 14020+4 L353C5 |else|
+IfKeyword 14025+2 L353C10 |if|
+Identifier 14028+1 L353C13 |w|
+DoubleEquals 14030+2 L353C15 |==|
+TextLiteral 14033+6 L353C18 |"True"|
+ThenKeyword 14040+4 L353C25 |then|
+TypeIdentifier 14045+11 L353C30 |TrueKeyword|
+Newline 14056+1 L353C41
+ElseKeyword 14061+4 L354C5 |else|
+IfKeyword 14066+2 L354C10 |if|
+Identifier 14069+1 L354C13 |w|
+DoubleEquals 14071+2 L354C15 |==|
+TextLiteral 14074+7 L354C18 |"False"|
+ThenKeyword 14082+4 L354C26 |then|
+TypeIdentifier 14087+12 L354C31 |FalseKeyword|
+Newline 14099+1 L354C43
+ElseKeyword 14104+4 L355C5 |else|
+LetKeyword 14109+3 L355C10 |let|
+Identifier 14113+10 L355C14 |first-code|
+Equals 14124+1 L355C25 |=|
+Identifier 14126+12 L355C27 |char-code-at|
+Identifier 14139+1 L355C40 |w|
+IntegerLiteral 14141+1 L355C42 |0|
+Newline 14142+1 L355C43
+InKeyword 14147+2 L356C5 |in|
+IfKeyword 14150+2 L356C8 |if|
+Identifier 14153+10 L356C11 |first-code|
+GreaterOrEqual 14164+2 L356C22 |>=|
+Identifier 14167+14 L356C25 |cc-first-upper|
+ThenKeyword 14182+4 L356C40 |then|
+IfKeyword 14187+2 L356C45 |if|
+Identifier 14190+10 L356C48 |first-code|
+LessOrEqual 14201+2 L356C59 |<=|
+Identifier 14204+10 L356C62 |cc-upper-z|
+ThenKeyword 14215+4 L356C73 |then|
+TypeIdentifier 14220+14 L356C78 |TypeIdentifier|
+Newline 14234+1 L356C92
+ElseKeyword 14242+4 L357C8 |else|
+TypeIdentifier 14247+10 L357C13 |Identifier|
+Newline 14257+1 L357C23
+ElseKeyword 14265+4 L358C8 |else|
+TypeIdentifier 14270+10 L358C13 |Identifier|
+Newline 14280+1 L358C23
+RightParen 14284+1 L359C4 |)|
+Newline 14285+1 L359C5
+Newline 14286+1 L360C1
+TypeIdentifier 14287+7 L361C1 |Section|
+Colon 14294+1 L361C8 |:|
+TypeIdentifier 14296+6 L361C10 |Single|
+TypeIdentifier 14303+5 L361C17 |Token|
+TypeIdentifier 14309+8 L361C23 |Scanning|
+Newline 14317+1 L361C31
+TypeIdentifier 14320+7 L362C3 |LexStep|
+Equals 14328+1 L362C11 |=|
+Newline 14329+1 L362C12
+Pipe 14333+1 L363C4 |||
+TypeIdentifier 14335+8 L363C6 |LexToken|
+LeftParen 14344+1 L363C15 |(|
+TypeIdentifier 14345+5 L363C16 |Token|
+RightParen 14350+1 L363C21 |)|
+LeftParen 14352+1 L363C23 |(|
+TypeIdentifier 14353+8 L363C24 |LexState|
+RightParen 14361+1 L363C32 |)|
+Newline 14362+1 L363C33
+Pipe 14366+1 L364C4 |||
+TypeIdentifier 14368+6 L364C6 |LexEnd|
+Newline 14374+1 L364C12
+Newline 14375+1 L365C1
+Identifier 14378+10 L366C3 |make-token|
+Colon 14389+1 L366C14 |:|
+TypeIdentifier 14391+9 L366C16 |TokenKind|
+Comma 14400+1 L366C25 |,|
+TypeIdentifier 14402+7 L366C27 |Integer|
+BetweenKeyword 14410+7 L366C35 |between|
+IntegerLiteral 14418+1 L366C43 |0|
+AndKeyword 14420+3 L366C45 |and|
+IntegerLiteral 14424+10 L366C49 |4294967295|
+Comma 14434+1 L366C59 |,|
+TypeIdentifier 14436+8 L366C61 |LexState|
+Arrow 14445+2 L366C70 |->|
+TypeIdentifier 14448+5 L366C73 |Token|
+Newline 14453+1 L366C78
+Identifier 14456+10 L367C3 |make-token|
+LeftParen 14467+1 L367C14 |(|
+Identifier 14468+4 L367C15 |kind|
+RightParen 14472+1 L367C19 |)|
+LeftParen 14474+1 L367C21 |(|
+Identifier 14475+6 L367C22 |length|
+RightParen 14481+1 L367C28 |)|
+LeftParen 14483+1 L367C30 |(|
+Identifier 14484+2 L367C31 |st|
+RightParen 14486+1 L367C33 |)|
+Equals 14488+1 L367C35 |=|
+Newline 14489+1 L367C36
+Identifier 14493+16 L368C4 |subj-deck-record|
+LeftParen 14510+1 L368C21 |(|
+TypeIdentifier 14511+5 L368C22 |Token|
+LeftBrace 14517+1 L368C28 |{|
+Newline 14518+1 L368C29
+Identifier 14523+4 L369C5 |kind|
+Equals 14528+1 L369C10 |=|
+Identifier 14530+4 L369C12 |kind|
+Comma 14534+1 L369C16 |,|
+Newline 14535+1 L369C17
+Identifier 14540+6 L370C5 |source|
+Equals 14547+1 L370C12 |=|
+Identifier 14549+2 L370C14 |st|
+Dot 14551+1 L370C16 |.|
+Identifier 14552+6 L370C17 |source|
+Comma 14558+1 L370C23 |,|
+Newline 14559+1 L370C24
+Identifier 14564+6 L371C5 |offset|
+Equals 14571+1 L371C12 |=|
+Identifier 14573+2 L371C14 |st|
+Dot 14575+1 L371C16 |.|
+Identifier 14576+6 L371C17 |offset|
+Comma 14582+1 L371C23 |,|
+Newline 14583+1 L371C24
+Identifier 14588+6 L372C5 |length|
+Equals 14595+1 L372C12 |=|
+Identifier 14597+6 L372C14 |length|
+Comma 14603+1 L372C20 |,|
+Newline 14604+1 L372C21
+Identifier 14609+4 L373C5 |line|
+Equals 14614+1 L373C10 |=|
+Identifier 14616+2 L373C12 |st|
+Dot 14618+1 L373C14 |.|
+Identifier 14619+4 L373C15 |line|
+Comma 14623+1 L373C19 |,|
+Newline 14624+1 L373C20
+Identifier 14629+6 L374C5 |column|
+Equals 14636+1 L374C12 |=|
+Identifier 14638+2 L374C14 |st|
+Dot 14640+1 L374C16 |.|
+Identifier 14641+6 L374C17 |column|
+Comma 14647+1 L374C23 |,|
+Newline 14648+1 L374C24
+Identifier 14653+7 L375C5 |file-id|
+Equals 14661+1 L375C13 |=|
+Identifier 14663+2 L375C15 |st|
+Dot 14665+1 L375C17 |.|
+Identifier 14666+7 L375C18 |file-id|
+Newline 14673+1 L375C25
+RightBrace 14677+1 L376C4 |}|
+RightParen 14678+1 L376C5 |)|
+Newline 14679+1 L376C6
+Newline 14680+1 L377C1
+Identifier 14683+12 L378C3 |extract-text|
+Colon 14696+1 L378C16 |:|
+TypeIdentifier 14698+8 L378C18 |LexState|
+Comma 14706+1 L378C26 |,|
+TypeIdentifier 14708+7 L378C28 |Integer|
+Comma 14715+1 L378C35 |,|
+TypeIdentifier 14717+8 L378C37 |LexState|
+Arrow 14726+2 L378C46 |->|
+TypeIdentifier 14729+4 L378C49 |Text|
+Newline 14733+1 L378C53
+Identifier 14736+12 L379C3 |extract-text|
+LeftParen 14749+1 L379C16 |(|
+Identifier 14750+2 L379C17 |st|
+RightParen 14752+1 L379C19 |)|
+LeftParen 14754+1 L379C21 |(|
+Identifier 14755+5 L379C22 |start|
+RightParen 14760+1 L379C27 |)|
+LeftParen 14762+1 L379C29 |(|
+Identifier 14763+6 L379C30 |end-st|
+RightParen 14769+1 L379C36 |)|
+Equals 14771+1 L379C38 |=|
+Newline 14772+1 L379C39
+Identifier 14776+9 L380C4 |substring|
+LeftParen 14786+1 L380C14 |(|
+Identifier 14787+2 L380C15 |st|
+Dot 14789+1 L380C17 |.|
+Identifier 14790+6 L380C18 |source|
+RightParen 14796+1 L380C24 |)|
+Identifier 14798+5 L380C26 |start|
+LeftParen 14804+1 L380C32 |(|
+Identifier 14805+6 L380C33 |end-st|
+Dot 14811+1 L380C39 |.|
+Identifier 14812+6 L380C40 |offset|
+Minus 14819+1 L380C47 |-|
+Identifier 14821+5 L380C49 |start|
+RightParen 14826+1 L380C54 |)|
+Newline 14827+1 L380C55
+Newline 14828+1 L381C1
+Identifier 14831+15 L382C3 |scan-to-eol-end|
+Colon 14847+1 L382C19 |:|
+TypeIdentifier 14849+4 L382C21 |Text|
+Comma 14853+1 L382C25 |,|
+TypeIdentifier 14855+7 L382C27 |Integer|
+BetweenKeyword 14863+7 L382C35 |between|
+IntegerLiteral 14871+1 L382C43 |0|
+AndKeyword 14873+3 L382C45 |and|
+IntegerLiteral 14877+10 L382C49 |4294967295|
+Comma 14887+1 L382C59 |,|
+TypeIdentifier 14889+7 L382C61 |Integer|
+Arrow 14897+2 L382C69 |->|
+TypeIdentifier 14900+7 L382C72 |Integer|
+BetweenKeyword 14908+7 L382C80 |between|
+IntegerLiteral 14916+1 L382C88 |0|
+AndKeyword 14918+3 L382C90 |and|
+IntegerLiteral 14922+10 L382C94 |4294967295|
+Newline 14932+1 L382C104
+Identifier 14935+15 L383C3 |scan-to-eol-end|
+LeftParen 14951+1 L383C19 |(|
+Identifier 14952+6 L383C20 |source|
+RightParen 14958+1 L383C26 |)|
+LeftParen 14960+1 L383C28 |(|
+Identifier 14961+6 L383C29 |offset|
+RightParen 14967+1 L383C35 |)|
+LeftParen 14969+1 L383C37 |(|
+Identifier 14970+3 L383C38 |len|
+RightParen 14973+1 L383C41 |)|
+Equals 14975+1 L383C43 |=|
+Newline 14976+1 L383C44
+IfKeyword 14980+2 L384C4 |if|
+Identifier 14983+6 L384C7 |offset|
+GreaterOrEqual 14990+2 L384C14 |>=|
+Identifier 14993+3 L384C17 |len|
+ThenKeyword 14997+4 L384C21 |then|
+Identifier 15002+6 L384C26 |offset|
+Newline 15008+1 L384C32
+ElseKeyword 15012+4 L385C4 |else|
+LetKeyword 15017+3 L385C9 |let|
+Identifier 15021+1 L385C13 |c|
+Equals 15023+1 L385C15 |=|
+Identifier 15025+12 L385C17 |char-code-at|
+Identifier 15038+6 L385C30 |source|
+Identifier 15045+6 L385C37 |offset|
+Newline 15051+1 L385C43
+InKeyword 15055+2 L386C4 |in|
+IfKeyword 15058+2 L386C7 |if|
+Identifier 15061+1 L386C10 |c|
+DoubleEquals 15063+2 L386C12 |==|
+Identifier 15066+10 L386C15 |cc-newline|
+ThenKeyword 15077+4 L386C26 |then|
+Identifier 15082+6 L386C31 |offset|
+Newline 15088+1 L386C37
+ElseKeyword 15095+4 L387C7 |else|
+Identifier 15100+15 L387C12 |scan-to-eol-end|
+Identifier 15116+6 L387C28 |source|
+LeftParen 15123+1 L387C35 |(|
+Identifier 15124+6 L387C36 |offset|
+Plus 15131+1 L387C43 |+|
+IntegerLiteral 15133+1 L387C45 |1|
+RightParen 15134+1 L387C46 |)|
+Identifier 15136+3 L387C48 |len|
+Newline 15139+1 L387C51
+Newline 15140+1 L388C1
+Identifier 15143+15 L389C3 |scan-prose-text|
+Colon 15159+1 L389C19 |:|
+TypeIdentifier 15161+8 L389C21 |LexState|
+Arrow 15170+2 L389C30 |->|
+TypeIdentifier 15173+7 L389C33 |LexStep|
+Newline 15180+1 L389C40
+Identifier 15183+15 L390C3 |scan-prose-text|
+LeftParen 15199+1 L390C19 |(|
+Identifier 15200+1 L390C20 |s|
+RightParen 15201+1 L390C21 |)|
+Equals 15203+1 L390C23 |=|
+Newline 15204+1 L390C24
+LetKeyword 15208+3 L391C4 |let|
+Identifier 15212+3 L391C8 |len|
+Equals 15216+1 L391C12 |=|
+Identifier 15218+11 L391C14 |text-length|
+LeftParen 15230+1 L391C26 |(|
+Identifier 15231+1 L391C27 |s|
+Dot 15232+1 L391C28 |.|
+Identifier 15233+6 L391C29 |source|
+RightParen 15239+1 L391C35 |)|
+Newline 15240+1 L391C36
+InKeyword 15244+2 L392C4 |in|
+LetKeyword 15247+3 L392C7 |let|
+Identifier 15251+4 L392C11 |stop|
+Equals 15256+1 L392C16 |=|
+Identifier 15258+15 L392C18 |scan-to-eol-end|
+LeftParen 15274+1 L392C34 |(|
+Identifier 15275+1 L392C35 |s|
+Dot 15276+1 L392C36 |.|
+Identifier 15277+6 L392C37 |source|
+RightParen 15283+1 L392C43 |)|
+LeftParen 15285+1 L392C45 |(|
+Identifier 15286+1 L392C46 |s|
+Dot 15287+1 L392C47 |.|
+Identifier 15288+6 L392C48 |offset|
+RightParen 15294+1 L392C54 |)|
+Identifier 15296+3 L392C56 |len|
+Newline 15299+1 L392C59
+InKeyword 15303+2 L393C4 |in|
+LetKeyword 15306+3 L393C7 |let|
+Identifier 15310+7 L393C11 |tok-len|
+Equals 15318+1 L393C19 |=|
+Identifier 15320+4 L393C21 |stop|
+Minus 15325+1 L393C26 |-|
+Identifier 15327+1 L393C28 |s|
+Dot 15328+1 L393C29 |.|
+Identifier 15329+6 L393C30 |offset|
+Newline 15335+1 L393C36
+InKeyword 15339+2 L394C4 |in|
+IfKeyword 15342+2 L394C7 |if|
+Identifier 15345+7 L394C10 |tok-len|
+DoubleEquals 15353+2 L394C18 |==|
+IntegerLiteral 15356+1 L394C21 |0|
+ThenKeyword 15358+4 L394C23 |then|
+TypeIdentifier 15363+8 L394C28 |LexToken|
+LeftParen 15372+1 L394C37 |(|
+Identifier 15373+10 L394C38 |make-token|
+LeftParen 15384+1 L394C49 |(|
+Identifier 15385+16 L394C50 |subj-deck-record|
+TypeIdentifier 15402+9 L394C67 |ProseText|
+RightParen 15411+1 L394C76 |)|
+IntegerLiteral 15413+1 L394C78 |0|
+Identifier 15415+1 L394C80 |s|
+RightParen 15416+1 L394C81 |)|
+Identifier 15418+1 L394C83 |s|
+Newline 15419+1 L394C84
+ElseKeyword 15426+4 L395C7 |else|
+LetKeyword 15431+3 L395C12 |let|
+Identifier 15435+3 L395C16 |tok|
+Equals 15439+1 L395C20 |=|
+Identifier 15441+10 L395C22 |make-token|
+LeftParen 15452+1 L395C33 |(|
+Identifier 15453+16 L395C34 |subj-deck-record|
+TypeIdentifier 15470+9 L395C51 |ProseText|
+RightParen 15479+1 L395C60 |)|
+Identifier 15481+7 L395C62 |tok-len|
+Identifier 15489+1 L395C70 |s|
+Newline 15490+1 L395C71
+InKeyword 15494+2 L396C4 |in|
+LetKeyword 15497+3 L396C7 |let|
+Identifier 15501+7 L396C11 |new-col|
+Equals 15509+1 L396C19 |=|
+Identifier 15511+1 L396C21 |s|
+Dot 15512+1 L396C22 |.|
+Identifier 15513+6 L396C23 |column|
+Plus 15520+1 L396C30 |+|
+Identifier 15522+7 L396C32 |tok-len|
+Newline 15529+1 L396C39
+InKeyword 15533+2 L397C4 |in|
+LetKeyword 15536+3 L397C7 |let|
+Identifier 15540+5 L397C11 |__seq|
+Equals 15546+1 L397C17 |=|
+Identifier 15548+1 L397C19 |s|
+Dot 15549+1 L397C20 |.|
+Identifier 15550+6 L397C21 |offset|
+Equals 15557+1 L397C28 |=|
+Identifier 15559+4 L397C30 |stop|
+Newline 15563+1 L397C34
+InKeyword 15567+2 L398C4 |in|
+LetKeyword 15570+3 L398C7 |let|
+Identifier 15574+5 L398C11 |__seq|
+Equals 15580+1 L398C17 |=|
+Identifier 15582+1 L398C19 |s|
+Dot 15583+1 L398C20 |.|
+Identifier 15584+6 L398C21 |column|
+Equals 15591+1 L398C28 |=|
+Identifier 15593+7 L398C30 |new-col|
+Newline 15600+1 L398C37
+InKeyword 15604+2 L399C4 |in|
+TypeIdentifier 15607+8 L399C7 |LexToken|
+Identifier 15616+3 L399C16 |tok|
+Identifier 15620+1 L399C20 |s|
+Newline 15621+1 L399C21
+Newline 15622+1 L400C1
+Identifier 15625+15 L401C3 |skip-prose-line|
+Colon 15641+1 L401C19 |:|
+TypeIdentifier 15643+8 L401C21 |LexState|
+Arrow 15652+2 L401C30 |->|
+TypeIdentifier 15655+7 L401C33 |LexStep|
+Newline 15662+1 L401C40
+Identifier 15665+15 L402C3 |skip-prose-line|
+LeftParen 15681+1 L402C19 |(|
+Identifier 15682+1 L402C20 |s|
+RightParen 15683+1 L402C21 |)|
+Equals 15685+1 L402C23 |=|
+Newline 15686+1 L402C24
+LetKeyword 15690+3 L403C4 |let|
+Identifier 15694+3 L403C8 |len|
+Equals 15698+1 L403C12 |=|
+Identifier 15700+11 L403C14 |text-length|
+LeftParen 15712+1 L403C26 |(|
+Identifier 15713+1 L403C27 |s|
+Dot 15714+1 L403C28 |.|
+Identifier 15715+6 L403C29 |source|
+RightParen 15721+1 L403C35 |)|
+Newline 15722+1 L403C36
+InKeyword 15726+2 L404C4 |in|
+LetKeyword 15729+3 L404C7 |let|
+Identifier 15733+4 L404C11 |stop|
+Equals 15738+1 L404C16 |=|
+Identifier 15740+15 L404C18 |scan-to-eol-end|
+LeftParen 15756+1 L404C34 |(|
+Identifier 15757+1 L404C35 |s|
+Dot 15758+1 L404C36 |.|
+Identifier 15759+6 L404C37 |source|
+RightParen 15765+1 L404C43 |)|
+LeftParen 15767+1 L404C45 |(|
+Identifier 15768+1 L404C46 |s|
+Dot 15769+1 L404C47 |.|
+Identifier 15770+6 L404C48 |offset|
+RightParen 15776+1 L404C54 |)|
+Identifier 15778+3 L404C56 |len|
+Newline 15781+1 L404C59
+InKeyword 15785+2 L405C4 |in|
+LetKeyword 15788+3 L405C7 |let|
+Identifier 15792+7 L405C11 |new-col|
+Equals 15800+1 L405C19 |=|
+Identifier 15802+1 L405C21 |s|
+Dot 15803+1 L405C22 |.|
+Identifier 15804+6 L405C23 |column|
+Plus 15811+1 L405C30 |+|
+LeftParen 15813+1 L405C32 |(|
+Identifier 15814+4 L405C33 |stop|
+Minus 15819+1 L405C38 |-|
+Identifier 15821+1 L405C40 |s|
+Dot 15822+1 L405C41 |.|
+Identifier 15823+6 L405C42 |offset|
+RightParen 15829+1 L405C48 |)|
+Newline 15830+1 L405C49
+InKeyword 15834+2 L406C4 |in|
+LetKeyword 15837+3 L406C7 |let|
+Identifier 15841+5 L406C11 |__seq|
+Equals 15847+1 L406C17 |=|
+Identifier 15849+1 L406C19 |s|
+Dot 15850+1 L406C20 |.|
+Identifier 15851+6 L406C21 |offset|
+Equals 15858+1 L406C28 |=|
+Identifier 15860+4 L406C30 |stop|
+Newline 15864+1 L406C34
+InKeyword 15868+2 L407C4 |in|
+LetKeyword 15871+3 L407C7 |let|
+Identifier 15875+5 L407C11 |__seq|
+Equals 15881+1 L407C17 |=|
+Identifier 15883+1 L407C19 |s|
+Dot 15884+1 L407C20 |.|
+Identifier 15885+6 L407C21 |column|
+Equals 15892+1 L407C28 |=|
+Identifier 15894+7 L407C30 |new-col|
+Newline 15901+1 L407C37
+InKeyword 15905+2 L408C4 |in|
+Identifier 15908+10 L408C7 |scan-token|
+Identifier 15919+1 L408C18 |s|
+Newline 15920+1 L408C19
+Newline 15921+1 L409C1
+Identifier 15924+10 L410C3 |scan-token|
+Colon 15935+1 L410C14 |:|
+TypeIdentifier 15937+8 L410C16 |LexState|
+Arrow 15946+2 L410C25 |->|
+TypeIdentifier 15949+7 L410C28 |LexStep|
+Newline 15956+1 L410C35
+Identifier 15959+10 L411C3 |scan-token|
+LeftParen 15970+1 L411C14 |(|
+Identifier 15971+2 L411C15 |st|
+RightParen 15973+1 L411C17 |)|
+Equals 15975+1 L411C19 |=|
+Newline 15976+1 L411C20
+LetKeyword 15980+3 L412C4 |let|
+Identifier 15984+1 L412C8 |s|
+Equals 15986+1 L412C10 |=|
+Identifier 15988+11 L412C12 |skip-spaces|
+Identifier 16000+2 L412C24 |st|
+Newline 16002+1 L412C26
+InKeyword 16006+2 L413C4 |in|
+IfKeyword 16009+2 L413C7 |if|
+Identifier 16012+9 L413C10 |is-at-end|
+Identifier 16022+1 L413C20 |s|
+ThenKeyword 16024+4 L413C22 |then|
+TypeIdentifier 16029+6 L413C27 |LexEnd|
+Newline 16035+1 L413C33
+ElseKeyword 16039+4 L414C4 |else|
+LetKeyword 16044+3 L414C9 |let|
+Identifier 16048+1 L414C13 |c|
+Equals 16050+1 L414C15 |=|
+Identifier 16052+9 L414C17 |peek-code|
+Identifier 16062+1 L414C27 |s|
+Newline 16063+1 L414C28
+InKeyword 16067+2 L415C4 |in|
+IfKeyword 16070+2 L415C7 |if|
+Identifier 16073+1 L415C10 |c|
+DoubleEquals 16075+2 L415C12 |==|
+Identifier 16078+5 L415C15 |cc-cr|
+ThenKeyword 16084+4 L415C21 |then|
+Identifier 16089+10 L415C26 |scan-token|
+LeftParen 16100+1 L415C37 |(|
+Identifier 16101+12 L415C38 |advance-char|
+Identifier 16114+1 L415C51 |s|
+RightParen 16115+1 L415C52 |)|
+Newline 16116+1 L415C53
+ElseKeyword 16126+4 L416C10 |else|
+IfKeyword 16131+2 L416C15 |if|
+Identifier 16134+1 L416C18 |s|
+Dot 16135+1 L416C19 |.|
+Identifier 16136+6 L416C20 |column|
+DoubleEquals 16143+2 L416C27 |==|
+IntegerLiteral 16146+1 L416C30 |2|
+Ampersand 16148+1 L416C32 |&|
+Identifier 16150+1 L416C34 |c|
+NotEquals 16152+2 L416C36 |/=|
+Identifier 16155+10 L416C39 |cc-newline|
+ThenKeyword 16166+4 L416C50 |then|
+Newline 16170+1 L416C54
+IfKeyword 16181+2 L417C11 |if|
+Identifier 16184+1 L417C14 |s|
+Dot 16185+1 L417C15 |.|
+Identifier 16186+10 L417C16 |prose-mode|
+ThenKeyword 16197+4 L417C27 |then|
+Identifier 16202+15 L417C32 |scan-prose-text|
+Identifier 16218+1 L417C48 |s|
+Newline 16219+1 L417C49
+ElseKeyword 16230+4 L418C11 |else|
+Identifier 16235+15 L418C16 |skip-prose-line|
+Identifier 16251+1 L418C32 |s|
+Newline 16252+1 L418C33
+ElseKeyword 16262+4 L419C10 |else|
+IfKeyword 16267+2 L419C15 |if|
+Identifier 16270+1 L419C18 |c|
+DoubleEquals 16272+2 L419C20 |==|
+Identifier 16275+10 L419C23 |cc-newline|
+ThenKeyword 16286+4 L419C34 |then|
+TypeIdentifier 16291+8 L419C39 |LexToken|
+LeftParen 16300+1 L419C48 |(|
+Identifier 16301+10 L419C49 |make-token|
+LeftParen 16312+1 L419C60 |(|
+Identifier 16313+16 L419C61 |subj-deck-record|
+TypeIdentifier 16330+7 L419C78 |Newline|
+RightParen 16337+1 L419C85 |)|
+IntegerLiteral 16339+1 L419C87 |1|
+Identifier 16341+1 L419C89 |s|
+RightParen 16342+1 L419C90 |)|
+LeftParen 16344+1 L419C92 |(|
+Identifier 16345+12 L419C93 |advance-char|
+Identifier 16358+1 L419C106 |s|
+RightParen 16359+1 L419C107 |)|
+Newline 16360+1 L419C108
+ElseKeyword 16370+4 L420C10 |else|
+IfKeyword 16375+2 L420C15 |if|
+Identifier 16378+1 L420C18 |c|
+DoubleEquals 16380+2 L420C20 |==|
+Identifier 16383+15 L420C23 |cc-double-quote|
+ThenKeyword 16399+4 L420C39 |then|
+LetKeyword 16404+3 L420C44 |let|
+Identifier 16408+5 L420C48 |start|
+Equals 16414+1 L420C54 |=|
+Identifier 16416+1 L420C56 |s|
+Dot 16417+1 L420C57 |.|
+Identifier 16418+6 L420C58 |offset|
+Plus 16425+1 L420C65 |+|
+IntegerLiteral 16427+1 L420C67 |1|
+Newline 16428+1 L420C68
+InKeyword 16432+2 L421C4 |in|
+LetKeyword 16435+3 L421C7 |let|
+Identifier 16439+5 L421C11 |after|
+Equals 16445+1 L421C17 |=|
+Identifier 16447+16 L421C19 |scan-string-body|
+LeftParen 16464+1 L421C36 |(|
+Identifier 16465+12 L421C37 |advance-char|
+Identifier 16478+1 L421C50 |s|
+RightParen 16479+1 L421C51 |)|
+Newline 16480+1 L421C52
+InKeyword 16484+2 L422C4 |in|
+LetKeyword 16487+3 L422C7 |let|
+Identifier 16491+8 L422C11 |body-len|
+Equals 16500+1 L422C20 |=|
+Identifier 16502+5 L422C22 |after|
+Dot 16507+1 L422C27 |.|
+Identifier 16508+6 L422C28 |offset|
+Minus 16515+1 L422C35 |-|
+Identifier 16517+5 L422C37 |start|
+Minus 16523+1 L422C43 |-|
+IntegerLiteral 16525+1 L422C45 |1|
+Newline 16526+1 L422C46
+InKeyword 16530+2 L423C4 |in|
+LetKeyword 16533+3 L423C7 |let|
+Identifier 16537+8 L423C11 |safe-len|
+Equals 16546+1 L423C20 |=|
+IfKeyword 16548+2 L423C22 |if|
+Identifier 16551+8 L423C25 |body-len|
+LessThan 16560+1 L423C34 |<|
+IntegerLiteral 16562+1 L423C36 |0|
+ThenKeyword 16564+4 L423C38 |then|
+IntegerLiteral 16569+1 L423C43 |0|
+ElseKeyword 16571+4 L423C45 |else|
+Identifier 16576+8 L423C50 |body-len|
+Newline 16584+1 L423C58
+InKeyword 16588+2 L424C4 |in|
+LetKeyword 16591+3 L424C7 |let|
+Identifier 16595+3 L424C11 |raw|
+Equals 16599+1 L424C15 |=|
+Identifier 16601+9 L424C17 |substring|
+LeftParen 16611+1 L424C27 |(|
+Identifier 16612+1 L424C28 |s|
+Dot 16613+1 L424C29 |.|
+Identifier 16614+6 L424C30 |source|
+RightParen 16620+1 L424C36 |)|
+Identifier 16622+5 L424C38 |start|
+Identifier 16628+8 L424C44 |safe-len|
+Newline 16636+1 L424C52
+InKeyword 16640+2 L425C4 |in|
+LetKeyword 16643+3 L425C7 |let|
+Identifier 16647+11 L425C11 |merged-errs|
+Equals 16659+1 L425C23 |=|
+Identifier 16661+21 L425C25 |validate-escapes-into|
+Identifier 16683+3 L425C47 |raw|
+LeftParen 16687+1 L425C51 |(|
+Identifier 16688+1 L425C52 |s|
+Dot 16689+1 L425C53 |.|
+Identifier 16690+4 L425C54 |line|
+RightParen 16694+1 L425C58 |)|
+LeftParen 16696+1 L425C60 |(|
+Identifier 16697+1 L425C61 |s|
+Dot 16698+1 L425C62 |.|
+Identifier 16699+6 L425C63 |column|
+Plus 16706+1 L425C70 |+|
+IntegerLiteral 16708+1 L425C72 |1|
+RightParen 16709+1 L425C73 |)|
+Identifier 16711+5 L425C75 |start|
+LeftParen 16717+1 L425C81 |(|
+Identifier 16718+1 L425C82 |s|
+Dot 16719+1 L425C83 |.|
+Identifier 16720+7 L425C84 |file-id|
+RightParen 16727+1 L425C91 |)|
+LeftParen 16729+1 L425C93 |(|
+Identifier 16730+5 L425C94 |after|
+Dot 16735+1 L425C99 |.|
+Identifier 16736+6 L425C100 |errors|
+RightParen 16742+1 L425C106 |)|
+Newline 16743+1 L425C107
+InKeyword 16747+2 L426C4 |in|
+LetKeyword 16750+3 L426C7 |let|
+Identifier 16754+5 L426C11 |__seq|
+Equals 16760+1 L426C17 |=|
+Identifier 16762+5 L426C19 |after|
+Dot 16767+1 L426C24 |.|
+Identifier 16768+6 L426C25 |errors|
+Equals 16775+1 L426C32 |=|
+Identifier 16777+11 L426C34 |merged-errs|
+Newline 16788+1 L426C45
+InKeyword 16792+2 L427C4 |in|
+TypeIdentifier 16795+8 L427C7 |LexToken|
+LeftParen 16804+1 L427C16 |(|
+Identifier 16805+10 L427C17 |make-token|
+LeftParen 16816+1 L427C28 |(|
+Identifier 16817+16 L427C29 |subj-deck-record|
+TypeIdentifier 16834+11 L427C46 |TextLiteral|
+RightParen 16845+1 L427C57 |)|
+LeftParen 16847+1 L427C59 |(|
+Identifier 16848+5 L427C60 |after|
+Dot 16853+1 L427C65 |.|
+Identifier 16854+6 L427C66 |offset|
+Minus 16861+1 L427C73 |-|
+Identifier 16863+1 L427C75 |s|
+Dot 16864+1 L427C76 |.|
+Identifier 16865+6 L427C77 |offset|
+RightParen 16871+1 L427C83 |)|
+Identifier 16873+1 L427C85 |s|
+RightParen 16874+1 L427C86 |)|
+Identifier 16876+5 L427C88 |after|
+Newline 16881+1 L427C93
+ElseKeyword 16891+4 L428C10 |else|
+IfKeyword 16896+2 L428C15 |if|
+Identifier 16899+1 L428C18 |c|
+DoubleEquals 16901+2 L428C20 |==|
+Identifier 16904+15 L428C23 |cc-single-quote|
+ThenKeyword 16920+4 L428C39 |then|
+Identifier 16925+17 L428C44 |scan-char-literal|
+Identifier 16943+1 L428C62 |s|
+Newline 16944+1 L428C63
+ElseKeyword 16954+4 L429C10 |else|
+IfKeyword 16959+2 L429C15 |if|
+Identifier 16962+14 L429C18 |is-letter-code|
+Identifier 16977+1 L429C33 |c|
+ThenKeyword 16979+4 L429C35 |then|
+LetKeyword 16984+3 L429C40 |let|
+Identifier 16988+5 L429C44 |start|
+Equals 16994+1 L429C50 |=|
+Identifier 16996+1 L429C52 |s|
+Dot 16997+1 L429C53 |.|
+Identifier 16998+6 L429C54 |offset|
+Newline 17004+1 L429C60
+InKeyword 17008+2 L430C4 |in|
+LetKeyword 17011+3 L430C7 |let|
+Identifier 17015+5 L430C11 |after|
+Equals 17021+1 L430C17 |=|
+Identifier 17023+15 L430C19 |scan-ident-rest|
+LeftParen 17039+1 L430C35 |(|
+Identifier 17040+12 L430C36 |advance-char|
+Identifier 17053+1 L430C49 |s|
+RightParen 17054+1 L430C50 |)|
+Newline 17055+1 L430C51
+InKeyword 17059+2 L431C4 |in|
+LetKeyword 17062+3 L431C7 |let|
+Identifier 17066+4 L431C11 |word|
+Equals 17071+1 L431C16 |=|
+Identifier 17073+12 L431C18 |extract-text|
+Identifier 17086+1 L431C31 |s|
+Identifier 17088+5 L431C33 |start|
+Identifier 17094+5 L431C39 |after|
+Newline 17099+1 L431C44
+InKeyword 17103+2 L432C4 |in|
+TypeIdentifier 17106+8 L432C7 |LexToken|
+LeftParen 17115+1 L432C16 |(|
+Identifier 17116+10 L432C17 |make-token|
+LeftParen 17127+1 L432C28 |(|
+Identifier 17128+13 L432C29 |classify-word|
+Identifier 17142+4 L432C43 |word|
+RightParen 17146+1 L432C47 |)|
+LeftParen 17148+1 L432C49 |(|
+Identifier 17149+5 L432C50 |after|
+Dot 17154+1 L432C55 |.|
+Identifier 17155+6 L432C56 |offset|
+Minus 17162+1 L432C63 |-|
+Identifier 17164+5 L432C65 |start|
+RightParen 17169+1 L432C70 |)|
+Identifier 17171+1 L432C72 |s|
+RightParen 17172+1 L432C73 |)|
+Identifier 17174+5 L432C75 |after|
+Newline 17179+1 L432C80
+ElseKeyword 17189+4 L433C10 |else|
+IfKeyword 17194+2 L433C15 |if|
+Identifier 17197+14 L433C18 |is-tier1-start|
+Identifier 17212+1 L433C33 |c|
+ThenKeyword 17214+4 L433C35 |then|
+Newline 17218+1 L433C39
+LetKeyword 17230+3 L434C12 |let|
+Identifier 17234+2 L434C16 |cp|
+Equals 17237+1 L434C19 |=|
+Identifier 17239+13 L434C21 |cce-decode-cp|
+LeftParen 17253+1 L434C35 |(|
+Identifier 17254+1 L434C36 |s|
+Dot 17255+1 L434C37 |.|
+Identifier 17256+6 L434C38 |source|
+RightParen 17262+1 L434C44 |)|
+LeftParen 17264+1 L434C46 |(|
+Identifier 17265+1 L434C47 |s|
+Dot 17266+1 L434C48 |.|
+Identifier 17267+6 L434C49 |offset|
+RightParen 17273+1 L434C55 |)|
+Newline 17274+1 L434C56
+InKeyword 17286+2 L435C12 |in|
+IfKeyword 17289+2 L435C15 |if|
+Identifier 17292+18 L435C18 |is-tier1-letter-cp|
+Identifier 17311+2 L435C37 |cp|
+ThenKeyword 17314+4 L435C40 |then|
+LetKeyword 17319+3 L435C45 |let|
+Identifier 17323+5 L435C49 |start|
+Equals 17329+1 L435C55 |=|
+Identifier 17331+1 L435C57 |s|
+Dot 17332+1 L435C58 |.|
+Identifier 17333+6 L435C59 |offset|
+Newline 17339+1 L435C65
+InKeyword 17343+2 L436C4 |in|
+LetKeyword 17346+3 L436C7 |let|
+Identifier 17350+4 L436C11 |blen|
+Equals 17355+1 L436C16 |=|
+Identifier 17357+12 L436C18 |cce-byte-len|
+Identifier 17370+1 L436C31 |c|
+Newline 17371+1 L436C32
+InKeyword 17375+2 L437C4 |in|
+LetKeyword 17378+3 L437C7 |let|
+Identifier 17382+5 L437C11 |after|
+Equals 17388+1 L437C17 |=|
+Identifier 17390+15 L437C19 |scan-ident-rest|
+LeftParen 17406+1 L437C35 |(|
+Identifier 17407+13 L437C36 |advance-bytes|
+Identifier 17421+1 L437C50 |s|
+Identifier 17423+4 L437C52 |blen|
+RightParen 17427+1 L437C56 |)|
+Newline 17428+1 L437C57
+InKeyword 17432+2 L438C4 |in|
+LetKeyword 17435+3 L438C7 |let|
+Identifier 17439+4 L438C11 |word|
+Equals 17444+1 L438C16 |=|
+Identifier 17446+12 L438C18 |extract-text|
+Identifier 17459+1 L438C31 |s|
+Identifier 17461+5 L438C33 |start|
+Identifier 17467+5 L438C39 |after|
+Newline 17472+1 L438C44
+InKeyword 17476+2 L439C4 |in|
+TypeIdentifier 17479+8 L439C7 |LexToken|
+LeftParen 17488+1 L439C16 |(|
+Identifier 17489+10 L439C17 |make-token|
+LeftParen 17500+1 L439C28 |(|
+Identifier 17501+16 L439C29 |subj-deck-record|
+TypeIdentifier 17518+10 L439C46 |Identifier|
+RightParen 17528+1 L439C56 |)|
+LeftParen 17530+1 L439C58 |(|
+Identifier 17531+5 L439C59 |after|
+Dot 17536+1 L439C64 |.|
+Identifier 17537+6 L439C65 |offset|
+Minus 17544+1 L439C72 |-|
+Identifier 17546+5 L439C74 |start|
+RightParen 17551+1 L439C79 |)|
+Identifier 17553+1 L439C81 |s|
+RightParen 17554+1 L439C82 |)|
+Identifier 17556+5 L439C84 |after|
+Newline 17561+1 L439C89
+ElseKeyword 17573+4 L440C12 |else|
+TypeIdentifier 17578+8 L440C17 |LexToken|
+LeftParen 17587+1 L440C26 |(|
+Identifier 17588+10 L440C27 |make-token|
+LeftParen 17599+1 L440C38 |(|
+Identifier 17600+16 L440C39 |subj-deck-record|
+TypeIdentifier 17617+10 L440C56 |ErrorToken|
+RightParen 17627+1 L440C66 |)|
+IntegerLiteral 17629+1 L440C68 |1|
+Identifier 17631+1 L440C70 |s|
+RightParen 17632+1 L440C71 |)|
+LeftParen 17634+1 L440C73 |(|
+Identifier 17635+12 L440C74 |advance-char|
+Identifier 17648+1 L440C87 |s|
+RightParen 17649+1 L440C88 |)|
+Newline 17650+1 L440C89
+ElseKeyword 17660+4 L441C10 |else|
+IfKeyword 17665+2 L441C15 |if|
+Identifier 17668+1 L441C18 |c|
+DoubleEquals 17670+2 L441C20 |==|
+Identifier 17673+13 L441C23 |cc-underscore|
+ThenKeyword 17687+4 L441C37 |then|
+LetKeyword 17692+3 L441C42 |let|
+Identifier 17696+5 L441C46 |start|
+Equals 17702+1 L441C52 |=|
+Identifier 17704+1 L441C54 |s|
+Dot 17705+1 L441C55 |.|
+Identifier 17706+6 L441C56 |offset|
+Newline 17712+1 L441C62
+InKeyword 17716+2 L442C4 |in|
+LetKeyword 17719+3 L442C7 |let|
+Identifier 17723+5 L442C11 |after|
+Equals 17729+1 L442C17 |=|
+Identifier 17731+15 L442C19 |scan-ident-rest|
+LeftParen 17747+1 L442C35 |(|
+Identifier 17748+12 L442C36 |advance-char|
+Identifier 17761+1 L442C49 |s|
+RightParen 17762+1 L442C50 |)|
+Newline 17763+1 L442C51
+InKeyword 17767+2 L443C4 |in|
+LetKeyword 17770+3 L443C7 |let|
+Identifier 17774+8 L443C11 |word-len|
+Equals 17783+1 L443C20 |=|
+Identifier 17785+5 L443C22 |after|
+Dot 17790+1 L443C27 |.|
+Identifier 17791+6 L443C28 |offset|
+Minus 17798+1 L443C35 |-|
+Identifier 17800+5 L443C37 |start|
+Newline 17805+1 L443C42
+InKeyword 17809+2 L444C4 |in|
+IfKeyword 17812+2 L444C7 |if|
+Identifier 17815+8 L444C10 |word-len|
+DoubleEquals 17824+2 L444C19 |==|
+IntegerLiteral 17827+1 L444C22 |1|
+ThenKeyword 17829+4 L444C24 |then|
+TypeIdentifier 17834+8 L444C29 |LexToken|
+LeftParen 17843+1 L444C38 |(|
+Identifier 17844+10 L444C39 |make-token|
+LeftParen 17855+1 L444C50 |(|
+Identifier 17856+16 L444C51 |subj-deck-record|
+TypeIdentifier 17873+10 L444C68 |Underscore|
+RightParen 17883+1 L444C78 |)|
+IntegerLiteral 17885+1 L444C80 |1|
+Identifier 17887+1 L444C82 |s|
+RightParen 17888+1 L444C83 |)|
+Identifier 17890+5 L444C85 |after|
+Newline 17895+1 L444C90
+ElseKeyword 17913+4 L445C18 |else|
+TypeIdentifier 17918+8 L445C23 |LexToken|
+LeftParen 17927+1 L445C32 |(|
+Identifier 17928+10 L445C33 |make-token|
+LeftParen 17939+1 L445C44 |(|
+Identifier 17940+13 L445C45 |classify-word|
+LeftParen 17954+1 L445C59 |(|
+Identifier 17955+12 L445C60 |extract-text|
+Identifier 17968+1 L445C73 |s|
+Identifier 17970+5 L445C75 |start|
+Identifier 17976+5 L445C81 |after|
+RightParen 17981+1 L445C86 |)|
+RightParen 17982+1 L445C87 |)|
+Identifier 17984+8 L445C89 |word-len|
+Identifier 17993+1 L445C98 |s|
+RightParen 17994+1 L445C99 |)|
+Identifier 17996+5 L445C101 |after|
+Newline 18001+1 L445C106
+ElseKeyword 18011+4 L446C10 |else|
+IfKeyword 18016+2 L446C15 |if|
+Identifier 18019+13 L446C18 |is-digit-code|
+Identifier 18033+1 L446C32 |c|
+ThenKeyword 18035+4 L446C34 |then|
+LetKeyword 18040+3 L446C39 |let|
+Identifier 18044+5 L446C43 |start|
+Equals 18050+1 L446C49 |=|
+Identifier 18052+1 L446C51 |s|
+Dot 18053+1 L446C52 |.|
+Identifier 18054+6 L446C53 |offset|
+Newline 18060+1 L446C59
+InKeyword 18064+2 L447C4 |in|
+LetKeyword 18067+3 L447C7 |let|
+Identifier 18071+5 L447C11 |after|
+Equals 18077+1 L447C17 |=|
+Identifier 18079+11 L447C19 |scan-digits|
+LeftParen 18091+1 L447C31 |(|
+Identifier 18092+12 L447C32 |advance-char|
+Identifier 18105+1 L447C45 |s|
+RightParen 18106+1 L447C46 |)|
+Newline 18107+1 L447C47
+InKeyword 18111+2 L448C4 |in|
+IfKeyword 18114+2 L448C7 |if|
+Identifier 18117+9 L448C10 |is-at-end|
+Identifier 18127+5 L448C20 |after|
+ThenKeyword 18133+4 L448C26 |then|
+TypeIdentifier 18138+8 L448C31 |LexToken|
+LeftParen 18147+1 L448C40 |(|
+Identifier 18148+10 L448C41 |make-token|
+LeftParen 18159+1 L448C52 |(|
+Identifier 18160+16 L448C53 |subj-deck-record|
+TypeIdentifier 18177+14 L448C70 |IntegerLiteral|
+RightParen 18191+1 L448C84 |)|
+LeftParen 18193+1 L448C86 |(|
+Identifier 18194+5 L448C87 |after|
+Dot 18199+1 L448C92 |.|
+Identifier 18200+6 L448C93 |offset|
+Minus 18207+1 L448C100 |-|
+Identifier 18209+5 L448C102 |start|
+RightParen 18214+1 L448C107 |)|
+Identifier 18216+1 L448C109 |s|
+RightParen 18217+1 L448C110 |)|
+Identifier 18219+5 L448C112 |after|
+Newline 18224+1 L448C117
+ElseKeyword 18242+4 L449C18 |else|
+IfKeyword 18247+2 L449C23 |if|
+Identifier 18250+9 L449C26 |peek-code|
+Identifier 18260+5 L449C36 |after|
+DoubleEquals 18266+2 L449C42 |==|
+Identifier 18269+6 L449C45 |cc-dot|
+ThenKeyword 18276+4 L449C52 |then|
+Newline 18280+1 L449C56
+LetKeyword 18299+3 L450C19 |let|
+Identifier 18303+9 L450C23 |after-dot|
+Equals 18313+1 L450C33 |=|
+Identifier 18315+12 L450C35 |advance-char|
+Identifier 18328+5 L450C48 |after|
+Newline 18333+1 L450C53
+InKeyword 18352+2 L451C19 |in|
+IfKeyword 18355+2 L451C22 |if|
+Identifier 18358+9 L451C25 |is-at-end|
+Identifier 18368+9 L451C35 |after-dot|
+ThenKeyword 18378+4 L451C45 |then|
+TypeIdentifier 18383+8 L451C50 |LexToken|
+LeftParen 18392+1 L451C59 |(|
+Identifier 18393+10 L451C60 |make-token|
+LeftParen 18404+1 L451C71 |(|
+Identifier 18405+16 L451C72 |subj-deck-record|
+TypeIdentifier 18422+14 L451C89 |IntegerLiteral|
+RightParen 18436+1 L451C103 |)|
+LeftParen 18438+1 L451C105 |(|
+Identifier 18439+5 L451C106 |after|
+Dot 18444+1 L451C111 |.|
+Identifier 18445+6 L451C112 |offset|
+Minus 18452+1 L451C119 |-|
+Identifier 18454+5 L451C121 |start|
+RightParen 18459+1 L451C126 |)|
+Identifier 18461+1 L451C128 |s|
+RightParen 18462+1 L451C129 |)|
+Identifier 18464+5 L451C131 |after|
+Newline 18469+1 L451C136
+ElseKeyword 18491+4 L452C22 |else|
+IfKeyword 18496+2 L452C27 |if|
+Identifier 18499+9 L452C30 |peek-code|
+Identifier 18509+9 L452C40 |after-dot|
+DoubleEquals 18519+2 L452C50 |==|
+Identifier 18522+6 L452C53 |cc-dot|
+ThenKeyword 18529+4 L452C60 |then|
+TypeIdentifier 18534+8 L452C65 |LexToken|
+LeftParen 18543+1 L452C74 |(|
+Identifier 18544+10 L452C75 |make-token|
+LeftParen 18555+1 L452C86 |(|
+Identifier 18556+16 L452C87 |subj-deck-record|
+TypeIdentifier 18573+14 L452C104 |IntegerLiteral|
+RightParen 18587+1 L452C118 |)|
+LeftParen 18589+1 L452C120 |(|
+Identifier 18590+5 L452C121 |after|
+Dot 18595+1 L452C126 |.|
+Identifier 18596+6 L452C127 |offset|
+Minus 18603+1 L452C134 |-|
+Identifier 18605+5 L452C136 |start|
+RightParen 18610+1 L452C141 |)|
+Identifier 18612+1 L452C143 |s|
+RightParen 18613+1 L452C144 |)|
+Identifier 18615+5 L452C146 |after|
+Newline 18620+1 L452C151
+ElseKeyword 18642+4 L453C22 |else|
+LetKeyword 18647+3 L453C27 |let|
+Identifier 18651+6 L453C31 |after2|
+Equals 18658+1 L453C38 |=|
+Identifier 18660+11 L453C40 |scan-digits|
+Identifier 18672+9 L453C52 |after-dot|
+Newline 18681+1 L453C61
+InKeyword 18708+2 L454C27 |in|
+TypeIdentifier 18711+8 L454C30 |LexToken|
+LeftParen 18720+1 L454C39 |(|
+Identifier 18721+10 L454C40 |make-token|
+LeftParen 18732+1 L454C51 |(|
+Identifier 18733+16 L454C52 |subj-deck-record|
+TypeIdentifier 18750+13 L454C69 |NumberLiteral|
+RightParen 18763+1 L454C82 |)|
+LeftParen 18765+1 L454C84 |(|
+Identifier 18766+6 L454C85 |after2|
+Dot 18772+1 L454C91 |.|
+Identifier 18773+6 L454C92 |offset|
+Minus 18780+1 L454C99 |-|
+Identifier 18782+5 L454C101 |start|
+RightParen 18787+1 L454C106 |)|
+Identifier 18789+1 L454C108 |s|
+RightParen 18790+1 L454C109 |)|
+Identifier 18792+6 L454C111 |after2|
+Newline 18798+1 L454C117
+ElseKeyword 18815+4 L455C17 |else|
+TypeIdentifier 18820+8 L455C22 |LexToken|
+LeftParen 18829+1 L455C31 |(|
+Identifier 18830+10 L455C32 |make-token|
+LeftParen 18841+1 L455C43 |(|
+Identifier 18842+16 L455C44 |subj-deck-record|
+TypeIdentifier 18859+14 L455C61 |IntegerLiteral|
+RightParen 18873+1 L455C75 |)|
+LeftParen 18875+1 L455C77 |(|
+Identifier 18876+5 L455C78 |after|
+Dot 18881+1 L455C83 |.|
+Identifier 18882+6 L455C84 |offset|
+Minus 18889+1 L455C91 |-|
+Identifier 18891+5 L455C93 |start|
+RightParen 18896+1 L455C98 |)|
+Identifier 18898+1 L455C100 |s|
+RightParen 18899+1 L455C101 |)|
+Identifier 18901+5 L455C103 |after|
+Newline 18906+1 L455C108
+ElseKeyword 18916+4 L456C10 |else|
+IfKeyword 18921+2 L456C15 |if|
+Identifier 18924+1 L456C18 |c|
+DoubleEquals 18926+2 L456C20 |==|
+Identifier 18929+7 L456C23 |cc-hash|
+ThenKeyword 18937+4 L456C31 |then|
+LetKeyword 18942+3 L456C36 |let|
+Identifier 18946+5 L456C40 |start|
+Equals 18952+1 L456C46 |=|
+Identifier 18954+1 L456C48 |s|
+Dot 18955+1 L456C49 |.|
+Identifier 18956+6 L456C50 |offset|
+Newline 18962+1 L456C56
+InKeyword 18966+2 L457C4 |in|
+LetKeyword 18969+3 L457C7 |let|
+Identifier 18973+5 L457C11 |after|
+Equals 18979+1 L457C17 |=|
+Identifier 18981+15 L457C19 |scan-hex-digits|
+LeftParen 18997+1 L457C35 |(|
+Identifier 18998+12 L457C36 |advance-char|
+Identifier 19011+1 L457C49 |s|
+RightParen 19012+1 L457C50 |)|
+Newline 19013+1 L457C51
+InKeyword 19017+2 L458C4 |in|
+IfKeyword 19020+2 L458C7 |if|
+Identifier 19023+5 L458C10 |after|
+Dot 19028+1 L458C15 |.|
+Identifier 19029+6 L458C16 |offset|
+Minus 19036+1 L458C23 |-|
+Identifier 19038+5 L458C25 |start|
+DoubleEquals 19044+2 L458C31 |==|
+IntegerLiteral 19047+1 L458C34 |1|
+ThenKeyword 19049+4 L458C36 |then|
+TypeIdentifier 19054+8 L458C41 |LexToken|
+LeftParen 19063+1 L458C50 |(|
+Identifier 19064+10 L458C51 |make-token|
+LeftParen 19075+1 L458C62 |(|
+Identifier 19076+16 L458C63 |subj-deck-record|
+TypeIdentifier 19093+10 L458C80 |ErrorToken|
+RightParen 19103+1 L458C90 |)|
+IntegerLiteral 19105+1 L458C92 |1|
+Identifier 19107+1 L458C94 |s|
+RightParen 19108+1 L458C95 |)|
+Identifier 19110+5 L458C97 |after|
+Newline 19115+1 L458C102
+ElseKeyword 19122+4 L459C7 |else|
+TypeIdentifier 19127+8 L459C12 |LexToken|
+LeftParen 19136+1 L459C21 |(|
+Identifier 19137+10 L459C22 |make-token|
+LeftParen 19148+1 L459C33 |(|
+Identifier 19149+16 L459C34 |subj-deck-record|
+TypeIdentifier 19166+14 L459C51 |IntegerLiteral|
+RightParen 19180+1 L459C65 |)|
+LeftParen 19182+1 L459C67 |(|
+Identifier 19183+5 L459C68 |after|
+Dot 19188+1 L459C73 |.|
+Identifier 19189+6 L459C74 |offset|
+Minus 19196+1 L459C81 |-|
+Identifier 19198+5 L459C83 |start|
+RightParen 19203+1 L459C88 |)|
+Identifier 19205+1 L459C90 |s|
+RightParen 19206+1 L459C91 |)|
+Identifier 19208+5 L459C93 |after|
+Newline 19213+1 L459C98
+ElseKeyword 19223+4 L460C10 |else|
+Identifier 19228+13 L460C15 |scan-operator|
+Identifier 19242+1 L460C29 |s|
+Newline 19243+1 L460C30
+Newline 19244+1 L461C1
+Identifier 19247+13 L462C3 |scan-operator|
+Colon 19261+1 L462C17 |:|
+TypeIdentifier 19263+8 L462C19 |LexState|
+Arrow 19272+2 L462C28 |->|
+TypeIdentifier 19275+7 L462C31 |LexStep|
+Newline 19282+1 L462C38
+Identifier 19285+13 L463C3 |scan-operator|
+LeftParen 19299+1 L463C17 |(|
+Identifier 19300+1 L463C18 |s|
+RightParen 19301+1 L463C19 |)|
+Equals 19303+1 L463C21 |=|
+Newline 19304+1 L463C22
+LetKeyword 19308+3 L464C4 |let|
+Identifier 19312+1 L464C8 |c|
+Equals 19314+1 L464C10 |=|
+Identifier 19316+9 L464C12 |peek-code|
+Identifier 19326+1 L464C22 |s|
+Newline 19327+1 L464C23
+InKeyword 19331+2 L465C4 |in|
+LetKeyword 19334+3 L465C7 |let|
+Identifier 19338+4 L465C11 |next|
+Equals 19343+1 L465C16 |=|
+Identifier 19345+12 L465C18 |advance-char|
+Identifier 19358+1 L465C31 |s|
+Newline 19359+1 L465C32
+InKeyword 19363+2 L466C4 |in|
+IfKeyword 19366+2 L466C7 |if|
+Identifier 19369+1 L466C10 |c|
+DoubleEquals 19371+2 L466C12 |==|
+Identifier 19374+13 L466C15 |cc-left-paren|
+ThenKeyword 19388+4 L466C29 |then|
+TypeIdentifier 19393+8 L466C34 |LexToken|
+LeftParen 19402+1 L466C43 |(|
+Identifier 19403+10 L466C44 |make-token|
+LeftParen 19414+1 L466C55 |(|
+Identifier 19415+16 L466C56 |subj-deck-record|
+TypeIdentifier 19432+9 L466C73 |LeftParen|
+RightParen 19441+1 L466C82 |)|
+IntegerLiteral 19443+1 L466C84 |1|
+Identifier 19445+1 L466C86 |s|
+RightParen 19446+1 L466C87 |)|
+Identifier 19448+4 L466C89 |next|
+Newline 19452+1 L466C93
+ElseKeyword 19459+4 L467C7 |else|
+IfKeyword 19464+2 L467C12 |if|
+Identifier 19467+1 L467C15 |c|
+DoubleEquals 19469+2 L467C17 |==|
+Identifier 19472+14 L467C20 |cc-right-paren|
+ThenKeyword 19487+4 L467C35 |then|
+TypeIdentifier 19492+8 L467C40 |LexToken|
+LeftParen 19501+1 L467C49 |(|
+Identifier 19502+10 L467C50 |make-token|
+LeftParen 19513+1 L467C61 |(|
+Identifier 19514+16 L467C62 |subj-deck-record|
+TypeIdentifier 19531+10 L467C79 |RightParen|
+RightParen 19541+1 L467C89 |)|
+IntegerLiteral 19543+1 L467C91 |1|
+Identifier 19545+1 L467C93 |s|
+RightParen 19546+1 L467C94 |)|
+Identifier 19548+4 L467C96 |next|
+Newline 19552+1 L467C100
+ElseKeyword 19559+4 L468C7 |else|
+IfKeyword 19564+2 L468C12 |if|
+Identifier 19567+1 L468C15 |c|
+DoubleEquals 19569+2 L468C17 |==|
+Identifier 19572+15 L468C20 |cc-left-bracket|
+ThenKeyword 19588+4 L468C36 |then|
+TypeIdentifier 19593+8 L468C41 |LexToken|
+LeftParen 19602+1 L468C50 |(|
+Identifier 19603+10 L468C51 |make-token|
+LeftParen 19614+1 L468C62 |(|
+Identifier 19615+16 L468C63 |subj-deck-record|
+TypeIdentifier 19632+11 L468C80 |LeftBracket|
+RightParen 19643+1 L468C91 |)|
+IntegerLiteral 19645+1 L468C93 |1|
+Identifier 19647+1 L468C95 |s|
+RightParen 19648+1 L468C96 |)|
+Identifier 19650+4 L468C98 |next|
+Newline 19654+1 L468C102
+ElseKeyword 19661+4 L469C7 |else|
+IfKeyword 19666+2 L469C12 |if|
+Identifier 19669+1 L469C15 |c|
+DoubleEquals 19671+2 L469C17 |==|
+Identifier 19674+16 L469C20 |cc-right-bracket|
+ThenKeyword 19691+4 L469C37 |then|
+TypeIdentifier 19696+8 L469C42 |LexToken|
+LeftParen 19705+1 L469C51 |(|
+Identifier 19706+10 L469C52 |make-token|
+LeftParen 19717+1 L469C63 |(|
+Identifier 19718+16 L469C64 |subj-deck-record|
+TypeIdentifier 19735+12 L469C81 |RightBracket|
+RightParen 19747+1 L469C93 |)|
+IntegerLiteral 19749+1 L469C95 |1|
+Identifier 19751+1 L469C97 |s|
+RightParen 19752+1 L469C98 |)|
+Identifier 19754+4 L469C100 |next|
+Newline 19758+1 L469C104
+ElseKeyword 19765+4 L470C7 |else|
+IfKeyword 19770+2 L470C12 |if|
+Identifier 19773+1 L470C15 |c|
+DoubleEquals 19775+2 L470C17 |==|
+Identifier 19778+13 L470C20 |cc-left-brace|
+ThenKeyword 19792+4 L470C34 |then|
+TypeIdentifier 19797+8 L470C39 |LexToken|
+LeftParen 19806+1 L470C48 |(|
+Identifier 19807+10 L470C49 |make-token|
+LeftParen 19818+1 L470C60 |(|
+Identifier 19819+16 L470C61 |subj-deck-record|
+TypeIdentifier 19836+9 L470C78 |LeftBrace|
+RightParen 19845+1 L470C87 |)|
+IntegerLiteral 19847+1 L470C89 |1|
+Identifier 19849+1 L470C91 |s|
+RightParen 19850+1 L470C92 |)|
+Identifier 19852+4 L470C94 |next|
+Newline 19856+1 L470C98
+ElseKeyword 19863+4 L471C7 |else|
+IfKeyword 19868+2 L471C12 |if|
+Identifier 19871+1 L471C15 |c|
+DoubleEquals 19873+2 L471C17 |==|
+Identifier 19876+14 L471C20 |cc-right-brace|
+ThenKeyword 19891+4 L471C35 |then|
+TypeIdentifier 19896+8 L471C40 |LexToken|
+LeftParen 19905+1 L471C49 |(|
+Identifier 19906+10 L471C50 |make-token|
+LeftParen 19917+1 L471C61 |(|
+Identifier 19918+16 L471C62 |subj-deck-record|
+TypeIdentifier 19935+10 L471C79 |RightBrace|
+RightParen 19945+1 L471C89 |)|
+IntegerLiteral 19947+1 L471C91 |1|
+Identifier 19949+1 L471C93 |s|
+RightParen 19950+1 L471C94 |)|
+Identifier 19952+4 L471C96 |next|
+Newline 19956+1 L471C100
+ElseKeyword 19963+4 L472C7 |else|
+IfKeyword 19968+2 L472C12 |if|
+Identifier 19971+1 L472C15 |c|
+DoubleEquals 19973+2 L472C17 |==|
+Identifier 19976+8 L472C20 |cc-comma|
+ThenKeyword 19985+4 L472C29 |then|
+TypeIdentifier 19990+8 L472C34 |LexToken|
+LeftParen 19999+1 L472C43 |(|
+Identifier 20000+10 L472C44 |make-token|
+LeftParen 20011+1 L472C55 |(|
+Identifier 20012+16 L472C56 |subj-deck-record|
+TypeIdentifier 20029+5 L472C73 |Comma|
+RightParen 20034+1 L472C78 |)|
+IntegerLiteral 20036+1 L472C80 |1|
+Identifier 20038+1 L472C82 |s|
+RightParen 20039+1 L472C83 |)|
+Identifier 20041+4 L472C85 |next|
+Newline 20045+1 L472C89
+ElseKeyword 20052+4 L473C7 |else|
+IfKeyword 20057+2 L473C12 |if|
+Identifier 20060+1 L473C15 |c|
+DoubleEquals 20062+2 L473C17 |==|
+Identifier 20065+6 L473C20 |cc-dot|
+ThenKeyword 20072+4 L473C27 |then|
+TypeIdentifier 20077+8 L473C32 |LexToken|
+LeftParen 20086+1 L473C41 |(|
+Identifier 20087+10 L473C42 |make-token|
+LeftParen 20098+1 L473C53 |(|
+Identifier 20099+16 L473C54 |subj-deck-record|
+TypeIdentifier 20116+3 L473C71 |Dot|
+RightParen 20119+1 L473C74 |)|
+IntegerLiteral 20121+1 L473C76 |1|
+Identifier 20123+1 L473C78 |s|
+RightParen 20124+1 L473C79 |)|
+Identifier 20126+4 L473C81 |next|
+Newline 20130+1 L473C85
+ElseKeyword 20137+4 L474C7 |else|
+IfKeyword 20142+2 L474C12 |if|
+Identifier 20145+1 L474C15 |c|
+DoubleEquals 20147+2 L474C17 |==|
+Identifier 20150+8 L474C20 |cc-caret|
+ThenKeyword 20159+4 L474C29 |then|
+TypeIdentifier 20164+8 L474C34 |LexToken|
+LeftParen 20173+1 L474C43 |(|
+Identifier 20174+10 L474C44 |make-token|
+LeftParen 20185+1 L474C55 |(|
+Identifier 20186+16 L474C56 |subj-deck-record|
+TypeIdentifier 20203+5 L474C73 |Caret|
+RightParen 20208+1 L474C78 |)|
+IntegerLiteral 20210+1 L474C80 |1|
+Identifier 20212+1 L474C82 |s|
+RightParen 20213+1 L474C83 |)|
+Identifier 20215+4 L474C85 |next|
+Newline 20219+1 L474C89
+ElseKeyword 20226+4 L475C7 |else|
+IfKeyword 20231+2 L475C12 |if|
+Identifier 20234+1 L475C15 |c|
+DoubleEquals 20236+2 L475C17 |==|
+Identifier 20239+12 L475C20 |cc-ampersand|
+ThenKeyword 20252+4 L475C33 |then|
+TypeIdentifier 20257+8 L475C38 |LexToken|
+LeftParen 20266+1 L475C47 |(|
+Identifier 20267+10 L475C48 |make-token|
+LeftParen 20278+1 L475C59 |(|
+Identifier 20279+16 L475C60 |subj-deck-record|
+TypeIdentifier 20296+9 L475C77 |Ampersand|
+RightParen 20305+1 L475C86 |)|
+IntegerLiteral 20307+1 L475C88 |1|
+Identifier 20309+1 L475C90 |s|
+RightParen 20310+1 L475C91 |)|
+Identifier 20312+4 L475C93 |next|
+Newline 20316+1 L475C97
+ElseKeyword 20323+4 L476C7 |else|
+IfKeyword 20328+2 L476C12 |if|
+Identifier 20331+1 L476C15 |c|
+DoubleEquals 20333+2 L476C17 |==|
+Identifier 20336+12 L476C20 |cc-backslash|
+ThenKeyword 20349+4 L476C33 |then|
+TypeIdentifier 20354+8 L476C38 |LexToken|
+LeftParen 20363+1 L476C47 |(|
+Identifier 20364+10 L476C48 |make-token|
+LeftParen 20375+1 L476C59 |(|
+Identifier 20376+16 L476C60 |subj-deck-record|
+TypeIdentifier 20393+9 L476C77 |Backslash|
+RightParen 20402+1 L476C86 |)|
+IntegerLiteral 20404+1 L476C88 |1|
+Identifier 20406+1 L476C90 |s|
+RightParen 20407+1 L476C91 |)|
+Identifier 20409+4 L476C93 |next|
+Newline 20413+1 L476C97
+ElseKeyword 20420+4 L477C7 |else|
+IfKeyword 20425+2 L477C12 |if|
+Identifier 20428+1 L477C15 |c|
+DoubleEquals 20430+2 L477C17 |==|
+Identifier 20433+8 L477C20 |cc-tilde|
+ThenKeyword 20442+4 L477C29 |then|
+Newline 20446+1 L477C33
+LetKeyword 20454+3 L478C8 |let|
+Identifier 20458+3 L478C12 |nc2|
+Equals 20462+1 L478C16 |=|
+IfKeyword 20464+2 L478C18 |if|
+Identifier 20467+9 L478C21 |is-at-end|
+Identifier 20477+4 L478C31 |next|
+ThenKeyword 20482+4 L478C36 |then|
+IntegerLiteral 20487+1 L478C41 |0|
+ElseKeyword 20489+4 L478C43 |else|
+Identifier 20494+9 L478C48 |peek-code|
+Identifier 20504+4 L478C58 |next|
+Newline 20508+1 L478C62
+InKeyword 20516+2 L479C8 |in|
+IfKeyword 20519+2 L479C11 |if|
+Identifier 20522+3 L479C14 |nc2|
+DoubleEquals 20526+2 L479C18 |==|
+Identifier 20529+7 L479C21 |cc-zero|
+ThenKeyword 20537+4 L479C29 |then|
+TypeIdentifier 20542+8 L479C34 |LexToken|
+LeftParen 20551+1 L479C43 |(|
+Identifier 20552+10 L479C44 |make-token|
+LeftParen 20563+1 L479C55 |(|
+Identifier 20564+16 L479C56 |subj-deck-record|
+TypeIdentifier 20581+9 L479C73 |TildeZero|
+RightParen 20590+1 L479C82 |)|
+IntegerLiteral 20592+1 L479C84 |2|
+Identifier 20594+1 L479C86 |s|
+RightParen 20595+1 L479C87 |)|
+LeftParen 20597+1 L479C89 |(|
+Identifier 20598+12 L479C90 |advance-char|
+Identifier 20611+4 L479C103 |next|
+RightParen 20615+1 L479C107 |)|
+Newline 20616+1 L479C108
+ElseKeyword 20624+4 L480C8 |else|
+TypeIdentifier 20629+8 L480C13 |LexToken|
+LeftParen 20638+1 L480C22 |(|
+Identifier 20639+10 L480C23 |make-token|
+LeftParen 20650+1 L480C34 |(|
+Identifier 20651+16 L480C35 |subj-deck-record|
+TypeIdentifier 20668+5 L480C52 |Tilde|
+RightParen 20673+1 L480C57 |)|
+IntegerLiteral 20675+1 L480C59 |1|
+Identifier 20677+1 L480C61 |s|
+RightParen 20678+1 L480C62 |)|
+Identifier 20680+4 L480C64 |next|
+Newline 20684+1 L480C68
+ElseKeyword 20691+4 L481C7 |else|
+Identifier 20696+24 L481C12 |scan-multi-char-operator|
+Identifier 20721+1 L481C37 |s|
+Newline 20722+1 L481C38
+Newline 20723+1 L482C1
+Identifier 20726+24 L483C3 |scan-multi-char-operator|
+Colon 20751+1 L483C28 |:|
+TypeIdentifier 20753+8 L483C30 |LexState|
+Arrow 20762+2 L483C39 |->|
+TypeIdentifier 20765+7 L483C42 |LexStep|
+Newline 20772+1 L483C49
+Identifier 20775+24 L484C3 |scan-multi-char-operator|
+LeftParen 20800+1 L484C28 |(|
+Identifier 20801+1 L484C29 |s|
+RightParen 20802+1 L484C30 |)|
+Equals 20804+1 L484C32 |=|
+Newline 20805+1 L484C33
+LetKeyword 20809+3 L485C4 |let|
+Identifier 20813+1 L485C8 |c|
+Equals 20815+1 L485C10 |=|
+Identifier 20817+9 L485C12 |peek-code|
+Identifier 20827+1 L485C22 |s|
+Newline 20828+1 L485C23
+InKeyword 20832+2 L486C4 |in|
+LetKeyword 20835+3 L486C7 |let|
+Identifier 20839+4 L486C11 |next|
+Equals 20844+1 L486C16 |=|
+Identifier 20846+12 L486C18 |advance-char|
+Identifier 20859+1 L486C31 |s|
+Newline 20860+1 L486C32
+InKeyword 20864+2 L487C4 |in|
+LetKeyword 20867+3 L487C7 |let|
+Identifier 20871+2 L487C11 |nc|
+Equals 20874+1 L487C14 |=|
+IfKeyword 20876+2 L487C16 |if|
+Identifier 20879+9 L487C19 |is-at-end|
+Identifier 20889+4 L487C29 |next|
+ThenKeyword 20894+4 L487C34 |then|
+IntegerLiteral 20899+1 L487C39 |0|
+ElseKeyword 20901+4 L487C41 |else|
+Identifier 20906+9 L487C46 |peek-code|
+Identifier 20916+4 L487C56 |next|
+Newline 20920+1 L487C60
+InKeyword 20924+2 L488C4 |in|
+IfKeyword 20927+2 L488C7 |if|
+Identifier 20930+1 L488C10 |c|
+DoubleEquals 20932+2 L488C12 |==|
+Identifier 20935+7 L488C15 |cc-plus|
+ThenKeyword 20943+4 L488C23 |then|
+TypeIdentifier 20948+8 L488C28 |LexToken|
+LeftParen 20957+1 L488C37 |(|
+Identifier 20958+10 L488C38 |make-token|
+LeftParen 20969+1 L488C49 |(|
+Identifier 20970+16 L488C50 |subj-deck-record|
+TypeIdentifier 20987+4 L488C67 |Plus|
+RightParen 20991+1 L488C71 |)|
+IntegerLiteral 20993+1 L488C73 |1|
+Identifier 20995+1 L488C75 |s|
+RightParen 20996+1 L488C76 |)|
+Identifier 20998+4 L488C78 |next|
+Newline 21002+1 L488C82
+ElseKeyword 21011+4 L489C9 |else|
+IfKeyword 21016+2 L489C14 |if|
+Identifier 21019+1 L489C17 |c|
+DoubleEquals 21021+2 L489C19 |==|
+Identifier 21024+8 L489C22 |cc-minus|
+ThenKeyword 21033+4 L489C31 |then|
+IfKeyword 21038+2 L489C36 |if|
+Identifier 21041+2 L489C39 |nc|
+DoubleEquals 21044+2 L489C42 |==|
+Identifier 21047+10 L489C45 |cc-greater|
+ThenKeyword 21058+4 L489C56 |then|
+TypeIdentifier 21063+8 L489C61 |LexToken|
+LeftParen 21072+1 L489C70 |(|
+Identifier 21073+10 L489C71 |make-token|
+LeftParen 21084+1 L489C82 |(|
+Identifier 21085+16 L489C83 |subj-deck-record|
+TypeIdentifier 21102+5 L489C100 |Arrow|
+RightParen 21107+1 L489C105 |)|
+IntegerLiteral 21109+1 L489C107 |2|
+Identifier 21111+1 L489C109 |s|
+RightParen 21112+1 L489C110 |)|
+LeftParen 21114+1 L489C112 |(|
+Identifier 21115+12 L489C113 |advance-char|
+Identifier 21128+4 L489C126 |next|
+RightParen 21132+1 L489C130 |)|
+Newline 21133+1 L489C131
+ElseKeyword 21142+4 L490C9 |else|
+TypeIdentifier 21147+8 L490C14 |LexToken|
+LeftParen 21156+1 L490C23 |(|
+Identifier 21157+10 L490C24 |make-token|
+LeftParen 21168+1 L490C35 |(|
+Identifier 21169+16 L490C36 |subj-deck-record|
+TypeIdentifier 21186+5 L490C53 |Minus|
+RightParen 21191+1 L490C58 |)|
+IntegerLiteral 21193+1 L490C60 |1|
+Identifier 21195+1 L490C62 |s|
+RightParen 21196+1 L490C63 |)|
+Identifier 21198+4 L490C65 |next|
+Newline 21202+1 L490C69
+ElseKeyword 21211+4 L491C9 |else|
+IfKeyword 21216+2 L491C14 |if|
+Identifier 21219+1 L491C17 |c|
+DoubleEquals 21221+2 L491C19 |==|
+Identifier 21224+7 L491C22 |cc-star|
+ThenKeyword 21232+4 L491C30 |then|
+TypeIdentifier 21237+8 L491C35 |LexToken|
+LeftParen 21246+1 L491C44 |(|
+Identifier 21247+10 L491C45 |make-token|
+LeftParen 21258+1 L491C56 |(|
+Identifier 21259+16 L491C57 |subj-deck-record|
+TypeIdentifier 21276+4 L491C74 |Star|
+RightParen 21280+1 L491C78 |)|
+IntegerLiteral 21282+1 L491C80 |1|
+Identifier 21284+1 L491C82 |s|
+RightParen 21285+1 L491C83 |)|
+Identifier 21287+4 L491C85 |next|
+Newline 21291+1 L491C89
+ElseKeyword 21300+4 L492C9 |else|
+IfKeyword 21305+2 L492C14 |if|
+Identifier 21308+1 L492C17 |c|
+DoubleEquals 21310+2 L492C19 |==|
+Identifier 21313+8 L492C22 |cc-slash|
+ThenKeyword 21322+4 L492C31 |then|
+IfKeyword 21327+2 L492C36 |if|
+Identifier 21330+2 L492C39 |nc|
+DoubleEquals 21333+2 L492C42 |==|
+Identifier 21336+9 L492C45 |cc-equals|
+ThenKeyword 21346+4 L492C55 |then|
+TypeIdentifier 21351+8 L492C60 |LexToken|
+LeftParen 21360+1 L492C69 |(|
+Identifier 21361+10 L492C70 |make-token|
+LeftParen 21372+1 L492C81 |(|
+Identifier 21373+16 L492C82 |subj-deck-record|
+TypeIdentifier 21390+9 L492C99 |NotEquals|
+RightParen 21399+1 L492C108 |)|
+IntegerLiteral 21401+1 L492C110 |2|
+Identifier 21403+1 L492C112 |s|
+RightParen 21404+1 L492C113 |)|
+LeftParen 21406+1 L492C115 |(|
+Identifier 21407+12 L492C116 |advance-char|
+Identifier 21420+4 L492C129 |next|
+RightParen 21424+1 L492C133 |)|
+Newline 21425+1 L492C134
+ElseKeyword 21434+4 L493C9 |else|
+TypeIdentifier 21439+8 L493C14 |LexToken|
+LeftParen 21448+1 L493C23 |(|
+Identifier 21449+10 L493C24 |make-token|
+LeftParen 21460+1 L493C35 |(|
+Identifier 21461+16 L493C36 |subj-deck-record|
+TypeIdentifier 21478+5 L493C53 |Slash|
+RightParen 21483+1 L493C58 |)|
+IntegerLiteral 21485+1 L493C60 |1|
+Identifier 21487+1 L493C62 |s|
+RightParen 21488+1 L493C63 |)|
+Identifier 21490+4 L493C65 |next|
+Newline 21494+1 L493C69
+ElseKeyword 21503+4 L494C9 |else|
+IfKeyword 21508+2 L494C14 |if|
+Identifier 21511+1 L494C17 |c|
+DoubleEquals 21513+2 L494C19 |==|
+Identifier 21516+9 L494C22 |cc-equals|
+ThenKeyword 21526+4 L494C32 |then|
+IfKeyword 21531+2 L494C37 |if|
+Identifier 21534+2 L494C40 |nc|
+DoubleEquals 21537+2 L494C43 |==|
+Identifier 21540+9 L494C46 |cc-equals|
+ThenKeyword 21550+4 L494C56 |then|
+LetKeyword 21555+3 L494C61 |let|
+Identifier 21559+5 L494C65 |next2|
+Equals 21565+1 L494C71 |=|
+Identifier 21567+12 L494C73 |advance-char|
+Identifier 21580+4 L494C86 |next|
+Newline 21584+1 L494C90
+InKeyword 21588+2 L495C4 |in|
+LetKeyword 21591+3 L495C7 |let|
+Identifier 21595+3 L495C11 |nc2|
+Equals 21599+1 L495C15 |=|
+IfKeyword 21601+2 L495C17 |if|
+Identifier 21604+9 L495C20 |is-at-end|
+Identifier 21614+5 L495C30 |next2|
+ThenKeyword 21620+4 L495C36 |then|
+IntegerLiteral 21625+1 L495C41 |0|
+ElseKeyword 21627+4 L495C43 |else|
+Identifier 21632+9 L495C48 |peek-code|
+Identifier 21642+5 L495C58 |next2|
+Newline 21647+1 L495C63
+InKeyword 21651+2 L496C4 |in|
+IfKeyword 21654+2 L496C7 |if|
+Identifier 21657+3 L496C10 |nc2|
+DoubleEquals 21661+2 L496C14 |==|
+Identifier 21664+9 L496C17 |cc-equals|
+ThenKeyword 21674+4 L496C27 |then|
+TypeIdentifier 21679+8 L496C32 |LexToken|
+LeftParen 21688+1 L496C41 |(|
+Identifier 21689+10 L496C42 |make-token|
+LeftParen 21700+1 L496C53 |(|
+Identifier 21701+16 L496C54 |subj-deck-record|
+TypeIdentifier 21718+12 L496C71 |TripleEquals|
+RightParen 21730+1 L496C83 |)|
+IntegerLiteral 21732+1 L496C85 |3|
+Identifier 21734+1 L496C87 |s|
+RightParen 21735+1 L496C88 |)|
+LeftParen 21737+1 L496C90 |(|
+Identifier 21738+12 L496C91 |advance-char|
+Identifier 21751+5 L496C104 |next2|
+RightParen 21756+1 L496C109 |)|
+Newline 21757+1 L496C110
+ElseKeyword 21774+4 L497C17 |else|
+TypeIdentifier 21779+8 L497C22 |LexToken|
+LeftParen 21788+1 L497C31 |(|
+Identifier 21789+10 L497C32 |make-token|
+LeftParen 21800+1 L497C43 |(|
+Identifier 21801+16 L497C44 |subj-deck-record|
+TypeIdentifier 21818+12 L497C61 |DoubleEquals|
+RightParen 21830+1 L497C73 |)|
+IntegerLiteral 21832+1 L497C75 |2|
+Identifier 21834+1 L497C77 |s|
+RightParen 21835+1 L497C78 |)|
+Identifier 21837+5 L497C80 |next2|
+Newline 21842+1 L497C85
+ElseKeyword 21854+4 L498C12 |else|
+IfKeyword 21859+2 L498C17 |if|
+Identifier 21862+2 L498C20 |nc|
+DoubleEquals 21865+2 L498C23 |==|
+Identifier 21868+10 L498C26 |cc-greater|
+ThenKeyword 21879+4 L498C37 |then|
+TypeIdentifier 21884+8 L498C42 |LexToken|
+LeftParen 21893+1 L498C51 |(|
+Identifier 21894+10 L498C52 |make-token|
+LeftParen 21905+1 L498C63 |(|
+Identifier 21906+16 L498C64 |subj-deck-record|
+TypeIdentifier 21923+8 L498C81 |FatArrow|
+RightParen 21931+1 L498C89 |)|
+IntegerLiteral 21933+1 L498C91 |2|
+Identifier 21935+1 L498C93 |s|
+RightParen 21936+1 L498C94 |)|
+LeftParen 21938+1 L498C96 |(|
+Identifier 21939+12 L498C97 |advance-char|
+Identifier 21952+4 L498C110 |next|
+RightParen 21956+1 L498C114 |)|
+Newline 21957+1 L498C115
+ElseKeyword 21969+4 L499C12 |else|
+TypeIdentifier 21974+8 L499C17 |LexToken|
+LeftParen 21983+1 L499C26 |(|
+Identifier 21984+10 L499C27 |make-token|
+LeftParen 21995+1 L499C38 |(|
+Identifier 21996+16 L499C39 |subj-deck-record|
+TypeIdentifier 22013+6 L499C56 |Equals|
+RightParen 22019+1 L499C62 |)|
+IntegerLiteral 22021+1 L499C64 |1|
+Identifier 22023+1 L499C66 |s|
+RightParen 22024+1 L499C67 |)|
+Identifier 22026+4 L499C69 |next|
+Newline 22030+1 L499C73
+ElseKeyword 22039+4 L500C9 |else|
+IfKeyword 22044+2 L500C14 |if|
+Identifier 22047+1 L500C17 |c|
+DoubleEquals 22049+2 L500C19 |==|
+Identifier 22052+8 L500C22 |cc-colon|
+ThenKeyword 22061+4 L500C31 |then|
+IfKeyword 22066+2 L500C36 |if|
+Identifier 22069+2 L500C39 |nc|
+DoubleEquals 22072+2 L500C42 |==|
+Identifier 22075+8 L500C45 |cc-colon|
+ThenKeyword 22084+4 L500C54 |then|
+TypeIdentifier 22089+8 L500C59 |LexToken|
+LeftParen 22098+1 L500C68 |(|
+Identifier 22099+10 L500C69 |make-token|
+LeftParen 22110+1 L500C80 |(|
+Identifier 22111+16 L500C81 |subj-deck-record|
+TypeIdentifier 22128+10 L500C98 |ColonColon|
+RightParen 22138+1 L500C108 |)|
+IntegerLiteral 22140+1 L500C110 |2|
+Identifier 22142+1 L500C112 |s|
+RightParen 22143+1 L500C113 |)|
+LeftParen 22145+1 L500C115 |(|
+Identifier 22146+12 L500C116 |advance-char|
+Identifier 22159+4 L500C129 |next|
+RightParen 22163+1 L500C133 |)|
+Newline 22164+1 L500C134
+ElseKeyword 22173+4 L501C9 |else|
+TypeIdentifier 22178+8 L501C14 |LexToken|
+LeftParen 22187+1 L501C23 |(|
+Identifier 22188+10 L501C24 |make-token|
+LeftParen 22199+1 L501C35 |(|
+Identifier 22200+16 L501C36 |subj-deck-record|
+TypeIdentifier 22217+5 L501C53 |Colon|
+RightParen 22222+1 L501C58 |)|
+IntegerLiteral 22224+1 L501C60 |1|
+Identifier 22226+1 L501C62 |s|
+RightParen 22227+1 L501C63 |)|
+Identifier 22229+4 L501C65 |next|
+Newline 22233+1 L501C69
+ElseKeyword 22242+4 L502C9 |else|
+IfKeyword 22247+2 L502C14 |if|
+Identifier 22250+1 L502C17 |c|
+DoubleEquals 22252+2 L502C19 |==|
+Identifier 22255+7 L502C22 |cc-pipe|
+ThenKeyword 22263+4 L502C30 |then|
+IfKeyword 22268+2 L502C35 |if|
+Identifier 22271+2 L502C38 |nc|
+DoubleEquals 22274+2 L502C41 |==|
+Identifier 22277+10 L502C44 |cc-greater|
+ThenKeyword 22288+4 L502C55 |then|
+TypeIdentifier 22293+8 L502C60 |LexToken|
+LeftParen 22302+1 L502C69 |(|
+Identifier 22303+10 L502C70 |make-token|
+LeftParen 22314+1 L502C81 |(|
+Identifier 22315+16 L502C82 |subj-deck-record|
+TypeIdentifier 22332+11 L502C99 |PipeForward|
+RightParen 22343+1 L502C110 |)|
+IntegerLiteral 22345+1 L502C112 |2|
+Identifier 22347+1 L502C114 |s|
+RightParen 22348+1 L502C115 |)|
+LeftParen 22350+1 L502C117 |(|
+Identifier 22351+12 L502C118 |advance-char|
+Identifier 22364+4 L502C131 |next|
+RightParen 22368+1 L502C135 |)|
+Newline 22369+1 L502C136
+ElseKeyword 22378+4 L503C9 |else|
+TypeIdentifier 22383+8 L503C14 |LexToken|
+LeftParen 22392+1 L503C23 |(|
+Identifier 22393+10 L503C24 |make-token|
+LeftParen 22404+1 L503C35 |(|
+Identifier 22405+16 L503C36 |subj-deck-record|
+TypeIdentifier 22422+4 L503C53 |Pipe|
+RightParen 22426+1 L503C57 |)|
+IntegerLiteral 22428+1 L503C59 |1|
+Identifier 22430+1 L503C61 |s|
+RightParen 22431+1 L503C62 |)|
+Identifier 22433+4 L503C64 |next|
+Newline 22437+1 L503C68
+ElseKeyword 22446+4 L504C9 |else|
+IfKeyword 22451+2 L504C14 |if|
+Identifier 22454+1 L504C17 |c|
+DoubleEquals 22456+2 L504C19 |==|
+Identifier 22459+7 L504C22 |cc-less|
+ThenKeyword 22467+4 L504C30 |then|
+IfKeyword 22472+2 L504C35 |if|
+Identifier 22475+2 L504C38 |nc|
+DoubleEquals 22478+2 L504C41 |==|
+Identifier 22481+9 L504C44 |cc-equals|
+ThenKeyword 22491+4 L504C54 |then|
+TypeIdentifier 22496+8 L504C59 |LexToken|
+LeftParen 22505+1 L504C68 |(|
+Identifier 22506+10 L504C69 |make-token|
+LeftParen 22517+1 L504C80 |(|
+Identifier 22518+16 L504C81 |subj-deck-record|
+TypeIdentifier 22535+11 L504C98 |LessOrEqual|
+RightParen 22546+1 L504C109 |)|
+IntegerLiteral 22548+1 L504C111 |2|
+Identifier 22550+1 L504C113 |s|
+RightParen 22551+1 L504C114 |)|
+LeftParen 22553+1 L504C116 |(|
+Identifier 22554+12 L504C117 |advance-char|
+Identifier 22567+4 L504C130 |next|
+RightParen 22571+1 L504C134 |)|
+Newline 22572+1 L504C135
+ElseKeyword 22581+4 L505C9 |else|
+IfKeyword 22586+2 L505C14 |if|
+Identifier 22589+2 L505C17 |nc|
+DoubleEquals 22592+2 L505C20 |==|
+Identifier 22595+8 L505C23 |cc-minus|
+ThenKeyword 22604+4 L505C32 |then|
+TypeIdentifier 22609+8 L505C37 |LexToken|
+LeftParen 22618+1 L505C46 |(|
+Identifier 22619+10 L505C47 |make-token|
+LeftParen 22630+1 L505C58 |(|
+Identifier 22631+16 L505C59 |subj-deck-record|
+TypeIdentifier 22648+9 L505C76 |LeftArrow|
+RightParen 22657+1 L505C85 |)|
+IntegerLiteral 22659+1 L505C87 |2|
+Identifier 22661+1 L505C89 |s|
+RightParen 22662+1 L505C90 |)|
+LeftParen 22664+1 L505C92 |(|
+Identifier 22665+12 L505C93 |advance-char|
+Identifier 22678+4 L505C106 |next|
+RightParen 22682+1 L505C110 |)|
+Newline 22683+1 L505C111
+ElseKeyword 22692+4 L506C9 |else|
+TypeIdentifier 22697+8 L506C14 |LexToken|
+LeftParen 22706+1 L506C23 |(|
+Identifier 22707+10 L506C24 |make-token|
+LeftParen 22718+1 L506C35 |(|
+Identifier 22719+16 L506C36 |subj-deck-record|
+TypeIdentifier 22736+8 L506C53 |LessThan|
+RightParen 22744+1 L506C61 |)|
+IntegerLiteral 22746+1 L506C63 |1|
+Identifier 22748+1 L506C65 |s|
+RightParen 22749+1 L506C66 |)|
+Identifier 22751+4 L506C68 |next|
+Newline 22755+1 L506C72
+ElseKeyword 22764+4 L507C9 |else|
+IfKeyword 22769+2 L507C14 |if|
+Identifier 22772+1 L507C17 |c|
+DoubleEquals 22774+2 L507C19 |==|
+Identifier 22777+10 L507C22 |cc-greater|
+ThenKeyword 22788+4 L507C33 |then|
+IfKeyword 22793+2 L507C38 |if|
+Identifier 22796+2 L507C41 |nc|
+DoubleEquals 22799+2 L507C44 |==|
+Identifier 22802+9 L507C47 |cc-equals|
+ThenKeyword 22812+4 L507C57 |then|
+TypeIdentifier 22817+8 L507C62 |LexToken|
+LeftParen 22826+1 L507C71 |(|
+Identifier 22827+10 L507C72 |make-token|
+LeftParen 22838+1 L507C83 |(|
+Identifier 22839+16 L507C84 |subj-deck-record|
+TypeIdentifier 22856+14 L507C101 |GreaterOrEqual|
+RightParen 22870+1 L507C115 |)|
+IntegerLiteral 22872+1 L507C117 |2|
+Identifier 22874+1 L507C119 |s|
+RightParen 22875+1 L507C120 |)|
+LeftParen 22877+1 L507C122 |(|
+Identifier 22878+12 L507C123 |advance-char|
+Identifier 22891+4 L507C136 |next|
+RightParen 22895+1 L507C140 |)|
+Newline 22896+1 L507C141
+ElseKeyword 22905+4 L508C9 |else|
+TypeIdentifier 22910+8 L508C14 |LexToken|
+LeftParen 22919+1 L508C23 |(|
+Identifier 22920+10 L508C24 |make-token|
+LeftParen 22931+1 L508C35 |(|
+Identifier 22932+16 L508C36 |subj-deck-record|
+TypeIdentifier 22949+11 L508C53 |GreaterThan|
+RightParen 22960+1 L508C64 |)|
+IntegerLiteral 22962+1 L508C66 |1|
+Identifier 22964+1 L508C68 |s|
+RightParen 22965+1 L508C69 |)|
+Identifier 22967+4 L508C71 |next|
+Newline 22971+1 L508C75
+ElseKeyword 22980+4 L509C9 |else|
+TypeIdentifier 22985+8 L509C14 |LexToken|
+LeftParen 22994+1 L509C23 |(|
+Identifier 22995+10 L509C24 |make-token|
+LeftParen 23006+1 L509C35 |(|
+Identifier 23007+16 L509C36 |subj-deck-record|
+TypeIdentifier 23024+10 L509C53 |ErrorToken|
+RightParen 23034+1 L509C63 |)|
+IntegerLiteral 23036+1 L509C65 |1|
+Identifier 23038+1 L509C67 |s|
+RightParen 23039+1 L509C68 |)|
+Identifier 23041+4 L509C70 |next|
+Newline 23045+1 L509C74
+Newline 23046+1 L510C1
+TypeIdentifier 23047+7 L511C1 |Section|
+Colon 23054+1 L511C8 |:|
+TypeIdentifier 23056+4 L511C10 |Char|
+TypeIdentifier 23061+7 L511C15 |Literal|
+Newline 23068+1 L511C22
+Identifier 23071+17 L512C3 |scan-char-literal|
+Colon 23089+1 L512C21 |:|
+TypeIdentifier 23091+8 L512C23 |LexState|
+Arrow 23100+2 L512C32 |->|
+TypeIdentifier 23103+7 L512C35 |LexStep|
+Newline 23110+1 L512C42
+Identifier 23113+17 L513C3 |scan-char-literal|
+LeftParen 23131+1 L513C21 |(|
+Identifier 23132+1 L513C22 |s|
+RightParen 23133+1 L513C23 |)|
+Equals 23135+1 L513C25 |=|
+Newline 23136+1 L513C26
+LetKeyword 23140+3 L514C4 |let|
+Identifier 23144+2 L514C8 |s1|
+Equals 23147+1 L514C11 |=|
+Identifier 23149+12 L514C13 |advance-char|
+Identifier 23162+1 L514C26 |s|
+Newline 23163+1 L514C27
+InKeyword 23167+2 L515C4 |in|
+IfKeyword 23170+2 L515C7 |if|
+Identifier 23173+9 L515C10 |is-at-end|
+Identifier 23183+2 L515C20 |s1|
+ThenKeyword 23186+4 L515C23 |then|
+TypeIdentifier 23191+8 L515C28 |LexToken|
+LeftParen 23200+1 L515C37 |(|
+Identifier 23201+10 L515C38 |make-token|
+LeftParen 23212+1 L515C49 |(|
+Identifier 23213+16 L515C50 |subj-deck-record|
+TypeIdentifier 23230+10 L515C67 |ErrorToken|
+RightParen 23240+1 L515C77 |)|
+LeftParen 23242+1 L515C79 |(|
+Identifier 23243+2 L515C80 |s1|
+Dot 23245+1 L515C82 |.|
+Identifier 23246+6 L515C83 |offset|
+Minus 23253+1 L515C90 |-|
+Identifier 23255+1 L515C92 |s|
+Dot 23256+1 L515C93 |.|
+Identifier 23257+6 L515C94 |offset|
+RightParen 23263+1 L515C100 |)|
+Identifier 23265+1 L515C102 |s|
+RightParen 23266+1 L515C103 |)|
+Identifier 23268+2 L515C105 |s1|
+Newline 23270+1 L515C107
+ElseKeyword 23277+4 L516C7 |else|
+IfKeyword 23282+2 L516C12 |if|
+Identifier 23285+9 L516C15 |peek-code|
+Identifier 23295+2 L516C25 |s1|
+DoubleEquals 23298+2 L516C28 |==|
+Identifier 23301+12 L516C31 |cc-backslash|
+ThenKeyword 23314+4 L516C44 |then|
+LetKeyword 23319+3 L516C49 |let|
+Identifier 23323+2 L516C53 |s2|
+Equals 23326+1 L516C56 |=|
+Identifier 23328+12 L516C58 |advance-char|
+Identifier 23341+2 L516C71 |s1|
+Newline 23343+1 L516C73
+InKeyword 23347+2 L517C4 |in|
+IfKeyword 23350+2 L517C7 |if|
+Identifier 23353+9 L517C10 |is-at-end|
+Identifier 23363+2 L517C20 |s2|
+ThenKeyword 23366+4 L517C23 |then|
+TypeIdentifier 23371+8 L517C28 |LexToken|
+LeftParen 23380+1 L517C37 |(|
+Identifier 23381+10 L517C38 |make-token|
+LeftParen 23392+1 L517C49 |(|
+Identifier 23393+16 L517C50 |subj-deck-record|
+TypeIdentifier 23410+10 L517C67 |ErrorToken|
+RightParen 23420+1 L517C77 |)|
+LeftParen 23422+1 L517C79 |(|
+Identifier 23423+2 L517C80 |s2|
+Dot 23425+1 L517C82 |.|
+Identifier 23426+6 L517C83 |offset|
+Minus 23433+1 L517C90 |-|
+Identifier 23435+1 L517C92 |s|
+Dot 23436+1 L517C93 |.|
+Identifier 23437+6 L517C94 |offset|
+RightParen 23443+1 L517C100 |)|
+Identifier 23445+1 L517C102 |s|
+RightParen 23446+1 L517C103 |)|
+Identifier 23448+2 L517C105 |s2|
+Newline 23450+1 L517C107
+ElseKeyword 23454+4 L518C4 |else|
+LetKeyword 23459+3 L518C9 |let|
+Identifier 23463+8 L518C13 |esc-code|
+Equals 23472+1 L518C22 |=|
+Identifier 23474+9 L518C24 |peek-code|
+Identifier 23484+2 L518C34 |s2|
+Newline 23486+1 L518C36
+InKeyword 23490+2 L519C4 |in|
+LetKeyword 23493+3 L519C7 |let|
+Identifier 23497+2 L519C11 |s3|
+Equals 23500+1 L519C14 |=|
+Identifier 23502+12 L519C16 |advance-char|
+Identifier 23515+2 L519C29 |s2|
+Newline 23517+1 L519C31
+InKeyword 23521+2 L520C4 |in|
+LetKeyword 23524+3 L520C7 |let|
+Identifier 23528+2 L520C11 |s4|
+Equals 23531+1 L520C14 |=|
+IfKeyword 23533+2 L520C16 |if|
+Identifier 23536+9 L520C19 |is-at-end|
+Identifier 23546+2 L520C29 |s3|
+ThenKeyword 23549+4 L520C32 |then|
+Identifier 23554+2 L520C37 |s3|
+ElseKeyword 23557+4 L520C40 |else|
+IfKeyword 23562+2 L520C45 |if|
+Identifier 23565+9 L520C48 |peek-code|
+Identifier 23575+2 L520C58 |s3|
+DoubleEquals 23578+2 L520C61 |==|
+Identifier 23581+15 L520C64 |cc-single-quote|
+ThenKeyword 23597+4 L520C80 |then|
+Identifier 23602+12 L520C85 |advance-char|
+Identifier 23615+2 L520C98 |s3|
+ElseKeyword 23618+4 L520C101 |else|
+Identifier 23623+2 L520C106 |s3|
+Newline 23625+1 L520C108
+InKeyword 23629+2 L521C4 |in|
+LetKeyword 23632+3 L521C7 |let|
+Identifier 23636+8 L521C11 |esc-span|
+Equals 23645+1 L521C20 |=|
+Identifier 23647+7 L521C22 |span-at|
+LeftParen 23655+1 L521C30 |(|
+Identifier 23656+2 L521C31 |s1|
+Dot 23658+1 L521C33 |.|
+Identifier 23659+4 L521C34 |line|
+RightParen 23663+1 L521C38 |)|
+LeftParen 23665+1 L521C40 |(|
+Identifier 23666+2 L521C41 |s1|
+Dot 23668+1 L521C43 |.|
+Identifier 23669+6 L521C44 |column|
+RightParen 23675+1 L521C50 |)|
+LeftParen 23677+1 L521C52 |(|
+Identifier 23678+2 L521C53 |s1|
+Dot 23680+1 L521C55 |.|
+Identifier 23681+6 L521C56 |offset|
+RightParen 23687+1 L521C62 |)|
+IntegerLiteral 23689+1 L521C64 |2|
+LeftParen 23691+1 L521C66 |(|
+Identifier 23692+2 L521C67 |s1|
+Dot 23694+1 L521C69 |.|
+Identifier 23695+7 L521C70 |file-id|
+RightParen 23702+1 L521C77 |)|
+Newline 23703+1 L521C78
+InKeyword 23707+2 L522C4 |in|
+LetKeyword 23710+3 L522C7 |let|
+Identifier 23714+2 L522C11 |s5|
+Equals 23717+1 L522C14 |=|
+IfKeyword 23719+2 L522C16 |if|
+Identifier 23722+8 L522C19 |esc-code|
+DoubleEquals 23731+2 L522C28 |==|
+Identifier 23734+10 L522C31 |cc-lower-t|
+ThenKeyword 23745+4 L522C42 |then|
+Identifier 23750+13 L522C47 |add-lex-error|
+Identifier 23764+2 L522C61 |s4|
+Identifier 23767+22 L522C64 |cdx-invalid-tab-escape|
+TextLiteral 23790+63 L522C87 |"\\t escape is not valid in CCE; use a space character instead"|
+Identifier 23854+8 L522C151 |esc-span|
+Newline 23862+1 L522C159
+ElseKeyword 23878+4 L523C16 |else|
+IfKeyword 23883+2 L523C21 |if|
+Identifier 23886+8 L523C24 |esc-code|
+DoubleEquals 23895+2 L523C33 |==|
+Identifier 23898+10 L523C36 |cc-lower-r|
+ThenKeyword 23909+4 L523C47 |then|
+Identifier 23914+13 L523C52 |add-lex-error|
+Identifier 23928+2 L523C66 |s4|
+Identifier 23931+34 L523C69 |cdx-invalid-carriage-return-escape|
+TextLiteral 23966+56 L523C104 |"\\r escape is not valid in CCE; use '\\n' for newlines"|
+Identifier 24023+8 L523C161 |esc-span|
+Newline 24031+1 L523C169
+ElseKeyword 24047+4 L524C16 |else|
+Identifier 24052+2 L524C21 |s4|
+Newline 24054+1 L524C23
+InKeyword 24058+2 L525C4 |in|
+TypeIdentifier 24061+8 L525C7 |LexToken|
+LeftParen 24070+1 L525C16 |(|
+Identifier 24071+10 L525C17 |make-token|
+LeftParen 24082+1 L525C28 |(|
+Identifier 24083+16 L525C29 |subj-deck-record|
+TypeIdentifier 24100+11 L525C46 |CharLiteral|
+RightParen 24111+1 L525C57 |)|
+LeftParen 24113+1 L525C59 |(|
+Identifier 24114+2 L525C60 |s5|
+Dot 24116+1 L525C62 |.|
+Identifier 24117+6 L525C63 |offset|
+Minus 24124+1 L525C70 |-|
+Identifier 24126+1 L525C72 |s|
+Dot 24127+1 L525C73 |.|
+Identifier 24128+6 L525C74 |offset|
+RightParen 24134+1 L525C80 |)|
+Identifier 24136+1 L525C82 |s|
+RightParen 24137+1 L525C83 |)|
+Identifier 24139+2 L525C85 |s5|
+Newline 24141+1 L525C87
+ElseKeyword 24145+4 L526C4 |else|
+LetKeyword 24150+3 L526C9 |let|
+Identifier 24154+2 L526C13 |s2|
+Equals 24157+1 L526C16 |=|
+Identifier 24159+12 L526C18 |advance-char|
+Identifier 24172+2 L526C31 |s1|
+Newline 24174+1 L526C33
+InKeyword 24178+2 L527C4 |in|
+LetKeyword 24181+3 L527C7 |let|
+Identifier 24185+2 L527C11 |s3|
+Equals 24188+1 L527C14 |=|
+IfKeyword 24190+2 L527C16 |if|
+Identifier 24193+9 L527C19 |is-at-end|
+Identifier 24203+2 L527C29 |s2|
+ThenKeyword 24206+4 L527C32 |then|
+Identifier 24211+2 L527C37 |s2|
+ElseKeyword 24214+4 L527C40 |else|
+IfKeyword 24219+2 L527C45 |if|
+Identifier 24222+9 L527C48 |peek-code|
+Identifier 24232+2 L527C58 |s2|
+DoubleEquals 24235+2 L527C61 |==|
+Identifier 24238+15 L527C64 |cc-single-quote|
+ThenKeyword 24254+4 L527C80 |then|
+Identifier 24259+12 L527C85 |advance-char|
+Identifier 24272+2 L527C98 |s2|
+ElseKeyword 24275+4 L527C101 |else|
+Identifier 24280+2 L527C106 |s2|
+Newline 24282+1 L527C108
+InKeyword 24286+2 L528C4 |in|
+TypeIdentifier 24289+8 L528C7 |LexToken|
+LeftParen 24298+1 L528C16 |(|
+Identifier 24299+10 L528C17 |make-token|
+LeftParen 24310+1 L528C28 |(|
+Identifier 24311+16 L528C29 |subj-deck-record|
+TypeIdentifier 24328+11 L528C46 |CharLiteral|
+RightParen 24339+1 L528C57 |)|
+LeftParen 24341+1 L528C59 |(|
+Identifier 24342+2 L528C60 |s3|
+Dot 24344+1 L528C62 |.|
+Identifier 24345+6 L528C63 |offset|
+Minus 24352+1 L528C70 |-|
+Identifier 24354+1 L528C72 |s|
+Dot 24355+1 L528C73 |.|
+Identifier 24356+6 L528C74 |offset|
+RightParen 24362+1 L528C80 |)|
+Identifier 24364+1 L528C82 |s|
+RightParen 24365+1 L528C83 |)|
+Identifier 24367+2 L528C85 |s3|
+Newline 24369+1 L528C87
+Newline 24370+1 L529C1
+TypeIdentifier 24371+7 L530C1 |Section|
+Colon 24378+1 L530C8 |:|
+TypeIdentifier 24380+8 L530C10 |Tokenize|
+TypeIdentifier 24389+3 L530C19 |All|
+Newline 24392+1 L530C22
+TypeIdentifier 24395+14 L531C3 |TokenizeResult|
+Equals 24410+1 L531C18 |=|
+RecordKeyword 24412+6 L531C20 |record|
+LeftBrace 24419+1 L531C27 |{|
+Newline 24420+1 L531C28
+Identifier 24424+6 L532C4 |tokens|
+Colon 24431+1 L532C11 |:|
+TypeIdentifier 24433+4 L532C13 |List|
+TypeIdentifier 24438+5 L532C18 |Token|
+Comma 24443+1 L532C23 |,|
+Newline 24444+1 L532C24
+Identifier 24448+6 L533C4 |errors|
+Colon 24455+1 L533C11 |:|
+TypeIdentifier 24457+4 L533C13 |List|
+TypeIdentifier 24462+10 L533C18 |Diagnostic|
+Newline 24472+1 L533C28
+RightBrace 24475+1 L534C3 |}|
+Newline 24476+1 L534C4
+Newline 24477+1 L535C1
+TypeIdentifier 24480+12 L536C3 |LexCollected|
+Equals 24493+1 L536C16 |=|
+RecordKeyword 24495+6 L536C18 |record|
+LeftBrace 24502+1 L536C25 |{|
+Newline 24503+1 L536C26
+Identifier 24507+16 L537C4 |collected-tokens|
+Colon 24524+1 L537C21 |:|
+TypeIdentifier 24526+10 L537C23 |LinkedList|
+TypeIdentifier 24537+5 L537C34 |Token|
+Comma 24542+1 L537C39 |,|
+Newline 24543+1 L537C40
+Identifier 24547+16 L538C4 |collected-errors|
+Colon 24564+1 L538C21 |:|
+TypeIdentifier 24566+10 L538C23 |LinkedList|
+TypeIdentifier 24577+10 L538C34 |Diagnostic|
+Newline 24587+1 L538C44
+RightBrace 24590+1 L539C3 |}|
+Newline 24591+1 L539C4
+Newline 24592+1 L540C1
+Newline 24661+1 L541C69
+Newline 24732+1 L542C71
+Newline 24795+1 L543C63
+Newline 24871+1 L544C76
+Newline 24943+1 L545C72
+Newline 25013+1 L546C70
+Newline 25081+1 L547C68
+Newline 25153+1 L548C72
+Newline 25224+1 L549C71
+Newline 25295+1 L550C71
+Newline 25364+1 L551C69
+Newline 25432+1 L552C68
+Newline 25467+1 L553C35
+Newline 25531+1 L554C64
+Newline 25603+1 L555C72
+Newline 25671+1 L556C68
+Newline 25672+1 L557C1
+Identifier 25675+16 L558C3 |tokenize-collect|
+Colon 25692+1 L558C20 |:|
+TypeIdentifier 25694+8 L558C22 |LexState|
+Comma 25702+1 L558C30 |,|
+TypeIdentifier 25704+10 L558C32 |LinkedList|
+TypeIdentifier 25715+5 L558C43 |Token|
+Comma 25720+1 L558C48 |,|
+TypeIdentifier 25722+7 L558C50 |Integer|
+Arrow 25730+2 L558C58 |->|
+TypeIdentifier 25733+12 L558C61 |LexCollected|
+Newline 25745+1 L558C73
+Identifier 25748+16 L559C3 |tokenize-collect|
+LeftParen 25765+1 L559C20 |(|
+Identifier 25766+2 L559C21 |st|
+RightParen 25768+1 L559C23 |)|
+LeftParen 25770+1 L559C25 |(|
+Identifier 25771+3 L559C26 |acc|
+RightParen 25774+1 L559C29 |)|
+LeftParen 25776+1 L559C31 |(|
+Identifier 25777+7 L559C32 |ceiling|
+RightParen 25784+1 L559C39 |)|
+Equals 25786+1 L559C41 |=|
+Newline 25787+1 L559C42
+IfKeyword 25791+2 L560C4 |if|
+Identifier 25794+7 L560C7 |ceiling|
+GreaterThan 25802+1 L560C15 |>|
+IntegerLiteral 25804+1 L560C17 |0|
+Ampersand 25806+1 L560C19 |&|
+Identifier 25808+10 L560C21 |__deck-pos|
+Plus 25819+1 L560C32 |+|
+Identifier 25821+21 L560C34 |demand-lex-guard-band|
+GreaterOrEqual 25843+2 L560C56 |>=|
+Identifier 25846+7 L560C59 |ceiling|
+Newline 25853+1 L560C66
+ThenKeyword 25858+4 L561C5 |then|
+TypeIdentifier 25863+12 L561C10 |LexCollected|
+LeftBrace 25876+1 L561C23 |{|
+Newline 25877+1 L561C24
+Identifier 25883+16 L562C6 |collected-tokens|
+Equals 25900+1 L562C23 |=|
+LeftBracket 25902+1 L562C25 |[|
+RightBracket 25903+1 L562C26 |]|
+Comma 25904+1 L562C27 |,|
+Newline 25905+1 L562C28
+Identifier 25911+16 L563C6 |collected-errors|
+Equals 25928+1 L563C23 |=|
+Identifier 25930+18 L563C25 |__linked-list-push|
+LeftParen 25949+1 L563C44 |(|
+Identifier 25950+2 L563C45 |st|
+Dot 25952+1 L563C47 |.|
+Identifier 25953+6 L563C48 |errors|
+RightParen 25959+1 L563C54 |)|
+LeftParen 25961+1 L563C56 |(|
+Identifier 25962+10 L563C57 |make-error|
+Identifier 25973+17 L563C68 |cdx-deck-overflow|
+TextLiteral 25991+173 L563C86 |"Deck overflow in LEX; deck floor exceeded. The lexer's deck reservation ran out mid-stream. Raise demand-lex-floor, or compile this source with a larger -Decks percentage."|
+Identifier 26165+14 L563C260 |synthetic-span|
+RightParen 26179+1 L563C274 |)|
+Newline 26180+1 L563C275
+RightBrace 26185+1 L564C5 |}|
+Newline 26186+1 L564C6
+ElseKeyword 26190+4 L565C4 |else|
+WhenKeyword 26195+4 L565C9 |when|
+Identifier 26200+10 L565C14 |scan-token|
+Identifier 26211+2 L565C25 |st|
+Newline 26213+1 L565C27
+IsKeyword 26218+2 L566C5 |is|
+TypeIdentifier 26221+8 L566C8 |LexToken|
+LeftParen 26230+1 L566C17 |(|
+Identifier 26231+3 L566C18 |tok|
+RightParen 26234+1 L566C21 |)|
+LeftParen 26236+1 L566C23 |(|
+Identifier 26237+4 L566C24 |next|
+RightParen 26241+1 L566C28 |)|
+Arrow 26243+2 L566C30 |->|
+Newline 26245+1 L566C32
+IfKeyword 26251+2 L567C6 |if|
+Identifier 26254+3 L567C9 |tok|
+Dot 26257+1 L567C12 |.|
+Identifier 26258+4 L567C13 |kind|
+DoubleEquals 26263+2 L567C18 |==|
+TypeIdentifier 26266+9 L567C21 |EndOfFile|
+ThenKeyword 26276+4 L567C31 |then|
+TypeIdentifier 26281+12 L567C36 |LexCollected|
+LeftBrace 26294+1 L567C49 |{|
+Identifier 26296+16 L567C51 |collected-tokens|
+Equals 26313+1 L567C68 |=|
+Identifier 26315+18 L567C70 |__linked-list-push|
+Identifier 26334+3 L567C89 |acc|
+Identifier 26338+3 L567C93 |tok|
+Comma 26341+1 L567C96 |,|
+Identifier 26343+16 L567C98 |collected-errors|
+Equals 26360+1 L567C115 |=|
+Identifier 26362+4 L567C117 |next|
+Dot 26366+1 L567C121 |.|
+Identifier 26367+6 L567C122 |errors|
+RightBrace 26374+1 L567C129 |}|
+Newline 26375+1 L567C130
+ElseKeyword 26382+4 L568C7 |else|
+Identifier 26387+16 L568C12 |tokenize-collect|
+Identifier 26404+4 L568C29 |next|
+LeftParen 26409+1 L568C34 |(|
+Identifier 26410+18 L568C35 |__linked-list-push|
+Identifier 26429+3 L568C54 |acc|
+Identifier 26433+3 L568C58 |tok|
+RightParen 26436+1 L568C61 |)|
+Identifier 26438+7 L568C63 |ceiling|
+Newline 26445+1 L568C70
+IsKeyword 26450+2 L569C5 |is|
+TypeIdentifier 26453+6 L569C8 |LexEnd|
+Arrow 26460+2 L569C15 |->|
+Newline 26462+1 L569C17
+TypeIdentifier 26468+12 L570C6 |LexCollected|
+LeftBrace 26481+1 L570C19 |{|
+Identifier 26483+16 L570C21 |collected-tokens|
+Equals 26500+1 L570C38 |=|
+Identifier 26502+18 L570C40 |__linked-list-push|
+Identifier 26521+3 L570C59 |acc|
+LeftParen 26525+1 L570C63 |(|
+Identifier 26526+10 L570C64 |make-token|
+LeftParen 26537+1 L570C75 |(|
+Identifier 26538+16 L570C76 |subj-deck-record|
+TypeIdentifier 26555+9 L570C93 |EndOfFile|
+RightParen 26564+1 L570C102 |)|
+IntegerLiteral 26566+1 L570C104 |0|
+Identifier 26568+2 L570C106 |st|
+RightParen 26570+1 L570C108 |)|
+Comma 26571+1 L570C109 |,|
+Identifier 26573+16 L570C111 |collected-errors|
+Equals 26590+1 L570C128 |=|
+Identifier 26592+2 L570C130 |st|
+Dot 26594+1 L570C132 |.|
+Identifier 26595+6 L570C133 |errors|
+RightBrace 26602+1 L570C140 |}|
+Newline 26603+1 L570C141
+Newline 26604+1 L571C1
+Identifier 26607+8 L572C3 |tokenize|
+Colon 26616+1 L572C12 |:|
+TypeIdentifier 26618+4 L572C14 |Text|
+Comma 26622+1 L572C18 |,|
+TypeIdentifier 26624+7 L572C20 |Integer|
+BetweenKeyword 26632+7 L572C28 |between|
+IntegerLiteral 26640+1 L572C36 |0|
+AndKeyword 26642+3 L572C38 |and|
+IntegerLiteral 26646+5 L572C42 |65535|
+Arrow 26652+2 L572C48 |->|
+TypeIdentifier 26655+14 L572C51 |TokenizeResult|
+Newline 26669+1 L572C65
+Identifier 26672+8 L573C3 |tokenize|
+LeftParen 26681+1 L573C12 |(|
+Identifier 26682+3 L573C13 |src|
+RightParen 26685+1 L573C16 |)|
+LeftParen 26687+1 L573C18 |(|
+Identifier 26688+3 L573C19 |fid|
+RightParen 26691+1 L573C22 |)|
+Equals 26693+1 L573C24 |=|
+Newline 26694+1 L573C25
+LetKeyword 26698+3 L574C4 |let|
+Identifier 26702+3 L574C8 |raw|
+Equals 26706+1 L574C12 |=|
+Identifier 26708+16 L574C14 |tokenize-collect|
+LeftParen 26725+1 L574C31 |(|
+Identifier 26726+14 L574C32 |make-lex-state|
+Identifier 26741+3 L574C47 |src|
+Identifier 26745+3 L574C51 |fid|
+LeftBracket 26749+1 L574C55 |[|
+RightBracket 26750+1 L574C56 |]|
+RightParen 26751+1 L574C57 |)|
+LeftBracket 26753+1 L574C59 |[|
+RightBracket 26754+1 L574C60 |]|
+IntegerLiteral 26756+1 L574C62 |0|
+Newline 26757+1 L574C63
+InKeyword 26761+2 L575C4 |in|
+TypeIdentifier 26764+14 L575C7 |TokenizeResult|
+LeftBrace 26779+1 L575C22 |{|
+Identifier 26781+6 L575C24 |tokens|
+Equals 26788+1 L575C31 |=|
+Identifier 26790+21 L575C33 |__linked-list-to-list|
+LeftParen 26812+1 L575C55 |(|
+Identifier 26813+3 L575C56 |raw|
+Dot 26816+1 L575C59 |.|
+Identifier 26817+16 L575C60 |collected-tokens|
+RightParen 26833+1 L575C76 |)|
+Comma 26834+1 L575C77 |,|
+Identifier 26836+6 L575C79 |errors|
+Equals 26843+1 L575C86 |=|
+Identifier 26845+21 L575C88 |__linked-list-to-list|
+LeftParen 26867+1 L575C110 |(|
+Identifier 26868+3 L575C111 |raw|
+Dot 26871+1 L575C114 |.|
+Identifier 26872+16 L575C115 |collected-errors|
+RightParen 26888+1 L575C131 |)|
+RightBrace 26890+1 L575C133 |}|
+Newline 26891+1 L575C134
+Newline 26892+1 L576C1
+Identifier 26895+13 L577C3 |tokenize-into|
+Colon 26909+1 L577C17 |:|
+TypeIdentifier 26911+4 L577C19 |Text|
+Comma 26915+1 L577C23 |,|
+TypeIdentifier 26917+7 L577C25 |Integer|
+BetweenKeyword 26925+7 L577C33 |between|
+IntegerLiteral 26933+1 L577C41 |0|
+AndKeyword 26935+3 L577C43 |and|
+IntegerLiteral 26939+5 L577C47 |65535|
+Comma 26944+1 L577C52 |,|
+TypeIdentifier 26946+7 L577C54 |Boolean|
+Comma 26953+1 L577C61 |,|
+TypeIdentifier 26955+7 L577C63 |Integer|
+Arrow 26963+2 L577C71 |->|
+TypeIdentifier 26966+14 L577C74 |TokenizeResult|
+Newline 26980+1 L577C88
+Identifier 26983+13 L578C3 |tokenize-into|
+LeftParen 26997+1 L578C17 |(|
+Identifier 26998+3 L578C18 |src|
+RightParen 27001+1 L578C21 |)|
+LeftParen 27003+1 L578C23 |(|
+Identifier 27004+3 L578C24 |fid|
+RightParen 27007+1 L578C27 |)|
+LeftParen 27009+1 L578C29 |(|
+Identifier 27010+5 L578C30 |prose|
+RightParen 27015+1 L578C35 |)|
+LeftParen 27017+1 L578C37 |(|
+Identifier 27018+7 L578C38 |ceiling|
+RightParen 27025+1 L578C45 |)|
+Equals 27027+1 L578C47 |=|
+Newline 27028+1 L578C48
+LetKeyword 27032+3 L579C4 |let|
+Identifier 27036+3 L579C8 |raw|
+Equals 27040+1 L579C12 |=|
+Identifier 27042+16 L579C14 |tokenize-collect|
+LeftParen 27059+1 L579C31 |(|
+Identifier 27060+20 L579C32 |make-lex-state-prose|
+Identifier 27081+3 L579C53 |src|
+Identifier 27085+3 L579C57 |fid|
+LeftBracket 27089+1 L579C61 |[|
+RightBracket 27090+1 L579C62 |]|
+Identifier 27092+5 L579C64 |prose|
+RightParen 27097+1 L579C69 |)|
+LeftBracket 27099+1 L579C71 |[|
+RightBracket 27100+1 L579C72 |]|
+Identifier 27102+7 L579C74 |ceiling|
+Newline 27109+1 L579C81
+InKeyword 27113+2 L580C4 |in|
+Identifier 27116+16 L580C7 |subj-deck-record|
+LeftParen 27133+1 L580C24 |(|
+TypeIdentifier 27134+14 L580C25 |TokenizeResult|
+LeftBrace 27149+1 L580C40 |{|
+Identifier 27151+6 L580C42 |tokens|
+Equals 27158+1 L580C49 |=|
+Identifier 27160+21 L580C51 |__linked-list-to-list|
+LeftParen 27182+1 L580C73 |(|
+Identifier 27183+3 L580C74 |raw|
+Dot 27186+1 L580C77 |.|
+Identifier 27187+16 L580C78 |collected-tokens|
+RightParen 27203+1 L580C94 |)|
+Comma 27204+1 L580C95 |,|
+Identifier 27206+6 L580C97 |errors|
+Equals 27213+1 L580C104 |=|
+Identifier 27215+21 L580C106 |__linked-list-to-list|
+LeftParen 27237+1 L580C128 |(|
+Identifier 27238+3 L580C129 |raw|
+Dot 27241+1 L580C132 |.|
+Identifier 27242+16 L580C133 |collected-errors|
+RightParen 27258+1 L580C149 |)|
+RightBrace 27260+1 L580C151 |}|
+RightParen 27261+1 L580C152 |)|
+Newline 27262+1 L580C153
+Newline 27263+1 L581C1
+TypeIdentifier 27264+4 L582C1 |Page|
+IntegerLiteral 27269+1 L582C6 |1|
+Newline 27270+1 L582C7
+Newline 27271+1 L583C1
+EndOfFile 27272+0 L584C1
+---
+errors 0
