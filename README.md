@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Seed | `930FF7F174E1E126` (2,872,563 bytes) |
-| Update | 48 (release commit `b643e7cb`, pin verbatim) |
+| Seed | `A01C1547E92EB0D0` (2,877,350 bytes) |
+| Update | 49 (release commit `bdf0049b`, pin verbatim) |
 | Rungs | **14 of 14 green** |
-| Banked | `truth/u48/`; the newest three banks are kept (`bank_truth.py --keep`), older ones live in git history |
+| Banked | `truth/u49/`; the newest three banks are kept (`bank_truth.py --keep`), older ones live in git history |
 
 This table is the point of the whole arrangement, so it is the first thing on
 the page and it is allowed to be unflattering. A ladder that cannot say which
@@ -650,20 +650,27 @@ Then the smaller pieces:
   Read their headers; "The droplet venue" below has the principles.
 
 Costs -- this section is the one home for timing figures; re-measure and
-update them here at every rebank. Measured clean 2026-08-20 (u48, with
-per-rung `rung_stamp` timestamps in the logs):
+update them here at every rebank. Measured clean 2026-08-22 (u49, on the
+8 GB ladder droplet, `CODEX_MEM_MB=3072` TCG, per-rung `rung_stamp`
+timestamps in the log); the 2026-08-20 laptop figures (u48) follow in
+parentheses where they differ by more than noise, because the laptop is
+still the venue for `native_build.sh`:
 
-- **`rebank_all.sh` end to end is 87 minutes** -- 50 for the twelve truth
-  arms, 37 for the trailing all-local sweep (plug rebuilds included). The
-  ten cheap units record in one to five minutes each; `fibx` and `whole`
-  are 11-13 minutes apiece on each side and dominate everything.
-- **The two-venue sweep**: `sweep_canary.sh` is 87 seconds (lex 10s,
-  parse 29s, desugar 46s); `sweep_long.sh` over all fourteen rungs is
-  about 55 minutes healthy (scope 64s, check 198s, lower 229s, text
-  241s, pingpong 248s with the fixed point, lir 11s, fib ~30s, fibx
-  11.5m, whole 11.8m). The canary/long split stays lex+parse+desugar:
-  adding scope would push the canary past 2.5 minutes for little
-  coverage -- decided from these stamps, not intuition.
+- **`rebank_all.sh` end to end is 59 minutes** (laptop 87) -- 31 for the
+  twelve truth arms (50), 1.5 for the plug builds, 27 for the trailing
+  all-local sweep (37). The ten cheap units record in 15 s to 2.5
+  minutes each; `fibx` and `whole` are 7m17s and 8m02s on the truth side
+  (11-13 minutes each on the laptop) and dominate everything.
+- **The two-venue sweep**: `sweep_canary.sh` is 87 seconds on the laptop
+  (lex 10s, parse 29s, desugar 46s); the droplet's sweep pass runs all
+  fourteen rungs in 27 minutes (scope 19s, check 44s, lower 50s, text
+  54s, pingpong 53s, lir 5s, fib 51s, fibx 10m09s, whole 11.5m -- the
+  zig arm of the two big rungs is now the slow half, not the truth arm).
+  Laptop `sweep_long.sh` healthy was about 55 minutes (check 198s, lower
+  229s, text 241s, pingpong 248s, fibx 11.5m, whole 11.8m). The
+  canary/long split stays lex+parse+desugar: adding scope would push
+  the canary past 2.5 minutes for little coverage -- decided from these
+  stamps, not intuition.
 - **The census re-pin** (`native_build.sh && corpus_run.py --changed
   --bank`) is about an hour when nothing carries, which is every
   Update re-pin: the natives change, so every emitted zig moves.
