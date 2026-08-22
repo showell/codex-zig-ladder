@@ -226,3 +226,49 @@ from the same source. Bare metal compiles this subject inside its arena.
 Conclusion recorded in finding 24: corruption = deck overrun trampling
 (closed); the open defect is deck-allocation VOLUME on this arm, not
 reservation sizing, and no flat-term bump fixes it.
+
+That last sentence was overturned the next morning; the section below is
+the measurement that did it.
+
+## The deck census (2026-08-22)
+
+`deck_census.py` on the census natives (`1db8a78c` tree), fibx subject
+`8067da49…` (2,496,998 bytes), sandbox `20260822T014639Z-f24-volume`. Every
+deck byte keyed by (allocator call site, outermost deck-record bracket);
+main-heap bytes by call site. Three runs, IR byte-identical each time.
+
+    arena     slack    wall    outcome                       deck at end   main at end
+    1.5 GiB   256 MB   78s     exhausted (main+deck > arena) 381,663,332   1,226,834,574
+    2.5 GiB   512 MB   63s     rc 0, 13,193,485 bytes of IR  ~381 MB       ~1.1 GB
+
+Deck by bracket site (top six of 176; the full table prints from
+`deck_census.py report`):
+
+    parameterize_walk_sum_ctors      49,801,752   2,075,073 allocs   24 B avg
+    desugar_def                      48,363,576   1,496,826          32
+    lower_chapter                    38,726,096     974,434          39
+    parameterize_walk_children       37,699,904   1,178,122          32
+    make_end_node                    36,917,144   1,258,539          29
+    make_token                       30,302,596     473,478          64
+
+Deck by allocator call site: `cx_new` instances take 14 of the top 15 rows
+at 16-64 bytes each (records, bare metal's fields*8); `cx_ll_empty` is 24
+bytes per call against bare metal's 16 and accounts for ~33 MB of the deck
+and ~190 MB of main; ArrayList growth is under 20 MB of deck in total.
+Nothing is superlinear; nothing is 150x. Against the real driver's
+per-phase floors (BuildSettings: check 648 MB, lower 328, parse 384+392,
+resolve 200, lift 104, scope 104, lex 96, desugar 72) every phase's share
+is a fraction of its floor. The harness's 104 MB was the LIFT floor
+standing in for all of them.
+
+Main heap by call site, top rows: `cx_ll_empty` 122 MB (5.1M calls),
+`cx_new` 24-byte records 122 MB (5.1M), `cx_new` 64-byte 118 MB, i64
+ArrayList growth 109 MB, SkipNodeText ArrayList growth 109 MB. Spread, not
+a spike.
+
+Downstream of the completed IR (findings 33, 34): `native/zigemit` needs a
+>2 GiB thread stack to tokenize 3,282,147 tokens without tail calls, and
+then exhausts its 1.5 GiB arena at 1.23 MB of output with no per-def
+reclaim. The seed's `fibx.ir`, decoded, differs from the native IR in def
+order, chapter title, and `ctd` vs `record-ty` for let-binding types --
+930 of 3,822 lines, those three causes only.

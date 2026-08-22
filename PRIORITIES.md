@@ -187,7 +187,7 @@ the console verdict died with a WSL crash at ~21:37Z. What this buys:
   `ast/*.ir` and the sweep fails 0/14 in 71s. Unattended droplet sweeps
   (item 2.5) need the prep step to ship or regenerate the `.ir` files.
 
-**Still open: finding 24**, the `codexir` crash on the 2.5 MB subject, which
+**Finding 24 -- CLOSED 2026-08-22, see item 1 below; the paragraph that follows is the 08-21 state kept for its exclusions.** The `codexir` crash on the 2.5 MB subject, which
 now reproduces natively in 11 seconds instead of eleven minutes through
 QEMU. Ruled out by measurement, do not re-test: use-after-reclaim (that
 binary never calls `__heap-restore`), reuse of freed memory (free made a
@@ -206,20 +206,42 @@ lift floor, that family is the finding. Note also that the crossing guard
 under the deck after a restore is a trample direction the guard does not
 see. The guard needs that direction, and a probe that triggers it.
 
-**What remains before the PR, in order (pinned 2026-08-21 late):**
+**What remains before the PR, in order (re-pinned 2026-08-22 after the
+census):**
 
-1. **The finding-24 volume hunt** (hunting, our own plug; a session).
-   The slack experiment closed the corruption half and left the
-   consumption half: this arm decks 381+ MB on the fibx subject where
-   bare metal stays inside the 104 MB lift floor. Next instrument is
-   per-allocation-path deck byte counts on a subject size ramp -- if one
-   family's deck bytes grow superlinearly while bare metal's total stays
-   put, that family is the finding. Suspects: the copy-vs-alias family
-   (substring/split/replace copies, list-constructor reservations,
-   cx_new closure envs). Do this BEFORE sending: a PR whose flagship
-   commit says "MEDIUM, capacity diverges at scale" invites the reviewer
-   to find what we can find first. If the hunt stalls, the honest
-   fallback is an open-issue note in the PR body.
+1. **DONE 2026-08-22 -- the finding-24 volume hunt, answered in one
+   session.** `deck_census.py` keyed every deck byte by (allocator call
+   site, deck-record bracket): no family is superlinear, per-object sizes
+   are bare metal's, and the 381 MB is eight uncompacted phases on a 2.5 MB
+   subject. The "104 MB bare-metal floor" premise was our own harness's
+   placeholder (`emit_harness.py` says so in its comment); the real driver
+   reserves ~2.3 GB of per-phase decks with compaction between them.
+   Finding 24 is CLOSED as a harness-sizing misread; findings README 24
+   and JUSTIFICATIONS "deck census" carry the tables. Given a 2.5 GiB
+   arena and 512 MB of deck, `native/codexir` compiles the fibx subject
+   in 63 s, rc 0, and the IR matches the seed's up to def order, chapter
+   title and a `ctd`/`record-ty` spelling.
+
+   **What it leaves, decision needed (Steve):** the hosted harness and
+   prelude are sized for subjects up to roughly codexir's own source and
+   no further. Two sizing knobs and one feature, all ours:
+   - `emit_harness.py` DECK_PROLOGUE reserves `demand-lift-floor`; the
+     measured need is ~153 deck bytes per subject byte (381 MB / 2.5 MB).
+     A flat 512 MB covers the whole-compiler subject with margin.
+   - `cx_heap_reserve` at 1.5 GiB cannot hold deck 381 MB + main 1.2 GB.
+     Since `c7feba61` the reservation is lazily faulted, so 4 GiB costs no
+     resident memory -- but RLIMIT_AS counts it (item 3 below, now
+     concrete rather than theoretical).
+   - Finding 33: no tail calls, so `zigemit` on the 13 MB IR needs a
+     >2 GiB thread stack. Finding 34: the hosted harnesses never reclaim,
+     so it then exhausts the arena. Self-tail-call-to-loop in ZigEmitter
+     is the real fix for 33; per-def brackets in the hosted harnesses for
+     34. Neither blocks the PR; both bound what the native loop can eat.
+   Also to run down: why the harness prints `record-ty` where the seed
+   driver prints `ctd` for let-binding types (930 lines of the fibx IR).
+   The PR body should say "harness deck sized by placeholder; measured;
+   no capacity divergence" where the flagship commit currently says
+   "MEDIUM, capacity diverges at scale" -- reword that commit.
 2. **The emit-rung flat-term bump** (instrument work, small). ~2 MB to
    the formula's 25,165,824 flat term covers every measured rung
    (JUSTIFICATIONS deck table); the defs term stays. Then the sweep
@@ -228,12 +250,16 @@ see. The guard needs that direction, and a probe that triggers it.
 3. **The out-of-region absolute address question** (instrument work,
    still unanswered from the original design): what such an address
    means -- the SMP subjects peek ~2.1 GB against RLIMIT_AS caps that
-   count reserved space, not resident pages.
+   count reserved space, not resident pages. The census made this
+   concrete: an 8 GiB thread-stack request was refused outright, and a
+   2.5 GiB arena needed the AS ulimit raised to 3.3 GB before the
+   reservation would even map.
 
 Riding with whichever comes first: extend the `e4d2fcd1` crossing guard
-to the main-from-below trample direction (measured miss, 2026-08-21),
-and `probe-deck-overrun`, a zig-only labelled regression test that
-triggers the refusal on purpose -- the one unit-test gap on the branch.
+to the main-from-below trample direction (measured miss 2026-08-21, and
+now known to be exactly how finding 24's crash got past it), and
+`probe-deck-overrun`, a zig-only labelled regression test that triggers
+the refusal on purpose -- the one unit-test gap on the branch.
 
 Sends after 76.
 

@@ -1032,7 +1032,7 @@ Fix needs bare metal's own tier table read out and matched, not guessed: the
 encoding is observable, so inventing a code for U+22A2 would diverge on
 every text that contains it.
 
-## 24. codexir dies on a large subject, and it is not a lifetime bug
+## 24. codexir dies on a large subject, and it is not a lifetime bug -- nor a volume defect
 
 **Found 2026-08-21 with the native loop, once finding 23's CCE fix let it
 ingest real compiler source. OPEN. Ours to fix, arm unknown -- the evidence
@@ -1112,6 +1112,61 @@ subject inside its arena under the same 104 MB demand-lift-floor (the banked
 fibx truth is the proof), and deck-exit keeping its position is faithful
 (emit-deck-exit-builtin stores r10 back to deck-pos-addr identically), so
 this arm allocates deck volume bare metal does not -- by hundreds of MB.
+
+**CLOSED 2026-08-22 by the deck census (`deck_census.py`, JUSTIFICATIONS
+"deck census"). The volume half was a misread of our own harness, and the
+premise above -- "bare metal compiles this same subject inside its arena
+under the same 104 MB floor" -- is false.** `demand-lift-floor` is what
+`ast/emit_harness.py` reserves for its ONE deck, and its own comment says it
+is "a first number, not a measured one ... one region for every phase
+instead of the driver's thirteen". The real driver (`opening.codex`
+444-830) gives each phase its own deck and compacts between them: lex 96 MB,
+parse 384 + 392, desugar 72, scope 104, **check 648**, lower 328, resolve
+200, lift 104 -- about 2.3 GB of reservations, and BuildSettings records
+LOWER alone using 312-315 MB of its floor on the whole compiler. Nothing
+bare-metal ever compiled this subject through 104 MB of deck; the harness
+crammed eight phases' decks into the lift phase's number.
+
+The census keys every deck byte by (allocator call site, outermost
+`deck-record` bracket) and shows no family growing out of proportion:
+
+    bracket site                     deck bytes   allocs   avg   phase
+    parameterize_walk_sum_ctors      49,801,752  2,075,073  24   check
+    desugar_def                      48,363,576  1,496,826  32   desugar
+    lower_chapter                    38,726,096    974,434  39   lower
+    parameterize_walk_children       37,699,904  1,178,122  32   check
+    make_end_node                    36,917,144  1,258,539  29   parse
+    make_token                       30,302,596    473,478  64   lex
+    ...                             381,663,332 total at exhaustion
+
+Per-object sizes are bare metal's (tier 4: a record is fields*8 on both
+arms; the one representation gap is `cx_ll_empty` at 24 bytes where bare
+metal's empty literal is 16). Summed by phase, every phase sits far under
+its bare-metal floor. The 381 MB is simply what eight uncompacted phases
+cost on a 2.5 MB subject. Main heap at the same moment: 1.23 GB, also
+spread across families at bare-metal sizes, which is why the 256 MB slack
+run still exhausted the 1.5 GiB arena.
+
+**The run completes when given room.** With the arena at 2.5 GiB and the
+deck slack at 512 MB, `native/codexir` compiles the fibx subject in 63 s,
+rc 0, 13,193,485 bytes of IR, deterministic across three runs. Against the
+seed's `fibx.ir` (same subject hash, decoded from CCE) the IR agrees line
+for line up to def ORDER, the chapter title (`Parsmi--FibxHarness` vs
+`Program`), and one type spelling: our harness prints `(record-ty
+"SkipNodeText" (args))` where the seed driver prints `(ctd "SkipNodeText"
+(args))` -- 930 lines of 3,822 touched, all the same three causes. That
+spelling is a HARNESS-driver difference to run down (which resolve step
+the seed's `emit-ir-cce` applies that `gen_codexir_harness.py` does not,
+or vice versa), not finding 24.
+
+What the crash WAS: a deck sized at 3.7x too small for the subject,
+overrunning into main's live objects because the harness (by its own
+admission) guessed the number -- "too small shows up as CDX9002 or a
+fault, which is the honest direction to be wrong in". It did. The guard
+from `e4d2fcd1` missed it because the overrun runs main-from-below (the
+direction the guard does not see, still riding with PRIORITIES item 1).
+The flagship commit's "capacity diverges at scale" should now read
+"the hosted harness reserves one placeholder-sized deck for every phase".
 Next instrument: per-allocation-path deck byte counts on a subject size
 ramp. Also observed: the `e4d2fcd1` crossing guard never fired before the
 slack-0 GP fault; main re-entering from below after a restore is a trample
@@ -1598,3 +1653,45 @@ minimum honest step is that `IrTry` should REFUSE by name when it has a
 fallback or failure block it cannot emit, so the gap becomes countable. What
 `fail` should compile to depends on how a plug is meant to model the flag, and
 that is a question for Damian rather than a decision to take here.
+
+## 33. No tail calls: recursion depth on this arm is bounded by the thread stack, bare metal's is not
+
+**Found 2026-08-22 while running the native chain on the fibx subject
+(finding 24's closing experiment). Ours. OPEN -- an emitter feature, not a
+patch.**
+
+`native/zigemit` on the 13.2 MB native-produced `fibx.ir` dies in
+`tokenize_loop`: a self-recursive loop that advances one TOKEN per frame.
+The IR holds 3,282,147 tokens. The emitted program's `main` spawns its work
+on a 512 MB thread (`std.Thread.spawn(.{ .stack_size = 512 MB }`), and a
+Debug frame of `tokenize_loop` is several hundred bytes, so the stack is
+gone before the tokenizer is. Measured: 512 MB dies, 2 GiB dies, 3.5 GiB
+gets through tokenizing (and then hits finding 34). Bare metal's emitter
+tracks tail position (`st-set-tail-pos` is everywhere in X86_64) and a
+tail call there is a jump: its depth is zero for this loop. Every
+`*-loop (xs) (i) (acc)` in the compiler has the same shape, and the plug
+turns every one into a call.
+
+The fix is in ZigEmitter: a self-tail-call in tail position becomes a
+`while (true)` with parameter reassignment. Until then the native loop's
+ceiling is subjects whose recursion-per-element stays inside 512 MB --
+`codexir.ir` (8.6 MB) fits, `fibx.ir` (13.2 MB) does not.
+
+## 34. The hosted harnesses never reclaim, so a 13 MB IR exhausts zigemit's 1.5 GiB arena
+
+**Found 2026-08-22, same experiment, same arm. Ours. OPEN, harness-shaped.**
+
+With the stack out of the way, `native/zigemit` on `fibx.ir` dies at
+`cx heap: exhausted at 1610612724 + 22 of 1610612736` after 83 s and
+1.23 MB of output. The ring transpile of the same IR inside the seed OS
+runs `emit-all-defs` with its per-function `__heap-restore` and finishes
+inside a 3072 MB guest; `ZigEmitHosted` and `CodexIrHarness` both cite the
+compiler's functions but drop the driver's reclaim discipline, and
+`codexir.zig` / `zigemit.zig` each contain exactly one `cx_heap_restore`
+-- the definition (finding 24 established this for codexir). The arena is
+a lazily-faulted reservation since `c7feba61`, so raising `cx_heap_reserve`
+is free of resident cost and is the cheap way to lift this; the honest
+way is for the hosted harnesses to bracket per def the way the driver
+does. Either is an emitter/harness change, and PRIORITIES item 1 carries
+the decision.
+
