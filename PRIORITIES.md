@@ -239,11 +239,13 @@ census):**
      harnesses never reclaim) is folded into the harness edit if per-def
      brackets are cheap, else noted in the PR body.
 
-2. **The emit-rung flat-term bump** (instrument work, small). ~2 MB to
-   the formula's 25,165,824 flat term covers every measured rung
-   (JUSTIFICATIONS deck table); the defs term stays. Then the sweep
-   should run 14/14 with no narrowing and no slack. Sweep after; the
-   bank is the falsifier.
+2. **DONE 2026-08-22 -- the emit-rung flat term is 28 MiB** (`5c9948f6`
+   on the branch, upstream's `X86_64Chapter.codex`, with its prose).
+   Verified through the pipeline in a fresh sandbox: truths re-banked
+   identical, four emit rungs byte-identical at slack 0. JUSTIFICATIONS
+   "Landed as 4 MiB". The sandbox also found and fixed a ring-arm guard
+   hole (`087d61a`): the verdict checked the TCP plug's fingerprint on
+   ring rungs, which a fresh sandbox never has.
 3. **The out-of-region absolute address question** (instrument work,
    still unanswered from the original design): what such an address
    means -- the SMP subjects peek ~2.1 GB against RLIMIT_AS caps that

@@ -206,6 +206,26 @@ definitions: the zig arm's flat cost is ~27 MB against the formula's
 25,165,824 flat term. A ~2 MB bump to the flat term covers every measured
 rung; the defs term can stay.
 
+**Landed as 4 MiB, verified 2026-08-22** (branch `5c9948f6`, sandbox
+`20260822T021230Z-item2-flatterm`, fresh ring plug, fresh seed-compiled
+subjects, `cx_deck_slack` 0): `X86_64Chapter.codex` now reserves
+`defs*65536 + 29360128`. The bare-metal truths for fibx, scale, whole and
+clamp re-ran under the seed on the bumped source and are byte-identical
+to `truth/u48` -- the reservation never reaches the output. The zig arm,
+through the pipeline:
+
+    rung   defs  reservation   last stride   headroom    verdict
+    fibx      3   29,556,736   (fibx placement reported earlier in stream)
+    scale    61   33,357,824   26,610,696    6,747,128   byte-identical
+    whole     5   29,687,808   (whole placement reported earlier)
+    clamp    25   30,998,528   26,610,712    4,387,816   byte-identical
+
+(The CX-DECK line is per placement and prints at 1 MB strides, so "last
+stride" is within 1 MB of the true peak; the verdicts are the four
+ORACLE PASS lines.) 28 MiB rather than the ~2 MB minimum because bare
+metal's own design margin on this deck is 6.7% and the 2 MB version would
+have left the zig arm 1.6%.
+
 ## The finding 24 slack experiment (2026-08-21 evening)
 
 The bump above covers the EMIT rungs and only them. The same

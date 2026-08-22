@@ -57,3 +57,4 @@ instead -- write that and point at it.
 - **2026-08-18/19 — PRs 71, 73, 74 absorbed upstream** (arena; Perforce
   main 17401, public `8f997bd8`). Record: git, the Perforce absorption
   rule ("content, never patch-id") in README "The checkout".
+- 2026-08-22 emit deck flat term 24 -> 28 MiB, 4/4 emit rungs green at slack 0 (JUSTIFICATIONS "Landed as 4 MiB").
