@@ -206,9 +206,35 @@ lift floor, that family is the finding. Note also that the crossing guard
 under the deck after a restore is a trample direction the guard does not
 see. The guard needs that direction, and a probe that triggers it.
 
-Still unanswered from the original design and still required before the PR:
-what an out-of-region absolute address means (the SMP subjects peek ~2.1 GB
-against RLIMIT_AS caps that count reserved space, not resident pages).
+**What remains before the PR, in order (pinned 2026-08-21 late):**
+
+1. **The finding-24 volume hunt** (hunting, our own plug; a session).
+   The slack experiment closed the corruption half and left the
+   consumption half: this arm decks 381+ MB on the fibx subject where
+   bare metal stays inside the 104 MB lift floor. Next instrument is
+   per-allocation-path deck byte counts on a subject size ramp -- if one
+   family's deck bytes grow superlinearly while bare metal's total stays
+   put, that family is the finding. Suspects: the copy-vs-alias family
+   (substring/split/replace copies, list-constructor reservations,
+   cx_new closure envs). Do this BEFORE sending: a PR whose flagship
+   commit says "MEDIUM, capacity diverges at scale" invites the reviewer
+   to find what we can find first. If the hunt stalls, the honest
+   fallback is an open-issue note in the PR body.
+2. **The emit-rung flat-term bump** (instrument work, small). ~2 MB to
+   the formula's 25,165,824 flat term covers every measured rung
+   (JUSTIFICATIONS deck table); the defs term stays. Then the sweep
+   should run 14/14 with no narrowing and no slack. Sweep after; the
+   bank is the falsifier.
+3. **The out-of-region absolute address question** (instrument work,
+   still unanswered from the original design): what such an address
+   means -- the SMP subjects peek ~2.1 GB against RLIMIT_AS caps that
+   count reserved space, not resident pages.
+
+Riding with whichever comes first: extend the `e4d2fcd1` crossing guard
+to the main-from-below trample direction (measured miss, 2026-08-21),
+and `probe-deck-overrun`, a zig-only labelled regression test that
+triggers the refusal on purpose -- the one unit-test gap on the branch.
+
 Sends after 76.
 
 ## 1.5 The unit tests -- INVENTORY COMPLETE 2026-08-21, keep it green
