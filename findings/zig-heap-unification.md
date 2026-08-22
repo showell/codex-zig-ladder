@@ -125,7 +125,7 @@ cap from 29 lines of source. Two consequences for this design:
 # The ladder run, 2026-08-21: what verification found
 
 The unification was built on 2026-08-20 (branch `zig-plug-heap-unification`,
-`d44f483f`) and verified overnight. **It is not ready to send.** Ten of
+`7ef1ff2f`) and verified overnight. **It is not ready to send.** Ten of
 fourteen rungs came back byte-identical to the u48 bank; `fibx` and `whole`
 -- the two scale units, two rungs each -- died. This section is the diagnosis
 so far, written down because it outlived the session that produced it.
@@ -160,7 +160,7 @@ The failure is entirely in objects that outlive a reclaim.
 Corollary worth stating: **the arena was load-bearing.** Not reclaiming is
 what kept pre-existing escapes harmless.
 
-## Defect A -- `cx_ll_with_capacity` discarded its argument (FIXED, `14b2b8b6`)
+## Defect A -- `cx_ll_with_capacity` discarded its argument (FIXED, `17329ed9`)
 
     fn cx_ll_with_capacity(comptime T: type, n: i64) *CxList(T) {
         _ = n;                     // discarded
@@ -296,7 +296,7 @@ phase-wide extent while the real cursor moves in R10. So the exhaustion
 guard cannot fire where exhaustion happens. Worth raising with Damian
 independently of our fix.
 
-Landed: `62ee2dd2` refuses the crossing instead of corrupting silently --
+Landed: `e4d2fcd1` refuses the crossing instead of corrupting silently --
 inside an extent the bound is `cx_bivy`, outside it `cx_dptr`, both live
 cursors because the program chooses where the deck goes.
 
@@ -312,7 +312,7 @@ word there; and the `&`-chain rows are superlinear because bare metal
 flattens where we materialise every prefix.
 
 **The 8613088 is stale as a target.** It was taken before the list
-constructors stopped over-reserving (`c09cd892`, 6.96 MB of deck on its
+constructors stopped over-reserving (`8d9dbbe7`, 6.96 MB of deck on its
 own) and before four more fixes landed. Re-measuring it is PRIORITIES
 item 1's gate, and it decides whether the `Text` narrowing is needed at
 all rather than merely desirable.

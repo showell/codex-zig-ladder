@@ -170,7 +170,7 @@ runs to completion and both rungs are byte-identical to the u48 bank
 sized wrong.
 
 Re-measured 2026-08-21 evening, after the day's branch fixes, on the swept
-artifact itself: sandbox `20260821T204032Z-longsweep`, emitter `86f6fae9`,
+artifact itself: sandbox `20260821T204032Z-longsweep`, emitter `d3dc3536`,
 `ast/fibx-slack.zig` = the swept `fibx.zig` with only `cx_deck_slack`
 raised to 128 MB, peaks read from the CX-DECK instrument stream (stdout).
 Bare-metal column unchanged from above -- same subjects, same seed.
@@ -185,7 +185,7 @@ still overflows, but by 1.65 MB where the morning's gap was 8.6 MB. The
 top-level placements used 103,127 and 1,392,861 bytes of their 109 MB.
 With the slack and nothing else changed, both rungs run to completion
 byte-identical to the u48 bank -- the correct-but-sized-wrong verdict
-holds at `86f6fae9`.
+holds at `d3dc3536`.
 
 The whole unit, same experiment (`ast/whole-slack.zig`, slack only): both
 rungs run to completion byte-identical to the bank. Note carefully what
@@ -195,7 +195,7 @@ that does and does not say. The sweep's `Segmentation fault at address
 2190 + 8 -- so the honest reading is that MORE DECK SUPPRESSES FINDING
 24's CRASH, which points at deck exhaustion as its cause rather than
 clearing it as unrelated. PRIORITIES item 1 carries the follow-up.
-Its emit placements, zig arm at `86f6fae9`:
+Its emit placements, zig arm at `d3dc3536`:
 
     rung   defs  reservation   zig arm     vs reservation
     whole     5   25,493,504   27,016,144   over by 1,522,640 (6.0%)
@@ -205,3 +205,24 @@ All four emit rungs now cluster at 27.0-27.1 MB across 3, 5, 25 and 61
 definitions: the zig arm's flat cost is ~27 MB against the formula's
 25,165,824 flat term. A ~2 MB bump to the flat term covers every measured
 rung; the defs term can stay.
+
+## The finding 24 slack experiment (2026-08-21 evening)
+
+The bump above covers the EMIT rungs and only them. The same
+slack-one-constant methodology on finding 24's own reproducer -- census
+natives at `1db8a78c`, `codexir` fed the 2,496,998-byte fibx subject on
+stdin -- says the codexir workload is a different animal:
+
+    slack      wall     outcome                                     deck used at death
+    0          17.6s    GP fault, finding 24's exact frames         191,933,132
+    256 MB     103s     cx heap: exhausted at 1610611665 + 1725     381,012,596+
+
+Slack removes the corruption entirely (the GP fault never happens, the
+run gets 40x more IR out) and the program then exhausts the full
+1,610,612,736-byte arena legitimately. Deck use is monotonic in the
+instrument stream, no rewind ever, and scales past whatever room it is
+given, against a demand-lift-floor of 109,051,904 that both arms compute
+from the same source. Bare metal compiles this subject inside its arena.
+Conclusion recorded in finding 24: corruption = deck overrun trampling
+(closed); the open defect is deck-allocation VOLUME on this arm, not
+reservation sizing, and no flat-term bump fixes it.

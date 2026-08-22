@@ -930,7 +930,7 @@ read `ir-expr-type`'s chapter before assuming.
 
 **Found 2026-08-21 by the heap-unification branch's own ladder run. Ours
 to fix -- the plug's arm, not an upstream defect. Fixed on the branch at
-`14b2b8b6`; the branch is still red on a second, open escape.**
+`17329ed9`; the branch is still red on a second, open escape.**
 
 `cx_ll_with_capacity` was `_ = n; return cx_ll_empty(T)`. The emit tables
 are pre-sized to `accum_capacity()` so a push inside `emit-all-defs`'
@@ -1059,7 +1059,7 @@ So a live object's header is being read as something that is not a header.
   reclaimed.
 - **Not reuse of freed memory.** Making `cx_bump_free` never rewind the
   frontier, so no byte is ever handed out twice, changes nothing.
-- **Not the in-place text concat** landed in `86675554`. Reverting it to the
+- **Not the in-place text concat** landed in `0e24f7cf`. Reverting it to the
   copying form changes nothing.
 - **Not a wrong argument.** Printed at both ends: `renames` is the same
   pointer at creation and at the `register_all_defs` call, with `len 0`. A
@@ -1089,12 +1089,33 @@ finding 23.
 
 **Confirmed on a clean build, 2026-08-21.** The first sighting was on a
 hand-patched `codexir.zig`, which is not evidence about the toolchain. Rebuilt
-from scratch in a sandbox (ladder `4349606`, codex `6fe3f49d`) with the CCE fix
+from scratch in a sandbox (ladder `4349606`, codex `a9a329a0`) with the CCE fix
 coming from the emitter rather than a patch, and with the subject regenerated
 in that sandbox: identical crash, identical frames, `cx_list_at` ->
 `bsearch_rename_pos` -> `rename_has_entry` -> `resolve_def_name` ->
 `register_all_defs` -> `check_chapter`. It runs 38 seconds before dying rather
 than 12.7, which is the only difference and is unexplained.
+
+**Split in half by the slack experiment, 2026-08-21 evening.** The census
+natives (branch tip `1db8a78c`) reproduce the crash at slack 0 in 17.6s with
+the exact recorded frames, and the deck instrument narrates the mechanism as
+it happens: `used=191933132 reserved=109051904 headroom=-82881228`, monotonic,
+never a rewind. With ONLY `cx_deck_slack` raised to 256 MB (the JUSTIFICATIONS
+methodology, one constant in the emitted source), **the corruption does not
+happen** -- no GP fault, no impossible header -- the run goes 103s, emits
+488 KB of IR, and then dies cleanly at the bump allocator's own guard:
+`cx heap: exhausted at 1610611665 + 1725 of 1610612736`, with the deck past
+381 MB. So the CORRUPTION half is closed: deck overrun tramples live heap
+objects, and the pointer-shaped length was trampled-header garbage, not a
+layout defect. The OPEN half is consumption: bare metal compiles this same
+subject inside its arena under the same 104 MB demand-lift-floor (the banked
+fibx truth is the proof), and deck-exit keeping its position is faithful
+(emit-deck-exit-builtin stores r10 back to deck-pos-addr identically), so
+this arm allocates deck volume bare metal does not -- by hundreds of MB.
+Next instrument: per-allocation-path deck byte counts on a subject size
+ramp. Also observed: the `e4d2fcd1` crossing guard never fired before the
+slack-0 GP fault; main re-entering from below after a restore is a trample
+direction it does not see.
 
 ## 25. The zig plug intercepts `deck-record` by name; bare metal gates it on the defining chapter
 
@@ -1135,7 +1156,7 @@ two marked lines in `prim-deck.codex` are the standing detector.
 ## 26. `peek-qword` trapped on every negative qword
 
 **Found 2026-08-21 by tier 5 of the unit inventory, by accident, before anyone
-thought to test negative values. Ours. FIXED on the branch (`1a5ec700`).**
+thought to test negative values. Ours. FIXED on the branch (`3a490b8c`).**
 
 Bare metal loads eight bytes as one 64-bit value, and every bit pattern is a
 legal `i64`. The plug rebuilt it with checked multiply-and-add:
@@ -1151,7 +1172,7 @@ load exactly.
 ## 27. A freshly reserved buffer is zero on bare metal and arbitrary here
 
 **Found 2026-08-21 by `findings/prim-buffers.codex`, both arms, same program.
-Ours. FIXED same day (`3c4c00d6`).**
+Ours. FIXED same day (`c7feba61`).**
 
     assertion                       zig arm   bare metal
     neighbours undisturbed          NO        yes
@@ -1163,7 +1184,7 @@ A buffer is a span of the heap reserved by `__heap-save` then
 reads as zero -- the plug's own prelude comment claims to match "an arena the
 guest zero-fills at boot". On this arm it reads as whatever was last there.
 
-**FIXED** (`3c4c00d6`), and the mechanism was not the one recorded first.
+**FIXED** (`c7feba61`), and the mechanism was not the one recorded first.
 
 `std.mem.Allocator.alloc` memsets every allocation to `undefined`
 (`~/zig-0.16.0/lib/std/mem/Allocator.zig:301`, in `allocBytesWithAlignment`,

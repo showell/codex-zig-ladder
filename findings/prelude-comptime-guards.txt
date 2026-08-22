@@ -6,7 +6,7 @@
 # prelude text -- a defensive prong of a comptime type switch, analysed
 # only if something instantiates it, and caught loudly by `zig build-exe`
 # if anything ever does. Counting the second as the first reports a defect
-# that does not exist: `cx_address_of` (landed 2026-08-21 as f8e97925)
+# that does not exist: `cx_address_of` (landed 2026-08-21 as b85f1b98)
 # blocked every native build at the marker scan and printed a spurious
 # `gap:` on every tier run, from a line in the prelude no subject reaches.
 #

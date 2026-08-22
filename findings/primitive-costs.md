@@ -94,7 +94,7 @@ separately in `findings/probe-substring-trap.codex` because a tier file that
 trapped would take its other assertions down with it.
 
 Both columns come from a clean native pair built in sandbox
-`20260821T180749Z-natives-f29b` (ladder `eec62b8`, codex `2202d3e5`). The
+`20260821T180749Z-natives-f29b` (ladder `eec62b8`, codex `b4651d81`). The
 whole file runs 51 lines with 12 differing, and every one of the 12 is a cost
 row: the CCE codes and all fifteen semantic assertions are identical.
 

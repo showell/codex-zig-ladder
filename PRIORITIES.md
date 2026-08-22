@@ -50,44 +50,66 @@ recorded as refuted, each with the test that killed it, and re-running them
 is the main way to waste a day here.
 
 Landed on `zig-plug-heap-unification` 2026-08-21, each measured on both
-arms. `git log --oneline master..zig-plug-heap-unification` is the list; what
-each one bought:
+arms. **The branch was reworded 2026-08-21 evening** -- every commit now
+carries a Confidence paragraph naming what verifies it and what does not;
+trees are byte-identical, only hashes moved (this file and the findings
+were swept to the new ones; sandbox MANIFESTs keep the hashes they built
+at). `git log --oneline master..zig-plug-heap-unification` is the list;
+what each one bought:
 
-    14b2b8b6  __list-with-capacity honoured, and a cursor-collision refusal
-    62ee2dd2  a deck allocation overrunning its reservation now refuses
-    c09cd892  list constructors reserve the true total -- 6.96 MB of deck
-    86675554  text concat extends in place            finding 22, asymptotic
-    6fe3f49d  an uncovered codepoint substitutes      finding 23
-    1a5ec700  peek-qword wraps                        finding 26
-    3c4c00d6  reserve with rawAlloc                   finding 27
-    def42bc7  substring traps out of range            finding 28
-    35292021  substring and split copy                finding 29
-    2202d3e5  text-replace copies                     finding 29, 4th site
-    c86e66d5  shift counts masked to six bits         finding 30
-    f8e97925  address-of returns an identity           finding 31
-    d6443946  the deck high-water instrument
-    9bef20b1  instrument v2, corrected by its own run
-    23118fa5  instrument v3, corrected by a review
+    17329ed9  __list-with-capacity honoured, and a cursor-collision refusal
+    e4d2fcd1  a deck allocation overrunning its reservation now refuses
+    8d9dbbe7  list constructors reserve the true total -- 6.96 MB of deck
+    0e24f7cf  text concat extends in place            finding 22, asymptotic
+    a9a329a0  an uncovered codepoint substitutes      finding 23
+    3a490b8c  peek-qword wraps                        finding 26
+    c7feba61  reserve with rawAlloc                   finding 27
+    54242279  substring traps out of range            finding 28
+    e4aa698d  substring and split copy                finding 29
+    b4651d81  text-replace copies                     finding 29, 4th site
+    2a1177fa  shift counts masked to six bits         finding 30
+    b85f1b98  address-of returns an identity           finding 31
+    9e929383  the deck high-water instrument
+    4e118db1  instrument v2, corrected by its own run
+    4101e62f  instrument v3, corrected by a review
 
 Finding 23 is the one that unblocked the native loop on real source, and
 finding 27 took a compile from 38.0s real / 15.3s sys to 11.4s / 1.8s,
 because the old code committed all 1.5 GiB.
 
 Natives rebuilt 2026-08-21 EVENING in sandbox `20260821T215618Z-natives-census`
-at `574c87a6` (branch tip), so they now carry every fix through
-`c86e66d5`/`f8e97925`. **`c86e66d5` is CONFIRMED against bare metal**:
+at `1db8a78c` (branch tip), so they now carry every fix through
+`2a1177fa`/`b85f1b98`. **`2a1177fa` is CONFIRMED against bare metal**:
 `./tier_run.py findings/probe-shift-count.codex` is 17 lines byte-identical
 to `findings/gold/probe-shift-count.txt`. `prim-text` through the same
 natives agrees on every semantic row (`replace works yes` both arms, which
-is `2202d3e5`); its 12 differing rows are all COST rows, and the zig column
+is `b4651d81`); its 12 differing rows are all COST rows, and the zig column
 is now mostly BELOW bare metal where it used to be above.
 
 That rebuild also surfaced a harness defect worth knowing about: the marker
 scan counted the prelude's `cx_address_of` comptime guard as a refusal, so
-**every native build had been refusing itself since `f8e97925` landed** --
+**every native build had been refusing itself since `b85f1b98` landed** --
 one marker in 2.7 MB, from prelude text no subject reaches. Same guard
 printed a spurious `gap:` on every `tier_run`. Both now read
 `findings/prelude-comptime-guards.txt`; read that file before adding to it.
+
+**The full census ran on those natives 2026-08-21 (resumed and finished
+that evening; sandbox `census_full_resume2.log`) and is the branch's
+corpus due diligence: 323 clean programs, match 172 / refused 111 /
+no-expected 30 / differ 5 / crashed 3, and vs the 08-20 bank 33 verdicts
+moved -- every one an ex-codexir abort the heap fixes unblocked (10 to
+match, 13 to markers, 6 to refused, 3 to differ, 1 to no-expected).
+Nothing that was green regressed.** Every red was then chased to a cause,
+and all of them are the unabsorbed PR 76: the three differs
+(stringbuilder-test and stats-wrap-test print `?` for newline --
+`cx_char_to_text` double-encoding a CCE 1 through `cx_cp_to_cce`, the
+codepoint-Char model; validation-rules fails accented/Cyrillic
+is-letter) are the char-CCE migration `ea8d51ac`; the carried
+text-fold-indexed differ is named in that commit's own message; and the
+three integer-overflow crashes (bloom-spread, consistent-hash-balance,
+particle-spread) are named in `78e8da1b`'s message as fixed. The census
+canary's expect-match four all held. When PR 76 absorbs, all eight reds
+should flip -- if any survives absorption, THAT is a new finding.
 
 **The natives must be rebuilt after any emitter change, and that is the gate
 for everything downstream.** `native_build.sh` in a sandbox, >25 minutes, and
@@ -100,7 +122,7 @@ venue outright now; the toggle remains right for the sweep's ordinary rungs.
 
 **The sweep re-ran locally 2026-08-21 and answered: 10/12 green, both emit
 rungs still red -- but red LOUDLY now.** Sandbox
-`20260821T204032Z-longsweep` (ladder `5a881b0`, codex `86f6fae9`, fresh
+`20260821T204032Z-longsweep` (ladder `5a881b0`, codex `d3dc3536`, fresh
 `.ir` for all twelve units under seed 930ff7f1, handed in by hand -- the
 droplet attempt earlier that day died at launch on missing gitignored
 `.ir`). The ten non-emit units are byte-identical against the banked
@@ -132,11 +154,27 @@ the console verdict died with a WSL crash at ~21:37Z. What this buys:
   both rungs run byte-identical to the bank.
   So finding 24's "pointer-shaped length" is plausibly a CONSEQUENCE of
   deck exhaustion clobbering the record rather than an independent
-  field-offset or struct-layout defect. **The decisive experiment is
-  cheap and now possible**: rerun finding 24's own native reproducer
-  (`codexir` on the 2.5 MB subject, 11 seconds) with slack. If it too
-  survives, finding 24 collapses into the sizing story; if it still
-  crashes, the two are separate and the exclusion list stands untouched.
+  field-offset or struct-layout defect. **The decisive experiment RAN
+  2026-08-21 evening and split the finding in half.** With
+  `cx_deck_slack` at 256 MB the corruption is GONE -- the GP fault in
+  `bsearch_rename_pos` never happens, so the trample mechanism is
+  CONFIRMED -- but the run does not survive: it goes 6x longer (103s vs
+  17.6s, 488 KB of IR emitted vs 12.6 KB) and then dies CLEANLY at
+  `cx heap: exhausted at 1610611665 + 1725 of 1610612736`, the bump
+  allocator's own 1.5 GiB ceiling. The instrument shows the deck at
+  381 MB used against the 104 MB demand-lift-floor, climbing
+  monotonically, no rewind ever (deck-exit keeping its position is
+  faithful -- bare metal's emit-deck-exit-builtin stores r10 back to
+  deck-pos-addr the same way). Bare metal compiles this same subject
+  inside its arena (the banked fibx truth is the proof), so this arm
+  allocates hundreds of MB inside deck brackets that bare metal does
+  not. **Finding 24 is therefore NOT the emit rungs' 2 MB sizing story:
+  the corruption half collapses into deck exhaustion, and the open half
+  is a consumption divergence** -- what does this arm put on the deck at
+  ~150x the volume? The copy-vs-alias family (substring/split/replace
+  copies, list-constructor reservations, cx_new closure envs) is the
+  suspect list. Numbers in JUSTIFICATIONS ("finding 24 slack
+  experiment").
   (An earlier edit of this file said the opposite -- "deck exhaustion in
   disguise, not a pointer defect, do not put it on the finding-24 lead
   list." That was written from the bare `Segmentation fault at address
@@ -156,11 +194,17 @@ binary never calls `__heap-restore`), reuse of freed memory (free made a
 no-op changes nothing -- run twice), the in-place concat, a wrong argument
 (pointer identical at creation and use, length zero), the deck guard, an
 out-of-buffer write (unchecked on BOTH arms, so upstream semantics), and the
-0xAA fill (zero-filling changes nothing). The live lead is the shape of the
-corrupt value: a length field of order 1.3e14, which is POINTER-shaped in
-the Linux mmap regime rather than 0xAAAA-shaped. That reads as field-offset
-confusion or a struct-layout mismatch -- a pointer sitting where a length
-belongs -- not as uninitialised or stale memory.
+0xAA fill (zero-filling changes nothing). The pointer-shaped-length lead is
+CLOSED (2026-08-21 evening): slack removes the corruption, so the garbage
+header was deck bytes trampling a live object, and pointer-shaped values are
+simply what deck data looks like. The live lead now is VOLUME: instrument
+which allocation paths run inside deck brackets and how many bytes each
+contributes, on a subject size ramp -- if one family's deck bytes grow
+superlinearly in subject size while bare metal's total stays inside the
+lift floor, that family is the finding. Note also that the crossing guard
+(`e4d2fcd1`) did NOT fire before the slack-0 GP fault -- main climbing back
+under the deck after a restore is a trample direction the guard does not
+see. The guard needs that direction, and a probe that triggers it.
 
 Still unanswered from the original design and still required before the PR:
 what an out-of-region absolute address means (the SMP subjects peek ~2.1 GB
@@ -491,8 +535,12 @@ three, off `b643e7c`, spot-verified 5/5 against U48's own oracles.
 Carries the source-read asides and offers the overflow oracle row.
 
 Queued behind it: the heap unification (item 1, branch
-`zig-plug-heap-unification` built and smoke-tested, ladder verification
-pending). Base for anything new:
+`zig-plug-heap-unification`, commits reworded with per-commit Confidence
+paragraphs 2026-08-21; verified by the 10/12 sweep, the tiers, and the
+full-corpus census with zero regressions; still owed before it sends:
+the emit-rung flat-term bump, the finding-24 volume hunt or an honest
+open-issue note, and the out-of-region answer below). Base for anything
+new:
 whatever the current release is when it goes; absorption is a content
 question, never a patch-id question. PRs 71-75 are absorbed --
 one line each in DONE.md.

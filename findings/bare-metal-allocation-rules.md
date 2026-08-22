@@ -59,7 +59,7 @@ emitter. `ast/fibx.zig` has 205 nested `cx_ll_concat(cx_ll_concat(` sites and
 
 ## Why this matters more than the number it produces
 
-The deck guard added in `62ee2dd2` refuses when the zig arm's allocation
+The deck guard added in `e4d2fcd1` refuses when the zig arm's allocation
 overruns bare metal's reservation. But the two arms allocate differently by
 design, so that check answers "does zig's differently-shaped allocation fit
 bare metal's budget" -- not "would bare metal overrun". It false-alarmed for

@@ -54,13 +54,13 @@
 # THREE CHANGED BUILTINS ARE DARK HERE, and saying so is the point of this
 # comment:
 #
-#   address-of  finding 31 / f8e97925. `atomic-smoke` is the ONLY program in
+#   address-of  finding 31 / b85f1b98. `atomic-smoke` is the ONLY program in
 #               572 that calls it, and it does not transpile (no emitter for
 #               atomic-load/store/add/cas/exchange, memory-fence). The census
 #               cannot witness this change at all until those land.
 #   bit-shr     `tco-bitop-loop` is the only caller and is blocked by a
 #               single missing builtin, `bit-not`. Least-cost unblock on the
-#               board. Not urgent: all three shifts share c86e66d5's masking
+#               board. Not urgent: all three shifts share 2a1177fa's masking
 #               fix, and `probe-shift-count` already confirms all three
 #               against the bare-metal gold column.
 #   peek-qword  ten callers and not one of them is reachable: every single
@@ -69,7 +69,7 @@
 #               other two that is not one missing emitter away.
 #
 # `__list-with-capacity` and `__linked-list-empty` are called by NO corpus
-# program, so the branch's widest-reach change (14b2b8b6, 85 call sites) has
+# program, so the branch's widest-reach change (17329ed9, 85 call sites) has
 # no census witness either -- the ladder's rungs are its only coverage.
 #
 # Needs natives built from the plug under test -- corpus_run.py runs on
