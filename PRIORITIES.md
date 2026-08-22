@@ -385,6 +385,10 @@ precedes them. In order:
    Bank `truth/u49` only over green zig arms; `bank_diff.sh` u48 -> u49
    is the Update's artifact. Re-pin `check_diags.py POLICY`; refresh the
    README timings and banked-against table; tag `u49-14of14`.
+   **DONE 2026-08-22, tag `u49-14of14` at `aa5d0cc`:** droplet rebank,
+   14/14, eleven truths byte-identical to u48, fibx/scale/whole moved
+   only by the two new `port-*-16-block` builtins; census unchanged, so
+   POLICY kept its pin. Steps 1-3 were done the same morning.
 5. **Then** delete the deck-record rename from the four bundlers that
    still carry it (check, fib, desugar, lex -- Batch 2) and re-run only
    those truth arms on u49: a second, separate diff proves the rename
