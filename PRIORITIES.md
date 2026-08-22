@@ -364,22 +364,54 @@ tokenizing on the stock 512 MB stack.
 
 **Objective: due diligence (the ceremony) that ends in a hunt (the
 census).** Upstream `bdf0049b` is Update 49 and absorbed PR 76 (Steve,
-2026-08-22). In order, after item 2's verdict lands:
+2026-08-22). Order corrected by a cold read the same day (essay
+random925): the census natives come from the BRANCH, so the rebase
+precedes them. In order:
 
-1. Pin branch `u49-rebank` per the README's "The checkout"; the ladder's
-   "Processing a new Update" is the step list. `rebank_all.sh` is ~87
-   minutes; the droplet is the venue for it (item 2.5's prep gap
-   permitting), the laptop otherwise with the cold-agent brief.
-2. Bank `truth/u49`, diff against `truth/u48` -- the bank diff is the
-   Update's artifact, as u48's "Four Moved Truths" was.
-3. The corpus census on the branch natives rebuilt against u49. **The
-   eight reds** -- stringbuilder-test, stats-wrap-test, validation-rules
-   (char-CCE `ea8d51ac`), the carried text-fold-indexed differ, and the
-   three integer-overflow crashes bloom-spread, consistent-hash-balance,
-   particle-spread (`78e8da1b`) -- were all attributed to unabsorbed
-   PR 76. Every one should flip green; a survivor is a new finding and
-   the attribution was wrong for it.
-4. Rebase `zig-plug-heap-unification` onto the u49 pin before sending.
+1. **Read `bdf0049b` first** (README step 1): `codex/plugs/zig/
+   ZigEmitter.codex` against PR 76's branch (what the heap branch will
+   conflict with), the seed hash, `codex/compiler/Emit/`,
+   `tools/codex-vm.c`, `build/vm-config.ps1`. Nothing to delete for
+   PR 76 -- its "workaround" was the eight-reds expectation, retired or
+   refuted by step 6.
+2. Pin branch `u49-rebank` at the release commit, zero cherry-picks if
+   the ladder can run without any; push to the fork; `seed_identity.py`
+   and `check_paths.py`; `droplet_vm_setup.sh` re-run (the pushed seed
+   is stale on re-pin).
+3. Tier bare columns (item 1.95's runner) -- seconds each, before the
+   long run, banked under `findings/gold/u49/`.
+4. `rebank_all.sh` in a sandbox (self-detaching; droplet venue if item
+   2.5's prep gap is closed, else the laptop with the cold-agent brief).
+   Bank `truth/u49` only over green zig arms; `bank_diff.sh` u48 -> u49
+   is the Update's artifact. Re-pin `check_diags.py POLICY`; refresh the
+   README timings and banked-against table; tag `u49-14of14`.
+5. **Then** delete the deck-record rename from the four bundlers that
+   still carry it (check, fib, desugar, lex -- Batch 2) and re-run only
+   those truth arms on u49: a second, separate diff proves the rename
+   image-preserving. Not in the same bank as the Update.
+6. Rebase `zig-plug-heap-unification` onto the u49 pin (reword the
+   flagship commit's Confidence paragraph while the hashes move anyway:
+   finding 24 closed, no capacity divergence). Rebuild the natives from
+   the rebased branch (laptop only; `native_build.sh` refuses the
+   droplet). Tier zig columns. Then the corpus census: **the eight reds**
+   -- stringbuilder-test, stats-wrap-test, validation-rules (char-CCE
+   `ea8d51ac`), the carried text-fold-indexed differ, bloom-spread,
+   consistent-hash-balance, particle-spread (`78e8da1b`) -- should all
+   flip green; a survivor is a new finding.
+
+## 1.95 The tiers run as a set, per Update
+
+**Objective: instrument work.** Today 35 tier/probe files run one at a
+time by hand, 2 of 35 gold columns are banked, gold is keyed to the seed
+so every re-pin stales it, and `report()` has no notion of an EXPECTED
+disagreement -- a known cost row makes a file red forever. Design (essay
+random925 B): `tiers_run.py` over every `prim-*` plus an explicit probe
+list (the deliberate-trap probes excluded by name), gold under
+`findings/gold/uNN/` so Updates diff, `findings/gold/EXPECTED.txt` as
+the ledger of known disagreements that `report()` consumes (unexpected
+differ = red; expected differ that stops differing = flagged too), and
+the zig column stamped with the emitter sha that answered. Ceremony
+slots: bare columns after the pin, zig columns after the natives.
 
 ## 2. The external review, in three batches
 
