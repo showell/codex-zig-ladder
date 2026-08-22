@@ -1,0 +1,6 @@
+# key 5d1f8fbf63609ea8
+span A nonzero of 256 : 0
+span A first 24       : 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+span B nonzero of 256 : 0
+span B first 24       : 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+span B at 2048, 24    : 
