@@ -18,7 +18,7 @@
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(python3 "$T/ladder_root.py" codex)"
-HOST=steve@162.243.1.123
+HOST=steve@143.244.172.148
 # Keepalives, because the held ssh IS the job -- see droplet_compile.sh
 # for the incident (a wifi blip SIGHUPed the remote session mid-sweep,
 # killed the guest, and the laptop side hung on the dead link).

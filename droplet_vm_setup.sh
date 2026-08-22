@@ -13,7 +13,7 @@
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(python3 "$T/ladder_root.py" codex)"
-HOST=steve@162.243.1.123
+HOST=steve@143.244.172.148
 
 ssh "$HOST" 'sudo -n apt-get -qq install -y qemu-system-x86 >/dev/null && sudo -n usermod -aG kvm steve && mkdir -p ~/ring/seed'
 

@@ -18,7 +18,7 @@
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(python3 "$T/ladder_root.py" codex)"
-HOST=steve@162.243.1.123
+HOST=steve@143.244.172.148
 # Keepalives, because the held ssh IS the job: a dropped link (wifi blip,
 # 2026-08-20, mid-sweep) SIGHUPs the remote session, which takes the
 # guest with it -- and without these the laptop side hangs on the dead
