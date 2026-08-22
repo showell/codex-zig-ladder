@@ -1,4 +1,4 @@
-# key ec53e70b1b2f03c3
+# key 73300d52b14d95d7
 frontier observes allocation: yes
 meter reads a 1024 reserve  : yes
 -- CCE codes: identical on every arm, or an arm is wrong --
@@ -30,13 +30,13 @@ sub of length0yes
 sub at the endyes
 sub whole textyes
 sub of a builtyes
--- cost: bare metal copies, expect 8 + align8(len); zig slices, expect 0 --
+-- cost: both copy; bare metal 8 + align8(len), the plug the bytes --
 sub 4 of 8    16
 sub 8 of 8    16
 sub 20 of 20  32
 sub 0 of 4    8
 scan 28 x 4   448
--- split: pieces are slices on one arm and copies on the other --
+-- split: pieces are copies on both arms; the list growth differs --
 split abc     3
 split none    1
 split empty   1

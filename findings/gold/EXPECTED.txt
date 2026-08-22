@@ -1,0 +1,81 @@
+# Known disagreements between the two arms, one per line:
+#
+#     tier<TAB>line-key<TAB>reason
+#
+# `tier` is the file stem (prim-text); `line-key` is the bare-metal row's
+# LABEL -- what precedes the first double space or ` : ` (what
+# tier_run.line_key computes); `reason` names the finding or the
+# representation gap. A row here is not a pass. It is a dated admission
+# that the arms differ there and we know why; tier_run marks the line
+# `ex` instead of `!!`, and marks it `??` if the arms ever AGREE on it,
+# because then either the finding closed or this row is stale, and both
+# want a human.
+#
+# Cost rows: findings/primitive-costs.md is the prose; every `ex` below
+# should be explicable from it.
+prim-text	cat 4 & 4	cost: bare metal pays a length word + align8 per text and substring; ours pays the bytes; split grows geometrically (primitive-costs.md tier 3, finding 29)
+prim-text	cat 8 & 8	cost: bare metal pays a length word + align8 per text and substring; ours pays the bytes; split grows geometrically (primitive-costs.md tier 3, finding 29)
+prim-text	cat 1 & 1	cost: bare metal pays a length word + align8 per text and substring; ours pays the bytes; split grows geometrically (primitive-costs.md tier 3, finding 29)
+prim-text	cat empty	cost: bare metal pays a length word + align8 per text and substring; ours pays the bytes; split grows geometrically (primitive-costs.md tier 3, finding 29)
+prim-text	sub 4 of 8	cost: bare metal pays a length word + align8 per text and substring; ours pays the bytes; split grows geometrically (primitive-costs.md tier 3, finding 29)
+prim-text	sub 8 of 8	cost: bare metal pays a length word + align8 per text and substring; ours pays the bytes; split grows geometrically (primitive-costs.md tier 3, finding 29)
+prim-text	sub 20 of 20	cost: bare metal pays a length word + align8 per text and substring; ours pays the bytes; split grows geometrically (primitive-costs.md tier 3, finding 29)
+prim-text	sub 0 of 4	cost: bare metal pays a length word + align8 per text and substring; ours pays the bytes; split grows geometrically (primitive-costs.md tier 3, finding 29)
+prim-text	scan 28 x 4	cost: bare metal pays a length word + align8 per text and substring; ours pays the bytes; split grows geometrically (primitive-costs.md tier 3, finding 29)
+prim-text	cost split 3	cost: bare metal pays a length word + align8 per text and substring; ours pays the bytes; split grows geometrically (primitive-costs.md tier 3, finding 29)
+prim-text	cost split 6	cost: bare metal pays a length word + align8 per text and substring; ours pays the bytes; split grows geometrically (primitive-costs.md tier 3, finding 29)
+prim-text	text-accum 72 136 264	cost: bare metal pays a length word + align8 per text and substring; ours pays the bytes; split grows geometrically (primitive-costs.md tier 3, finding 29)
+prim-deck	heap-save moves in extent	finding 25: the deck-record intrinsic gate (defining-chapter match) is not ported; this arm brackets by name
+prim-deck	deck-pos advances after	finding 25: the deck-record intrinsic gate (defining-chapter match) is not ported; this arm brackets by name
+prim-lists	literal 1	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	literal 2	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	literal 3	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	literal 4	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	literal 8	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	capacity 0	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	capacity 1	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	capacity 16	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	capacity 256	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	List Integer 4 48	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	List Text 4	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	cat 1 & 1	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	cat 4 & 4	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	cat 8 & 8	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	chain a&b	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	chain a&b&c	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	chain a&b&c&d 176	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	cons onto 4	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	cons loop 16	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	push loop 4	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	push loop 16	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	push loop 64	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	cat loop 16	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	cat loop 32	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+prim-lists	cat loop 64	cost: CxList indirection + ArrayList header, 16-byte Text elements, pairwise concat materialising prefixes (primitive-costs.md tier 2; bare-metal-allocation-rules.md)
+probe-memory-model	list literal 1	cost: same representation gap as prim-lists; the quadratic detector agrees on shape (QUADRATIC/LINEAR) on both arms
+probe-memory-model	list literal 2	cost: same representation gap as prim-lists; the quadratic detector agrees on shape (QUADRATIC/LINEAR) on both arms
+probe-memory-model	list literal 4	cost: same representation gap as prim-lists; the quadratic detector agrees on shape (QUADRATIC/LINEAR) on both arms
+probe-memory-model	list literal 8	cost: same representation gap as prim-lists; the quadratic detector agrees on shape (QUADRATIC/LINEAR) on both arms
+probe-memory-model	concat 4 & 4	cost: same representation gap as prim-lists; the quadratic detector agrees on shape (QUADRATIC/LINEAR) on both arms
+probe-memory-model	chain a&b&c&d	cost: same representation gap as prim-lists; the quadratic detector agrees on shape (QUADRATIC/LINEAR) on both arms
+probe-memory-model	push loop 16	cost: same representation gap as prim-lists; the quadratic detector agrees on shape (QUADRATIC/LINEAR) on both arms
+probe-memory-model	capacity 0	cost: same representation gap as prim-lists; the quadratic detector agrees on shape (QUADRATIC/LINEAR) on both arms
+probe-memory-model	capacity 16	cost: same representation gap as prim-lists; the quadratic detector agrees on shape (QUADRATIC/LINEAR) on both arms
+probe-memory-model	capacity 256	cost: same representation gap as prim-lists; the quadratic detector agrees on shape (QUADRATIC/LINEAR) on both arms
+probe-memory-model	text concat 2	cost: same representation gap as prim-lists; the quadratic detector agrees on shape (QUADRATIC/LINEAR) on both arms
+probe-memory-model	List Integer 4	cost: same representation gap as prim-lists; the quadratic detector agrees on shape (QUADRATIC/LINEAR) on both arms
+probe-memory-model	List Text 4	cost: same representation gap as prim-lists; the quadratic detector agrees on shape (QUADRATIC/LINEAR) on both arms
+probe-memory-model	cat-accum	cost: same representation gap as prim-lists; the quadratic detector agrees on shape (QUADRATIC/LINEAR) on both arms
+probe-memory-model	push-accum 528 1040 2064	cost: same representation gap as prim-lists; the quadratic detector agrees on shape (QUADRATIC/LINEAR) on both arms
+probe-memory-model	text-accum 72 136 264	cost: same representation gap as prim-lists; the quadratic detector agrees on shape (QUADRATIC/LINEAR) on both arms
+prim-records	record 1 field 8	cost: record is fields*8 on bare metal; ours carries alignment/closure env (primitive-costs.md tier 4; zig values moved 11->15 on the 1db8a78c natives)
+prim-records	record 2 fields16	cost: record is fields*8 on bare metal; ours carries alignment/closure env (primitive-costs.md tier 4; zig values moved 11->15 on the 1db8a78c natives)
+prim-records	record 4 fields32	cost: record is fields*8 on bare metal; ours carries alignment/closure env (primitive-costs.md tier 4; zig values moved 11->15 on the 1db8a78c natives)
+prim-records	record 8 fields64	cost: record is fields*8 on bare metal; ours carries alignment/closure env (primitive-costs.md tier 4; zig values moved 11->15 on the 1db8a78c natives)
+prim-records	capturing lambda 16	cost: record is fields*8 on bare metal; ours carries alignment/closure env (primitive-costs.md tier 4; zig values moved 11->15 on the 1db8a78c natives)
+prim-records	non-capturing	cost: record is fields*8 on bare metal; ours carries alignment/closure env (primitive-costs.md tier 4; zig values moved 11->15 on the 1db8a78c natives)
+prim-char	round trip of 233	finding 19: char-CCE migration (PR 76, ea8d51ac) not in these natives; flips when the branch rebases onto u49
+probe-char-ops	letter-accent 1	finding 19: is-letter second band needs the char-CCE migration (PR 76)
+probe-char-ops	letter-cyrillic 1	finding 19: is-letter second band needs the char-CCE migration (PR 76)
+probe-char-literal	found-x 1	finding 19: char literal vs Char value (PR 76)
+probe-approx-eq	one-ulp 1	finding 20: IrApproxEq emits ==, the 4-ULP band has zero width on this arm (OPEN, ours)

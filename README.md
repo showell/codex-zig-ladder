@@ -950,6 +950,11 @@ diff.
 - **One compute job.** The machine holds one QEMU comfortably; the sweep
   beside anything else slows both and has livelocked WSL outright when
   memory ran short. Nothing else runs until the bank is taken.
+- **Bank the tier columns before the long run.** `./tiers_run.py --bare`
+  runs every tier's bare-metal arm under the new seed -- seconds each --
+  and writes `findings/gold/uNN/`. Gold is keyed to the seed, so a re-pin
+  stales every column at once; banking them here, tracked, is what lets
+  the next Update diff tier rows the way `bank_diff.sh` diffs truths.
 
 ### 4. Decide what the zig arms measure
 
@@ -1029,6 +1034,16 @@ arena entry in `JUSTIFICATIONS.md`.
   scale rather than assumed.
 - Update the banked-against table at the top of this file, tag
   (`uNN-14of14`), push.
+- **The tiers as a set, after the natives.** Rebuild `native/` from the
+  checkout the bank measured (`native_build.sh`, laptop only), then
+  `./tiers_run.py`: every tier both arms, one verdict line each. Green
+  or `noted` (differs only on rows `findings/gold/EXPECTED.txt` names)
+  is a pass; `RED` is an unexpected disagreement and `STALE` is a ledger
+  row whose arms now agree -- a finding closed, or a row to delete. Both
+  want a human before the tag. The set runs in about three minutes and
+  the ledger is where a known divergence is admitted, dated, with its
+  finding number; a cost row that quietly moves is visible there and
+  nowhere else.
 
 ## Consumers of what the ladder emits
 

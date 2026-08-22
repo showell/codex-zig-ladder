@@ -1,0 +1,13 @@
+# key 130d5668283d8b4b
+-- the safe neighbourhood --
+abs 5                      : 5
+abs -5                     : 5
+abs of minInt + 1          : 9223372036854775807
+that one is positive       : yes
+-- __narrow is a pass-through on both arms --
+narrow keeps the value     : yes
+narrow keeps a negative    : yes
+-- the edge: abs of the minimum integer --
+abs minInt                 : -9223372036854775808
+it came back NEGATIVE      : yes
+-- reached the end, so this arm wrapped rather than refusing --

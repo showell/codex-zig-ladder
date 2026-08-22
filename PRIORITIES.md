@@ -399,19 +399,19 @@ precedes them. In order:
    consistent-hash-balance, particle-spread (`78e8da1b`) -- should all
    flip green; a survivor is a new finding.
 
-## 1.95 The tiers run as a set, per Update
+## 1.95 The tiers run as a set, per Update -- BUILT 2026-08-22
 
-**Objective: instrument work.** Today 35 tier/probe files run one at a
-time by hand, 2 of 35 gold columns are banked, gold is keyed to the seed
-so every re-pin stales it, and `report()` has no notion of an EXPECTED
-disagreement -- a known cost row makes a file red forever. Design (essay
-random925 B): `tiers_run.py` over every `prim-*` plus an explicit probe
-list (the deliberate-trap probes excluded by name), gold under
-`findings/gold/uNN/` so Updates diff, `findings/gold/EXPECTED.txt` as
-the ledger of known disagreements that `report()` consumes (unexpected
-differ = red; expected differ that stops differing = flagged too), and
-the zig column stamped with the emitter sha that answered. Ceremony
-slots: bare columns after the pin, zig columns after the natives.
+**Objective: instrument work, done; keep it green.** `tiers_run.py` runs
+every `prim-*` plus seven probes on both arms (five kill-an-arm probes
+excluded by name with reasons), gold lives under `findings/gold/uNN/`
+(u48 banked: 19 columns), and `findings/gold/EXPECTED.txt` is the
+ledger of known disagreements -- 66 rows, every one a cost row from
+primitive-costs.md or an open finding (19, 20, 25). First full run:
+10 green, 9 noted, 2.5 minutes. The `??` marker (a ledger row whose arms
+agree) fired on its first run and caught a key collision, which is what
+it is for. README steps 3 and 5 carry the ceremony slots. What the ledger
+says to watch on u49: the three finding-19 rows should flip to `STALE`
+when the branch rebases (PR 76 absorbed) -- delete them then.
 
 ## 2. The external review, in three batches
 

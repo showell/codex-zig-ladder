@@ -1,0 +1,34 @@
+# key 706526b6e0437bd4
+-- char-code-at answers in CCE, and the codes are the same everywhere --
+code A                     : 41
+code a                     : 15
+code E is 39, not 69       : yes
+code space                 : 2
+code zero digit            : 3
+-- text -> Char -> CCE lands where char-code-at already is --
+via-char on A              : yes
+via-char on a lowercase    : yes
+via-char mid-string        : yes
+via-char on a digit        : yes
+via-char on punctuation    : yes
+-- code-to-char is char-code's inverse, over the ASCII range --
+round trip A               : yes
+round trip space           : yes
+round trip newline-ish     : yes
+-- char-to-text is ONE byte and does not frame --
+one char is length one     : yes
+and it is the same byte    : yes
+rebuild of ascii round trips: yes
+rebuild preserves length   : yes
+-- multi-byte characters, still one CCE code each --
+Gamma is one character     : no
+code Gamma                 : 198
+code tau                   : 199
+via-char on Gamma          : yes
+rebuild of Gamma           : no
+-- MARKED: the CCE alias, where the two Char models must differ --
+  (e-acute is CCE 97 AND 233; a codepoint Char cannot hold both)
+code eacute                : 97
+round trip of 233          : 233
+  (233 = a CCE-code Char; 97 = a codepoint Char, losing the alias)
+round trip of 97           : 97

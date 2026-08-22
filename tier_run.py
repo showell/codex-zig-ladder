@@ -100,7 +100,45 @@ def run_zig(src, work):
 
 
 def gold_path(src):
-    return src.parent / 'gold' / f'{src.stem}.txt'
+    """One directory per Update, like truth/uNN: a re-pin writes a new
+    column beside the old one rather than over it, so tier columns diff
+    across Updates the way rung truths do."""
+    import seed_identity
+    return src.parent / 'gold' / seed_identity.stamp()['slug'] / f'{src.stem}.txt'
+
+
+EXPECTED = pathlib.Path(__file__).resolve().parent / 'findings' / 'gold' / 'EXPECTED.txt'
+
+
+def line_key(line):
+    """The label of a tier row: what precedes the first double space or
+    ` : ` -- `cons onto 4   144` -> `cons onto 4`, `code A : 41` -> `code A`.
+    The ledger keys on this rather than the line index so a tier can gain
+    rows without renumbering, and on the label rather than the value so a
+    row stays matched when the number it prints moves. Numbers inside the
+    label are identity and stay (masking them folded `cons onto 1` into
+    `cons onto 4`, and the first set run flagged it)."""
+    import re
+    return re.split(r'  | : ', line, maxsplit=1)[0].rstrip()
+
+
+def expected_for(stem):
+    """The known disagreements for one tier: {line_key: reason}. A row in
+    the ledger says the two arms are ALLOWED to differ there and why --
+    a cost row pricing a representation gap, a finding still open. An
+    entry is not a pass; it is a named, dated divergence."""
+    if not EXPECTED.is_file():
+        return {}
+    out = {}
+    for ln in EXPECTED.read_text().splitlines():
+        if not ln.strip() or ln.startswith('#'):
+            continue
+        parts = ln.split('\t')
+        if len(parts) < 3:
+            raise SystemExit(f'EXPECTED.txt: need tier<TAB>key<TAB>reason: {ln!r}')
+        if parts[0] == stem:
+            out[parts[1]] = parts[2]
+    return out
 
 
 def gold_key(src):
@@ -147,22 +185,38 @@ def run_bare(src, work):
     return lines
 
 
-def report(bare, zig):
+def report(bare, zig, expected=None, quiet=False):
     """Side by side, with a marker on every line that moved. Lines are
     matched by index, not by content: these programs print a fixed sequence,
-    so an index mismatch IS the finding."""
+    so an index mismatch IS the finding.
+
+    Markers: `!!` an unexpected disagreement (red); `ex` a disagreement the
+    ledger names (noted, not red); `??` a ledger row whose arms now AGREE
+    (the finding closed or the ledger went stale -- either way a line to
+    act on). Returns (unexpected, expected_seen, stale)."""
+    expected = expected or {}
     n = max(len(bare), len(zig))
     width = max([len(l) for l in bare] or [0]) + 2
-    reds = 0
+    reds = ex = stale = 0
     for i in range(n):
         b = bare[i] if i < len(bare) else '<no line>'
         z = zig[i] if i < len(zig) else '<no line>'
         same = b == z
-        reds += not same
-        print(f'{"  " if same else "!!"} {b:<{width}} | {z}')
+        known = line_key(b) in expected
+        if same and known:
+            mark = '??'; stale += 1
+        elif same:
+            mark = '  '
+        elif known:
+            mark = 'ex'; ex += 1
+        else:
+            mark = '!!'; reds += 1
+        if not quiet or mark != '  ':
+            print(f'{mark} {b:<{width}} | {z}')
     print()
-    print(f'{n} lines, {reds} differ' if reds else f'{n} lines, byte-identical')
-    return reds
+    print(f'{n} lines, {reds} unexpected, {ex} expected, {stale} expected-but-agreeing'
+          if (reds or ex or stale) else f'{n} lines, byte-identical')
+    return reds, ex, stale
 
 
 def main():
@@ -183,7 +237,8 @@ def main():
     zig = run_zig(src, work) if (both or a.zig) else None
 
     if bare is not None and zig is not None:
-        sys.exit(1 if report(bare, zig) else 0)
+        reds, _, stale = report(bare, zig, expected_for(src.stem))
+        sys.exit(1 if (reds or stale) else 0)
     for line in (bare if bare is not None else zig):
         print(line)
 

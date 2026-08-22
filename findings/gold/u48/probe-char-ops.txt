@@ -1,0 +1,10 @@
+# key 161c552cf12d60ed
+rt15 15
+letter-a 1
+letter-punct 0
+letter-accent 1
+letter-cyrillic 1
+digit-0 1
+digit-e 0
+c2t-len 1
+c2t-byte 15

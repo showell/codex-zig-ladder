@@ -1,0 +1,13 @@
+# key 5fac2714526ea264
+-- the emit-all-defs shape, eight items, table pre-sized to 64 --
+table survived 8 brackets  : yes
+contents are what we pushed: yes
+first entry is right       : yes
+last entry is right        : yes
+frontier returned to start : yes
+  (all yes = only scalars crossed the bracket)
+-- a scalar crosses a bracket; a list allocated inside does not --
+scalar survives the rewind : yes
+-- the reservation is finite and its size is observable --
+lift is exactly the reserve: yes
+deck starts at the mark    : yes
