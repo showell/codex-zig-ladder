@@ -393,6 +393,15 @@ precedes them. In order:
    still carry it (check, fib, desugar, lex -- Batch 2) and re-run only
    those truth arms on u49: a second, separate diff proves the rename
    image-preserving. Not in the same bank as the Update.
+   **DONE 2026-08-22 (`e91fdb3`, all TEN bundlers, not four):** droplet
+   sandbox `20260822T223325Z-u49-rename-diff`, ten truth arms in 16.5 min.
+   Nine byte-identical to `truth/u49`. lex differs only because its
+   subject IS the bundled text: token-kind sequence identical (5342),
+   55 identifier tokens read `deck-record` where the bank says
+   `subj-deck-record`, every other line moved by the 280 bytes (56 x
+   `subj-`) the subject shrank. The bank keeps the verbatim-pin lex
+   truth; `bank_diff.sh` u49 -> u50 will show lex move by exactly this
+   and nothing else, and that is where to look it up.
 6. Rebase `zig-plug-heap-unification` onto the u49 pin (reword the
    flagship commit's Confidence paragraph while the hashes move anyway:
    finding 24 closed, no capacity divergence). Rebuild the natives from
