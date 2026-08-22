@@ -48,7 +48,9 @@ def update_label(sha):
     a table row marked "release seed" beside the hash, the closing prose
     header that begins "Seed `<hash>`", or the "Release measurements"
     section header that names the seed inline (the Update 48 form; interim
-    sections are titled "Interim mirror push" and never match) -- because a
+    sections are titled "Interim mirror push" and never match), or the
+    artifacts table's `seed/Codex.cdx` row under "measured at the release
+    head" (the Update 49 form) -- because a
     bare substring match
     labels too much: prior-release seeds are back-referenced in later notes
     ("The release 46 seed was ..."), and interim seeds are named in the next
@@ -64,7 +66,8 @@ def update_label(sha):
         for line in note.read_text(errors='replace').upper().splitlines():
             if prefix in line and ('RELEASE SEED' in line
                                    or 'RELEASE MEASUREMENTS' in line
-                                   or line.strip().startswith('SEED `')):
+                                   or line.strip().startswith('SEED `')
+                                   or line.strip().startswith('| `SEED/CODEX.CDX` |')):
                 claims.append(int(m.group(1)))
                 break
     if len(claims) > 1:
