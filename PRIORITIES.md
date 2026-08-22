@@ -222,26 +222,23 @@ census):**
    in 63 s, rc 0, and the IR matches the seed's up to def order, chapter
    title and a `ctd`/`record-ty` spelling.
 
-   **What it leaves, decision needed (Steve):** the hosted harness and
-   prelude are sized for subjects up to roughly codexir's own source and
-   no further. Two sizing knobs and one feature, all ours:
-   - `emit_harness.py` DECK_PROLOGUE reserves `demand-lift-floor`; the
-     measured need is ~153 deck bytes per subject byte (381 MB / 2.5 MB).
-     A flat 512 MB covers the whole-compiler subject with margin.
-   - `cx_heap_reserve` at 1.5 GiB cannot hold deck 381 MB + main 1.2 GB.
-     Since `c7feba61` the reservation is lazily faulted, so 4 GiB costs no
-     resident memory -- but RLIMIT_AS counts it (item 3 below, now
-     concrete rather than theoretical).
-   - Finding 33: no tail calls, so `zigemit` on the 13 MB IR needs a
-     >2 GiB thread stack. Finding 34: the hosted harnesses never reclaim,
-     so it then exhausts the arena. Self-tail-call-to-loop in ZigEmitter
-     is the real fix for 33; per-def brackets in the hosted harnesses for
-     34. Neither blocks the PR; both bound what the native loop can eat.
-   Also to run down: why the harness prints `record-ty` where the seed
-   driver prints `ctd` for let-binding types (930 lines of the fibx IR).
-   The PR body should say "harness deck sized by placeholder; measured;
-   no capacity divergence" where the flagship commit currently says
-   "MEDIUM, capacity diverges at scale" -- reword that commit.
+   **What it leaves, DECIDED 2026-08-22 (Steve: "decide whatever"), to
+   land after item 2's sweep:**
+   - `emit_harness.py` DECK_PROLOGUE reserves a flat 512 MB instead of
+     `demand-lift-floor` (measured need ~153 deck bytes per subject byte;
+     381 MB on the fibx subject).
+   - `cx_heap_reserve` 1.5 GiB -> 4 GiB. Lazily faulted since `c7feba61`,
+     so no resident cost; RLIMIT_AS counts it (item 3).
+   - Reword the flagship commit: "the hosted harness reserved one
+     placeholder-sized deck for every phase; measured; no capacity
+     divergence" replaces "MEDIUM, capacity diverges at scale".
+   - Run down why the harness prints `record-ty` where the seed driver
+     prints `ctd` for let-binding types (930 lines of the fibx IR) while
+     the harness is open.
+   - Finding 33 (tail calls) is item 1.7 below; finding 34 (hosted
+     harnesses never reclaim) is folded into the harness edit if per-def
+     brackets are cheap, else noted in the PR body.
+
 2. **The emit-rung flat-term bump** (instrument work, small). ~2 MB to
    the formula's 25,165,824 flat term covers every measured rung
    (JUSTIFICATIONS deck table); the defs term stays. Then the sweep
@@ -344,6 +341,22 @@ control: `cat-accum` is quadratic on BOTH arms, so it is inherent to the
 source and not ours, and without that column it would have been filed as a
 plug defect. And where the arms legitimately differ, mark the lines and say
 why rather than letting the file claim byte-identity it does not have.
+
+
+## 1.7 Tail calls become loops -- the native loop's depth ceiling
+
+**Objective: instrument work on the emitter that removes a ceiling
+(finding 33); scheduled high by Steve 2026-08-22.** Every
+`*-loop (xs) (i) (acc)` in the compiler is a self-call in tail position;
+bare metal jumps (`st-set-tail-pos`), the plug calls, and Debug zig keeps
+every frame. `zigemit` on the 13 MB fibx IR needs a >2 GiB thread stack
+for 3.28M `tokenize_loop` frames. The emitter change: a def whose body's
+tail positions are self-calls (same arity) becomes `while (true) {` with
+parameter reassignment through temporaries; non-self tail calls stay
+calls. Sweep `ast/allcycles.sh` after, rebuild the natives, and re-run
+the fibx-subject chain (sandbox `20260822T014639Z-f24-volume` has the
+subject and the numbers) as the proof: zigemit should get past
+tokenizing on the stock 512 MB stack.
 
 ## 2. The external review, in three batches
 
