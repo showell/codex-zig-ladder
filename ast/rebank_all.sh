@@ -35,7 +35,12 @@ if [ -z "$REBANK_DETACHED" ]; then
     }
     mkdir -p "$T/logs"
     log="$T/logs/rebank-$(date +%Y%m%d-%H%M%S).log"
-    REBANK_DETACHED=1 nohup "$0" > "$log" 2>&1 &
+    # The detached child is re-parented to init, so the shell that launched
+    # it is no longer an ancestor -- and that shell's command line names
+    # this script, which is exactly what the lockless-job detector looks
+    # for. Hand it our pid so it can excuse our ancestry (2026-08-22: the
+    # u49 rebank refused itself at launch beside its own launcher).
+    REBANK_DETACHED=1 LADDER_LAUNCHER_PID=$$ nohup "$0" > "$log" 2>&1 &
     echo "rebank detached (pid $!); watch with: tail -f $log"
     exit 0
 fi

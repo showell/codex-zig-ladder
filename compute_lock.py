@@ -52,10 +52,17 @@ def take():
         rows.append((pid, ppid, args))
         parent[pid] = ppid
     skip = set()
-    p = me
-    while p > 1 and p not in skip:
-        skip.add(p)
-        p = parent.get(p, 0)
+    # A detached job has lost its launcher from the ancestor chain; the
+    # launcher names itself in LADDER_LAUNCHER_PID so its chain is excused
+    # too, since its command line names the very script that is running.
+    roots = [me]
+    launcher = os.environ.get('LADDER_LAUNCHER_PID')
+    if launcher and launcher.isdigit():
+        roots.append(int(launcher))
+    for p in roots:
+        while p > 1 and p not in skip:
+            skip.add(p)
+            p = parent.get(p, 0)
     for pid, ppid, args in rows:
         if pid in skip or ppid == me:
             continue
