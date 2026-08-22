@@ -75,13 +75,5 @@ for ($i = 0; $i -lt $lines.Count; $i++) {
     }
 }
 
-# Same rename every bundle applies: the seed's emitter intercepts a 1-arg
-# call literally named deck-record (X86_64Compound.codex emit-apply) into
-# region machinery that corrupts subjects lacking the compiler opening's
-# runtime. LirStubs defines the renamed identity.
-for ($i = 0; $i -lt $lines.Count; $i++) {
-    $lines[$i] = $lines[$i].Replace('deck-record', 'subj-deck-record')
-}
-
 $preLines = Resolve-PlugForewords $lines
 Bundle-PlugSource -PreLines $preLines -Lines $lines -BundleSrc (Join-Path $here $OutName) -PlugName 'lir-subject'

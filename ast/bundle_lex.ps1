@@ -27,14 +27,5 @@ foreach ($ch in @('codex/compiler/Core/BuildSettings.codex',
 Add-PlugChapter -Lines $lines -Path (Join-Path $here 'LexStubs.codex') -Quire 'Lexmi'
 Add-PlugChapter -Lines $lines -Path (Join-Path $here $Harness) -Quire 'Lexmi'
 
-# The seed's emitter hijacks any 1-arg call literally named deck-record
-# (X86_64Compound.codex emit-apply) into __deck-enter/__deck-exit region
-# machinery, which corrupts memory in subjects that lack the compiler
-# opening's phase-allocator runtime. Renaming keeps the identity semantics
-# and sidesteps the intercept; LexStubs defines the renamed identity.
-for ($i = 0; $i -lt $lines.Count; $i++) {
-    $lines[$i] = $lines[$i].Replace('deck-record', 'subj-deck-record')
-}
-
 $preLines = Resolve-PlugForewords $lines
 Bundle-PlugSource -PreLines $preLines -Lines $lines -BundleSrc (Join-Path $here $OutName) -PlugName 'lex-subject'
