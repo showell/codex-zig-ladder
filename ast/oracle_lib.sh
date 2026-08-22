@@ -335,11 +335,24 @@ plug_provenance() {
     fi
 }
 
+# The ring arm's plug is ast/ringplug.cdx, not the TCP plug, so its
+# provenance is the ring fingerprint ringplug_build.sh stamped -- the same
+# check plug_run_ring.py makes before transpiling, repeated here because
+# the checkout can move between the transpile and the verdict. Checking
+# the TCP fingerprint on a ring arm asked about a plug that never ran, and
+# refused every ring rung in a fresh sandbox (2026-08-22).
+ring_provenance() {
+    (cd "$T" && python3 -c 'import pathlib, plug_run_ring; plug_run_ring.refuse_stale_ringplug(pathlib.Path("."))') \
+        || { echo "RING PLUG PROVENANCE REFUSED -- run ast/ringplug_build.sh"; return 1; }
+}
+
 # Run the emitted zig, diff against the truth. Shared by both arms: the
-# transport is what differs between them, never the verdict.
+# transport is what differs between them, never the verdict -- except
+# WHICH plug's provenance vouches for the .zig, which the arm passes in.
 zig_verdict() {
     local m=$1
-    plug_provenance || return 1
+    local prov=${2:-plug_provenance}
+    $prov || return 1
     cd $T/ast
     # program output goes to stderr (std.debug.print); truth was serial bytes
     #
@@ -430,7 +443,7 @@ ring_arm() {
         tail -6 ast/${m}.transport.log
         return 1
     fi
-    zig_verdict $m
+    zig_verdict $m ring_provenance
 }
 
 # Which transport a rung needs is a property of the rung, so the sweep
