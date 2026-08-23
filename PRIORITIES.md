@@ -22,13 +22,12 @@ modes, and mistaking one for the other misprices the work:
 - **Instrument work.** Making the harness honest or cheap. The other two
   modes are only as trustworthy as it is.
 
-**The venue rule (Steve, 2026-08-22): the laptop orchestrates, the droplet
-computes.** Every job below -- natives, tiers, census, sweeps, rebanks --
-runs in a sandbox on the ladder droplet (`./sandbox.sh <label>` there,
-`. ../env`, detached with a log). The laptop edits, commits, pushes, and
-reads logs over ssh. **There is no fallback**: every compute entry point
-refuses on a host without `CODEX_LADDER_VENUE` (`bb39139`), which only the
-droplet's `~/.codex_ladder_env` exports. One compute job per host.
+**The venue rule (Steve, 2026-08-22): everything computes on this box.**
+Every job below -- natives, tiers, census, sweeps, rebanks -- runs in a
+sandbox (`./sandbox.sh <label>`, `. ../env`, detached with a log). Every
+compute entry point refuses on a host without `CODEX_LADDER_VENUE`
+(`bb39139`), which `~/.codex_ladder_env` exports. One compute job at a
+time.
 
 ## The native loop, which changes what is cheap
 
@@ -151,21 +150,11 @@ ranking that sets priorities however often they bite. The systemic fix --
 every unhandled construct refuses by name -- is worth more than any one
 of them. Item 4's census is where the count would show.
 
-## 6. Finish the droplet venue
+## 6. Venue plumbing
 
-**Objective: instrument work.** The droplet runs everything now (DONE.md
-2026-08-22); what is left is the plumbing that still makes the laptop a
-participant:
+**Objective: instrument work.** Pushes go through the deploy keys
+(`github-ladder`, `github-nr`) since 2026-08-23. Left:
 
-- ~~Push from the droplet~~ DONE 2026-08-23: two write deploy keys
-  (`~/.ssh/id_ed25519_ladder`, `_nr`; ssh aliases `github-ladder`,
-  `github-nr`; both remotes switched). Banks and branches commit and push
-  from the droplet now; the laptop's copy is just another clone.
-- **The TCP arm does not travel.** `sweep_prep.sh` pushes the ring
-  kernel only and `sweep_lib.sh` routes ring-only, so TCP-transport
-  coverage came from laptop runs, which now means from nowhere. Ship
-  the TCP kernel and let `remote_arm_for` route it; the 3072 cap holds
-  its boot reservation.
 - `allcycles.sh` should REGENERATE a refused or missing `.ir` rather than
   stopping, so a fresh sandbox sweeps without a full rebank first (the
   f35 chain lost a run to this on 2026-08-23; `ring_compile.py` per unit

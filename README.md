@@ -217,8 +217,8 @@ The turn itself is three steps:
    wire. On the four expensive rungs this step is nearly all of the wall
    clock: fibx's IR alone is 13.1 MB on the u47 seed, and every byte crosses
    into and out of the guest.
-2. **The host runs the emitted source** -- `zig run`, under the same 2.5 GB
-   address cap as the corpus runs. The only step of the turn with no Codex
+2. **The host runs the emitted source** -- `zig run`, under the same
+   resident bound as the corpus runs. The only step of the turn with no Codex
    code and no QEMU in it.
 3. **The output is diffed against the banked truth**, split per rung
    (`zig_verdict` in `ast/oracle_lib.sh`). The verdict is the same
@@ -645,101 +645,48 @@ Then the smaller pieces:
   guest's read cursor over the gdbstub. `ring_refill_test.sh` is that path's
   oracle.
 - `codex_vm.py` -- launch/READY/run helpers shared by the above.
-- `droplet_*.sh` and `sweep_*.sh` -- the remote QEMU venue and the
-  two-venue sweep (prep once, fail-fast canary, full-coverage long).
-  Read their headers; "The droplet venue" below has the principles.
+- `droplet_*.sh` and `sweep_*.sh` -- drive this box's QEMU from a second
+  host. Read their headers; "The venue" below says where they stand.
 
 Costs -- this section is the one home for timing figures; re-measure and
-update them here at every rebank. Measured clean 2026-08-22 (u49, on the
-8 GB ladder droplet, `CODEX_MEM_MB=3072` TCG, per-rung `rung_stamp`
-timestamps in the log); the 2026-08-20 laptop figures (u48) follow in
-parentheses where they differ by more than noise, because the laptop is
-still the venue for `native_build.sh`:
+update them here at every rebank. Measured clean 2026-08-22 (u49, this
+8 GB box, `CODEX_MEM_MB=3072` TCG, per-rung `rung_stamp` timestamps in
+the log):
 
-- **`rebank_all.sh` end to end is 59 minutes** (laptop 87) -- 31 for the
-  twelve truth arms (50), 1.5 for the plug builds, 27 for the trailing
-  all-local sweep (37). The ten cheap units record in 15 s to 2.5
-  minutes each; `fibx` and `whole` are 7m17s and 8m02s on the truth side
-  (11-13 minutes each on the laptop) and dominate everything.
-- **The two-venue sweep**: `sweep_canary.sh` is 87 seconds on the laptop
-  (lex 10s, parse 29s, desugar 46s); the droplet's sweep pass runs all
-  fourteen rungs in 27 minutes (scope 19s, check 44s, lower 50s, text
-  54s, pingpong 53s, lir 5s, fib 51s, fibx 10m09s, whole 11.5m -- the
-  zig arm of the two big rungs is now the slow half, not the truth arm).
-  Laptop `sweep_long.sh` healthy was about 55 minutes (check 198s, lower
-  229s, text 241s, pingpong 248s, fibx 11.5m, whole 11.8m). The
-  canary/long split stays lex+parse+desugar: adding scope would push
-  the canary past 2.5 minutes for little coverage -- decided from these
-  stamps, not intuition.
+- **`rebank_all.sh` end to end is 59 minutes** -- 31 for the twelve
+  truth arms, 1.5 for the plug builds, 27 for the trailing sweep. The
+  ten cheap units record in 15 s to 2.5 minutes each; `fibx` and `whole`
+  are 7m17s and 8m02s on the truth side and dominate everything.
+- **The sweep** runs all fourteen rungs in 27 minutes (scope 19s, check
+  44s, lower 50s, text 54s, pingpong 53s, lir 5s, fib 51s, fibx 10m09s,
+  whole 11.5m -- the zig arm of the two big rungs is the slow half, not
+  the truth arm). `sweep_canary.sh` (lex+parse+desugar) is about 90
+  seconds; adding scope would push it past 2.5 minutes for little
+  coverage.
 - **The census re-pin** (`native_build.sh`, then `corpus_run.py --changed
-  --bank`): the natives are 11 minutes on the droplet (18 on the laptop,
-  2026-08-22), and the census itself is 10 minutes for the whole corpus
-  -- transpile of 593 programs plus build-and-run of the 325 clean ones,
-  no QEMU anywhere. Every Update re-pin reruns all of it, because the
-  natives change and so every emitted zig moves; "about an hour" was the
-  figure under the old allocator.
+  --bank`): the natives are 11 minutes, and the census itself is 10
+  minutes for the whole corpus -- transpile of 593 programs plus
+  build-and-run of the 325 clean ones, no QEMU anywhere. Every Update
+  re-pin reruns all of it, because the natives change and so every
+  emitted zig moves.
 
-Run long jobs in the background and watch for the markers above.
-(The pre-merge ladder, four big compiles instead of two, cost 2h21m --
-the shape of the saving, not a current figure.)
+Run long jobs detached and watch for the markers above.
 
-## The droplet venue
+## The venue
 
-QEMU work can run on a second host: a small cloud box (the same one
-that serves a live website, which is why the rails below exist)
-provisioned as an appliance and driven over synchronous ssh. The
-scripts are the documentation here -- `droplet_*.sh` and `sweep_*.sh`
-at the repo root carry their contracts in their headers, and
-enumerating them in prose only invites drift. Design and the founding
-measurements: JUSTIFICATIONS.md ("Droplet compile venue") and essays
-random893/random894; adopted 2026-08-20.
+Everything computes on this box (the 8 GB ladder droplet, dedicated,
+since 2026-08-23): natives, tiers, census, sweeps, rebanks, each in its
+own sandbox (next section), detached with a log. Every compute entry
+point refuses on a host without `CODEX_LADDER_VENUE`, which
+`~/.codex_ladder_env` exports along with the guest sizing
+(`CODEX_MEM_MB=3072`, `CODEX_ACCEL=tcg`; why: JUSTIFICATIONS.md "Droplet
+compile venue"). The laptop edits and reads logs; nothing authored lives
+only there.
 
-**The principles, which are stabler than the file list:**
-
-- **The appliance holds no logic.** Verbatim driver scripts, kernels,
-  and the seed are PUSHED artifacts; no checkout, no zig, no daemon,
-  no listening port, no state. What can go stale is exactly the pushed
-  artifacts, so every one is guarded twice: sha-verified at push time,
-  and re-verified against the checkout's copy ON EVERY JOB, refusing
-  before QEMU boots -- the per-use discipline `plug_run_ring.py`
-  applies to a stale ringplug, generalized. Staleness checks that need
-  the checkout (re-bundling, source shas) run laptop-side before
-  anything is pushed.
-- **Synchronous ssh is the whole protocol.** One held ssh per job: log
-  lines stream back live, the exit code propagates, artifacts scp back
-  after. No polling, no queue, no service. If the droplet is
-  unreachable, everything still runs locally (`ast/allcycles.sh` is
-  the all-local sweep) and nothing here is on the critical path.
-
-**TCG on purpose, not KVM.** Measured on the warmup blob: droplet TCG
-26s, laptop TCG 31s, droplet KVM 43s. This guest streams output
-through port I/O and polls the serial status register; under KVM every
-port access is a vmexit, under TCG a cheap helper call. The wrapper
-pins TCG and the numbers live in JUSTIFICATIONS.md -- re-measure there
-before believing anything else about relative speed.
-
-**The rails, because a live site shares the box:** `nice -n 15` on the
-QEMU process, `flock -n` so a second job refuses loudly instead of
-queueing silently, and the guest sized at 1300 MB (the box has 2 GB
-and no swap; the big 2.5 MB bundle compile is UNMEASURED there --
-measure before relying on it). Output is byte-identical to a local
-compile of the same blob; that was the acceptance test.
-
-**Every droplet arm rides the ring.** The TCP plug's boot-time heap
-reservation needs >= 1600 MB of guest RAM -- measured 2026-08-20:
-connects at 1600, exits SILENTLY at 1500 and below (nothing on serial,
-a clean debug-port exit that reads like a qemu failure) -- so it cannot
-boot inside the 1300 MB cap, and `droplet_transpile.sh` refuses the tcp
-argument with that reason rather than reproducing the silent exit. The
-Codex network stack keeps its oracle coverage in the local venues
-(`cycle.sh` warmups and `ast/allcycles.sh` both push IR over TCP), and
-the two transports were measured byte-identical on the same IR (laptop
-tcp vs droplet ring, lex, 2026-08-20).
-
-What the droplet buys is not mainly the 5s: it is that the
-one-compute-job rule becomes per-host. The laptop can bundle, build
-zig and diff while the droplet grinds a compile -- two QEMU-scale jobs
-that used to serialize on one 3.8 GB machine now overlap across two.
+`droplet_*.sh` and `sweep_*.sh` at the repo root drive this box's QEMU
+from a second host over one held ssh per job (log lines stream back, the
+exit code propagates, artifacts scp back); their headers carry their
+contracts. They are keyboard-tempo tools, not the ceremony's path.
 
 ## One sandbox per experiment
 
@@ -785,20 +732,16 @@ pulled the shared checkout mid-run" stop being a thing that can happen.
    bank plus the same through the plug, for the expensive rungs -- discovering
    it does not compile.
 4. **One compute job per host.** QEMU, a sweep, a census run, a native
-   build: one at a time on any given machine. The droplet enforces it
-   with `flock -n`; on the laptop every compute entry point takes
+   build: one at a time. Every compute entry point takes
    `take_compute_lock` (in `ast/oracle_lib.sh`, with `compute_lock.py`
    as the Python half), which also refuses on the evidence of a running
-   job that did not take it. Two 3 GB guests on the 3.8 GB laptop do not fail -- they
-   thrash at 2% CPU each, which reads as mysterious slowness rather
-   than as the refused launch it should have been (2026-08-20, a sweep
-   and a native build stacked; the sweep's artifacts were garbage).
-5. **Never lift the 2.5 GB address-space cap on `zig_verdict`'s `zig run`.**
-   An emitted binary from any emitter that predates the arena balloons past
-   3 GB and can livelock the whole WSL VM; under the cap that is a recorded
-   rung failure instead. With the arena (upstream since `a061c173`) the big
-   rungs run in about 240 MB, so the cap never bites a healthy arm.
-   Measurements: `JUSTIFICATIONS.md`.
+   job that did not take it. Two guests stacked do not fail -- they
+   thrash, which reads as mysterious slowness rather than as the refused
+   launch it should have been.
+5. **Every emitted-binary run is bounded** (`bounded_run`: cgroup
+   MemoryMax). A runaway dies oom-killed and is recorded as such; the
+   bound is never lifted to make a rung pass. Measurements:
+   `JUSTIFICATIONS.md` "The resident bound, measured".
 
 ## The checkout: cloning and branching
 
@@ -896,11 +839,6 @@ compile runs:
 - **The seed hashes.** The release note names the public seed; depot `main`
   may already be several seeds past it. The bank is a claim about the
   released seed, so everything below uses the release commit, not main.
-  A seed change also stales the droplet appliance's pushed copy: re-run
-  `droplet_vm_setup.sh` when the checkout re-pins (it re-pushes and
-  sha-verifies; a droplet compile against last Update's seed would bank
-  truth nobody named, the exact failure `CODEX_ROOT`'s refusal exists
-  to prevent, one host over).
 
 ### 2. Probe the contract before committing hours to it
 
@@ -958,9 +896,7 @@ diff.
 - **`seed_identity.py` says the right thing** (seed hash, Update number,
   `truth/uNN` target) and **`check_paths.py` passes.** Five seconds, versus
   discovering a broken path an hour into the truth arms.
-- **One compute job.** The machine holds one QEMU comfortably; the sweep
-  beside anything else slows both and has livelocked WSL outright when
-  memory ran short. Nothing else runs until the bank is taken.
+- **One compute job.** Nothing else runs until the bank is taken.
 - **Bank the tier columns before the long run.** `./tiers_run.py --bare`
   runs every tier's bare-metal arm under the new seed -- seconds each --
   and writes `findings/gold/uNN/`. Gold is keyed to the seed, so a re-pin
@@ -995,8 +931,7 @@ One carve-out (agreed, Steve + Claude, 2026-08-19): a capacity prerequisite
 the big arms cannot RUN without on this machine may ride the pin, provided
 it is already landed or filed upstream -- a bank whose two biggest rungs can
 never execute measures less, not more honestly. A correctness fix may not,
-because a wrong answer IS the measurement. Worked example and numbers: the
-arena entry in `JUSTIFICATIONS.md`.
+because a wrong answer IS the measurement.
 
 ### 5. Run, bank, retire
 
@@ -1046,7 +981,7 @@ arena entry in `JUSTIFICATIONS.md`.
 - Update the banked-against table at the top of this file, tag
   (`uNN-14of14`), push.
 - **The tiers as a set, after the natives.** Rebuild `native/` from the
-  checkout the bank measured (`native_build.sh`, laptop only), then
+  checkout the bank measured (`native_build.sh`), then
   `./tiers_run.py`: every tier both arms, one verdict line each. Green
   or `noted` (differs only on rows `findings/gold/EXPECTED.txt` names)
   is a pass; `RED` is an unexpected disagreement and `STALE` is a ledger
