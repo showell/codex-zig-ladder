@@ -29,6 +29,7 @@ of the script rather than of whoever typed the pipeline that day.
 """
 
 import argparse
+import compute_lock
 import hashlib
 import pathlib
 import subprocess
@@ -227,6 +228,7 @@ def main():
     ap.add_argument('--work', type=pathlib.Path,
                     help='where artifacts land (default: beside the program)')
     a = ap.parse_args()
+    compute_lock.require_venue()
 
     src = a.program.resolve()
     work = (a.work or src.parent / '.tier-run').resolve()

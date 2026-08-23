@@ -49,7 +49,20 @@ unit_rungs() {
 # computes (rebank_all, allcycles, native_build, corpus_run, the sweep
 # trio). Refuse loudly, never queue: two 3 GB guests on this box thrash
 # at 2% CPU each instead of failing (2026-08-20).
+# The laptop does not compute (Steve, 2026-08-22, firmly: no fallbacks).
+# The ladder droplet carries ~/.codex_ladder_env, which exports
+# CODEX_LADDER_VENUE along with its guest tuning; no other host has it,
+# by design. A compute entry point on a host without it refuses before
+# touching the lock -- the refusal is the feature, not a venue switch.
+require_compute_venue() {
+    [ -n "${CODEX_LADDER_VENUE:-}" ] && return 0
+    echo "NOT A COMPUTE VENUE: CODEX_LADDER_VENUE is unset. Ladder jobs run on the" >&2
+    echo "  droplet only (sandbox.sh there, . ../env). The laptop orchestrates." >&2
+    exit 1
+}
+
 take_compute_lock() {
+    require_compute_venue
     # Re-entrant down the process tree: rebank_all holds the lock and
     # then runs allcycles.sh, which must not refuse its own parent. The
     # variable dies with the holder, so it cannot leak past a crash.

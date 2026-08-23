@@ -24,6 +24,7 @@ zig column records which native build answered so a branch regression is
 attributable without re-running by hand.
 """
 import argparse
+import compute_lock
 import hashlib
 import pathlib
 import subprocess
@@ -108,6 +109,7 @@ def main():
     ap.add_argument('--bare', action='store_true')
     ap.add_argument('--zig', action='store_true')
     a = ap.parse_args()
+    compute_lock.require_venue()
     mode = '--bare' if a.bare else ('--zig' if a.zig else None)
 
     stems = a.stems or (sorted(p.stem for p in FINDINGS.glob('prim-*.codex')) + PROBES)

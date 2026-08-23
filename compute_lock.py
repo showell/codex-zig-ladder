@@ -25,8 +25,19 @@ EVIDENCE = re.compile(r'qemu-system|rebank_all|allcycles\.sh|corpus_run|native_b
 _fd = None  # held for the life of the process; flock dies with it
 
 
+def require_venue():
+    """The laptop does not compute (Steve, 2026-08-22, firmly: no
+    fallbacks). Only the ladder droplet's ~/.codex_ladder_env exports
+    CODEX_LADDER_VENUE; any host without it refuses before the lock."""
+    if not os.environ.get('CODEX_LADDER_VENUE'):
+        raise SystemExit('NOT A COMPUTE VENUE: CODEX_LADDER_VENUE is unset. '
+                         'Ladder jobs run on the droplet only (sandbox.sh '
+                         'there, . ../env). The laptop orchestrates.')
+
+
 def take():
     global _fd
+    require_venue()
     if os.environ.get('LADDER_COMPUTE_LOCK'):
         return
     _fd = open(LADDER / '.compute.lock', 'w')
