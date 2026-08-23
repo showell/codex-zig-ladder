@@ -51,11 +51,10 @@ loop unless it says otherwise.
 **Objective: due diligence, then outbound.** Branch
 `zig-plug-heap-unification`, 21 commits on the u49 pin, fork tip
 `8cb8a0e4`; per-commit Confidence paragraphs; verified by the u49 chain
-(tiers green, census 0 differ / 0 crashed, sweep 14/14) through
-`1249ad8a`, with `6bf05013` + `8cb8a0e4` riding the guard-and-ir chain. Sends after item
-1 lands and re-verifies, based on whatever the current release is then --
-absorption is a content question, never a patch-id question. The PR body
-names findings 33 and 34 as the reach limits that remain.
+(tiers green, census 0 differ / 0 crashed, sweep 14/14, truths identical
+to the bank) through the tip, 2026-08-23. Ready to send: the body is
+`PR-HEAP-UNIFICATION.md`, two open points left (absorption against the
+upstream tip on send day; the commit count / tip sha in the header).
 
 ## 3. Tail calls become loops (finding 33)
 
