@@ -1,8 +1,10 @@
-# Bundle the fib-milestone subject: the lower milestone's chapter set plus
-# the IR Text Emitter (and OffsetTable, which it cites), so the chain ends
-# in the compiler's own serialization instead of a structural dump. The
-# harness compiles fib end to end and prints one (def ...) line per
-# definition -- the same grammar the IR-CCE wire carries.
+# Bundle the ir_to_x86 subject: lower's chapter set plus the whole x86-64
+# back end -- Lir, ResolveTypes, the real Builtins table, EmitAllocator,
+# CdxWriter and all fourteen X86_64 pages -- so the harness runs the
+# driver's own x86-64-emit-cdx and finalize over each of its programs and
+# dumps the CDX it emits. bundle_passes_to_x86.ps1 calls this with extra
+# chapters and its own harness; README "The twelve units" says what each
+# holds.
 param(
     [string]$Harness = 'IrToX86Harness.codex',
     [string]$OutName = 'ir_to_x86-subject.codex',

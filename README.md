@@ -234,16 +234,40 @@ is exactly one thing: the subject's behavior, decided by zig-built machine
 code instead of seed-built machine code. That substitution is the comparison
 the ladder exists to make.
 
-## The fourteen rungs
+## Two layers, two words
 
-**A unit is named for the stage its bundle reaches. A rung is its unit's
-name plus `_on_<subject>`, when and only when that unit carries more than
-one subject.** So the `_on_` suffix is the visible mark of the unit/rung
+Every rung compiles twice, and the README used one word for both layers
+until 2026-08-23. Now:
+
+- The **subject** is what the seed compiles: real compiler chapters, a few
+  stubs, and a generated harness, concatenated into `ast/<unit>-subject.codex`
+  and compiled under QEMU into a bare-metal CDX (the truth arm) and into IR
+  the plug consumes (the zig arm). A subject is a compiler, or the front
+  part of one.
+- The **program** is what that compiler compiles when it runs: a text
+  literal the harness carries (`subject-<rung>` in the generated Codex),
+  handed to the subject's own lexer at boot. The program is `Lexer.codex`
+  for the `lex` unit and eighteen lines of fib for most of the others.
+
+The truth file is the subject's output while compiling its program: a dump
+the harness prints, never the compiler's own artifacts. Every unit below is
+described the same way -- what the subject holds, what the program is, what
+the harness runs, what flags the compile takes, and what the truth file
+contains, line by line -- because those five things are all a rung is.
+
+## Naming
+
+**A unit is named for the stage its subject reaches. A rung is its unit's
+name plus `_on_<program>`, when and only when that unit carries more than
+one program.** So the `_on_` suffix is the visible mark of the unit/rung
 split: exactly four rungs carry one, and they are the two composite units.
-The subject stays out of every other name, where it is a coverage knob, so
-raising a `SUBJECT_FILE` never invalidates a name. (Renamed 2026-08-23;
-the old names survive in commit subjects, the `u46`..`u49-14of14` tags,
-and upstream issues 70/72 and PR 76, so the map is kept here for good:)
+`LADDER_RUNGS` in `ast/oracle_lib.sh` is the list of claims and
+`LADDER_UNITS` the list of compiles; sourcing the file checks one against
+the other, and `truth_prov.py` repeats the check at import.
+
+Renamed 2026-08-23. The old names survive in commit subjects, the
+`u46`..`u49-14of14` tags, and upstream issues 70/72 and PR 76, so the map
+stays here for good:
 
 | old | rung now | unit |
 |---|---|---|
@@ -258,137 +282,260 @@ and upstream issues 70/72 and PR 76, so the map is kept here for good:)
 
 `lex parse desugar scope check lower` did not move. The harness CHAPTER
 names inside the generated `*Harness.codex` (`FibxHarness`, `WholeHarness`)
-and their walker prefixes reach the compiled unit as Codex identifiers and
-were deliberately left alone; only the file names follow the unit.
+and their walker prefixes reach the compiled subject as Codex identifiers
+and were deliberately left alone; only the file names follow the unit.
+`cce` in a rung name is the chapter `foreword/core/CCE.codex`; `CCE`
+elsewhere in this repo is the wire encoding named after it.
 
-Every rung carries a generated harness, including the ones whose subject cell
-names a file: `ir_to_x86_on_cce`'s subject is `CCE.codex` verbatim *plus* a
-small driver, because a subject with no `opening` cannot be run. (`cce`
-in the rung name is the chapter; `CCE` elsewhere in this repo is the wire
-encoding named after it.) Where a cell says "subject = X", read it as "X
-is what this rung compiles", not "X is the whole unit".
+## What the truth arm does, for every unit
 
-`LADDER_RUNGS` in `ast/oracle_lib.sh` is the list of claims and `LADDER_UNITS`
-the list of compiles, shared by the sweep and the re-bank so they cannot
-disagree about what the ladder is. Sourcing the file checks one against the
-other: a rung no unit carries, or a subject no rung banks, refuses rather than
-going quietly stale.
+`truth_arm` in `ast/oracle_lib.sh`, in order: `gen_<unit>_harness.py` writes
+the harness (and any stubs it derives from real chapters); `bundle_<unit>.ps1`
+concatenates chapters, stubs and harness into `ast/<unit>-subject.codex`
+through the author's own `plug-build-lib.ps1`, so cites resolve the way the
+depot resolves them; two blobs are written from that source -- a CDX
+compile and an IR-CCE compile, each with the unit's mode flags appended --
+and each is compiled by the seed in its own QEMU boot (`ring_compile.py`);
+the CDX is then booted (`codex_vm.run_cdx`), its serial output captured
+with the `WD:`, `HEAP:` and `STACK:` chatter dropped, and written to
+`ast/<unit>.raw`; `split_truth.py` turns that into one `ast/<rung>.truth`
+per rung -- a copy for a single-program unit, a cut on the
+`=== subject <rung> ===` / `=== end <rung> ===` marks for the two
+composite units, marks removed. A provenance sidecar records the seed and
+the harness content the truth was measured under.
 
-The subject column is cumulative: `+ parser` means everything above it plus the
-parser. Where a rung replaces the subject outright rather than extending it, the
-cell says so.
+Mode flags (`mode_flags`): `decks=N` raises the seed's compile-time deck
+reservation past the derived default; `passes=text-plug` drops the inline
+IR passes so emitted source keeps its calls. Both go on BOTH blobs, so
+the two arms compile the same thing.
 
-| rung | subject | what it newly puts under test |
-|---|---|---|
-| `lex` | compiler chapters + harness | the tokenizer |
-| `parse` | + parser | the parse tree |
-| `desugar` | + desugarer | the desugared AST |
-| `scope` | + chapter scoper | scoping |
-| `check` | + type checker | inference and checking |
-| `lower` | + lowering | the IR |
-| `ir_to_codex` | + codex-text emitter | source out, not a dump: stage 1 of a fixed point |
-| `ir_to_codex_roundtrip` | subject = `ir_to_codex`'s OUTPUT | stage 2: `text1 == text2` or the serializer lies |
-| `lir_to_x86` | + instruction selector | machine-code bytes; the harness's functions are chosen to reach the selector's branches |
-| `ir_to_wire` | front end end to end | one `(def ...)` line per definition, in IRTextEmitter's own grammar |
-| `ir_to_x86_on_fib` | + the whole x86 back end, through `finalize` | a complete CDX binary, symbol map and all |
-| `ir_to_x86_on_cce` | subject = `CCE.codex` verbatim | capacity. 61 IR defs against fib's 3 |
-| `passes_to_x86_on_mid` | every chapter but `opening.codex` | the middle end too, and it must actually run (below) |
-| `passes_to_x86_on_arith` | subject = `codex/test/plug-oracle-arith.codex` | the **error** path -- the one rung whose subject does not compile cleanly |
+The front-end units are cumulative -- each subject is the previous one plus
+the chapters named -- until `ir_to_codex`. After that the subjects branch:
+`lir_to_x86` drops the front end entirely, `ir_to_wire` and `ir_to_x86`
+grow from `lower`, and `passes_to_x86` grows from `ir_to_x86`. The
+"+ chapters" line in each section says what it grows from.
 
-The ladder is broadly cumulative, so a failure names the phase that broke rather
-than "the plug is wrong". It is not strictly a phase order, though: five rungs
-vary the *output* rather than the phase set. `ir_to_codex` and its roundtrip
-emit Codex source, `ir_to_wire` emits the IR in IRTextEmitter's grammar, and
-`lir_to_x86` and `ir_to_x86_on_fib` emit machine code. That is why the third column reads "what it newly puts under
-test" and not "where this sits in the pipeline".
+## The twelve units
 
-Two rungs need a word.
+### `lex` -- the tokenizer
 
-**`passes_to_x86` runs the IR pipeline.** IR emission prunes to what the opening
-reaches, so bundling `Simplify`, `Occurrence` and `LambdaLifting` without
-*calling* `run-ir-pipeline` prunes them straight back out. The harness calls it
-exactly where `compile-frontend-passes` does. Its subject is also chosen to make
-the passes do something: dropping the inline passes moves `scale-by-four` from
-22 bytes to 29, so a broken inliner fails the rung instead of passing it.
+**Subject.** `Core/{BuildSettings,Phase,TextFormat,CdxCodes,Severity,SourceText,Diagnostic}`,
+`Syntax/{Token,Lexer}`, plus `LexStubs.codex` (an identity `deck-record`,
+since nothing this small carries the phase allocator) and the harness.
+**Program.** `Syntax/Lexer.codex`, whole: the lexer tokenizes its own
+source. **Harness.** `tokenize` once. **Flags.** none.
+**Truth.** `tokens N`, then one line per token (`kind offset+len LxCy |text|`),
+`---`, `errors N`.
 
-**`passes_to_x86_on_arith` exists because every other rung exercises the success path.** Its
-subject produces emit errors, which is how the diagnostic accounting got tested
-at all -- see `findings/README.md`.
+### `parse` -- the parse tree
 
-Four rungs -- the `_on_` four -- are the ones that run the back end all
-the way to a CDX. They are also the four that need the ring
-transport, and the four that are expensive to run. All three facts follow the
-same boundary.
+**Subject.** `lex` + `Core/{Name,DiagnosticBag}`, `Types/{CodexType,CodexTypeHelpers}`,
+`IR/IRChapter`, `Syntax/{SyntaxNodes,ParserCore,ParserExpressions,Parser}`,
+`Foreword/ListUtils`; `LexStubs` still. **Program.** `Syntax/Parser.codex`.
+**Harness.** tokenize, `parse-document`. **Flags.** none.
+**Truth.** count lines (tokens, defs, type-defs, sections, citations, ...),
+one `def <name>` line per definition, one line per section title, the parse
+diagnostics.
 
-## What each rung is worth
+### `desugar` -- the desugared AST
 
-The ladder's names invite a reading it does not support. `lex` does not test the
-lexer. **Every rung has the same shape and diverges at the same place**: the
-seed compiles one bundled subject twice, once to a bare-metal CDX and once to
-IR-CCE, and the two arms part company only after the seed's front end, IR
-pipeline and IR serializer have all run. Both arms then execute, and what gets
-compared is program output text. Only the subject changes from rung to rung.
+**Subject.** `parse` + `Ast/{AstNodes,Desugarer}` and the real
+`Core/PhaseAllocator` (Desugarer cites it, and a cite names a chapter, so
+`LexStubs` steps aside); `BootPaintStubs.codex` stands in for the screen
+painter PhaseAllocator cites. **Program.** `Ast/AstNodes.codex`.
+**Harness.** tokenize, parse, `desugar-document`. **Flags.** none.
+**Truth.** the `parse` dump verbatim, then `--- desugar ---`: one `adef`
+line per definition and the counts.
 
-So the phase names describe **how much of the compiler the plug had to
-transpile**, not how deeply that phase was verified. If the seed's lexer is
-wrong, both arms are wrong together and `lex` is green.
+### `scope` -- scoping and name resolution
 
-What does vary, and what the ladder is really graded on, is *what artifact the
-agreement is about*:
+**Subject.** `desugar` + `Core/SkipListText`, `Semantics/{ChapterScoper,NameResolver}`;
+`ListUtils` is no longer listed because Collections cites it and the cite
+brings it; `ScopeCollectionsStubs.codex` (Collections minus its
+`bsearch-text-pos` section) and `ScopeStubs.codex` (the builtin table's
+names only). **Program.** `Semantics/NameResolver.codex`. **Harness.**
+tokenize, parse, desugar, `scope-achapter` with empty rename, collision and
+assignment tables, `resolve-chapter`; no scan. **Flags.** none.
+**Truth.** the `desugar` dump, then `--- scope ---`: `resolve-errors N`,
+the constructor names, the top-level names.
 
-| rungs | compared artifact | what agreement is worth |
-|---|---|---|
-| `lex` `parse` `desugar` `scope` `check` `lower` | a dump this harness designed: tokens, CST, AST, IR text | two independent code generators produce programs that agree on the phase's observable behaviour, for the instruction mix that phase uses. Blind to anything the dump does not print. |
-| `ir_to_codex` `ir_to_codex_roundtrip` | Codex source re-emitted by the compiler's own `CodexEmitter` | as above, plus the roundtrip alone carries a self-consistency claim: emitting from stage 1's text must reproduce it. That is a different question from arm agreement and is checked separately by `roundtrip_fixed_point`. |
-| `lir_to_x86` | machine-code bytes from hand-built `LirFunc` data, no front end involved | the instruction selector agrees. The bytes are compared as decimal text and never executed. |
-| `ir_to_wire` | the IR, in IRTextEmitter's grammar, for a front end run end to end | as the dump rungs above: a designed dump, not an image. Listed apart from them only because its subject reaches further. |
-| the `_on_` four | the **actual CDX image the compiler emits** -- header, content, tail, symbol map | the strongest rungs, and the reason the ladder exists: the thing under comparison is now the x86 back end's real output rather than a dump of intermediate state. `passes_to_x86` does it for every chapter but the driver. |
+### `check` -- inference and checking
 
-**Fourteen rungs are not fourteen independent constructions.** Three pairs
-share a bundled unit and differ only in the harness riding in it:
+**Subject.** `scope` + `Core/Collections` (real, now), `Types/{CodexTypeTree,TypeEnv,Unifier,TypeChecker,TypeCheckerInference}`;
+`CheckStubs.codex` is the builtin table with `bs-emit` stripped (that field
+is typed over the code generator, which is not here). **Program.** the
+built-in fib snippet, fifteen lines -- this is where the program shrinks from
+a real chapter to a toy, and every unit after it compiles fib unless it
+says otherwise. **Harness.** tokenize, parse, desugar, scope, resolve,
+`check-chapter`. **Flags.** none.
+**Truth.** the `scope` dump, then `--- check ---`: one `tb <name> <kind>`
+line per type binding, the substitutions, `next-id`, the expression types.
 
-| unit | rungs | differ by |
-|---|---|---|
-| ~1.03 MB | `ir_to_codex` `ir_to_codex_roundtrip` | 19 bytes: the harness and its stubs |
-| ~2.44 MB | `ir_to_x86_on_fib` `ir_to_x86_on_cce` | the subject in the harness's text literal |
-| ~2.58 MB | `passes_to_x86_on_mid` `passes_to_x86_on_arith` | the subject in the harness's text literal |
+### `lower` -- the IR, as a tree walk
 
-That is not a flaw and it is not padding. Each pair asks the same compiler a
-different question -- the roundtrip feeds it its own output, `_on_cce` gives
-it a real chapter instead of a toy, `_on_arith` gives it a subject that fails
-to compile -- and those are the questions worth asking. But a reader counting
-should know which number is which: **fourteen rungs, twelve compiles**
-(`LADDER_UNITS`; the merged pairs cost one compile each), **eleven distinct
-bundle constructions** (`ir_to_codex` and its roundtrip are separate compiles
-of one shared bundle recipe, differing only in the 19-byte harness).
+**Subject.** `check` + `IR/{LoweringTypes,Lowering}`; `LowerStubs.codex`.
+**Program.** fib. **Harness.** the full front end, `lower-chapter`, with
+the driver's `DECK_PROLOGUE` and `RESOLVED_TABLES` taken from
+`emit_harness.py`; RESOLVE (`rewrite-ir-defs`) does not run here, so
+constructed types stay unresolved in the IR. **Flags.** `decks=100`
+(the derived deck scale overflows the seed's CHECK deck on this subject).
+**Truth.** the `check` dump, then `--- lower ---`: one `irdef` line per
+definition and a pre-order walk of every expression, `eN <kind>` per node.
+A designed dump of the IR, not the IR's own text -- that is `ir_to_wire`.
 
-**The machinery now says so too, for the two expensive pairs.** Written and
-**verified 2026-08-18**: a full re-bank under the merged units reproduced all
-fourteen truths byte-identically, and the sweep after it was 14 of 14 on both
-arms. The merged sweep costs well under half of what fourteen compiles did;
-the current figures live in "Running it". `ir_to_x86` and `passes_to_x86`
-are one harness each, running the pipeline over a list of subjects and marking
-each dump, so each pair costs one compile instead of two. `oracle_lib.sh`
-carries `LADDER_UNITS` (twelve) beside `LADDER_RUNGS` (fourteen) and checks
-them against each other; `split_truth.py` cuts each run back into the per-rung
-`.truth` and `.zigout` files everything downstream already reads.
+### `ir_to_codex` -- Codex source out
 
-That measurement has now been made twice: once for the merge itself, and again
-after the emitter's arena and match-arm pin landed. Fourteen truths, byte-identical
-both times. `ir_to_codex` and its roundtrip remain two units and always will
--- the roundtrip's subject is built from `ir_to_codex`'s OUTPUT, so it cannot
-exist until the other has run.
+**Subject.** `lower` + `Emit/CodexEmitter`; `TextStubs.codex`. The bundle
+strips every prose line, because with CodexEmitter the subject is 2.4%
+over the 1 MB serial-ring ceiling and prose is not executable. **Program.**
+fib. **Harness.** the front end, lower, then one call to
+`codex-emit-text-chapter`, printed. **Flags.** `decks=100 passes=text-plug`
+-- the inline passes would delete the calls the emitted source needs.
+**Truth.** the emitted Codex source of fib, and nothing else. This is the
+first rung whose truth is the compiler's own output rather than a dump the
+harness designed.
 
-**u45 -> u46 was byte-identical on every rung; u46 -> u47 is the first
+### `ir_to_codex_roundtrip` -- the fixed point
+
+**Subject.** the same recipe as `ir_to_codex` with `PingpongStubs.codex`
+(19 bytes of difference, names). It is a separate unit and always will be:
+its program cannot exist until `ir_to_codex` has run. **Program.**
+`ast/ir_to_codex.truth` -- the working truth of the previous unit, the
+emitted source itself. **Harness.** as `ir_to_codex`. **Flags.** as
+`ir_to_codex`. **Truth.** the emitted source again. The rung's real claim is
+not arm agreement but `ir_to_codex.truth == ir_to_codex_roundtrip.truth`,
+checked by `roundtrip_fixed_point` in the sweep so it cannot be skipped.
+
+### `lir_to_x86` -- the instruction selector, no front end
+
+**Subject.** not cumulative. `Foreword/CCE`, `Core/{OffsetTable,VmProfile,...}`,
+`Types/{CodexType,TypeEnv,CodexTypeHelpers}`, `IR/{IRChapter,Lir}`,
+`Emit/{EmitAllocator,X86_64Encoder,X86_64State,X86_64Lir}` -- the
+selector, its state and encoder, and what CodegenState's fields reach. No
+lexer, parser, checker or lowering. Stubs: `BootPaintStubs`, `CheckStubs`,
+`LirStubs`. **Program.** none. The harness hand-builds two `LirFunc`
+values, `add` and `branch`, chosen to reach the selector's branches.
+**Harness.** `lir-emit-func` on each. **Flags.** none.
+**Truth.** `add len N`, one line of decimal bytes, `branch len N`, bytes.
+Compared as text; never executed.
+
+### `ir_to_wire` -- the front end end to end, in IRTextEmitter's grammar
+
+**Subject.** `lower` + `Core/OffsetTable`, `Emit/IRTextEmitter`;
+`LowerStubs`. **Program.** fib. **Harness.** the front end and lower with
+`DECK_PROLOGUE` and `RESOLVED_TABLES`, no RESOLVE, then `ir-emit-def` per
+definition. **Flags.** `decks=100`. **Truth.** six count lines,
+`--- ir-text ---`, one `(def ...)` line per definition in the grammar the
+IR-CCE wire carries, `.`.
+
+### `ir_to_x86` -- the x86-64 back end, through `finalize`
+
+**Subject.** `lower` + `Core/{OffsetTable,VmProfile}`, `Types/Builtins`
+(the real table, so no `CheckStubs`), `IR/{Lir,ResolveTypes}`,
+`Emit/{IRTextEmitter,EmitAllocator,CdxWriter}` and all fourteen
+`Emit/X86_64*` pages; `BootPaintStubs` only. About 2.44 MB. **Harness.**
+`emit_harness.harness_source` with `passes=False`: the front end with scan
+on, `RESOLVED_TABLES`, RESOLVE on (the only place besides `passes_to_x86`
+where it runs), then the driver's own `x86-64-emit-cdx` and `finalize`.
+The chapter is still `FibxHarness` with `fibx-` walkers. The one compile
+runs both programs in one process, printing a mark before and after each.
+**Flags.** `decks=160` -- two programs' worth of extents in one run.
+**Truth, per rung.** `check-errors N`, `ir-defs N`, `emit-errors N`,
+`emit-diags N`, one `diag <code> sev <n> <message>` per diagnostic, `.`;
+then, only if the diagnostic bag holds no errors: `header-len`,
+`content-len`, `tail-len`, `--- symbols ---` (the symbol map),
+`--- header ---`, `--- content ---`, `--- tail ---`, each as decimal bytes
+thirty-two to a line; otherwise the single line
+`CODEGEN-HALTED: errors in bag; no binary printed`. Digits, not a binary:
+`ast/f4_boot.py` is what reassembles and boots them.
+
+#### `ir_to_x86_on_fib`
+
+Program: eighteen lines of fib and a frameless `double`, chosen for what
+they do NOT need -- machine-word arithmetic, two self-calls as the only
+fixups, no rodata, no runtime helper. That is what lets `ast/f3_run.zig`
+carve fib out of the dumped buffer and call it. Full image in the truth.
+
+#### `ir_to_x86_on_cce`
+
+Program: `foreword/core/CCE.codex` verbatim (refused if it ever gains a
+cite; the program compiler resolves none) plus a three-print driver.
+Capacity: 61 IR definitions against fib's 3, so accumulators, deck sizing,
+the WCET walk and the code buffer all scale. Full image in the truth.
+
+### `passes_to_x86` -- every compiler chapter but two, with the IR pipeline running
+
+**Subject.** `bundle_passes_to_x86.ps1` calls `bundle_ir_to_x86.ps1` and
+appends `IR/{Occurrence,IRCheck,LambdaLifting,Simplify,Passes,LirTargets}`
+and `Emit/CodexEmitter`. Every chapter under `codex/compiler/` is now in
+except `opening.codex` (it defines `opening`, and so does the harness) and
+`Core/BootPaint.codex`, which stays the stub: the real painter cites
+Foreword CCE, which would put CCE in twice and fail with CDX3001, and
+nothing the harness reaches calls it. About 2.58 MB, the largest unit.
+**Harness.** `harness_source` with `passes=True`: as `ir_to_x86`, plus
+`run-ir-pipeline default-ir-pipeline` exactly where `compile-frontend-passes`
+runs it. Calling it is what keeps Simplify, Occurrence and LambdaLifting in
+the IR -- emission prunes to what `opening` reaches, so bundling them
+without the call would prune them straight back out. Chapter still
+`WholeHarness`, walkers `whole-`. **Flags.** `decks=172`.
+**Truth, per rung.** as `ir_to_x86`, with `pass-infos N` after `ir-defs` --
+the only evidence the pipeline did anything.
+
+#### `passes_to_x86_on_mid`
+
+Program: the nineteen-line `Mid` chapter in the generator -- `fib`,
+`double`, `scale-by-four`, a `folded` constant, an `opening` printing one
+integer -- chosen so each of the three default passes has work
+(`fold-constants` on `folded` and `7 * 6`, `inline-leaf-calls` on `double`,
+`inline-single-caller` on `scale-by-four`; dropping the inline passes moves
+`scale-by-four` from 22 bytes to 29). With fib alone the pipeline is a
+no-op and this truth came out byte-identical to `ir_to_x86_on_fib`'s.
+Full image in the truth.
+
+#### `passes_to_x86_on_arith`
+
+Program: `codex/test/plug-oracle-arith.codex`, verbatim. Its record field
+`Integer between -100 and 100 clamping` produces emit errors, so this is
+the one rung whose truth is the diagnostic accounting and `CODEGEN-HALTED`
+-- **no header, content, tail or symbol map**. It exists because every
+other rung exercises the success path, and it is the rung that caught the
+deck intrinsic being off in every bundle we had ever built
+(`findings/README.md`). It rides in this unit because the question it asks
+-- does the transpiled compiler record the same diagnostics as bare metal?
+-- needs the same 2.58 MB compiler as `_on_mid`.
+
+## Counting
+
+Fourteen rungs, twelve compiles (`LADDER_UNITS`), eleven distinct bundle
+recipes (`ir_to_codex` and its roundtrip share one). Three rungs carry a
+full CDX image in their truth -- `ir_to_x86_on_fib`, `ir_to_x86_on_cce`,
+`passes_to_x86_on_mid` -- and those three are what `f4_boot.py` boots.
+The ring transport is a property of the unit, not the rung: `ir_to_x86`
+and `passes_to_x86` take it, and the four rungs they carry ride in with
+them.
+
+The names invite a reading they do not support: `lex` does not test the
+lexer. Every rung diverges at the same place -- the seed compiles one
+subject twice, and the arms part company only after the seed's own front
+end, IR pipeline and IR serializer have all run -- and what is compared is
+what the subject prints. If the seed's lexer is wrong, both arms are wrong
+together and `lex` is green. The unit names say how much of the compiler
+the plug had to transpile, not how deeply that phase was verified.
+
+## What each Update moved
+
+**u45 -> u46 was byte-identical on every rung; u46 -> u47 was the first
 Update that moved the measurement.** Nine of fourteen rungs identical, five
 moved with their upstream causes: `parse` (44 new lexer tokens),
 `passes_to_x86_on_arith` (6 new IR defs), and the other three `_on_` rungs
-(the issue-70 ATA guards and a
-burst helper, ~360 bytes each). Both kinds of answer are the point -- an
-Update that changes nothing we measure and an Update whose diff itemises
-exactly what it changed are each something a single sweep cannot say. The
-same bank-to-bank diff is what proves a bundle edit image-preserving before
-it is trusted; the ones already proven are recorded in `JUSTIFICATIONS.md`.
+(the issue-70 ATA guards and a burst helper, ~360 bytes each). Both kinds
+of answer are the point -- an Update that changes nothing we measure and an
+Update whose diff itemises exactly what it changed are each something a
+single sweep cannot say. The same bank-to-bank diff is what proves a bundle
+edit image-preserving before it is trusted; the ones already proven are
+recorded in `JUSTIFICATIONS.md`. The merge of the composite units was
+proven the same way (2026-08-18, and again after the arena landed):
+fourteen truths byte-identical under twelve compiles.
 
 ## The two transports
 
