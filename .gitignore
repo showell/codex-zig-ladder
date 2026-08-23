@@ -56,6 +56,7 @@ native/
 # Run intermediates: one unit answers for several rungs, so the raw stream
 # lands here before split_truth cuts it up.
 *.raw
+*.stdout
 *.zigraw
 
 # Nightly console logs; tonight.sh rewrites them every run.
