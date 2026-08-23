@@ -47,41 +47,27 @@ loop unless it says otherwise.
 
 ---
 
-## 1. The arena and the resident bound -- Steve's decision, then one batch
+## 1. The resident bound's riders
 
-**Objective: instrument work that widens the native loop's reach.**
-Finding 24 closed (DONE.md 2026-08-22) leaving two sizes to change that
-are one decision: the hosted harness's deck (`emit_harness.py` placeholder
--> 512 MB flat, hosted-only) and `cx_heap_reserve` (1.5 GiB -> 4 GiB).
-The arena cannot grow while the zig-arm scripts cap address space at
-2560 MB (`oracle_lib.sh`, `arithcycle.sh`) and the census at 800 MB
-(`corpus_run.py`): RLIMIT_AS counts the reservation, and those caps were
-the WSL-livelock defense. The full argument is random927.
+**Objective: instrument work that widens the native loop's reach.** The
+bound itself is DONE (2026-08-23): `bounded_run` via cgroup MemoryMax
+replaced every address-space cap (`720d115`), the region is 4 GiB on
+the heap branch (`6bf05013`), the chain verified it (tiers green,
+census unmoved, sweep 14/14, bank retaken `3c72b3f`), and codexir
+compiles fibx under the 6 GB cap in 34 s at 2.30 GiB peak resident
+(JUSTIFICATIONS "The resident bound, measured"). Still to do, all
+riders:
 
-**Proposed (2026-08-23), pending Steve's yes:** a resident bound instead
-of an address-space one. The droplet is cgroup v2 + systemd 255, and
-`systemd-run --user --scope -p MemoryMax=N` kills at resident N with no
-root and no setup (measured: 300 MB touch under 200M -> exit 137). So:
-
-- `bounded_run` in `oracle_lib.sh`: `systemd-run --user --scope -p
-  MemoryMax=N`, and a refusal if `systemd-run` is absent -- no `ulimit -v`
-  branch, the laptop is not a venue. The three call sites use it; the
-  `ulimit -v` lines go. Cap 6 GB for zig arms and natives, 800M per
-  census program.
-- `cx_heap_reserve` -> 4 GiB on the branch (lazily faulted, no resident
-  cost); `emit_harness.py` hosted deck -> 512 MB, rung harnesses untouched.
-- Verify with the chain, then `native/codexir` on the fibx subject under
-  the cap -- the measurement the item exists for.
-- While the harness file is open: why it prints `record-ty` where the
-  seed driver prints `ctd` for let-binding types (930 lines of the fibx
-  IR); and whether finding 34 (hosted harnesses never reclaim) folds in
-  as per-def save/restore brackets, else it is a note in the PR body.
-
-Riding with it: extend the `e4d2fcd1` crossing guard to the
-main-from-below trample direction (the direction finding 24's crash
-took past it), and `probe-deck-overrun`, a zig-only labelled regression
-test that triggers the refusal on purpose -- the one unit-test gap on the
-branch.
+- Extend the `e4d2fcd1` crossing guard to the main-from-below trample
+  direction (the direction finding 24's crash took past it).
+- `probe-deck-overrun`, a zig-only labelled regression test that
+  triggers the refusal on purpose -- the one unit-test gap on the branch.
+- The two `emit_harness.py` questions: why it prints `record-ty` where
+  the seed driver prints `ctd` for let-binding types (930 lines of the
+  fibx IR, re-confirmed 2026-08-23: the capped IR differs from the
+  sweep's by exactly this); and whether finding 34 (hosted harnesses
+  never reclaim) folds in as per-def save/restore brackets, else it is
+  a note in the PR body.
 
 ## 2. Send the heap unification
 

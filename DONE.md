@@ -6,6 +6,13 @@ findings register, JUSTIFICATIONS.md, a bank, an essay). If an entry
 needs a paragraph, it needs a register section or a JUSTIFICATIONS entry
 instead -- write that and point at it.
 
+- **2026-08-23 — The resident bound landed, verified, and measured**
+  (Steve's yes on random927 option 3; `720d115` + heap `6bf05013`,
+  bank retaken `3c72b3f`): cgroup MemoryMax replaced every
+  address-space cap, the region is 4 GiB, and codexir compiles fibx
+  under the cap in 34 s at 2.30 GiB resident -- impossible under the
+  old 2560 MB cap. Riders remain as PRIORITIES 1. Record:
+  JUSTIFICATIONS "The resident bound, measured".
 - **2026-08-23 — The prod droplet leaves the ladder** (Steve): ring/,
   runs/, the clones, zig, pwsh, the env file and all qemu packages
   removed from 162.243.1.123; it runs the site binary only. The droplet

@@ -292,3 +292,22 @@ then exhausts its 1.5 GiB arena at 1.23 MB of output with no per-def
 reclaim. The seed's `fibx.ir`, decoded, differs from the native IR in def
 order, chapter title, and `ctd` vs `record-ty` for let-binding types --
 930 of 3,822 lines, those three causes only.
+
+## The resident bound, measured (2026-08-23)
+
+The caps in sections "2.5 GB address-space" and "Corpus run memory cap"
+are replaced by cgroup MemoryMax (`720d115`): RLIMIT_AS counted the
+reservation, so the arena could never grow past the cap even though a
+reservation costs nothing resident. Verified end to end on the droplet
+in sandbox arena-4g (natives from heap branch `6bf05013`, region
+4 GiB): tiers SET GREEN, census moved no verdict, sweep 14/14, bank
+retaken with only the known step-5 lex rename moving (`3c72b3f`).
+
+The measurement the change exists for: `native/codexir` on the fibx
+subject under `systemd-run --user --scope -p MemoryMax=6G` completes
+rc 0 in 34 s (droplet, 2 vCPU; finding 24's run was 63 s laptop-side),
+IR 13,223,342 bytes, byte-identical across two runs. Peak resident
+2,469,888,000 bytes (2.30 GiB) against the 4 GiB reservation -- the
+reservation is lazily faulted exactly as claimed, and the same subject
+was IMPOSSIBLE under the old 2560 MB address-space cap, which the
+reservation alone exceeded.
