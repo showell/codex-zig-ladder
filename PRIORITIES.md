@@ -46,16 +46,6 @@ loop unless it says otherwise.
 
 ---
 
-## 2. Send the heap unification
-
-**Objective: due diligence, then outbound.** Branch
-`zig-plug-heap-unification`, 21 commits on the u49 pin, fork tip
-`8cb8a0e4`; per-commit Confidence paragraphs; verified by the u49 chain
-(tiers green, census 0 differ / 0 crashed, sweep 14/14, truths identical
-to the bank) through the tip, 2026-08-23. Ready to send: the body is
-`PR-HEAP-UNIFICATION.md`, two open points left (absorption against the
-upstream tip on send day; the commit count / tip sha in the header).
-
 ## 3. Tail calls become loops (finding 33)
 
 **Objective: instrument work on the emitter; scheduled high by Steve
@@ -192,7 +182,8 @@ the C# DDC witness path with zig -- C# stops at "compiles", zig RUNS.
 
 - **PR 76** -- absorbed in Update 49 (`bdf0049b`); the eight census reds
   it owed all flipped. Closed.
-- **Next: the heap unification** (item 2), after item 1.
+- **PR 77** -- the heap unification, sent 2026-08-23 on `8cb8a0e4`
+  (21 commits on the u49 pin). Filed, not landed.
 - **Then: the refusal gaps** (item 4), rebased onto it.
 - PRs 71-75: absorbed, one line each in DONE.md.
 

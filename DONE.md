@@ -6,6 +6,12 @@ findings register, JUSTIFICATIONS.md, a bank, an essay). If an entry
 needs a paragraph, it needs a register section or a JUSTIFICATIONS entry
 instead -- write that and point at it.
 
+- **2026-08-23 — PR 77 sent: the heap unification**
+  (https://github.com/damiant3/NewRepository/pull/77, branch
+  `zig-plug-heap-unification`, 21 commits on `bdf0049b`, tip `8cb8a0e4`,
+  zero file overlap with upstream `5b8091e2`). Reach limits named in
+  the body: findings 33 and 34. Record: the PR itself; PRIORITIES
+  outbound queue.
 - **2026-08-23 — The resident bound's riders verified** (sandbox
   guard-and-ir, 60 min): crossing guard both directions (heap
   `8cb8a0e4`), probe-deck-overrun as a countable green (`6dc2371`), the
