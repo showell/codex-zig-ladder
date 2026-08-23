@@ -411,6 +411,12 @@ precedes them. In order:
    `ea8d51ac`), the carried text-fold-indexed differ, bloom-spread,
    consistent-hash-balance, particle-spread (`78e8da1b`) -- should all
    flip green; a survivor is a new finding.
+   **DONE 2026-08-22 night:** rebased (18 commits, `973a2048` on the
+   fork; the shift-mask commit dropped as absorbed), natives 18 min,
+   tiers 13 green / 6 noted (finding 19's rows retired), census 10 min:
+   all eight reds to match, 0 differ / 0 crashed over 325 clean programs
+   (`d186bad`). One new mover: ident-letters markers -> refused, finding
+   35 (non-ASCII identifier emitted raw) -- the emitter item is next.
 
 ## 1.95 The tiers run as a set, per Update -- BUILT 2026-08-22
 
