@@ -6,6 +6,11 @@ findings register, JUSTIFICATIONS.md, a bank, an essay). If an entry
 needs a paragraph, it needs a register section or a JUSTIFICATIONS entry
 instead -- write that and point at it.
 
+- **2026-08-23 — The prod droplet leaves the ladder** (Steve): ring/,
+  runs/, the clones, zig, pwsh, the env file and all qemu packages
+  removed from 162.243.1.123; it runs the site binary only. The droplet
+  also gained write deploy keys for both repos the same day. Record:
+  the appliance memory, PRIORITIES 6.
 - **2026-08-23 — Finding 35 closed** (non-ASCII identifiers transliterated
   before they become zig identifiers; `1249ad8a` on the heap branch):
   ident-letters refused -> match, tiers green, rebank+sweep 14/14 -- the
