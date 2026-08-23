@@ -849,6 +849,9 @@ filing:
 the census differ `text-fold-indexed` 2026-08-19; resolved by convergence
 on the pin (`ea8d51ac`) 2026-08-20. Ours -- the codepoint representation
 was the plug's own choice; the migration is the fix, not a report.**
+CONFIRMED CLOSED 2026-08-22: natives from the heap branch rebased onto u49
+(PR 76 absorbed) ran prim-char, probe-char-ops and probe-char-literal
+byte-identical on both arms; the four ledger rows were deleted.
 
 IrCharLit was emitted as its raw IR payload (a CCE code) while `char-at`
 answered a Unicode codepoint, so `char-at s i == 'x'` lived in two

@@ -74,8 +74,4 @@ prim-records	record 4 fields32	cost: record is fields*8 on bare metal; ours carr
 prim-records	record 8 fields64	cost: record is fields*8 on bare metal; ours carries alignment/closure env (primitive-costs.md tier 4; zig values moved 11->15 on the 1db8a78c natives)
 prim-records	capturing lambda 16	cost: record is fields*8 on bare metal; ours carries alignment/closure env (primitive-costs.md tier 4; zig values moved 11->15 on the 1db8a78c natives)
 prim-records	non-capturing	cost: record is fields*8 on bare metal; ours carries alignment/closure env (primitive-costs.md tier 4; zig values moved 11->15 on the 1db8a78c natives)
-prim-char	round trip of 233	finding 19: char-CCE migration (PR 76, ea8d51ac) not in these natives; flips when the branch rebases onto u49
-probe-char-ops	letter-accent 1	finding 19: is-letter second band needs the char-CCE migration (PR 76)
-probe-char-ops	letter-cyrillic 1	finding 19: is-letter second band needs the char-CCE migration (PR 76)
-probe-char-literal	found-x 1	finding 19: char literal vs Char value (PR 76)
 probe-approx-eq	one-ulp 1	finding 20: IrApproxEq emits ==, the 4-ULP band has zero width on this arm (OPEN, ours)
