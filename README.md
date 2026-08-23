@@ -139,8 +139,9 @@ be graded against the same banked IR and truths on day one.
 ### The subject and its harness
 
 A rung's subject is usually a set of real compiler chapters, concatenated. Three
-rungs use something else -- `pingpong` takes another rung's output, `scale` takes
-a single chapter verbatim, `clamp` takes a small program written to fail -- but
+rungs use something else -- `ir_to_codex_roundtrip` takes another rung's
+output, `ir_to_x86_on_cce` takes a single chapter verbatim,
+`passes_to_x86_on_arith` takes a small program written to fail -- but
 the shape is the same either way: one compilable unit, compiled twice.
 
 **A harness stands in for the driver.** Every rung's subject carries one instead,
@@ -154,7 +155,7 @@ than the OS.
 The cost is that a harness can differ from the driver, and where it does, that
 is a difference between two drivers rather than between two compilers. The
 places they differ are the places their output can legitimately differ from the
-seed's: proof pruning, dropped-def handling, mode flags. `whole` and `zigc` come
+seed's: proof pruning, dropped-def handling, mode flags. `passes_to_x86` and `zigc` come
 closest to the driver -- they run the same phases in the same order.
 
 ### The two arms
@@ -163,8 +164,9 @@ Every rung has a **truth arm**, which is the seed on bare metal, and a **zig
 arm**, which is the plug's output built and run natively. The per-rung wrappers
 are named `ast/truthcycle_<m>.sh` and `ast/<m>cycle.sh` where they exist, but
 they are conveniences and the set is incomplete: `lex`'s truth arm is
-`ast/truthcycle.sh`, `text`, `pingpong` and `lower` have no `<m>cycle.sh`, and
-`scale` and `clamp` have wrappers that run the unit they ride in, because they
+`ast/truthcycle.sh`, `ir_to_codex`, `ir_to_codex_roundtrip` and `lower` have no
+`<m>cycle.sh`, and `ir_to_x86_on_cce` and `passes_to_x86_on_arith` have
+wrappers that run the unit they ride in, because they
 have no compile of their own to run. The arms themselves are `truth_arm` and
 `arm_for` in `ast/oracle_lib.sh`; the wrappers are one line each on top.
 
@@ -215,7 +217,7 @@ The turn itself is three steps:
    over the rung's transport (TCP or the ring -- below). Codex machine code
    on the virtual metal parses the IR and emits zig source back over the
    wire. On the four expensive rungs this step is nearly all of the wall
-   clock: fibx's IR alone is 13.1 MB on the u47 seed, and every byte crosses
+   clock: ir_to_x86's IR alone is 13.1 MB on the u47 seed, and every byte crosses
    into and out of the guest.
 2. **The host runs the emitted source** -- `zig run`, under the same
    resident bound as the corpus runs. The only step of the turn with no Codex
@@ -234,11 +236,37 @@ the ladder exists to make.
 
 ## The fourteen rungs
 
+**A unit is named for the stage its bundle reaches. A rung is its unit's
+name plus `_on_<subject>`, when and only when that unit carries more than
+one subject.** So the `_on_` suffix is the visible mark of the unit/rung
+split: exactly four rungs carry one, and they are the two composite units.
+The subject stays out of every other name, where it is a coverage knob, so
+raising a `SUBJECT_FILE` never invalidates a name. (Renamed 2026-08-23;
+the old names survive in commit subjects, the `u46`..`u49-14of14` tags,
+and upstream issues 70/72 and PR 76, so the map is kept here for good:)
+
+| old | rung now | unit |
+|---|---|---|
+| `fib` | `ir_to_wire` | `ir_to_wire` |
+| `text` | `ir_to_codex` | `ir_to_codex` |
+| `pingpong` | `ir_to_codex_roundtrip` | `ir_to_codex_roundtrip` |
+| `lir` | `lir_to_x86` | `lir_to_x86` |
+| `fibx` | `ir_to_x86_on_fib` | `ir_to_x86` |
+| `scale` | `ir_to_x86_on_cce` | `ir_to_x86` |
+| `whole` | `passes_to_x86_on_mid` | `passes_to_x86` |
+| `clamp` | `passes_to_x86_on_arith` | `passes_to_x86` |
+
+`lex parse desugar scope check lower` did not move. The harness CHAPTER
+names inside the generated `*Harness.codex` (`FibxHarness`, `WholeHarness`)
+and their walker prefixes reach the compiled unit as Codex identifiers and
+were deliberately left alone; only the file names follow the unit.
+
 Every rung carries a generated harness, including the ones whose subject cell
-names a file: `scale`'s subject is `CCE.codex` verbatim *plus* a small driver,
-because a subject with no `opening` cannot be run. Where a cell says
-"subject = X", read it as "X is what this rung compiles", not "X is the whole
-unit".
+names a file: `ir_to_x86_on_cce`'s subject is `CCE.codex` verbatim *plus* a
+small driver, because a subject with no `opening` cannot be run. (`cce`
+in the rung name is the chapter; `CCE` elsewhere in this repo is the wire
+encoding named after it.) Where a cell says "subject = X", read it as "X
+is what this rung compiles", not "X is the whole unit".
 
 `LADDER_RUNGS` in `ast/oracle_lib.sh` is the list of claims and `LADDER_UNITS`
 the list of compiles, shared by the sweep and the re-bank so they cannot
@@ -258,37 +286,37 @@ cell says so.
 | `scope` | + chapter scoper | scoping |
 | `check` | + type checker | inference and checking |
 | `lower` | + lowering | the IR |
-| `text` | + codex-text emitter | source out, not a dump: stage 1 of a fixed point |
-| `pingpong` | subject = `text`'s OUTPUT | stage 2: `text1 == text2` or the serializer lies |
-| `lir` | + instruction selector | machine-code bytes; the harness's functions are chosen to reach the selector's branches |
-| `fib` | front end end to end | one `(def ...)` line per definition, in IRTextEmitter's own grammar |
-| `fibx` | + the whole x86 back end, through `finalize` | a complete CDX binary, symbol map and all |
-| `scale` | subject = `CCE.codex` verbatim | capacity. 61 IR defs against fib's 3 |
-| `whole` | every chapter but `opening.codex` | the middle end too, and it must actually run (below) |
-| `clamp` | subject = `codex/test/plug-oracle-arith.codex` | the **error** path -- the one rung whose subject does not compile cleanly |
+| `ir_to_codex` | + codex-text emitter | source out, not a dump: stage 1 of a fixed point |
+| `ir_to_codex_roundtrip` | subject = `ir_to_codex`'s OUTPUT | stage 2: `text1 == text2` or the serializer lies |
+| `lir_to_x86` | + instruction selector | machine-code bytes; the harness's functions are chosen to reach the selector's branches |
+| `ir_to_wire` | front end end to end | one `(def ...)` line per definition, in IRTextEmitter's own grammar |
+| `ir_to_x86_on_fib` | + the whole x86 back end, through `finalize` | a complete CDX binary, symbol map and all |
+| `ir_to_x86_on_cce` | subject = `CCE.codex` verbatim | capacity. 61 IR defs against fib's 3 |
+| `passes_to_x86_on_mid` | every chapter but `opening.codex` | the middle end too, and it must actually run (below) |
+| `passes_to_x86_on_arith` | subject = `codex/test/plug-oracle-arith.codex` | the **error** path -- the one rung whose subject does not compile cleanly |
 
 The ladder is broadly cumulative, so a failure names the phase that broke rather
 than "the plug is wrong". It is not strictly a phase order, though: five rungs
-vary the *output* rather than the phase set. `text` and `pingpong` emit Codex
-source, `fib` emits the IR in IRTextEmitter's grammar, and `lir` and `fibx` emit
-machine code. That is why the third column reads "what it newly puts under
+vary the *output* rather than the phase set. `ir_to_codex` and its roundtrip
+emit Codex source, `ir_to_wire` emits the IR in IRTextEmitter's grammar, and
+`lir_to_x86` and `ir_to_x86_on_fib` emit machine code. That is why the third column reads "what it newly puts under
 test" and not "where this sits in the pipeline".
 
 Two rungs need a word.
 
-**`whole` runs the IR pipeline.** IR emission prunes to what the opening
+**`passes_to_x86` runs the IR pipeline.** IR emission prunes to what the opening
 reaches, so bundling `Simplify`, `Occurrence` and `LambdaLifting` without
 *calling* `run-ir-pipeline` prunes them straight back out. The harness calls it
 exactly where `compile-frontend-passes` does. Its subject is also chosen to make
 the passes do something: dropping the inline passes moves `scale-by-four` from
 22 bytes to 29, so a broken inliner fails the rung instead of passing it.
 
-**`clamp` exists because every other rung exercises the success path.** Its
+**`passes_to_x86_on_arith` exists because every other rung exercises the success path.** Its
 subject produces emit errors, which is how the diagnostic accounting got tested
 at all -- see `findings/README.md`.
 
-Four rungs -- `fibx`, `scale`, `whole` and `clamp` -- are the ones that run the
-back end all the way to a CDX. They are also the four that need the ring
+Four rungs -- the `_on_` four -- are the ones that run the back end all
+the way to a CDX. They are also the four that need the ring
 transport, and the four that are expensive to run. All three facts follow the
 same boundary.
 
@@ -311,34 +339,34 @@ agreement is about*:
 | rungs | compared artifact | what agreement is worth |
 |---|---|---|
 | `lex` `parse` `desugar` `scope` `check` `lower` | a dump this harness designed: tokens, CST, AST, IR text | two independent code generators produce programs that agree on the phase's observable behaviour, for the instruction mix that phase uses. Blind to anything the dump does not print. |
-| `text` `pingpong` | Codex source re-emitted by the compiler's own `CodexEmitter` | as above, plus `pingpong` alone carries a self-consistency claim: emitting from stage 1's text must reproduce it. That is a different question from arm agreement and is checked separately by `pingpong_fixed_point`. |
-| `lir` | machine-code bytes from hand-built `LirFunc` data, no front end involved | the instruction selector agrees. The bytes are compared as decimal text and never executed. |
-| `fib` | the IR, in IRTextEmitter's grammar, for a front end run end to end | as the dump rungs above: a designed dump, not an image. Listed apart from them only because its subject reaches further. |
-| `fibx` `scale` `whole` `clamp` | the **actual CDX image the compiler emits** -- header, content, tail, symbol map | the strongest rungs, and the reason the ladder exists: the thing under comparison is now the x86 back end's real output rather than a dump of intermediate state. `whole` does it for every chapter but the driver. |
+| `ir_to_codex` `ir_to_codex_roundtrip` | Codex source re-emitted by the compiler's own `CodexEmitter` | as above, plus the roundtrip alone carries a self-consistency claim: emitting from stage 1's text must reproduce it. That is a different question from arm agreement and is checked separately by `roundtrip_fixed_point`. |
+| `lir_to_x86` | machine-code bytes from hand-built `LirFunc` data, no front end involved | the instruction selector agrees. The bytes are compared as decimal text and never executed. |
+| `ir_to_wire` | the IR, in IRTextEmitter's grammar, for a front end run end to end | as the dump rungs above: a designed dump, not an image. Listed apart from them only because its subject reaches further. |
+| the `_on_` four | the **actual CDX image the compiler emits** -- header, content, tail, symbol map | the strongest rungs, and the reason the ladder exists: the thing under comparison is now the x86 back end's real output rather than a dump of intermediate state. `passes_to_x86` does it for every chapter but the driver. |
 
 **Fourteen rungs are not fourteen independent constructions.** Three pairs
 share a bundled unit and differ only in the harness riding in it:
 
 | unit | rungs | differ by |
 |---|---|---|
-| ~1.03 MB | `text` `pingpong` | 19 bytes: the harness and its stubs |
-| ~2.44 MB | `fibx` `scale` | the subject in the harness's text literal |
-| ~2.58 MB | `whole` `clamp` | the subject in the harness's text literal |
+| ~1.03 MB | `ir_to_codex` `ir_to_codex_roundtrip` | 19 bytes: the harness and its stubs |
+| ~2.44 MB | `ir_to_x86_on_fib` `ir_to_x86_on_cce` | the subject in the harness's text literal |
+| ~2.58 MB | `passes_to_x86_on_mid` `passes_to_x86_on_arith` | the subject in the harness's text literal |
 
 That is not a flaw and it is not padding. Each pair asks the same compiler a
-different question -- `pingpong` feeds it its own output, `scale` gives it a
-real chapter instead of a toy, `clamp` gives it a subject that fails to compile
--- and those are the questions worth asking. But a reader counting should
-know which number is which: **fourteen rungs, twelve compiles**
+different question -- the roundtrip feeds it its own output, `_on_cce` gives
+it a real chapter instead of a toy, `_on_arith` gives it a subject that fails
+to compile -- and those are the questions worth asking. But a reader counting
+should know which number is which: **fourteen rungs, twelve compiles**
 (`LADDER_UNITS`; the merged pairs cost one compile each), **eleven distinct
-bundle constructions** (text and pingpong are separate compiles of one
-shared bundle recipe, differing only in the 19-byte harness).
+bundle constructions** (`ir_to_codex` and its roundtrip are separate compiles
+of one shared bundle recipe, differing only in the 19-byte harness).
 
 **The machinery now says so too, for the two expensive pairs.** Written and
 **verified 2026-08-18**: a full re-bank under the merged units reproduced all
 fourteen truths byte-identically, and the sweep after it was 14 of 14 on both
 arms. The merged sweep costs well under half of what fourteen compiles did;
-the current figures live in "Running it". `fibx`/`scale` and `whole`/`clamp`
+the current figures live in "Running it". `ir_to_x86` and `passes_to_x86`
 are one harness each, running the pipeline over a list of subjects and marking
 each dump, so each pair costs one compile instead of two. `oracle_lib.sh`
 carries `LADDER_UNITS` (twelve) beside `LADDER_RUNGS` (fourteen) and checks
@@ -347,13 +375,15 @@ them against each other; `split_truth.py` cuts each run back into the per-rung
 
 That measurement has now been made twice: once for the merge itself, and again
 after the emitter's arena and match-arm pin landed. Fourteen truths, byte-identical
-both times. `text` and `pingpong` remain two units and always will -- pingpong's
-subject is built from text's OUTPUT, so it cannot exist until the other has run.
+both times. `ir_to_codex` and its roundtrip remain two units and always will
+-- the roundtrip's subject is built from `ir_to_codex`'s OUTPUT, so it cannot
+exist until the other has run.
 
 **u45 -> u46 was byte-identical on every rung; u46 -> u47 is the first
 Update that moved the measurement.** Nine of fourteen rungs identical, five
-moved with their upstream causes: `parse` (44 new lexer tokens), `clamp`
-(6 new IR defs), and `fibx`/`scale`/`whole` (the issue-70 ATA guards and a
+moved with their upstream causes: `parse` (44 new lexer tokens),
+`passes_to_x86_on_arith` (6 new IR defs), and the other three `_on_` rungs
+(the issue-70 ATA guards and a
 burst helper, ~360 bytes each). Both kinds of answer are the point -- an
 Update that changes nothing we measure and an Update whose diff itemises
 exactly what it changed are each something a single sweep cannot say. The
@@ -374,12 +404,13 @@ rungs; the verdict never does.
   different chunk sizes agreeing byte-for-byte.
 - **The ring** (`plug_run_ring.py`) is for subjects past the TCP intake ceiling.
   The TCP receive path costs ~130 bytes of guest heap per byte of IR; the
-  compiler's own serial-ring reader costs one. fibx's IR is 13.1 MB on the
-  u47 seed, so it has no choice.
+  compiler's own serial-ring reader costs one. ir_to_x86's IR is 13.1 MB on
+  the u47 seed, so it has no choice.
 
 `arm_for` in `ast/oracle_lib.sh` decides, because which transport is needed is a
-property of the IR, and the IR belongs to the unit: the `fibx` and `whole` units
-take the ring, and the four rungs they carry ride in with them.
+property of the IR, and the IR belongs to the unit: the `ir_to_x86` and
+`passes_to_x86` units take the ring, and the four rungs they carry ride in
+with them.
 
 There are two plugs, built from the same `ZigEmitter`: one fed over TCP, one fed
 through the serial ring. Both have to be rebuilt together, or a sweep reports
@@ -426,8 +457,8 @@ by the compiler's own hand: the CDX header carries a SHA-256 that
 the decimal bytes the four back-end truths print reproduces it in all four
 (audited 2026-08-18, no violations -- alongside header offsets that tile
 exactly, symbol extents that tile with no gaps, a debug map whose 722 names
-all match the symbol map, and `pingpong.truth` byte-identical to
-`text.truth`). Two arms drifting into the same nonsense would have to keep a
+all match the symbol map, and `ir_to_codex_roundtrip.truth` byte-identical to
+`ir_to_codex.truth`). Two arms drifting into the same nonsense would have to keep a
 hash the emitting compiler computed for its own reasons while doing it.
 
 Two provenance facts that bound all of it:
@@ -618,8 +649,8 @@ first and stops on the first failure, because the failure modes are shared.
 Then the smaller pieces:
 
 - `ast/truthcycle_<m>.sh` / `ast/<m>cycle.sh` -- one rung, one arm, where such a
-  wrapper exists (see the two-arms section: the set has holes, and `scale` and
-  `clamp` run the unit they ride in).
+  wrapper exists (see the two-arms section: the set has holes, and the
+  `_on_cce` and `_on_arith` wrappers run the unit they ride in).
 - `ast/plugcycle.sh <m>` -- rebuild and run one rung, reporting markers grepped
   from the emitted zig. Error counts under-report: zig stops at the first
   `@compileError`.
@@ -655,11 +686,12 @@ the log):
 
 - **`rebank_all.sh` end to end is 59 minutes** -- 31 for the twelve
   truth arms, 1.5 for the plug builds, 27 for the trailing sweep. The
-  ten cheap units record in 15 s to 2.5 minutes each; `fibx` and `whole`
-  are 7m17s and 8m02s on the truth side and dominate everything.
+  ten cheap units record in 15 s to 2.5 minutes each; `ir_to_x86` and
+  `passes_to_x86` are 7m17s and 8m02s on the truth side and dominate everything.
 - **The sweep** runs all fourteen rungs in 27 minutes (scope 19s, check
-  44s, lower 50s, text 54s, pingpong 53s, lir 5s, fib 51s, fibx 10m09s,
-  whole 11.5m -- the zig arm of the two big rungs is the slow half, not
+  44s, lower 50s, ir_to_codex 54s, roundtrip 53s, lir_to_x86 5s, ir_to_wire
+  51s, ir_to_x86 10m09s, passes_to_x86 11.5m -- the zig arm of the two big
+  units is the slow half, not
   the truth arm). `sweep_canary.sh` (lex+parse+desugar) is about 90
   seconds; adding scope would push it past 2.5 minutes for little
   coverage.
@@ -1000,7 +1032,7 @@ The rungs prove the plug emits the same bytes. These ask whether the bytes mean
 anything.
 
 The `f` numbers are milestones of the fib ladder: F1 was fib through the front
-end, F2 was fib through the x86 back end (the `fibx` rung), F3 runs the emitted
+end, F2 was fib through the x86 back end (the `ir_to_x86_on_fib` rung), F3 runs the emitted
 code, F4 boots the emitted binary.
 
 - `ast/f3_run.zig` -- carves a function out of an emitted CDX, drops it in RWX
@@ -1009,7 +1041,7 @@ code, F4 boots the emitted binary.
   call displacements.
 - `ast/f4_boot.py` -- reassembles the dump into a real CDX the way
   `emit-binary-tail` does (header, content, tail), boots it, and checks it prints
-  what its subject says. Six binaries: fibx, scale and whole, from truth and from
+  what its subject says. Six binaries: the fib, cce and mid subjects, from truth and from
   zig. This is the one check that does not depend on the two arms sharing a
   mistake.
 - `native_build.sh` -- builds `codexir` (.codex -> .ir) and `zigemit`
@@ -1022,7 +1054,7 @@ code, F4 boots the emitted binary.
 
 ## zigc: the compiler as an ordinary process
 
-`ast/ZigcHarness.codex` is the `whole` rung's chapter set with a real I/O
+`ast/ZigcHarness.codex` is the `passes_to_x86` unit's chapter set with a real I/O
 boundary instead of a baked-in Text literal and a decimal dump: **source in on
 stdin, a CDX binary out on stdout.** Built the same way every rung is -- bundle,
 compile to IR with the seed, transpile through the plug -- and then
@@ -1065,12 +1097,12 @@ Two things it is not:
 ## Generated files
 
 `ast/gen_<m>_harness.py` writes `ast/<M>Harness.codex` -- except
-`gen_scale_harness.py` and `gen_clamp_harness.py`, which own only their
-unit's second subject; the harness itself comes from the fibx and whole
-generators. `ast/emit_harness.py` holds the compile pipeline once --
+`gen_ir_to_x86_on_cce_harness.py` and `gen_passes_to_x86_on_arith_harness.py`,
+which own only their unit's second subject; the harness itself comes from
+the `ir_to_x86` and `passes_to_x86` generators. `ast/emit_harness.py` holds the compile pipeline once --
 `frontend_source` (source text to a lowered IR) and `pipeline_source`
 (that plus the x86 emission) -- so the four generators that run it
-(`gen_fibx` and `gen_whole`, whose units also carry `scale` and `clamp`;
+(`gen_ir_to_x86` and `gen_passes_to_x86`, whose units carry the `_on_` rungs;
 `gen_zigc`; `gen_codexir`) cannot drift from each other. Four more
 generators import only its shared tables (`DECK_PROLOGUE`,
 `RESOLVED_TABLES`).
@@ -1088,11 +1120,11 @@ scripts are the record.
   subject to IR with the seed and push it through the plug"). `native_build.sh`
   does that for `codexir` and `zigemit`; `zigc` has no such script, so the
   transcript is not reproducible as written.
-- ~~`clamp`'s paragraph points at finding 11~~ Resolved. Finding 11 was
+- ~~`passes_to_x86_on_arith`'s paragraph points at finding 11~~ Resolved. Finding 11 was
   withdrawn as filed: the cause was ours, a harness that skipped the driver's
   RESOLVE phase. What survived it -- `emit-record` laying a record out by a
   rule no reader uses when the type is unresolved -- is closed in Update 46.
-  What `clamp` actually earned is separate and larger: it is the rung that
+  What `passes_to_x86_on_arith` actually earned is separate and larger: it is the rung that
   caught the deck intrinsic being off in every bundle we had ever built.
 - **Could the seed be taken out of the loop entirely, making this a complete
   DDC witness?** Today both arms pass through the seed, because it is the seed

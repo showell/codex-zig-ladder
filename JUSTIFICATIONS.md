@@ -7,12 +7,12 @@ looks wrong, re-measure before overturning it.
 
 ## The bundle edits are image-preserving (2026-08-18)
 
-`bundle_scope` strips `bsearch-text-pos`; `bundle_fibx` carries `CCE` and
+`bundle_scope` strips `bsearch-text-pos`; `bundle_ir_to_x86` carries `CCE` and
 `ListUtils` once each. Proof: `truth/u45` was banked before these edits and
 `truth/u46` after, and all fourteen rungs are byte-identical across the two
 banks -- the edits changed nothing either compiler emits.
 
-## fibx and whole use the ring transport; the small rungs keep TCP (2026-08-16)
+## ir_to_x86 and passes_to_x86 use the ring transport; the small rungs keep TCP (2026-08-16)
 
 The TCP receive path costs ~130 bytes of guest heap per IR byte (measured
 per-stage: frame sim 45, bytes-to-text 34.5, byte-list build 11, buf-read
@@ -51,19 +51,19 @@ frugality or a bigger reservation. Method: print the main frontier
 immediately before `x86-64-emit-cdx` -- where `emit-build` places the deck
 -- and `__deck-pos` after emission, both OUTSIDE any extent (inside one the
 deck-pos cell is frozen at the base and a probe reads nothing). Bare metal
-via `truthcycle_fibx.sh`; zig arm by tracking the high-water at each
+via `truthcycle_ir_to_x86_on_fib.sh`; zig arm by tracking the high-water at each
 outermost `__deck-exit`. `emit-build` reserved `defs*65536 + 25165824`.
 
-    rung   defs  reservation   bare metal   zig arm     zig/bare  vs reservation
-    fibx      3   25,362,432   23,654,536   27,014,528    1.142x   over by 1,652,096 (6.5%)
-    scale    61   29,163,520   23,708,712   27,064,232    1.142x   fits, 2,099,288 free
+    rung              defs  reservation   bare metal   zig arm     zig/bare  vs reservation
+    ir_to_x86_on_fib     3   25,362,432   23,654,536   27,014,528    1.142x   over by 1,652,096 (6.5%)
+    ir_to_x86_on_cce    61   29,163,520   23,708,712   27,064,232    1.142x   fits, 2,099,288 free
 
 The ratio is flat across 3 and 61 definitions: a per-object representation
 cost (16-byte text slices, CxList indirection), not a per-definition one.
 The `defs*65536` term barely matters -- bare metal spends 54 KB more on 61
 definitions than on 3; the flat term does all the work, and bare metal's
-own headroom on fibx is 6.7%. All four emit rungs (fibx, scale, whole,
-clamp) cluster at 27.0-27.1 MB on the zig arm. Control: with the
+own headroom on the fib subject is 6.7%. All four emit rungs (the `_on_`
+four) cluster at 27.0-27.1 MB on the zig arm. Control: with the
 reservation raised and nothing else changed, every rung runs to completion
 byte-identical to the bank -- the heap unification is correct, it was
 sized wrong.
@@ -74,13 +74,13 @@ subjects, `cx_deck_slack` 0): `X86_64Chapter.codex` now reserves
 `defs*65536 + 29360128`. The bare-metal truths for the four emit rungs
 re-ran on the bumped source and are byte-identical to `truth/u48` -- the
 reservation never reaches the output -- and the zig arm passes all four
-(scale headroom 6,747,128; clamp 4,387,816). 4 MiB rather than the ~2 MB
+(`_on_cce` headroom 6,747,128; `_on_arith` 4,387,816). 4 MiB rather than the ~2 MB
 minimum because bare metal's own margin is 6.7% and 2 MB would have left
 the zig arm 1.6%.
 
 ## The deck census (2026-08-22)
 
-`deck_census.py` on the census natives (`1db8a78c` tree), fibx subject
+`deck_census.py` on the census natives (`1db8a78c` tree), the ir_to_x86 subject
 `8067da49…` (2,496,998 bytes), sandbox `20260822T014639Z-f24-volume`. Every
 deck byte keyed by (allocator call site, outermost deck-record bracket);
 main-heap bytes by call site. Three runs, IR byte-identical each time.
@@ -117,7 +117,7 @@ a spike.
 Downstream of the completed IR (findings 33, 34): `native/zigemit` needs a
 >2 GiB thread stack to tokenize 3,282,147 tokens without tail calls, and
 then exhausts its 1.5 GiB arena at 1.23 MB of output with no per-def
-reclaim. The seed's `fibx.ir`, decoded, differed from the native IR in
+reclaim. The seed's `ir_to_x86.ir`, decoded, differed from the native IR in
 930 of 3,822 lines for three causes: def order, chapter name, and `ctd`
 vs `record-ty` for let-binding types. The last was the harness running
 RESOLVE where `compile-frontend-ir` never does (ladder `3192fe5`); with
@@ -138,7 +138,7 @@ in sandbox arena-4g (natives from heap branch `6bf05013`, region
 4 GiB): tiers SET GREEN, census moved no verdict, sweep 14/14, bank
 retaken with only the known step-5 lex rename moving (`3c72b3f`).
 
-The measurement the change exists for: `native/codexir` on the fibx
+The measurement the change exists for: `native/codexir` on the ir_to_x86
 subject under `systemd-run --user --scope -p MemoryMax=6G` completes
 rc 0 in 34 s (droplet, 2 vCPU; finding 24's run was 63 s laptop-side),
 IR 13,223,342 bytes, byte-identical across two runs. Peak resident

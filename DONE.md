@@ -52,7 +52,7 @@ instead -- write that and point at it.
 - **2026-08-22 — The deck-record rename deleted from all ten bundlers**
   (review Batch 2; `e91fdb3`): nine truth arms byte-identical to the
   bank, lex moved by exactly 56 x `subj-`. Record: PRIORITIES history,
-  bundle_fibx.ps1's comment.
+  bundle_ir_to_x86.ps1's comment (bundle_fibx.ps1 then).
 - **2026-08-22 — Tiers run as a set, per Update** (`tiers_run.py`,
   `findings/gold/uNN/`, `EXPECTED.txt` ledger; `6fc3841`). Record:
   README steps 3 and 5, random925 §B.

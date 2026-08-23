@@ -445,7 +445,7 @@ the rule is that `__record-set` mutates. The `mutable` keyword selects
 something else -- whatever it selects, it is not this.
 
 The rule is invisible almost everywhere, because the ordinary shape is
-bind-the-result-and-use-the-result: 354 `__record-set` calls in the fibx
+bind-the-result-and-use-the-result: 354 `__record-set` calls in the ir_to_x86
 subject and copy would serve for all but two of them. It takes an ALIAS
 -- reading a binding made before the update -- for the two answers to
 differ, and the x86 back end aliases in exactly two places:
@@ -472,7 +472,7 @@ machine code loses `__list_tail`'s entire 69-byte body -- its name still
 recorded in the offset table, so the function count is unchanged -- and
 loses a 12-byte epilogue, leaving a helper that pushes five callee-saved
 registers and never pops them. 81 bytes short out of 45,432, found only
-by diffing the fibx subject's emitted code against bare metal.
+by diffing the ir_to_x86_on_fib subject's emitted code against bare metal.
 
 Three things might be worth doing, in ascending order of appetite:
 
@@ -485,7 +485,7 @@ Three things might be worth doing, in ascending order of appetite:
    plain records already have reference semantics. If it is vestigial,
    dropping it removes a promise the implementation does not keep.
 
-Found by the fibx rung: the x86 code generator compiling fib, emitted
+Found by the ir_to_x86_on_fib rung: the x86 code generator compiling fib, emitted
 two ways. The zig plug had given plain records value semantics on the
 strength of the declaration, which is why the divergence appeared at all
 -- and it is now one representation, a pointer, matching bare metal and
@@ -609,7 +609,7 @@ so the binding survives on its second consumer:
      in let deck-init = __deck-set base
      in base                                             <- and here
 
-`whole` transpiles both of those functions to zig and compiles clean. It took a
+`passes_to_x86` transpiles both of those functions to zig and compiles clean. It took a
 caller that only sets, which is what our harness prologue is once it names
 `init-phase-allocator` to turn the deck intrinsic on.
 
@@ -1017,10 +1017,10 @@ Tested one codepoint at a time through `native/codexir`:
 So the gap is one character, not a family. It occurs exactly once in the
 depot, at `codex/compiler/Types/TypeCheckerInference.codex:8` --
 "The judgment is Γ ⊢ e : τ | ε" -- and that single occurrence aborts
-`codexir` on the whole 2,496,998-byte fibx subject, five seconds in, before
+`codexir` on the whole 2,496,998-byte ir_to_x86 subject, five seconds in, before
 any compilation happens.
 
-Bare metal encodes it: the ladder's fibx and scale rungs pass through the
+Bare metal encodes it: the ladder's two ir_to_x86 rungs pass through the
 ring, where the seed does the encoding, so the plug's tier coverage is
 narrower than bare metal's rather than the character being unencodable.
 
@@ -1042,7 +1042,7 @@ ingest real compiler source. OPEN. Ours to fix, arm unknown -- the evidence
 rules out every mechanism we have chased this week.**
 
 `native/codexir` built from `zig-plug-heap-unification` aborts 12.7 seconds
-into the 2,496,998-byte fibx subject:
+into the 2,496,998-byte ir_to_x86 subject:
 
     check_chapter -> register_all_defs -> resolve_def_name
       -> rename_has_entry -> bsearch_rename_pos -> cx_list_at
@@ -1112,7 +1112,7 @@ happen** -- no GP fault, no impossible header -- the run goes 103s, emits
 objects, and the pointer-shaped length was trampled-header garbage, not a
 layout defect. The OPEN half is consumption: bare metal compiles this same
 subject inside its arena under the same 104 MB demand-lift-floor (the banked
-fibx truth is the proof), and deck-exit keeping its position is faithful
+ir_to_x86_on_fib truth is the proof), and deck-exit keeping its position is faithful
 (emit-deck-exit-builtin stores r10 back to deck-pos-addr identically), so
 this arm allocates deck volume bare metal does not -- by hundreds of MB.
 
@@ -1151,9 +1151,9 @@ spread across families at bare-metal sizes, which is why the 256 MB slack
 run still exhausted the 1.5 GiB arena.
 
 **The run completes when given room.** With the arena at 2.5 GiB and the
-deck slack at 512 MB, `native/codexir` compiles the fibx subject in 63 s,
+deck slack at 512 MB, `native/codexir` compiles the ir_to_x86 subject in 63 s,
 rc 0, 13,193,485 bytes of IR, deterministic across three runs. Against the
-seed's `fibx.ir` (same subject hash, decoded from CCE) the IR agrees line
+seed's `ir_to_x86.ir` (same subject hash, decoded from CCE) the IR agrees line
 for line up to def ORDER, the chapter title (`Parsmi--FibxHarness` vs
 `Program`), and one type spelling: our harness prints `(record-ty
 "SkipNodeText" (args))` where the seed driver prints `(ctd "SkipNodeText"
@@ -1563,7 +1563,7 @@ them, while a control (`fn deep_resolve`) appears in all.
 
 **The other 3 sit in error branches a clean compile never takes** -- the
 `is otherwise ->` arms of `emit-record` and `emit-field-access`, which fire only
-when `resolve-constructed-ty` fails. `whole.truth` and `fibx.truth` both record
+when `resolve-constructed-ty` fails. `passes_to_x86_on_mid.truth` and `ir_to_x86_on_fib.truth` both record
 `emit-errors 0`. Had they fired they WOULD have diverged and gone red, so this
 is "green because the branch is dead", not "green because the divergence is
 invisible".
@@ -1659,11 +1659,11 @@ that is a question for Damian rather than a decision to take here.
 
 ## 33. No tail calls: recursion depth on this arm is bounded by the thread stack, bare metal's is not
 
-**Found 2026-08-22 while running the native chain on the fibx subject
+**Found 2026-08-22 while running the native chain on the ir_to_x86 subject
 (finding 24's closing experiment). Ours. OPEN -- an emitter feature, not a
 patch.**
 
-`native/zigemit` on the 13.2 MB native-produced `fibx.ir` dies in
+`native/zigemit` on the 13.2 MB native-produced `ir_to_x86.ir` dies in
 `tokenize_loop`: a self-recursive loop that advances one TOKEN per frame.
 The IR holds 3,282,147 tokens. The emitted program's `main` spawns its work
 on a 512 MB thread (`std.Thread.spawn(.{ .stack_size = 512 MB }`), and a
@@ -1678,13 +1678,13 @@ turns every one into a call.
 The fix is in ZigEmitter: a self-tail-call in tail position becomes a
 `while (true)` with parameter reassignment. Until then the native loop's
 ceiling is subjects whose recursion-per-element stays inside 512 MB --
-`codexir.ir` (8.6 MB) fits, `fibx.ir` (13.2 MB) does not.
+`codexir.ir` (8.6 MB) fits, `ir_to_x86.ir` (13.2 MB) does not.
 
 ## 34. The hosted harnesses never reclaim, so a 13 MB IR exhausts zigemit's 1.5 GiB arena
 
 **Found 2026-08-22, same experiment, same arm. Ours. OPEN, harness-shaped.**
 
-With the stack out of the way, `native/zigemit` on `fibx.ir` dies at
+With the stack out of the way, `native/zigemit` on `ir_to_x86.ir` dies at
 `cx heap: exhausted at 1610612724 + 22 of 1610612736` after 83 s and
 1.23 MB of output. The ring transpile of the same IR inside the seed OS
 runs `emit-all-defs` with its per-function `__heap-restore` and finishes

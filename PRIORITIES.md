@@ -51,12 +51,12 @@ loop unless it says otherwise.
 **Objective: instrument work on the emitter; scheduled high by Steve
 2026-08-22.** Every `*-loop (xs) (i) (acc)` in the compiler is a self-call
 in tail position; bare metal jumps, the plug calls, and Debug zig keeps
-every frame -- `zigemit` on the 13 MB fibx IR wants >2 GiB of thread stack
+every frame -- `zigemit` on the 13 MB ir_to_x86 IR wants >2 GiB of thread stack
 for 3.28M `tokenize_loop` frames. The change: a def whose body's tail
 positions are self-calls of the same arity becomes `while (true) {` with
 parameter reassignment through temporaries; non-self tail calls stay
 calls. Proof: the chain, then zigemit past tokenizing on the stock 512 MB
-stack on the fibx subject.
+stack on the ir_to_x86 subject.
 
 ## 4. The refusal-gaps branch, rebased and re-verified
 
