@@ -46,40 +46,6 @@ loop unless it says otherwise.
 
 ---
 
-## 1. The resident bound's riders
-
-**Objective: instrument work that widens the native loop's reach.** The
-bound itself is DONE (2026-08-23): `bounded_run` via cgroup MemoryMax
-replaced every address-space cap (`720d115`), the region is 4 GiB on
-the heap branch (`6bf05013`), the chain verified it (tiers green,
-census unmoved, sweep 14/14, bank retaken `3c72b3f`), and codexir
-compiles fibx under the 6 GB cap in 34 s at 2.30 GiB peak resident
-(JUSTIFICATIONS "The resident bound, measured"). Still to do, all
-riders:
-
-- ~~Crossing guard, main-from-below~~ committed (`8cb8a0e4`): outside
-  an extent the guard tests overlap with the deck's live span
-  `[cx_deck_base, cx_dptr)`, not just the straddle at its top.
-- ~~probe-deck-overrun~~ committed (ladder `6dc2371`), with the
-  `ZIG_REFUSALS` class in `tiers_run.py`: an expected refusal is now a
-  countable green row, not an exclusion.
-- ~~record-ty vs ctd~~ answered and fixed (ladder `3192fe5`): RESOLVE
-  (rewrite-ir-defs) lives in compile-frontend-cdx only;
-  compile-frontend-ir never runs it, and `frontend_source` appended it
-  unconditionally. `gen_codexir_harness` now passes `resolve=False`.
-  Two of the 930 diff lines' three causes remain (def order, chapter
-  title -- JUSTIFICATIONS "Downstream of the completed IR"); re-measure
-  the decoded fibx diff after the chain to attribute what is left.
-- All three ride one chain (sandbox guard-and-ir, launched 2026-08-23
-  20:56Z); the riders are not DONE until it comes back green.
-- Finding 34's fold-in question: the honest fix is per-def
-  save/restore brackets inside `emit-zig-chapter` with the accumulated
-  output decked across each restore -- an emitter change with real
-  hazard that buys no capability while finding 33 blocks zigemit on
-  fibx anyway. Recommendation: PR-body note now, brackets beside the
-  finding-33 work (item 3), where they become measurable. Steve
-  decides.
-
 ## 2. Send the heap unification
 
 **Objective: due diligence, then outbound.** Branch

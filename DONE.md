@@ -6,6 +6,14 @@ findings register, JUSTIFICATIONS.md, a bank, an essay). If an entry
 needs a paragraph, it needs a register section or a JUSTIFICATIONS entry
 instead -- write that and point at it.
 
+- **2026-08-23 — The resident bound's riders verified** (sandbox
+  guard-and-ir, 60 min): crossing guard both directions (heap
+  `8cb8a0e4`), probe-deck-overrun as a countable green (`6dc2371`), the
+  codexir harness RESOLVE skip (`3192fe5`) -- tiers green, census
+  unmoved, sweep 14/14 with every recorded truth byte-identical to the
+  bank; the native-vs-seed fibx IR diff fell from 930 lines to one (the
+  chapter name). Finding 34: PR-body note, brackets beside finding 33
+  (Steve). Record: JUSTIFICATIONS "Downstream of the completed IR".
 - **2026-08-23 — The resident bound landed, verified, and measured**
   (Steve's yes on random927 option 3; `720d115` + heap `6bf05013`,
   bank retaken `3c72b3f`): cgroup MemoryMax replaced every

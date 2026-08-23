@@ -117,9 +117,14 @@ a spike.
 Downstream of the completed IR (findings 33, 34): `native/zigemit` needs a
 >2 GiB thread stack to tokenize 3,282,147 tokens without tail calls, and
 then exhausts its 1.5 GiB arena at 1.23 MB of output with no per-def
-reclaim. The seed's `fibx.ir`, decoded, differs from the native IR in def
-order, chapter title, and `ctd` vs `record-ty` for let-binding types --
-930 of 3,822 lines, those three causes only.
+reclaim. The seed's `fibx.ir`, decoded, differed from the native IR in
+930 of 3,822 lines for three causes: def order, chapter name, and `ctd`
+vs `record-ty` for let-binding types. The last was the harness running
+RESOLVE where `compile-frontend-ir` never does (ladder `3192fe5`); with
+that gone (re-measured 2026-08-23, natives from heap `8cb8a0e4`, codexir
+under MemoryMax=6G in 33 s) the diff is ONE line of 3,825: the chapter
+name, `"Program"` on the seed's arm against `"Parsmi--FibxHarness"` on
+the native one. Def order matched too -- it was RESOLVE's reordering.
 
 ## The resident bound, measured (2026-08-23)
 

@@ -54,7 +54,10 @@ commit with a Confidence paragraph:
 Verification: the ladder's tier set is green both arms; the 323-program
 census moved no verdict (0 differ, 0 crashed against the banked
 truths); the 14-rung sweep is 14/14 with recorded truths
-byte-identical. Each commit carries its own Confidence paragraph with
+byte-identical. With the ladder's native `codexir` (the compiler
+itself through this plug, no QEMU) the fibx IR agrees with the seed's
+in 3,824 of 3,825 lines; the one difference is the harness's chapter
+name. Each commit carries its own Confidence paragraph with
 what was measured and what is still exposed.
 
 Reach limits, named so the next branch has a floor:
@@ -73,8 +76,8 @@ Reach limits, named so the next branch has a floor:
 
 ## Open points before send (not part of the body)
 
-- [ ] guard-and-ir chain green (tiers incl. probe-deck-overrun, census,
-      sweep) -- in flight, sandbox 20260823T205521Z
-- [ ] Steve's yes on the finding-34 recommendation (note, not fold-in)
+- [x] guard-and-ir chain green (tiers incl. probe-deck-overrun, census,
+      sweep 14/14, truths identical to bank) -- 2026-08-23 22:14Z
+- [x] finding 34: note, not fold-in (Steve, 2026-08-23)
 - [ ] re-check absorption against upstream tip on send day
 - [ ] confirm final commit count / tip sha in the body header
