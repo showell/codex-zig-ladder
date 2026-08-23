@@ -671,9 +671,13 @@ still the venue for `native_build.sh`:
   canary/long split stays lex+parse+desugar: adding scope would push
   the canary past 2.5 minutes for little coverage -- decided from these
   stamps, not intuition.
-- **The census re-pin** (`native_build.sh && corpus_run.py --changed
-  --bank`) is about an hour when nothing carries, which is every
-  Update re-pin: the natives change, so every emitted zig moves.
+- **The census re-pin** (`native_build.sh`, then `corpus_run.py --changed
+  --bank`): the natives are 11 minutes on the droplet (18 on the laptop,
+  2026-08-22), and the census itself is 10 minutes for the whole corpus
+  -- transpile of 593 programs plus build-and-run of the 325 clean ones,
+  no QEMU anywhere. Every Update re-pin reruns all of it, because the
+  natives change and so every emitted zig moves; "about an hour" was the
+  figure under the old allocator.
 
 Run long jobs in the background and watch for the markers above.
 (The pre-merge ladder, four big compiles instead of two, cost 2h21m --
