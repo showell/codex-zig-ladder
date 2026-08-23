@@ -4,8 +4,8 @@
 # harness compiles fib end to end and prints one (def ...) line per
 # definition -- the same grammar the IR-CCE wire carries.
 param(
-    [string]$Harness = 'FibHarness.codex',
-    [string]$OutName = 'fib-subject.codex'
+    [string]$Harness = 'IrToWireHarness.codex',
+    [string]$OutName = 'ir_to_wire-subject.codex'
 )
 $ErrorActionPreference = 'Stop'
 $ladder = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path  # ladder-root-bootstrap: reaches the LADDER only; the checkout comes from ladder_root
@@ -77,4 +77,4 @@ Add-PlugChapter -Lines $lines -Path (Join-Path $here 'LowerStubs.codex') -Quire 
 Add-PlugChapter -Lines $lines -Path (Join-Path $here $Harness) -Quire 'Parsmi'
 
 $preLines = Resolve-PlugForewords $lines
-Bundle-PlugSource -PreLines $preLines -Lines $lines -BundleSrc (Join-Path $here $OutName) -PlugName 'fib-subject'
+Bundle-PlugSource -PreLines $preLines -Lines $lines -BundleSrc (Join-Path $here $OutName) -PlugName 'ir_to_wire-subject'

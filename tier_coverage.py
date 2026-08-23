@@ -5,7 +5,7 @@ Objective 6 says coverage is chosen by COUNTING rather than by taste, and this
 is the count. It reads three things and needs no arguments:
 
   - the plug's builtin table  (ZigEmitter.codex), for the surface that exists
-  - ast/whole-subject.codex,  2.6 MB of real compiler, for how often each is used
+  - ast/passes_to_x86-subject.codex,  2.6 MB of real compiler, for how often each is used
   - findings/*.codex,         for what the tiers actually mention
 
 and prints the gap, worst first. A builtin with hundreds of call sites and no
@@ -50,7 +50,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # ladder-root-
 from ladder_root import CODEX, LADDER
 
 EMITTER = CODEX / 'codex' / 'plugs' / 'zig' / 'ZigEmitter.codex'
-SUBJECT = LADDER / 'ast' / 'whole-subject.codex'
+SUBJECT = LADDER / 'ast' / 'passes_to_x86-subject.codex'
 FINDINGS = LADDER / 'findings'
 
 
@@ -63,7 +63,7 @@ def token_uses(hay, name):
 def main():
     show_all = '--all' in sys.argv
     if not SUBJECT.is_file():
-        raise SystemExit(f'no {SUBJECT} -- bundle the whole unit first '
+        raise SystemExit(f'no {SUBJECT} -- bundle the passes_to_x86 unit first '
                          '(ast/bundle_whole.ps1), since the count is against real source')
 
     names = sorted(set(re.findall(r'ZigBuiltinEmitter \{ name = "([^"]+)"',

@@ -27,8 +27,8 @@
 # drops only bs-emit, which is the field typed over CodegenState and
 # EmitResult and the reason the real chapter cannot be bundled.
 param(
-    [string]$Harness = 'TextHarness.codex',
-    [string]$OutName = 'text-subject.codex'
+    [string]$Harness = 'IrToCodexRoundtripHarness.codex',
+    [string]$OutName = 'ir_to_codex_roundtrip-subject.codex'
 )
 $ErrorActionPreference = 'Stop'
 $ladder = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path  # ladder-root-bootstrap: reaches the LADDER only; the checkout comes from ladder_root
@@ -95,7 +95,7 @@ foreach ($ch in @('codex/compiler/Core/BuildSettings.codex',
 # names a chapter, so the unit has to carry one. See BootPaintStubs.codex for
 # why it is a stub and not the real 341-line screen painter.
 Add-PlugChapter -Lines $lines -Path (Join-Path $here 'BootPaintStubs.codex') -Quire 'Parsmi'
-Add-PlugChapter -Lines $lines -Path (Join-Path $here 'TextStubs.codex') -Quire 'Parsmi'
+Add-PlugChapter -Lines $lines -Path (Join-Path $here 'PingpongStubs.codex') -Quire 'Parsmi'
 Add-PlugChapter -Lines $lines -Path (Join-Path $here $Harness) -Quire 'Parsmi'
 
 # The seed reads a compile from a 1 MB serial ring and ring_compile.py has
@@ -119,4 +119,4 @@ $preLines = Resolve-PlugForewords $lines
 $prePlain = [System.Collections.Generic.List[string]]::new()
 foreach ($l in $preLines) { if (-not ($l -match '^ [^ ]')) { $prePlain.Add($l) } }
 $preLines = $prePlain
-Bundle-PlugSource -PreLines $preLines -Lines $lines -BundleSrc (Join-Path $here $OutName) -PlugName 'text-subject'
+Bundle-PlugSource -PreLines $preLines -Lines $lines -BundleSrc (Join-Path $here $OutName) -PlugName 'ir_to_codex_roundtrip-subject'

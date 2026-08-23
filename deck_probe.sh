@@ -24,7 +24,7 @@ T="$(cd "$(dirname "$0")" && pwd)"
 . "$T/sweep_lib.sh"
 take_compute_lock
 
-units="${DECK_UNITS:-fibx whole}"
+units="${DECK_UNITS:-ir_to_x86 passes_to_x86}"
 echo "### deck_probe $(date +%H:%M:%S) -- units: $units"
 fail=0
 for m in $units; do

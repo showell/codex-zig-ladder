@@ -24,14 +24,14 @@ HERE = pathlib.Path(__file__).parent
 # Each rung's subject prints something only it can print, so the boot has a
 # specific answer to be right about rather than merely "some output".
 RUNGS = [
-    ("fibx", "6765"),
-    ("scale", "2147\n3\n11"),
-    ("whole", "276"),
+    ("ir_to_x86_on_fib", "6765"),
+    ("ir_to_x86_on_cce", "2147\n3\n11"),
+    ("passes_to_x86_on_mid", "276"),
 ]
 
 
 def parse_sections(path):
-    """Pull the byte sections out of a fibx dump. Fails loud: a section that
+    """Pull the byte sections out of an ir_to_x86 dump. Fails loud: a section that
     does not match its declared length is a corrupt dump, not a short one."""
     lines = path.read_text(errors="replace").splitlines()
     lens, sections, i = {}, {}, 0

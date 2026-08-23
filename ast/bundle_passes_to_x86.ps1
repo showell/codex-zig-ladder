@@ -19,10 +19,10 @@
 # constructors on CharClass. The painter is unreachable from this harness and
 # would be pruned from the IR regardless, so it buys nothing to pay for.
 $ErrorActionPreference = 'Stop'
-& (Join-Path $PSScriptRoot 'bundle_fibx.ps1') `
-    -Harness 'WholeHarness.codex' `
-    -OutName 'whole-subject.codex' `
-    -PlugName 'whole-subject' `
+& (Join-Path $PSScriptRoot 'bundle_ir_to_x86.ps1') `
+    -Harness 'PassesToX86Harness.codex' `
+    -OutName 'passes_to_x86-subject.codex' `
+    -PlugName 'passes_to_x86-subject' `
     -ExtraChapters @(
         'codex/compiler/IR/Occurrence.codex',
         'codex/compiler/IR/IRCheck.codex',

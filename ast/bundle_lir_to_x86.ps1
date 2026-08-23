@@ -8,8 +8,8 @@
 # Settings (plus Foreword MemoryMap, which the resolver pulls); IR/Lir
 # cites Build Settings and IR Chapter.
 param(
-    [string]$Harness = 'LirHarness.codex',
-    [string]$OutName = 'lir-subject.codex'
+    [string]$Harness = 'LirToX86Harness.codex',
+    [string]$OutName = 'lir_to_x86-subject.codex'
 )
 $ErrorActionPreference = 'Stop'
 $ladder = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path  # ladder-root-bootstrap: reaches the LADDER only; the checkout comes from ladder_root
@@ -76,4 +76,4 @@ for ($i = 0; $i -lt $lines.Count; $i++) {
 }
 
 $preLines = Resolve-PlugForewords $lines
-Bundle-PlugSource -PreLines $preLines -Lines $lines -BundleSrc (Join-Path $here $OutName) -PlugName 'lir-subject'
+Bundle-PlugSource -PreLines $preLines -Lines $lines -BundleSrc (Join-Path $here $OutName) -PlugName 'lir_to_x86-subject'

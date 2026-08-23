@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
-"""Generate TextHarness.codex: the lower harness with its dump replaced by
+"""Generate PingpongHarness.codex: stage 2 of the fixed point.
+
+Identical to the text harness except that its subject is stage 1's OUTPUT.
+If codex-emit-text-chapter is a faithful serializer, compiling its own
+product must reproduce it exactly: text1 == text2.
+
+Original docstring follows.
+
+Generate TextHarness.codex: the lower harness with its dump replaced by
 the compiler's own codex-text emitter.
 
 The output is the emitted codex source and nothing else, so stage 1's
@@ -40,7 +48,7 @@ HERE = pathlib.Path(__file__).parent
 # One chapter per run is a hard limit, not a preference: the harness embeds
 # a single text literal and parse-document parses one chapter, so subjects
 # cannot be concatenated.
-SUBJECT_FILE = None
+SUBJECT_FILE = HERE / 'ir_to_codex.truth'
 SUBJECT_LINES = 0
 
 FIB = (
@@ -100,7 +108,7 @@ SUBJECT = codex_literal(raw)
 # What it deliberately does not take is the RESOLVE step: rewrite-ir-defs lives
 # in ResolveTypes.codex, which this bundle does not carry, so the IR dumped here
 # keeps unresolved ConstructedTy annotations. fibx and whole prove that path.
-out = f'''Chapter: TextHarness
+out = f'''Chapter: PingpongHarness
 
 Section: Subject
   subject-text : Text
@@ -274,7 +282,7 @@ Section: Driver
   end
 '''
 
-dest = HERE / 'TextHarness.codex'
+dest = HERE / 'IrToCodexRoundtripHarness.codex'
 dest.write_text(out)
 what = 'fib' if SUBJECT_FILE is None else f'{SUBJECT_FILE.name} first {SUBJECT_LINES or "all"} lines'
 print(f'{dest}: {len(out)} bytes, subject = {what} ({len(raw)} raw bytes)')
@@ -305,5 +313,5 @@ assert stripped > 200, f'expected to strip the whole emit column, stripped {stri
 text = "\n".join(out_lines) + "\n"
 text = text.replace('Chapter: Builtins', 'Chapter: Builtins', 1)
 assert 'bs-emit' not in text, 'a bs-emit reference survived'
-(HERE / 'TextStubs.codex').write_text(text)
-print(f'{HERE / "TextStubs.codex"}: real chapter minus {stripped} bs-emit references')
+(HERE / 'PingpongStubs.codex').write_text(text)
+print(f'{HERE / "PingpongStubs.codex"}: real chapter minus {stripped} bs-emit references')

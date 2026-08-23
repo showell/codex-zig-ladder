@@ -46,7 +46,8 @@ from seed_identity import seed_sha256
 
 AST = LADDER / 'ast'
 SHARED = ['emit_harness.py', 'oracle_lib.sh', 'split_truth.py']
-COMPOSITE = {'fibx': ['fibx', 'scale'], 'whole': ['whole', 'clamp']}
+COMPOSITE = {'ir_to_x86': ['ir_to_x86_on_fib', 'ir_to_x86_on_cce'],
+             'passes_to_x86': ['passes_to_x86_on_mid', 'passes_to_x86_on_arith']}
 
 
 def _lists():

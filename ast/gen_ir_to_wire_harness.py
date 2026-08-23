@@ -105,6 +105,6 @@ Section: Driver
   end
 '''
 
-dest = HERE / 'FibHarness.codex'
+dest = HERE / 'IrToWireHarness.codex'
 dest.write_text(out)
 print(f'{dest}: {len(out)} bytes')

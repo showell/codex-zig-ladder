@@ -1,12 +1,12 @@
 // F3 of the fib ladder: the emitted machine code, EXECUTED.
 //
-// The fibx rung proves the zig plug emits the same CDX as bare metal. It
+// The ir_to_x86_on_fib rung proves the zig plug emits the same CDX as bare metal. It
 // does not prove those bytes mean anything -- two emitters can agree on a
 // byte stream that no processor would run. This reads the dump back, drops
 // the content section into executable memory, and calls into it.
 //
-// Both dumps are run: fibx.truth (seed-compiled bare metal) and
-// fibx.zigout (through the zig plug). They are byte-identical, so they
+// Both dumps are run: ir_to_x86_on_fib.truth (seed-compiled bare metal) and
+// ir_to_x86_on_fib.zigout (through the zig plug). They are byte-identical, so they
 // must agree here too; running only one would leave open which side was
 // being trusted.
 //
@@ -219,7 +219,7 @@ pub fn main() !void {
     defer threaded.deinit();
     const io = threaded.io();
     var ok = true;
-    for ([_][]const u8{ "fibx.truth", "fibx.zigout" }) |path| {
+    for ([_][]const u8{ "ir_to_x86_on_fib.truth", "ir_to_x86_on_fib.zigout" }) |path| {
         ok = try runOne(io, gpa, path) and ok;
     }
     if (!ok) die("the emitted code computed the wrong answers", .{});

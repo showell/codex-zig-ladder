@@ -3,7 +3,7 @@
 
 Two of the three Update 46 failures were visible in the bundled subject text and
 cost a compile to find anyway: `scope` failed four minutes into a sweep and
-`fibx` twenty-five. Bundling is cheap and needs no QEMU, so the cheap questions
+`ir_to_x86` twenty-five. Bundling is cheap and needs no QEMU, so the cheap questions
 should be asked at bundling time.
 
 The check here is the double-include, which is the one this ladder has actually
@@ -62,8 +62,8 @@ def newest_input(ast, m):
     max meant editing the ad-hoc `bundle_min.ps1` -- a bisect tool no rung goes
     near -- reported all sixteen other subjects stale at once. A staleness
     warning that fires on subjects nothing touched is the cry-wolf this file
-    exists to avoid, so the walk follows delegation: `bundle_whole.ps1` invokes
-    `bundle_fibx.ps1`, so fibx's stubs count as whole's too, and the depot's
+    exists to avoid, so the walk follows delegation: `bundle_passes_to_x86.ps1`
+    invokes `bundle_ir_to_x86.ps1`, so its stubs count for both, and the depot's
     plug-build-lib.ps1 counts for every subject because every bundle is built
     through it.
     """
@@ -79,13 +79,13 @@ def newest_input(ast, m):
         for name in re.findall(r'bundle_(\w+)\.ps1', text):
             scripts.append(ast / f'bundle_{name}.ps1')
         # A DELEGATED bundler's parameter defaults are not this subject's
-        # inputs. bundle_whole.ps1 calls bundle_fibx.ps1 with -Harness
+        # inputs. bundle_passes_to_x86.ps1 calls bundle_ir_to_x86.ps1 with -Harness
         # 'WholeHarness.codex', overriding `[string]$Harness =
-        # 'FibxHarness.codex'`, a file the whole bundle never opens. Counting
-        # it reported `whole` stale every time fibx's harness was regenerated:
+        # 'IrToX86Harness.codex'`, a file the passes_to_x86 bundle never opens.
+        # Counting it reported passes_to_x86 stale every time ir_to_x86's harness was regenerated:
         # the cry-wolf this walk was narrowed to avoid, reintroduced by
         # widening it. The top script's defaults DO count -- that is where the
-        # fibx unit names its own harness.
+        # ir_to_x86 unit names its own harness.
         if p != top:
             text = '\n'.join(l for l in text.splitlines()
                              if not re.match(r'\s*\[[\w\[\]]+\]\$\w+\s*=', l))

@@ -47,7 +47,7 @@ FROM_CHECKOUT = [
     ('build/concat-codex-self.ps1', 'used by recon.sh to concatenate the compiler'),
     ('codex/plugs/common/plug-build-lib.ps1', "the author's bundler library, sourced by every bundle_*.ps1"),
     ('codex/plugs/zig/ZigEmitter.codex', 'the plug under test'),
-    ('codex/test/plug-oracle-arith.codex', "the clamp rung's subject"),
+    ('codex/test/plug-oracle-arith.codex', "the passes_to_x86_on_arith rung's subject"),
 ]
 
 # Built by cycle.sh (it stubs the author's compile step and compiles the

@@ -26,7 +26,7 @@ And one it MUST skip, for the same reason: the RESOLVE phase belongs to
 compile-frontend-cdx, and compile-frontend-ir -- the sequence this stands in
 for -- never runs it. Running it here rewrote every let binding whose nullary
 ConstructedTy names a record into a RecordTy the seed driver leaves as ctd:
-930 lines of the fibx IR, and an IR wire the plug was never fed by the
+930 lines of the ir_to_x86 IR, and an IR wire the plug was never fed by the
 oracle path. frontend_source's resolve flag carries the why.
 
 ir-emit-roots is copied from opening.codex:1316 rather than cited, because

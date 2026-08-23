@@ -6,9 +6,9 @@
 # A UNIT <u> owns: gen_<u>_harness.py, bundle_<u>.ps1, and the artifacts
 # <u>-subject.codex, <u>.ir, <u>.raw, <u>.zig, <u>.zigraw.
 # A RUNG <m> owns: <m>.truth, <m>.zigout, <m>.diff, and its entry in the bank.
-# Most units carry one rung and the two sets of names coincide; fibx and whole
-# carry two, and gen_scale_harness.py and gen_clamp_harness.py hold nothing but
-# the subject their unit runs second.
+# Most units carry one rung and the two sets of names coincide. ir_to_x86 and
+# passes_to_x86 carry two, marked by the rung's `_on_<subject>` suffix, and
+# gen_<rung>_harness.py for their second rung holds nothing but its subject.
 T="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # ladder-root-bootstrap: reaches the LADDER only; the checkout comes from ladder_root
 REPO="$(python3 "$T/ladder_root.py" codex)"
 
@@ -16,11 +16,11 @@ REPO="$(python3 "$T/ladder_root.py" codex)"
 # re-banks it, and they must not disagree about what the ladder is: a rung
 # missing from one is a rung whose truth is stale while its diff still
 # reports green.
-LADDER_RUNGS="lex parse desugar scope check lower text pingpong lir fib fibx scale whole clamp"
+LADDER_RUNGS="lex parse desugar scope check lower ir_to_codex ir_to_codex_roundtrip lir_to_x86 ir_to_wire ir_to_x86_on_fib ir_to_x86_on_cce passes_to_x86_on_mid passes_to_x86_on_arith"
 
 # A rung is a CLAIM; a unit is a COMPILE. The ladder used one word for both
-# until 2026-08-18, and it cost real time: `scale` compiled the same 2.4 MB
-# bundle as `fibx` and `clamp` the same 2.58 MB bundle as `whole`, differing
+# until 2026-08-18, and it cost real time: ir_to_x86's two rungs compiled the
+# same 2.4 MB bundle twice, passes_to_x86's the same 2.58 MB, differing
 # only in a Text literal, so two thirds of a sweep went on compiling two
 # binaries twice. Now each unit's harness runs every one of its subjects and
 # marks the dumps, and the arms split the stream back into per-rung files.
@@ -28,7 +28,7 @@ LADDER_RUNGS="lex parse desugar scope check lower text pingpong lir fib fibx sca
 # Everything downstream still reads <rung>.truth, <rung>.zigout, <rung>.diff,
 # and bank_truth.py still banks per rung. What changed is how many compiles
 # stand behind them.
-LADDER_UNITS="lex parse desugar scope check lower text pingpong lir fib fibx whole"
+LADDER_UNITS="lex parse desugar scope check lower ir_to_codex ir_to_codex_roundtrip lir_to_x86 ir_to_wire ir_to_x86 passes_to_x86"
 
 # The subjects a unit runs. The order here is documentation and nothing else:
 # split_truth keys each section on the MARK TEXT, so listing them the other way
@@ -38,9 +38,9 @@ LADDER_UNITS="lex parse desugar scope check lower text pingpong lir fib fibx who
 # trusted it.
 unit_rungs() {
     case "$1" in
-        fibx)  echo "fibx scale" ;;
-        whole) echo "whole clamp" ;;
-        *)     echo "$1" ;;
+        ir_to_x86)     echo "ir_to_x86_on_fib ir_to_x86_on_cce" ;;
+        passes_to_x86) echo "passes_to_x86_on_mid passes_to_x86_on_arith" ;;
+        *)             echo "$1" ;;
     esac
 }
 
@@ -144,27 +144,28 @@ unset _carried _u _r
 # available; raising QEMU's memory is not an option on this machine.
 mode_flags() {
     case "$1" in
-        lower) echo " decks=100" ;;
-        fib)   echo " decks=100" ;;
+        lower)      echo " decks=100" ;;
+        ir_to_wire) echo " decks=100" ;;
         # Both these units now carry two subjects and run the pipeline twice
         # in one process, so the reservation (demand-lift-floor, 104 MB) is
         # taken twice and the deck sees two runs' worth of extents. These
         # numbers were sized for one subject and are the likeliest thing to
         # move first: too small shows up as CDX9002 or a fault, which is the
         # honest direction to be wrong in.
-        fibx)  echo " decks=160" ;;
-        # 160 scaled by unit length (u47: whole 2,601,343 bytes against
-        # fibx's 2,469,864; the ratio moves per Update). Deck scale tracks the
-        # unit, and guessing low here costs a ten-minute cycle to find out.
-        whole) echo " decks=172" ;;
+        ir_to_x86)     echo " decks=160" ;;
+        # 160 scaled by unit length (u47: passes_to_x86 2,601,343 bytes
+        # against ir_to_x86's 2,469,864; the ratio moves per Update). Deck
+        # scale tracks the unit, and guessing low here costs a ten-minute
+        # cycle to find out.
+        passes_to_x86) echo " decks=172" ;;
         # passes=text-plug drops the inline passes. Passes.codex says why in
         # so many words: "A plug that emits SOURCE resolves a call by its
         # name, so a pass that substitutes a body and deletes the call
         # deletes the plug's only handle on it." Emitting codex text from
         # inlined IR would produce source with the calls gone -- still a
         # fixed point, but a worthless round trip.
-        text)  echo " decks=100 passes=text-plug" ;;
-        pingpong) echo " decks=100 passes=text-plug" ;;
+        ir_to_codex)           echo " decks=100 passes=text-plug" ;;
+        ir_to_codex_roundtrip) echo " decks=100 passes=text-plug" ;;
         *)     echo "" ;;
     esac
 }
@@ -319,21 +320,21 @@ PY
 # by nothing. The files matched, by luck rather than by test, for as long as
 # the rung has existed. A missing file fails here rather than passing quietly:
 # an unrun rung and a green one must not look alike.
-pingpong_fixed_point() {
+roundtrip_fixed_point() {
     cd $T/ast
     local f
-    for f in text.truth pingpong.truth; do
+    for f in ir_to_codex.truth ir_to_codex_roundtrip.truth; do
         [ -s "$f" ] || {
-            echo "FIXED POINT UNCHECKED: no $f (run truthcycle_text.sh and truthcycle_pingpong.sh)"
+            echo "FIXED POINT UNCHECKED: no $f (run truthcycle_ir_to_codex.sh and truthcycle_ir_to_codex_roundtrip.sh)"
             return 1
         }
     done
-    if diff <(tr -d '\r' < text.truth) <(tr -d '\r' < pingpong.truth) \
-            > pingpong.fixpoint.diff 2>&1; then
-        echo "FIXED POINT: pingpong.truth byte-identical to text.truth"
+    if diff <(tr -d '\r' < ir_to_codex.truth) <(tr -d '\r' < ir_to_codex_roundtrip.truth) \
+            > ir_to_codex_roundtrip.fixpoint.diff 2>&1; then
+        echo "FIXED POINT: ir_to_codex_roundtrip.truth byte-identical to ir_to_codex.truth"
     else
         echo "FIXED POINT BROKEN (first 15 lines):"
-        head -15 pingpong.fixpoint.diff
+        head -15 ir_to_codex_roundtrip.fixpoint.diff
         return 1
     fi
 }
@@ -494,7 +495,7 @@ arm_for() {
     # byte-identical on the same IR.
     [ -n "${CODEX_ALL_RING:-}" ] && { echo ring_arm; return; }
     case "$1" in
-        fibx|whole) echo ring_arm ;;
-        *)          echo zig_arm ;;
+        ir_to_x86|passes_to_x86) echo ring_arm ;;
+        *)                       echo zig_arm ;;
     esac
 }

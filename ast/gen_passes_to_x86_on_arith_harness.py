@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""The clamp subject: the whole compiler, compiling plug-oracle-arith.
+"""The passes_to_x86_on_arith subject: the whole compiler, compiling plug-oracle-arith.
 
-This rung no longer has a harness of its own. It rides in the unit
-gen_whole_harness.py builds, as the second subject that unit's driver runs,
+This rung has no harness of its own. It rides in the unit
+gen_passes_to_x86_harness.py builds, as the second subject that unit's driver runs,
 so the 2.58 MB of compiler underneath it is compiled once instead of twice.
 What this file owns is the SUBJECT, which is the part that attributes the
 failure.
@@ -31,6 +31,6 @@ SOURCE = CODEX / 'codex' / 'test' / 'plug-oracle-arith.codex'
 SUBJECT = SOURCE.read_text()
 
 if __name__ == '__main__':
-    print(f'clamp is a subject, not a unit: {SOURCE.name}, '
+    print(f'passes_to_x86_on_arith is a subject, not a unit: {SOURCE.name}, '
           f'{SUBJECT.count(chr(10))} lines.')
-    print('gen_whole_harness.py builds the unit that runs it.')
+    print('gen_passes_to_x86_harness.py builds the unit that runs it.')

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""The scale subject: the same back end, a real chapter to compile.
+"""The ir_to_x86_on_cce subject: the same back end, a real chapter to compile.
 
-This rung no longer has a harness of its own. It rides in the unit
-gen_fibx_harness.py builds, as the second subject that unit's driver runs, so
+This rung has no harness of its own. It rides in the unit
+gen_ir_to_x86_harness.py builds, as the second subject that unit's driver runs, so
 the 2.4 MB of compiler underneath it is compiled once instead of twice. What
 this file owns is the SUBJECT, which is what the rung was ever about.
 
-fibx compiles eighteen lines. This compiles codex/foreword/core/CCE.codex --
+ir_to_x86_on_fib compiles eighteen lines. This compiles codex/foreword/core/CCE.codex --
 526 lines of the compiler's own character-encoding chapter, verbatim, with a
 driver appended. No new emitter surface is expected: the point is capacity,
 which is the one thing a tiny subject cannot test. Accumulators, deck sizing,
@@ -47,6 +47,6 @@ if 'cites' in chapter:
 SUBJECT = chapter.rstrip('\n') + '\n' + DRIVER
 
 if __name__ == '__main__':
-    print(f'scale is a subject, not a unit: {SOURCE.name} + driver, '
+    print(f'ir_to_x86_on_cce is a subject, not a unit: {SOURCE.name} + driver, '
           f'{SUBJECT.count(chr(10))} lines.')
-    print('gen_fibx_harness.py builds the unit that runs it.')
+    print('gen_ir_to_x86_harness.py builds the unit that runs it.')

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Generate FibxHarness.codex: the x86-64 back end over two subjects.
+"""Generate IrToX86Harness.codex: the x86-64 back end over two subjects.
 
-This is a UNIT, and it carries two rungs. `fibx` compiles eighteen lines of
-fib; `scale` compiles a real compiler chapter and lives in
-gen_scale_harness.py. They were separate harnesses in separate bundles until
+This is a UNIT, and it carries two rungs. `ir_to_x86_on_fib` compiles
+eighteen lines of fib; `ir_to_x86_on_cce` compiles a real compiler chapter
+and lives in gen_ir_to_x86_on_cce_harness.py. They were separate harnesses in separate bundles until
 2026-08-18, which meant compiling the same 2.4 MB of compiler twice to ask two
 questions of it. The subjects are what differ, so the subjects are what the
 unit now carries.
@@ -23,7 +23,7 @@ referents finally exist. gen_lower_harness.py is still invoked for its
 LowerHarness (the fib rung's sibling), not for the stub."""
 import pathlib
 
-import gen_scale_harness
+import gen_ir_to_x86_on_cce_harness
 from emit_harness import harness_source
 
 HERE = pathlib.Path(__file__).parent
@@ -46,8 +46,11 @@ FIB = (
     '  end\n'
 )
 
+# The chapter name and walker prefix ('FibxHarness', 'fibx') reach the
+# compiled unit as Codex identifiers and are not the rung's name; they stay.
 out = harness_source('FibxHarness', 'fibx',
-                     [('fibx', FIB), ('scale', gen_scale_harness.SUBJECT)])
-dest = HERE / 'FibxHarness.codex'
+                     [('ir_to_x86_on_fib', FIB),
+                      ('ir_to_x86_on_cce', gen_ir_to_x86_on_cce_harness.SUBJECT)])
+dest = HERE / 'IrToX86Harness.codex'
 dest.write_text(out)
-print(f'{dest}: {len(out)} bytes, subjects fibx + scale')
+print(f'{dest}: {len(out)} bytes, subjects ir_to_x86_on_fib + ir_to_x86_on_cce')

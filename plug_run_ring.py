@@ -4,7 +4,7 @@ the serial ring (the compiler's own intake) and save the decoded zig
 text. The TCP transport costs ~130 bytes of guest heap per IR byte
 before the parser sees anything (IrmemHarness); the ring intake is a
 machine-code loop at one byte per byte, which is what admits IRs past
-the TCP ceiling (fibx at 13.1 MB under the u47 seed; sizes move per Update).
+the TCP ceiling (ir_to_x86 at 13.1 MB under the u47 seed; sizes move per Update).
 
 The guest mimics the compiler's text-plug wire (SIZE: line + raw CCE),
 so compile_ring's capture works unchanged with the plug cdx as the

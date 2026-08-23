@@ -4,9 +4,9 @@
 # harness compiles fib end to end and prints one (def ...) line per
 # definition -- the same grammar the IR-CCE wire carries.
 param(
-    [string]$Harness = 'FibxHarness.codex',
-    [string]$OutName = 'fibx-subject.codex',
-    [string]$PlugName = 'fibx-subject',
+    [string]$Harness = 'IrToX86Harness.codex',
+    [string]$OutName = 'ir_to_x86-subject.codex',
+    [string]$PlugName = 'ir_to_x86-subject',
     # Chapters appended after the list below, and the BootPaint to carry.
     # The whole-compiler rung adds the middle end and swaps the stub for the
     # real painter; everything else about the unit is identical, so it stays

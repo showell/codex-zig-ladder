@@ -10,8 +10,9 @@ could drift is exactly what this is not.
 
 **A harness takes a LIST of subjects and runs each one.** That is the fix for a
 conflation the ladder shipped with: a rung is a claim, a unit is a compile, and
-they were the same word. `scale` compiled the same 2.4 MB unit as `fibx` and
-`clamp` the same 2.58 MB unit as `whole`, differing only in a Text literal, so
+they were the same word. ir_to_x86_on_cce compiled the same 2.4 MB unit as
+ir_to_x86_on_fib, and passes_to_x86_on_arith the same 2.58 MB unit as
+passes_to_x86_on_mid, differing only in a Text literal, so
 the ladder paid for four compiles to ask four questions of two binaries.
 Compiling the unit is 80-90 per cent of what a big rung costs (measured, sweep
 of 2026-08-17), so the second question was costing almost as much as the first
@@ -25,7 +26,7 @@ bound `src` since the hosted compiler existed.
 What this costs is fault isolation, and it is worth naming. Two dumps from one
 process means a fault in the first subject takes the second down with it, where
 two rungs used to fail independently -- and that mattered exactly once, when
-clamp faulted and whole was still measured. The delimiter is what buys most of
+the arith rung faulted and the mid rung was still measured. The delimiter is what buys most of
 it back: a truncated run names the subject it died in.
 """
 
@@ -162,7 +163,7 @@ def frontend_source(src, passes, scan=True, deck_bytes=None, resolve=True):
     emit-ir-cce, emits the IR with its annotations unrewritten. A harness
     that dumps IR with resolve on prints record-ty where the seed driver
     prints ctd for every let binding whose nullary ConstructedTy resolves
-    to a record -- 930 lines of the fibx IR. The CDX harnesses keep it on
+    to a record -- 930 lines of the ir_to_x86 IR. The CDX harnesses keep it on
     (finding 11 is what skipping it costs THEM); the IR-emitting harness
     turns it off.
 
@@ -276,7 +277,7 @@ def harness_source(chapter, prefix, subjects, passes=False, scan=True):
     back out of the unit however many chapters were bundled.
 
     It is a per-UNIT flag, not a per-subject one, and the pairing respects
-    that: fibx and scale both run with the passes off, whole and clamp both
+    that: ir_to_x86's two rungs both run with the passes off, passes_to_x86's both
     with them on. A unit whose subjects wanted different flags would need two
     run functions and would not be one unit."""
     if isinstance(subjects, str):

@@ -86,6 +86,6 @@ run_unit_remote() {
         *ORACLE*|*TRANSPORT\ FAILED*) ;;
         *) echo "NO VERDICT from $m -- treating as failure"; return 1 ;;
     esac
-    [ "$m" = pingpong ] && { pingpong_fixed_point || return 1; }
+    [ "$m" = ir_to_codex_roundtrip ] && { roundtrip_fixed_point || return 1; }
     return 0
 }

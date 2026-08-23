@@ -2,8 +2,9 @@
 """Generate WholeHarness.codex: the whole compiler, minus its driver, over two
 subjects.
 
-This is a UNIT and it carries two rungs: `whole`, the subject below, and
-`clamp`, which lives in gen_clamp_harness.py. One compile of 2.58 MB answers
+This is a UNIT and it carries two rungs: `passes_to_x86_on_mid`, the subject
+below, and `passes_to_x86_on_arith`, which lives in
+gen_passes_to_x86_on_arith_harness.py. One compile of 2.58 MB answers
 both, which is what they were always asking of the same binary.
 
 This is the dump-harness form of the DDC witness. The C# arm pushes the whole
@@ -22,7 +23,7 @@ The subject is chosen to make the middle end DO something. Transpiling the
 pass chapters and running them are two different claims, and fib only tested
 the first: with fib the pipeline is a no-op -- double is dead, fib is
 recursive so nothing inlines, nothing folds -- so whole.truth came out
-byte-identical to fibx.truth and the passes could have been broken without
+byte-identical to ir_to_x86_on_fib.truth and the passes could have been broken without
 the oracle noticing. This subject gives each of default-ir-pipeline's three
 passes something to bite on:
 
@@ -33,11 +34,11 @@ passes something to bite on:
 fib stays for the recursion, which nothing inlines and which keeps a real
 call in the emitted code. Everything is integer arithmetic with one printed
 answer, so the subject stays small: the work under test is the compiler, not
-the program it compiles -- that is what the scale rung is for.
+the program it compiles -- that is what the ir_to_x86_on_cce rung is for.
 """
 import pathlib
 
-import gen_clamp_harness
+import gen_passes_to_x86_on_arith_harness
 from emit_harness import harness_source
 
 HERE = pathlib.Path(__file__).parent
@@ -65,9 +66,12 @@ SUBJECT = (
     '  end\n'
 )
 
+# The chapter name and walker prefix ('WholeHarness', 'whole') reach the
+# compiled unit as Codex identifiers and are not the rung's name; they stay.
 out = harness_source('WholeHarness', 'whole',
-                     [('whole', SUBJECT), ('clamp', gen_clamp_harness.SUBJECT)],
+                     [('passes_to_x86_on_mid', SUBJECT),
+                      ('passes_to_x86_on_arith', gen_passes_to_x86_on_arith_harness.SUBJECT)],
                      passes=True)
-dest = HERE / 'WholeHarness.codex'
+dest = HERE / 'PassesToX86Harness.codex'
 dest.write_text(out)
-print(f'{dest}: {len(out)} bytes, subjects whole + clamp')
+print(f'{dest}: {len(out)} bytes, subjects passes_to_x86_on_mid + passes_to_x86_on_arith')

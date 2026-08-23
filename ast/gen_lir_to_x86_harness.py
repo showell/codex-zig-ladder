@@ -191,6 +191,6 @@ Section: Stubs
 
 import pathlib
 here = pathlib.Path(__file__).parent
-(here / "LirHarness.codex").write_text(HARNESS)
+(here / "LirToX86Harness.codex").write_text(HARNESS)
 (here / "LirStubs.codex").write_text(STUBS)
-print("wrote LirHarness.codex + LirStubs.codex")
+print("wrote LirToX86Harness.codex + LirStubs.codex")
