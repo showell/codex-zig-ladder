@@ -26,7 +26,9 @@ modes, and mistaking one for the other misprices the work:
 computes.** Every job below -- natives, tiers, census, sweeps, rebanks --
 runs in a sandbox on the ladder droplet (`./sandbox.sh <label>` there,
 `. ../env`, detached with a log). The laptop edits, commits, pushes, and
-reads logs over ssh. One compute job per host, as ever.
+reads logs over ssh. **There is no fallback**: every compute entry point
+refuses on a host without `CODEX_LADDER_VENUE` (`bb39139`), which only the
+droplet's `~/.codex_ladder_env` exports. One compute job per host.
 
 ## The native loop, which changes what is cheap
 
@@ -61,9 +63,11 @@ of an address-space one. The droplet is cgroup v2 + systemd 255, and
 `systemd-run --user --scope -p MemoryMax=N` kills at resident N with no
 root and no setup (measured: 300 MB touch under 200M -> exit 137). So:
 
-- `bounded_run` in `oracle_lib.sh`: cgroup MemoryMax where available,
-  the existing `ulimit -v` otherwise; the three call sites use it. Cap
-  6 GB on the droplet for zig arms and natives, 800M per census program.
+- `bounded_run` in `oracle_lib.sh`: `systemd-run --user --scope -p
+  MemoryMax=N`, and a refusal if `systemd-run` is absent -- no `ulimit -v`
+  branch, the laptop is not a venue. The three call sites use it; the
+  `ulimit -v` lines go. Cap 6 GB for zig arms and natives, 800M per
+  census program.
 - `cx_heap_reserve` -> 4 GiB on the branch (lazily faulted, no resident
   cost); `emit_harness.py` hosted deck -> 512 MB, rung harnesses untouched.
 - Verify with the chain, then `native/codexir` on the fibx subject under
