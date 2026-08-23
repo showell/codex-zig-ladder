@@ -150,11 +150,21 @@ BINDINGS = """in let resolved-env = for b in ((cr.env).bindings) -> TypeBinding 
 RESOLVED_TABLES = EXPR_TYPES + "\n    " + BINDINGS
 
 
-def frontend_source(src, passes, scan=True, deck_bytes=None):
+def frontend_source(src, passes, scan=True, deck_bytes=None, resolve=True):
     """The compiler's own sequence from source text to a lowered IRChapter,
     bound as `ir`. Every program built here runs exactly this -- the oracle
     harnesses and the hosted compiler alike -- so it is written once. `src` is
     whatever expression yields the source Text.
+
+    `resolve` runs the RESOLVE phase (build-type-def-map + rewrite-ir-defs)
+    and must mirror which driver the harness stands in for: it lives in
+    compile-frontend-cdx ONLY -- compile-frontend-ir, the sequence behind
+    emit-ir-cce, emits the IR with its annotations unrewritten. A harness
+    that dumps IR with resolve on prints record-ty where the seed driver
+    prints ctd for every let binding whose nullary ConstructedTy resolves
+    to a record -- 930 lines of the fibx IR. The CDX harnesses keep it on
+    (finding 11 is what skipping it costs THEM); the IR-emitting harness
+    turns it off.
 
     `passes` runs the IR pipeline between lower and emit, where
     compile-frontend-passes runs it. Not cosmetic: IR emission prunes to what
@@ -178,9 +188,10 @@ def frontend_source(src, passes, scan=True, deck_bytes=None):
     # lives in ResolveTypes.codex and none of their bundles carry it. Adding a
     # chapter to buy a resolved IR dump would grow four rungs whose whole value
     # is being small, and fibx and whole already prove the resolved path.
-    RESOLVE = """in let type-map = build-type-def-map (ch.type-defs) 0 (list-length (ch.type-defs)) []
+    RESOLVE = ("""in let type-map = build-type-def-map (ch.type-defs) 0 (list-length (ch.type-defs)) []
     in let sorted = sort-bindings (type-map & bound)
-    in let ir = __record-set ir0 "defs" (rewrite-ir-defs sorted (ir0.defs) 0)"""
+    in let ir = __record-set ir0 "defs" (rewrite-ir-defs sorted (ir0.defs) 0)""" if resolve else
+        "in let ir = ir0")
 
     if scan:
         head = f"""let toks = tokenize {src} 1

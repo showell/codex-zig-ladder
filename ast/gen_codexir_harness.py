@@ -22,6 +22,13 @@ Two things it must not skip, because they decide what the IR CONTAINS:
                                  names, prose blocks, annotations and ground
                                  effects all ride the text wire
 
+And one it MUST skip, for the same reason: the RESOLVE phase belongs to
+compile-frontend-cdx, and compile-frontend-ir -- the sequence this stands in
+for -- never runs it. Running it here rewrote every let binding whose nullary
+ConstructedTy names a record into a RecordTy the seed driver leaves as ctd:
+930 lines of the fibx IR, and an IR wire the plug was never fed by the
+oracle path. frontend_source's resolve flag carries the why.
+
 ir-emit-roots is copied from opening.codex:1316 rather than cited, because
 opening.codex cannot be bundled beside a harness that defines `opening`. If
 that list changes upstream, this copy is wrong and the IR will be missing a
@@ -46,7 +53,7 @@ Section: Driver
 
   opening : [Console, FileSystem] Nothing = act
     src <- read-file-uni "/dev/stdin"
-    {frontend_source("src", True, deck_bytes=HOSTED_DECK_BYTES)}
+    {frontend_source("src", True, deck_bytes=HOSTED_DECK_BYTES, resolve=False)}
     in let meta = IRTextMeta {{
       chapter-title = ch.chapter-title,
       prose = ch.prose,
