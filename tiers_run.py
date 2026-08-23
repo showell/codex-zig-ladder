@@ -19,7 +19,9 @@ summary and the exit code. The verdict per tier:
     GAP      the zig arm could not build it (emitter refusal)
 
 A set is green only if every tier is green or noted. The probes that kill
-an arm on purpose are excluded by name below, with the reason, and the
+an arm on purpose are excluded by name below, with the reason -- except
+the ZIG_REFUSALS class, where the kill is the property under test and the
+probe runs zig-only with the expected panic marker as its green. The
 zig column records which native build answered so a branch regression is
 attributable without re-running by hand.
 """
@@ -48,6 +50,14 @@ PROBES = [
     'probe-char-literal',
     'probe-approx-eq',
 ]
+# Zig-only refusal probes: the property IS a plug-arm refusal, and bare
+# metal has no oracle for it -- upstream corrupts silently in the same
+# shape, which is why the guard exists. The arm runs alone and green means
+# it DIED with the named marker before reaching its REFUSAL MISSED line;
+# a run that prints that line survived past the guard and is a regression.
+ZIG_REFUSALS = {
+    'probe-deck-overrun': 'the two cursors met',
+}
 EXCLUDED = {
     'probe-shift-count':    'kills the bare-metal arm on purpose (finding 30)',
     'probe-substring-trap': 'kills the zig arm on purpose (finding 28)',
@@ -55,6 +65,27 @@ EXCLUDED = {
     'probe-arith-edges':    'abs minInt kills the zig arm on purpose, at compile time now (its own prose, finding 18 family)',
     'probe-deck-init':      'declares its own deck-record; the zig arm brackets it by name and faults (finding 25) -- re-include when the gate is ported',
 }
+
+
+def run_refusal(stem):
+    """One zig-only refusal probe: the arm must die with the named marker.
+    There is no bare column to bank and no gold; the marker and the absent
+    REFUSAL MISSED line are the whole verdict."""
+    src = FINDINGS / f'{stem}.codex'
+    if not src.is_file():
+        return 'MISSING', f'{src} does not exist'
+    marker = ZIG_REFUSALS[stem]
+    r = subprocess.run([sys.executable, str(HERE / 'tier_run.py'), str(src), '--zig'],
+                       capture_output=True, text=True, timeout=1800)
+    lines = r.stdout.splitlines()
+    missed = [l for l in lines if 'REFUSAL MISSED' in l]
+    if missed:
+        return 'RED', missed[0].strip()[:160]
+    hits = [l for l in lines if marker in l]
+    if hits:
+        return 'green', hits[0].strip()[:160]
+    tail = (r.stdout.strip().splitlines() or ['?'])[-1]
+    return 'RED', f'no refusal and no survivor line: {tail}'[:160]
 
 
 def natives_stamp():
@@ -112,16 +143,21 @@ def main():
     compute_lock.require_venue()
     mode = '--bare' if a.bare else ('--zig' if a.zig else None)
 
-    stems = a.stems or (sorted(p.stem for p in FINDINGS.glob('prim-*.codex')) + PROBES)
+    stems = a.stems or (sorted(p.stem for p in FINDINGS.glob('prim-*.codex'))
+                        + PROBES + sorted(ZIG_REFUSALS))
     print(f'### tiers_run: {len(stems)} tiers, mode {mode or "both arms"}, natives {natives_stamp()}')
     for stem, why in EXCLUDED.items():
         if stem in stems:
             print(f'  excluded {stem}: {why}')
             stems.remove(stem)
+    if mode == '--bare':
+        for stem in [s for s in stems if s in ZIG_REFUSALS]:
+            print(f'  skipped {stem}: zig-only refusal probe, no bare column')
+            stems.remove(stem)
     counts = {}
     bad = 0
     for stem in stems:
-        verdict, detail = run_one(stem, mode)
+        verdict, detail = run_refusal(stem) if stem in ZIG_REFUSALS else run_one(stem, mode)
         counts[verdict] = counts.get(verdict, 0) + 1
         if verdict in ('RED', 'STALE', 'GAP', 'MISSING'):
             bad += 1

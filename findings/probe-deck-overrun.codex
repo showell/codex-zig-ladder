@@ -1,0 +1,46 @@
+Chapter: DeckOverrun
+  cites Foreword chapter Console
+
+ ZIG-ONLY, and the refusal IS the pass. The crossing guard in cx_bump_alloc
+ refuses an allocation that overlaps the other cursor's live span; this
+ program arranges the main-from-below trample on purpose. The deck is placed
+ 4096 bytes above the frontier and given live objects, the frontier walks up
+ with __heap-advance to 32 bytes short of the deck's base, and one small
+ list then lands INSIDE the span -- overlapping live deck bytes while
+ staying well short of the deck cursor, so a straddle test at cx_dptr
+ cannot see it. The zig arm must die with "the two cursors met" BEFORE the
+ last line prints; a run that reaches the REFUSAL MISSED line is the
+ regression. Bare metal is no oracle here: upstream's same shape corrupts
+ silently (BuildSettings: starving the floor crashes on a garbage pointer
+ rather than raising CDX9002), which is why the guard exists at all.
+
+Section: Instrument
+
+ deck-record is the identity the code generator intercepts by name; the
+ name resolver still needs it in scope.
+
+  deck-record : a -> a
+  deck-record (x) = x
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+  fill : Integer, List Integer -> List Integer
+  fill (i) (acc) =
+   if i <= 0 then acc
+   else fill (i - 1) (list-push acc i)
+
+Section: Main
+
+ fill 64 keeps the deck span several hundred bytes wide, so the tramp
+ allocation and the prints behind it stay far below cx_dptr: only the
+ overlap test can fire, never the straddle.
+
+  opening : [Console] Nothing = act
+   let h0 = __heap-save
+   in let m = __deck-set (h0 + 4096)
+   in let kept = deck-record (fill 64 [0])
+   in let walk = __heap-advance (4096 - 32)
+   in let tramp = [1, 2, 3, 4, 5, 6, 7, 8]
+   in print-line-uni ("REFUSAL MISSED, main sits inside the deck : " & show-yn (list-length kept == 65 and list-length tramp == 8))
+  end
