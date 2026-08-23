@@ -1698,3 +1698,26 @@ way is for the hosted harnesses to bracket per def the way the driver
 does. Either is an emitter/harness change, and PRIORITIES item 1 carries
 the decision.
 
+
+## 35. A non-ASCII identifier is emitted raw, and zig's identifiers are ASCII
+
+**Found 2026-08-22 by the u49 census (the first on natives from the heap
+branch rebased onto the pin). Ours. OPEN, emitter-shaped, small.**
+
+`codex/test/ident-letters` is new at Update 49 and names a definition
+`café` -- one of the thirty-one Tier-0 letters at CCE 97..127 that the
+lexer now accepts as identifier characters. `zig-sanitize` maps `-` and
+`/`, renames prelude collisions and quotes keywords, and passes every
+other byte through; the emitted `fn café() i64` is two raw UTF-8 bytes
+in a zig identifier, and zig 0.16 refuses it at the parser
+(`ident-letters.zig:769:7: expected '(', found invalid bytes`). Verdict
+moved `markers -> refused` between the 08-20 bank and this census: the
+old natives stopped at is-letter's band before reaching the name, so
+the gap only became visible once finding 19 closed.
+
+Fix is confined to the sanitizer: any byte outside `[A-Za-z0-9_]`
+either quotes the whole name (`@"café"`, legal in zig for any
+non-empty string) or transliterates it to an escape (`caf_u00e9`);
+quoting is simpler and `zig-sanitize` already quotes keywords. The
+prefixed names through `zig-raw-ident` need the same rule. One program
+hits this today; the census column is `refused`, not a wrong answer.
