@@ -6,6 +6,57 @@ findings register, JUSTIFICATIONS.md, a bank, an essay). If an entry
 needs a paragraph, it needs a register section or a JUSTIFICATIONS entry
 instead -- write that and point at it.
 
+- **2026-08-23 — Finding 35 closed** (non-ASCII identifiers transliterated
+  before they become zig identifiers; `1249ad8a` on the heap branch):
+  ident-letters refused -> match, tiers green, rebank+sweep 14/14 -- the
+  first chain verified entirely on the droplet. Record: register 35.
+- **2026-08-22 — Droplet guest cap 3072, native builds may route there**
+  (Steve's call; `04145bc`). Record: droplet_compile.sh header.
+- **2026-08-22 — Laptop orchestrates, droplet computes** (Steve, twice):
+  the local sandboxes, caches and worktrees are gone; the laptop holds
+  the two checkouts and nothing else. Record: memory, README venue.
+- **2026-08-22 — u49 ceremony complete end to end, tag `u49-14of14`**:
+  bank `truth/u49` (eleven byte-identical to u48; fibx/scale/whole move
+  by two new `port-*-16-block` builtins), census CDX6020 x43 unchanged,
+  heap branch rebased onto `bdf0049b` (18 commits; the shift-mask commit
+  dropped as absorbed, flagship Confidence reworded), natives, tiers
+  13 green / 6 noted (finding 19's four ledger rows retired), census
+  banked `d186bad`: the eight PR-76 reds to match, 0 differ / 0 crashed
+  over 325 clean programs. Record: the tag, README table, corpus/census.json.
+- **2026-08-22 — The deck-record rename deleted from all ten bundlers**
+  (review Batch 2; `e91fdb3`): nine truth arms byte-identical to the
+  bank, lex moved by exactly 56 x `subj-`. Record: PRIORITIES history,
+  bundle_fibx.ps1's comment.
+- **2026-08-22 — Tiers run as a set, per Update** (`tiers_run.py`,
+  `findings/gold/uNN/`, `EXPECTED.txt` ledger; `6fc3841`). Record:
+  README steps 3 and 5, random925 §B.
+- **2026-08-22 — Finding 24 closed as a harness-sizing misread**
+  (`deck_census.py`: no superlinear family; the 104 MB floor was
+  emit_harness.py's placeholder; arena 2.5 GiB + deck 512 MB compiles
+  the fibx subject natively in 63 s). Findings 33 (no tail calls) and 34
+  (hosted harnesses never reclaim) filed from the same run. Record:
+  register 24, JUSTIFICATIONS "deck census", random924.
+- **2026-08-22 — Emit-rung flat term 28 MiB** (`5c9948f6`, four emit
+  rungs byte-identical at slack 0) and the ring-arm guard hole
+  (`087d61a`). Record: JUSTIFICATIONS "Landed as 4 MiB".
+- **2026-08-22 — New ladder droplet** (143.244.172.148, 8 GB, dedicated;
+  `9f323a7`): fib warmup byte-identical in 7.5 s; rebank 59 min there vs
+  87 on the laptop. Record: README Costs, the appliance memory.
+- **2026-08-21 — The sweep's IR provenance guard** (`.ir.prov`, keyed on
+  seed sha + subject bytes + mode flags; zig and ring arms refuse before
+  a transport). Record: PRIORITIES history, truth_prov.py.
+- **2026-08-21 — Unit-test inventory complete** (seven tiers, both
+  columns; findings 22, 23, 25-29 in one day; the discard-an-argument
+  sweep answered NONE remaining). Record: findings/primitive-costs.md.
+- **2026-08-21 — Heap-unification branch reworded** (per-commit
+  Confidence paragraphs) and its full-corpus census: 33 verdicts moved,
+  every one an ex-abort unblocked, nothing green regressed. Record: the
+  commits, census_full_resume2.log in its sandbox.
+- **2026-08-20 — The refusal-gaps batch implemented** (branch
+  `zig-plug-refusal-gaps`, nine commits off the PR-76 tip: entry shim,
+  Boolean->Integer, memory-access family, unit aliases, approx-eq band,
+  Boolean literal patterns, shadowing sweep; 90 of 105 refusals promoted
+  at the typecheck meter). Not yet rebased or verified post-u49 -- item 4.
 - **2026-08-20 — u48 ceremony complete, tag `u48-14of14`**: 14/14 both
   arms (two-venue sweep + rebank echo), bank diff u47->u48 = one
   keyword feature + one oracle section (four rungs moved, ten

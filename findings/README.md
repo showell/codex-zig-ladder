@@ -1507,7 +1507,7 @@ texts are pointers there, the value IS the address.
 passed.** Every "yes" above is `0 == 0`, true for the same reason a broken
 implementation would make it true. The rows that ask for two things to DIFFER
 are the only ones a constant cannot satisfy. This is the "keep a control" rule
-from PRIORITIES 1.5 earning its place in the sharpest possible way: a test
+from the unit-test item (PRIORITIES 5, then numbered 1.5) earning its place in the sharpest possible way: a test
 suite made only of agreement assertions certifies a stub.
 
 **What it actually breaks, from the compiler's own source.** Not hypothetical:
