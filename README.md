@@ -138,11 +138,21 @@ be graded against the same banked IR and truths on day one.
 
 ### The subject and its harness
 
-A rung's subject is usually a set of real compiler chapters, concatenated. Three
-rungs use something else -- `ir_to_codex_roundtrip` takes another rung's
-output, `ir_to_x86_on_cce` takes a single chapter verbatim,
-`passes_to_x86_on_arith` takes a small program written to fail -- but
-the shape is the same either way: one compilable unit, compiled twice.
+A subject is a set of real compiler chapters, concatenated with stubs and a
+harness. What that compiler then compiles when it runs is its PROGRAM, and
+the two are different things -- "The twelve units" below names both for
+every unit, and says which of them a rung's name refers to. Most programs
+are a fifteen-line fib snippet; three units use something else --
+`ir_to_codex_roundtrip` takes another unit's output,
+`ir_to_x86_on_cce` a single chapter verbatim, `passes_to_x86_on_arith` a
+program written to fail. The shape is the same either way: one compilable
+subject, compiled twice.
+
+A caution for anyone reading the code beside this: `oracle_lib.sh`,
+`emit_harness.py` (`subjects=`) and `split_truth.py` still use "subject"
+for the PROGRAM, and the generated harness spells it `subject-<rung>` --
+a Codex identifier that reaches the compiled subject, so renaming it costs
+a measurement. The code's word is older than this section's.
 
 **A harness stands in for the driver.** Every rung's subject carries one instead,
 because two chapters cannot both define `opening` -- and because the driver is
@@ -247,7 +257,7 @@ until 2026-08-23. Now:
 - The **program** is what that compiler compiles when it runs: a text
   literal the harness carries (`subject-<rung>` in the generated Codex),
   handed to the subject's own lexer at boot. The program is `Lexer.codex`
-  for the `lex` unit and eighteen lines of fib for most of the others.
+  for the `lex` unit and a fifteen-line fib snippet for most of the others.
 
 The truth file is the subject's output while compiling its program: a dump
 the harness prints, never the compiler's own artifacts. Every unit below is
@@ -309,8 +319,25 @@ reservation past the derived default; `passes=text-plug` drops the inline
 IR passes so emitted source keeps its calls. Both go on BOTH blobs, so
 the two arms compile the same thing.
 
-The front-end units are cumulative -- each subject is the previous one plus
-the chapters named -- until `ir_to_codex`. After that the subjects branch:
+Three refusals sit inside that sequence, and a new unit meets all three:
+`check_bundles.py` before the blobs (no chapter under two quires),
+`check_diags.py` after each compile (a diagnostic code the POLICY table
+does not name stops the arm), and `seed_identity.require_match` after the
+split (the seed moved mid-run; the truths are discarded). Between the two
+compiles the IR gets its own sidecar (`truth_prov.py stamp-ir`), keyed on
+the seed, the subject's bytes and the flags.
+
+One gap worth knowing: the harness-content hash banking checks watches
+`gen_<unit>_harness.py` and `bundle_<unit>.ps1`, so editing the generator
+that owns a composite unit's SECOND program
+(`gen_ir_to_x86_on_cce_harness.py`,
+`gen_passes_to_x86_on_arith_harness.py`) changes what is measured without
+changing the hash.
+
+The front-end units are cumulative -- each subject is the previous one
+plus the chapters named, minus the stub those chapters make real (`check`
+drops `ScopeStubs`, `lower` drops `CheckStubs`, `ir_to_codex` drops
+`LowerStubs`) -- until `ir_to_codex`. After that the subjects branch:
 `lir_to_x86` drops the front end entirely, `ir_to_wire` and `ir_to_x86`
 grow from `lower`, and `passes_to_x86` grows from `ir_to_x86`. The
 "+ chapters" line in each section says what it grows from.
@@ -324,8 +351,9 @@ grow from `lower`, and `passes_to_x86` grows from `ir_to_x86`. The
 since nothing this small carries the phase allocator) and the harness.
 **Program.** `Syntax/Lexer.codex`, whole: the lexer tokenizes its own
 source. **Harness.** `tokenize` once. **Flags.** none.
-**Truth.** `tokens N`, then one line per token (`kind offset+len LxCy |text|`),
-`---`, `errors N`.
+**Truth.** `tokens N`, then one line per token: `kind offset+len LxCy`,
+with `|text|` appended except for `Newline`, `Indent`, `Dedent` and
+`EndOfFile`; then `---` and `errors N`.
 
 ### `parse` -- the parse tree
 
@@ -333,9 +361,11 @@ source. **Harness.** `tokenize` once. **Flags.** none.
 `IR/IRChapter`, `Syntax/{SyntaxNodes,ParserCore,ParserExpressions,Parser}`,
 `Foreword/ListUtils`; `LexStubs` still. **Program.** `Syntax/Parser.codex`.
 **Harness.** tokenize, `parse-document`. **Flags.** none.
-**Truth.** count lines (tokens, defs, type-defs, sections, citations, ...),
-one `def <name>` line per definition, one line per section title, the parse
-diagnostics.
+**Truth.** counts interleaved with listings, starting `lex-tokens`: the
+counts (`lex-errors`, `chapter`, `defs`, `type-defs`, `prose-len`,
+sections, citations, quotations, prose-blocks, annotations), one
+`def <name> params N anns N LxCy slug <slug>` line per definition, the
+section titles, then `parse-errors`, the diagnostics, `.` and `---`.
 
 ### `desugar` -- the desugared AST
 
@@ -344,8 +374,12 @@ diagnostics.
 `LexStubs` steps aside); `BootPaintStubs.codex` stands in for the screen
 painter PhaseAllocator cites. **Program.** `Ast/AstNodes.codex`.
 **Harness.** tokenize, parse, `desugar-document`. **Flags.** none.
-**Truth.** the `parse` dump verbatim, then `--- desugar ---`: one `adef`
-line per definition and the counts.
+**Truth.** an abridged parse half (`lex-tokens`, `lex-errors`, `chapter`,
+`defs`, the `def` lines, `parse-errors` -- not the section list, type-defs,
+citations or diagnostics `parse` prints), then `--- desugar ---`: the
+`adef` lines and their counts. Each front-end unit prints its
+predecessor's SHAPE this way, never its bytes: the program differs too, so
+no two truths share a line.
 
 ### `scope` -- scoping and name resolution
 
@@ -354,22 +388,24 @@ line per definition and the counts.
 brings it; `ScopeCollectionsStubs.codex` (Collections minus its
 `bsearch-text-pos` section) and `ScopeStubs.codex` (the builtin table's
 names only). **Program.** `Semantics/NameResolver.codex`. **Harness.**
-tokenize, parse, desugar, `scope-achapter` with empty rename, collision and
-assignment tables, `resolve-chapter`; no scan. **Flags.** none.
-**Truth.** the `desugar` dump, then `--- scope ---`: `resolve-errors N`,
-the constructor names, the top-level names.
+tokenize, parse, desugar, `scope-achapter` with an empty colliding-name
+table, `resolve-chapter`; no `scan-document`. **Flags.** none.
+**Truth.** the desugar shape, then `--- scope ---`: `resolve-errors`,
+`ctor-names`, `top-level-names` and `type-names` counts, then the
+constructor and top-level name listings.
 
 ### `check` -- inference and checking
 
 **Subject.** `scope` + `Core/Collections` (real, now), `Types/{CodexTypeTree,TypeEnv,Unifier,TypeChecker,TypeCheckerInference}`;
 `CheckStubs.codex` is the builtin table with `bs-emit` stripped (that field
 is typed over the code generator, which is not here). **Program.** the
-built-in fib snippet, fifteen lines -- this is where the program shrinks from
-a real chapter to a toy, and every unit after it compiles fib unless it
-says otherwise. **Harness.** tokenize, parse, desugar, scope, resolve,
+built-in fib snippet, fifteen lines and 264 bytes, spelled identically in
+five generators -- this is where the program shrinks from a real chapter to
+a toy, and every unit after it compiles fib unless it says otherwise. **Harness.** tokenize, parse, desugar, scope, resolve,
 `check-chapter`. **Flags.** none.
-**Truth.** the `scope` dump, then `--- check ---`: one `tb <name> <kind>`
-line per type binding, the substitutions, `next-id`, the expression types.
+**Truth.** the scope shape, then `--- check ---`: one `tb <name> <kind>`
+line per type binding, then `substitutions`, `next-id` and `expr-types` as
+counts (the substitutions themselves are not listed).
 
 ### `lower` -- the IR, as a tree walk
 
@@ -377,17 +413,24 @@ line per type binding, the substitutions, `next-id`, the expression types.
 **Program.** fib. **Harness.** the full front end, `lower-chapter`, with
 the driver's `DECK_PROLOGUE` and `RESOLVED_TABLES` taken from
 `emit_harness.py`; RESOLVE (`rewrite-ir-defs`) does not run here, so
-constructed types stay unresolved in the IR. **Flags.** `decks=100`
+constructed types stay unresolved in the IR. Like `scope`, `ir_to_codex`,
+its roundtrip and `ir_to_wire`, this harness hand-writes its pipeline with
+no `scan-document` and empty rename and collision tables; only `ir_to_x86`
+and `passes_to_x86` take `frontend_source`'s scan. **Flags.** `decks=100`
 (the derived deck scale overflows the seed's CHECK deck on this subject).
-**Truth.** the `check` dump, then `--- lower ---`: one `irdef` line per
-definition and a pre-order walk of every expression, `eN <kind>` per node.
+**Truth.** the check shape, then `--- lower ---`: `ir-name`, `ir-eff-ops`
+and any `eff-op` lines, one `irdef` line per definition, and a pre-order
+walk of every expression, `eN <kind>` per node.
 A designed dump of the IR, not the IR's own text -- that is `ir_to_wire`.
 
 ### `ir_to_codex` -- Codex source out
 
 **Subject.** `lower` + `Emit/CodexEmitter`; `TextStubs.codex`. The bundle
-strips every prose line, because with CodexEmitter the subject is 2.4%
-over the 1 MB serial-ring ceiling and prose is not executable. **Program.**
+strips every prose line -- about 80 KB, none of it executable (one leading
+space marks prose, two mark a definition). It was added when CodexEmitter
+put the subject 2.4% over what the 1 MB serial ring could then carry;
+`ring_compile.py` streams larger blobs now, so the strip survives as a
+property of this banked subject rather than a necessity. **Program.**
 fib. **Harness.** the front end, lower, then one call to
 `codex-emit-text-chapter`, printed. **Flags.** `decks=100 passes=text-plug`
 -- the inline passes would delete the calls the emitted source needs.
@@ -397,8 +440,11 @@ harness designed.
 
 ### `ir_to_codex_roundtrip` -- the fixed point
 
-**Subject.** the same recipe as `ir_to_codex` with `PingpongStubs.codex`
-(19 bytes of difference, names). It is a separate unit and always will be:
+**Subject.** the same chapter list as `ir_to_codex`, with
+`PingpongStubs.codex` in place of `TextStubs.codex` -- the two stub files
+are byte-identical, written by the same bs-emit-stripping transform, so
+the subjects differ only in the harness chapter name and the program.
+It is a separate unit and always will be:
 its program cannot exist until `ir_to_codex` has run. **Program.**
 `ast/ir_to_codex.truth` -- the working truth of the previous unit, the
 emitted source itself. **Harness.** as `ir_to_codex`. **Flags.** as
@@ -412,9 +458,13 @@ checked by `roundtrip_fixed_point` in the sweep so it cannot be skipped.
 `Types/{CodexType,TypeEnv,CodexTypeHelpers}`, `IR/{IRChapter,Lir}`,
 `Emit/{EmitAllocator,X86_64Encoder,X86_64State,X86_64Lir}` -- the
 selector, its state and encoder, and what CodegenState's fields reach. No
-lexer, parser, checker or lowering. Stubs: `BootPaintStubs`, `CheckStubs`,
-`LirStubs`. **Program.** none. The harness hand-builds two `LirFunc`
-values, `add` and `branch`, chosen to reach the selector's branches.
+lexer, parser, checker or lowering. Stubs: `BootPaintStubs`, `LirStubs`,
+and `CheckStubs` -- which `gen_check_harness.py` writes and nothing here
+does, so this unit's truth arm needs `check`'s generator to have run in
+the same tree. The sweep orders `check` first, which is why this stays
+invisible until someone runs the unit alone. **Program.** two hand-built `LirFunc` values, `add` and `branch`, chosen
+to reach the selector's branches -- LIR data structures rather than Codex
+text, because this subject has no front end to lex any.
 **Harness.** `lir-emit-func` on each. **Flags.** none.
 **Truth.** `add len N`, one line of decimal bytes, `branch len N`, bytes.
 Compared as text; never executed.
@@ -432,11 +482,12 @@ IR-CCE wire carries, `.`.
 
 **Subject.** `lower` + `Core/{OffsetTable,VmProfile}`, `Types/Builtins`
 (the real table, so no `CheckStubs`), `IR/{Lir,ResolveTypes}`,
-`Emit/{IRTextEmitter,EmitAllocator,CdxWriter}` and all fourteen
-`Emit/X86_64*` pages; `BootPaintStubs` only. About 2.44 MB. **Harness.**
+`Emit/{IRTextEmitter,EmitAllocator,CdxWriter}` and fifteen `Emit/X86_64*`
+files -- fourteen are pages of one chapter, `X86_64Boot` is a chapter of
+its own; `BootPaintStubs` only. About 2.47 MB (u47). **Harness.**
 `emit_harness.harness_source` with `passes=False`: the front end with scan
-on, `RESOLVED_TABLES`, RESOLVE on (the only place besides `passes_to_x86`
-where it runs), then the driver's own `x86-64-emit-cdx` and `finalize`.
+on, `RESOLVED_TABLES`, RESOLVE on (of the twelve units only this one and
+`passes_to_x86` run it), then the driver's own `x86-64-emit-cdx` and `finalize`.
 The chapter is still `FibxHarness` with `fibx-` walkers. The one compile
 runs both programs in one process, printing a mark before and after each.
 **Flags.** `decks=160` -- two programs' worth of extents in one run.
@@ -451,8 +502,8 @@ thirty-two to a line; otherwise the single line
 
 #### `ir_to_x86_on_fib`
 
-Program: eighteen lines of fib and a frameless `double`, chosen for what
-they do NOT need -- machine-word arithmetic, two self-calls as the only
+Program: the fifteen-line fib snippet plus a frameless `double`, chosen for
+what they do NOT need -- machine-word arithmetic, two self-calls as the only
 fixups, no rodata, no runtime helper. That is what lets `ast/f3_run.zig`
 carve fib out of the dumped buffer and call it. Full image in the truth.
 
@@ -483,7 +534,7 @@ the only evidence the pipeline did anything.
 
 #### `passes_to_x86_on_mid`
 
-Program: the nineteen-line `Mid` chapter in the generator -- `fib`,
+Program: the twenty-line `Mid` chapter in the generator -- `fib`,
 `double`, `scale-by-four`, a `folded` constant, an `opening` printing one
 integer -- chosen so each of the three default passes has work
 (`fold-constants` on `folded` and `7 * 6`, `inline-leaf-calls` on `double`,
@@ -506,13 +557,16 @@ deck intrinsic being off in every bundle we had ever built
 
 ## Counting
 
-Fourteen rungs, twelve compiles (`LADDER_UNITS`), eleven distinct bundle
-recipes (`ir_to_codex` and its roundtrip share one). Three rungs carry a
+Fourteen rungs, twelve compiles (`LADDER_UNITS`), eleven bundler scripts:
+`bundle_passes_to_x86.ps1` is one call into `bundle_ir_to_x86.ps1` with
+seven extra chapters and its own harness, which is why those two cannot
+drift apart. Three rungs carry a
 full CDX image in their truth -- `ir_to_x86_on_fib`, `ir_to_x86_on_cce`,
 `passes_to_x86_on_mid` -- and those three are what `f4_boot.py` boots.
 The ring transport is a property of the unit, not the rung: `ir_to_x86`
 and `passes_to_x86` take it, and the four rungs they carry ride in with
-them.
+them. `CODEX_ALL_RING=1` sends every unit through it, for a venue whose
+guest is too small to boot the TCP plug.
 
 The names invite a reading they do not support: `lex` does not test the
 lexer. Every rung diverges at the same place -- the seed compiles one
@@ -528,7 +582,9 @@ the plug had to transpile, not how deeply that phase was verified.
 Update that moved the measurement.** Nine of fourteen rungs identical, five
 moved with their upstream causes: `parse` (44 new lexer tokens),
 `passes_to_x86_on_arith` (6 new IR defs), and the other three `_on_` rungs
-(the issue-70 ATA guards and a burst helper, ~360 bytes each). Both kinds
+(the issue-70 ATA guards and a burst helper, ~360 bytes each). u47 -> u48
+moved four (`lex`, `parse`, `desugar`, `passes_to_x86_on_arith`); u48 ->
+u49 moved four more (`lex` and the three image-carrying rungs). Both kinds
 of answer are the point -- an Update that changes nothing we measure and an
 Update whose diff itemises exactly what it changed are each something a
 single sweep cannot say. The same bank-to-bank diff is what proves a bundle
@@ -1191,7 +1247,7 @@ code, F4 boots the emitted binary.
   call displacements.
 - `ast/f4_boot.py` -- reassembles the dump into a real CDX the way
   `emit-binary-tail` does (header, content, tail), boots it, and checks it prints
-  what its subject says. Six binaries: the fib, cce and mid subjects, from truth and from
+  what its program says. Six binaries: the fib, cce and mid programs, from truth and from
   zig. This is the one check that does not depend on the two arms sharing a
   mistake.
 - `native_build.sh` -- builds `codexir` (.codex -> .ir) and `zigemit`
@@ -1248,7 +1304,7 @@ Two things it is not:
 
 `ast/gen_<m>_harness.py` writes `ast/<M>Harness.codex` -- except
 `gen_ir_to_x86_on_cce_harness.py` and `gen_passes_to_x86_on_arith_harness.py`,
-which own only their unit's second subject; the harness itself comes from
+which own only their unit's second program; the harness itself comes from
 the `ir_to_x86` and `passes_to_x86` generators. `ast/emit_harness.py` holds the compile pipeline once --
 `frontend_source` (source text to a lowered IR) and `pipeline_source`
 (that plus the x86 emission) -- so the four generators that run it
