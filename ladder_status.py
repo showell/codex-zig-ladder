@@ -17,12 +17,14 @@ import seed_identity
 from ladder_root import LADDER
 
 
-def ladder_units():
-    """The unit list, read from its one authority (oracle_lib.sh)."""
+def ladder_rungs():
+    """The rung list, read from its one authority (oracle_lib.sh). Rungs,
+    not units: a truth and its sidecar are per-rung files, and a unit that
+    carries two rungs has no truth of its own."""
     for line in (LADDER / 'ast' / 'oracle_lib.sh').read_text().splitlines():
-        if line.startswith('LADDER_UNITS='):
+        if line.startswith('LADDER_RUNGS='):
             return line.split('=', 1)[1].strip().strip('"')
-    raise SystemExit('LADDER_UNITS not found in ast/oracle_lib.sh')
+    raise SystemExit('LADDER_RUNGS not found in ast/oracle_lib.sh')
 
 
 def sh(cmd):
@@ -42,7 +44,7 @@ def main():
     print(f"tag      {tags or 'none'}")
 
     fresh, stale, unproven = [], [], []
-    for m in ladder_units().split():
+    for m in ladder_rungs().split():
         prov = LADDER / 'ast' / f'{m}.truth.prov'
         truth = LADDER / 'ast' / f'{m}.truth'
         if not truth.is_file():

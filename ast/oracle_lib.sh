@@ -44,6 +44,14 @@ unit_rungs() {
     esac
 }
 
+# The harness file a unit's generator writes: the unit name in CamelCase
+# plus Harness.codex (lex -> LexHarness.codex, ir_to_x86 ->
+# IrToX86Harness.codex). Only the FILE name derives from the unit; the
+# chapter name inside it is the generator's and reaches the compiled unit.
+harness_for() {
+    echo "$(echo "$1" | sed -E 's/(^|_)([a-z0-9])/\U\2/g')Harness.codex"
+}
+
 # One compute job per host. The droplet side is flocked inside its
 # wrappers; this is the laptop side, taken by every entry point that
 # computes (rebank_all, allcycles, native_build, corpus_run, the sweep
@@ -180,9 +188,10 @@ truth_arm() {
     # unguarded generator crash would bundle YESTERDAY'S harness and
     # reproduce the previous answer -- a wrong-PASS. The guards make the
     # arm self-sufficient instead of trusting the caller's set -e.
-    rm -f ${m^}Harness.codex
+    local h; h=$(harness_for $m)
+    rm -f $h
     python3 gen_${m}_harness.py || { echo "HARNESS GEN FAILED for $m"; return 1; }
-    [ -s ${m^}Harness.codex ] || { echo "HARNESS GEN FAILED: no ${m^}Harness.codex"; return 1; }
+    [ -s $h ] || { echo "HARNESS GEN FAILED: no $h"; return 1; }
 
     # NOT `pwsh ... | tail -1`: under a pipe the status is tail's, and
     # plug-build-lib exits 3 on an unresolvable cite. Update 42 added a
