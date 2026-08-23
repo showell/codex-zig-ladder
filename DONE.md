@@ -6,6 +6,15 @@ findings register, JUSTIFICATIONS.md, a bank, an essay). If an entry
 needs a paragraph, it needs a register section or a JUSTIFICATIONS entry
 instead -- write that and point at it.
 
+- **2026-08-23 — The rung rename, verified** (`262ad8e` prep, `f94db81`
+  atomic, `3b349a4` prose, README rewritten `538b5cd`/`a3d7d1b`, gate
+  `c6364a9`): fib/text/pingpong/lir/fibx/scale/whole/clamp became
+  ir_to_wire/ir_to_codex/ir_to_codex_roundtrip/lir_to_x86 and the four
+  `_on_` rungs of two composite units. Gate in sandbox rename-gate: all
+  fourteen truths byte-identical to truth/u49, sweep 14/14, census
+  unmoved. README now carries twelve unit sections instead of rung
+  tables, and splits subject (what the seed compiles) from program (what
+  that compiler compiles). Record: README "Naming" holds the map.
 - **2026-08-23 — PR 77 sent: the heap unification**
   (https://github.com/damiant3/NewRepository/pull/77, branch
   `zig-plug-heap-unification`, 21 commits on `bdf0049b`, tip `8cb8a0e4`,
