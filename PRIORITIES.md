@@ -158,11 +158,10 @@ of them. Item 4's census is where the count would show.
 2026-08-22); what is left is the plumbing that still makes the laptop a
 participant:
 
-- **Push from the droplet.** It holds no key and pulls the public repos
-  anonymously, so every bank it takes comes home by fetch-by-SHA and
-  every branch it builds must be pushed from the laptop first. Steve
-  postponed the key 2026-08-22; when it lands, the droplet commits and
-  pushes its own banks and the sandbox MANIFEST is the record.
+- ~~Push from the droplet~~ DONE 2026-08-23: two write deploy keys
+  (`~/.ssh/id_ed25519_ladder`, `_nr`; ssh aliases `github-ladder`,
+  `github-nr`; both remotes switched). Banks and branches commit and push
+  from the droplet now; the laptop's copy is just another clone.
 - **The TCP arm does not travel.** `sweep_prep.sh` pushes the ring
   kernel only and `sweep_lib.sh` routes ring-only, so TCP-transport
   coverage came from laptop runs, which now means from nowhere. Ship
