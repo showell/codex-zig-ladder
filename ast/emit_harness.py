@@ -80,16 +80,28 @@ def codex_literal(s):
 # pokes the boot stack's guard page, which a reservation this size does not come
 # near.
 #
-# demand-lift-floor is 104 MB against the 1 GB the harness runs in. It is a
-# first number, not a measured one: the deck scales the rungs run at were all
-# chosen while the intrinsic was off and nothing allocated on the deck at all,
-# so there is nothing to size against. Too small shows up as CDX9002 or a fault,
-# which is the honest direction to be wrong in.
-DECK_PROLOGUE = """let mountain-base = init-phase-allocator
+# The reservation's size is the one thing the two kinds of harness do not
+# share. The RUNG harnesses run bare-metal inside a ~1 GB guest and keep
+# demand-lift-floor (104 MB), the driver's own constant, because that is the
+# number the rungs were banked at and it is upstream's. The HOSTED harnesses
+# (codexir, zigc) run as Linux processes inside the plug's 4 GiB arena and
+# take HOSTED_DECK_BYTES: finding 24 measured the fibx subject at 381 MB of
+# deck -- eight uncompacted phases at bare metal's per-object sizes, ~153
+# deck bytes per subject byte -- against the 104 MB the placeholder gave it,
+# and the corruption that followed was the deck overrunning live objects.
+# 512 MB covers the measured need with a third to spare; a subject that
+# needs more refuses at the region guard rather than corrupting.
+HOSTED_DECK_BYTES = 512 * 1024 * 1024
+
+def deck_prologue(deck_bytes=None):
+    adv = str(deck_bytes) if deck_bytes is not None else 'demand-lift-floor'
+    return f"""let mountain-base = init-phase-allocator
     in let deck-base = __heap-save
     in let deck-set = __deck-set deck-base
-    in let deck-adv = __heap-advance demand-lift-floor
+    in let deck-adv = __heap-advance {adv}
     in """
+
+DECK_PROLOGUE = deck_prologue()
 
 # The checker records a type for every expression, not only for bindings, and
 # the driver resolves that table too: opening.codex:635 runs
@@ -138,7 +150,7 @@ BINDINGS = """in let resolved-env = for b in ((cr.env).bindings) -> TypeBinding 
 RESOLVED_TABLES = EXPR_TYPES + "\n    " + BINDINGS
 
 
-def frontend_source(src, passes, scan=True):
+def frontend_source(src, passes, scan=True, deck_bytes=None):
     """The compiler's own sequence from source text to a lowered IRChapter,
     bound as `ir`. Every program built here runs exactly this -- the oracle
     harnesses and the hosted compiler alike -- so it is written once. `src` is
@@ -185,7 +197,7 @@ def frontend_source(src, passes, scan=True):
     in let passed = run-ir-pipeline default-ir-pipeline ir-raw False
     in let ir0 = passed.chapter""" if passes else
         "in let ir0 = lower-chapter ch bound cst (rr.ctor-names) renames colliding assignments 0")
-    return DECK_PROLOGUE + head + f"""
+    return deck_prologue(deck_bytes) + head + f"""
     in let doc = parse-document (make-parse-state (toks.tokens) {src}) 0
     in let dr = desugar-document {src} doc (doc.chapter-title) 0
     in let ch0 = dr.dr-chapter
@@ -198,7 +210,7 @@ def frontend_source(src, passes, scan=True):
     {RESOLVE}"""
 
 
-def pipeline_source(src, passes, scan=True):
+def pipeline_source(src, passes, scan=True, deck_bytes=None):
     """frontend_source plus the x86 emission, bound as `res`. The rungs that
     dump a CDX want this; the one that emits IR wants the frontend only --
     calling x86-64-emit-cdx there would put the whole back end in the IR's
@@ -208,7 +220,7 @@ def pipeline_source(src, passes, scan=True):
     has to be open before the first deck-record extent anywhere, not before
     emission, and by emission the frontend has been allocating for a while.
     """
-    return frontend_source(src, passes, scan) + """
+    return frontend_source(src, passes, scan, deck_bytes) + """
     in let res = x86-64-emit-cdx ir sorted"""
 
 

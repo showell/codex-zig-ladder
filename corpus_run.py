@@ -36,7 +36,7 @@ import hashlib
 import json
 import pathlib
 import re
-import resource
+import shutil
 import subprocess
 import sys
 
@@ -193,27 +193,25 @@ def stage_transpile(names, out_dir):
     return results, hist
 
 
-# Address-space cap for each `zig run` and the program it executes. Emitted
-# binaries have ballooned to 3 GB anon RSS on a 3.8 GB guest, and on 2026-08-19
-# one such run livelocked the whole WSL VM instead of drawing a clean OOM kill.
-# Under the cap the allocation fails inside the child, the arena's
-# @panic("oom") fires, and the balloon becomes a recorded verdict.
-#
-# 2200 MB because RLIMIT_AS counts RESERVED address space: the
-# heap-unification emitter reserves 1.5 GiB of lazily faulted zero pages
-# up front (resident stays ~145 MB), so every legitimate program hits an
-# 800 MB cap at reservation -- which is JUSTIFICATIONS' own raise
-# criterion. Raising it moves no banked verdict: the full corpus
-# replayed at 800 MB with ZERO cap hits and max RSS 145 MB, and the
-# three banked crashes are overflow panics, not cap hits. The balloon
-# class was 3 GB+, so protection survives; the region-exhaustion panic
-# fires before any balloon can form under the new emitter. The honest
-# long-term guard is cgroup MemoryMax (RSS-shaped) -- queued.
-RUN_MEM_CAP = 2200 * 1024 * 1024
+# A RESIDENT bound on each `zig run` and the program it executes. Emitted
+# binaries have ballooned to 3 GB anon RSS, and on 2026-08-19 one such run
+# livelocked the whole WSL VM instead of drawing a clean OOM kill. The old
+# guard was RLIMIT_AS, which counts RESERVED address space -- and the
+# heap-unification emitter reserves its arena (4 GiB, lazily faulted, ~145 MB
+# resident on a typical program) up front, so an address-space cap refuses
+# every legitimate program before it touches a page. cgroup MemoryMax counts
+# what a runaway actually costs the box; 800 MB is the old cap's figure in
+# the right unit (the full corpus replayed under it with zero hits and max RSS
+# 145 MB). The kernel's kill is exit 137, read below as a crash. No fallback:
+# the laptop is not a venue (compute_lock.require_venue).
+RUN_MEMORY_MAX = '800M'
+BOUNDED = ['systemd-run', '--user', '--scope', '-p', f'MemoryMax={RUN_MEMORY_MAX}', '--quiet']
 
 
-def _cap_memory():
-    resource.setrlimit(resource.RLIMIT_AS, (RUN_MEM_CAP, RUN_MEM_CAP))
+def _require_bounded():
+    if shutil.which('systemd-run') is None:
+        raise SystemExit('corpus_run: no systemd-run on this host -- the resident '
+                         'bound is not optional; refusing')
 
 
 def load_run_carry(results, prev):
@@ -306,9 +304,8 @@ def stage_run(results, out_dir, persist=True, batch=0, prior=None, hw=None):
             verdict(name, 'no-expected')
             continue
         try:
-            p = subprocess.run(['zig', 'run', str(zig)],
-                               capture_output=True, timeout=300,
-                               preexec_fn=_cap_memory)
+            p = subprocess.run(BOUNDED + ['timeout', '300', 'zig', 'run', str(zig)],
+                               capture_output=True, timeout=330)
         except subprocess.TimeoutExpired:
             verdict(name, 'timeout')
             continue
@@ -317,6 +314,12 @@ def stage_run(results, out_dir, persist=True, batch=0, prior=None, hw=None):
             # something it believed in and zig refused it. A panic is a
             # different finding: zig accepted it and the program died running.
             stderr = p.stderr.decode('utf-8', 'replace')
+            if p.returncode in (137, -9) or 'Killed' in stderr[-200:]:
+                # The resident bound fired (cgroup OOM kill): its own verdict,
+                # not a refusal, because nothing about the plug's output was
+                # judged -- the program ate more than RUN_MEMORY_MAX.
+                verdict(name, 'oom-killed', f'resident bound {RUN_MEMORY_MAX}')
+                continue
             kind = 'crashed' if 'panic:' in stderr else 'refused'
             first = next((l for l in stderr.splitlines()
                           if 'error:' in l or 'panic:' in l), '')
@@ -444,6 +447,7 @@ def main():
         raise SystemExit('--bank wants run verdicts; pair it with --run or --changed')
 
     compute_lock.take()
+    _require_bounded()
     need_tools()
     hw = load_hardware_only()
     if hw:

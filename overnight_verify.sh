@@ -31,8 +31,8 @@
 # the gaps PR's evidence hostage. Phase E always runs -- it is the restore,
 # not a step -- and every skip prints a SKIP line.
 #
-# The RUN_MEM_CAP raise to 2200 MB this depends on is already committed
-# (the heap emitter's 1.5 GiB reservation; see JUSTIFICATIONS).
+# Every zig run here is resident-bounded through bounded_run (cgroup
+# MemoryMax, oracle_lib.sh); the old address-space caps are gone.
 # MORNING READER: on the droplet, "CHAIN ENDED at phase done" with a
 # tool-sha NOTE in phase E is the fully-green outcome -- cross-venue
 # native binaries differ by host CPU, and E's rebuild is the restore,
@@ -97,7 +97,7 @@ fi
 
 if ! skip B2; then
     PHASE=B2; STAMP "B2: heap RSS rider (fibx under the branch emitter)"
-    ( cd "$T/ast" && ulimit -v $((2560 * 1024)) && /usr/bin/time -v timeout 900 zig run fibx.zig 2>&1 || true ) \
+    ( cd "$T/ast" && bounded_run "$ZIG_ARM_MEMORY_MAX" /usr/bin/time -v timeout 900 zig run fibx.zig 2>&1 || true ) \
         | grep -E "Maximum resident|Elapsed" || echo "(rider inconclusive -- non-blocking)"
 fi
 

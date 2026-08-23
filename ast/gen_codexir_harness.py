@@ -29,7 +29,7 @@ root -- which is the cost of standing in for the driver.
 """
 import pathlib
 
-from emit_harness import frontend_source
+from emit_harness import frontend_source, HOSTED_DECK_BYTES
 
 HERE = pathlib.Path(__file__).parent
 
@@ -46,7 +46,7 @@ Section: Driver
 
   opening : [Console, FileSystem] Nothing = act
     src <- read-file-uni "/dev/stdin"
-    {frontend_source("src", True)}
+    {frontend_source("src", True, deck_bytes=HOSTED_DECK_BYTES)}
     in let meta = IRTextMeta {{
       chapter-title = ch.chapter-title,
       prose = ch.prose,

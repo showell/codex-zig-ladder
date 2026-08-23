@@ -4,8 +4,8 @@
 # chapter, so there is no bundle step -- and the repo's .expected file is a
 # third witness beside our banked truth.
 set -e
-T="$(cd "$(dirname "$0")/.." && pwd)"  # ladder-root-bootstrap: reaches the LADDER only; the checkout comes from ladder_root
-REPO="$(python3 "$T/ladder_root.py" codex)"
+. "$(dirname "$0")/oracle_lib.sh"   # T, REPO, bounded_run, the venue gate
+take_compute_lock
 SUBJ=$REPO/codex/test/plug-oracle-arith.codex
 
 cd $T/ast
@@ -51,7 +51,7 @@ python3 -u plug_run_checked.py \
     $REPO/codex/plugs/zig/build-output/zig-plug.cdx \
     ast/arith.ir ast/arith.zig
 cd ast
-if ( ulimit -v $((2560 * 1024)) && timeout 600 zig run arith.zig 2> arith.zigout ); then
+if ( bounded_run "$ZIG_ARM_MEMORY_MAX" timeout 600 zig run arith.zig 2> arith.zigout ); then
     if diff <(tr -d '\r' < arith.truth) arith.zigout > arith.diff 2>&1; then
         echo "ORACLE PASS: zig arith output byte-identical to bare-metal truth"
     else

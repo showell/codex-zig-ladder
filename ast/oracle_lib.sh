@@ -359,6 +359,24 @@ ring_provenance() {
         || { echo "RING PLUG PROVENANCE REFUSED -- run ast/ringplug_build.sh"; return 1; }
 }
 
+# A RESIDENT bound on everything the zig arm runs. The 1.5 GiB arena the
+# heap-unification emitter reserves is lazily faulted, so RLIMIT_AS (the
+# old `ulimit -v`) counted the reservation and refused the program before
+# it had touched a page; cgroup MemoryMax counts resident pages, which is
+# what a runaway actually costs the box (random927, decided by Steve
+# 2026-08-23). `systemd-run --user --scope` needs no root and the kernel's
+# kill is exit 137, which every verdict already reads as a red. There is
+# no fallback branch: the laptop is not a venue (require_compute_venue).
+ZIG_ARM_MEMORY_MAX=${ZIG_ARM_MEMORY_MAX:-6G}
+bounded_run() {   # <MemoryMax> <command...>
+    local max=$1; shift
+    command -v systemd-run >/dev/null || {
+        echo "bounded_run: no systemd-run on this host -- the resident bound is not optional; refusing" >&2
+        return 1
+    }
+    systemd-run --user --scope -p "MemoryMax=$max" --quiet "$@"
+}
+
 # Run the emitted zig, diff against the truth. Shared by both arms: the
 # transport is what differs between them, never the verdict -- except
 # WHICH plug's provenance vouches for the .zig, which the arm passes in.
@@ -369,20 +387,17 @@ zig_verdict() {
     cd $T/ast
     # program output goes to stderr (std.debug.print); truth was serial bytes
     #
-    # The address-space cap is 2.5 GB (corpus_run.py caps its own runs
-    # separately -- see RUN_MEM_CAP there), for this incident: an
-    # emitted binary with no arena
-    # balloons past 3 GB and livelocks the whole WSL VM (twice now -- the
-    # second time was this very line, fibx under the Update 47 emitter, which
-    # lacks PR 71's arena). Under the cap the allocation fails in the child,
-    # @panic("oom") fires, and the balloon is a recorded rung failure instead
-    # of a dead VM. ulimit is per-subshell, so nothing else inherits it.
+    # The run is bounded (bounded_run, resident) for this incident: an
+    # emitted binary with no arena balloons past 3 GB and livelocked the
+    # whole WSL VM twice in 2026-08 -- the second time on this very line.
+    # Under the bound the kernel kills the child and the balloon is a
+    # recorded rung failure instead of a dead host.
     # BOTH streams to disk. stderr is the program's output and the thing the
     # verdict is diffed from; stdout is instrumentation (CX-DECK) and used to
     # exist only as a bash variable that the caller then truncated. Nothing
     # is discarded here, so nothing downstream has to guess which lines were
     # worth keeping -- the terminal gets a digest, the files get everything.
-    if ! (ulimit -v $((2560 * 1024)) && timeout 600 zig run ${m}.zig \
+    if ! (bounded_run "$ZIG_ARM_MEMORY_MAX" timeout 600 zig run ${m}.zig \
             > ${m}.stdout 2> ${m}.zigraw); then
         echo "--- zig compile/run failed; full output in ast/${m}.zigraw and ast/${m}.stdout"
         grep -E 'panic:|error:|CODEGEN-HALTED|cursors met|exhausted' ${m}.zigraw ${m}.stdout | head -6

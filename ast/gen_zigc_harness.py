@@ -19,7 +19,7 @@ compile the same program with the seed, and the two CDX files must be equal.
 """
 import pathlib
 
-from emit_harness import pipeline_source
+from emit_harness import pipeline_source, HOSTED_DECK_BYTES
 
 HERE = pathlib.Path(__file__).parent
 
@@ -39,7 +39,7 @@ Section: Driver
 
   opening : [Console, FileSystem] Nothing = act
     src <- read-file-uni "/dev/stdin"
-    {pipeline_source("src", True)}
+    {pipeline_source("src", True, deck_bytes=HOSTED_DECK_BYTES)}
     in act
       write-binary (res.header-bytes)
       write-binary-buf (res.content-buf) 0 (res.content-len)
