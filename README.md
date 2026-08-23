@@ -1011,7 +1011,10 @@ because a wrong answer IS the measurement.
   mid-size unit, and the rebank is where such a claim gets measured at full
   scale rather than assumed.
 - Update the banked-against table at the top of this file, tag
-  (`uNN-14of14`), push.
+  (`uNN-14of14`), push. Tags are the ladder's two fixed points: `uNN-14of14`
+  on the commit that banked an Update, and `prNN-verified` on the ladder
+  commit whose chain verified an outbound PR (the PR body cites it, with
+  the branch tip and the bank it was measured against).
 - **The tiers as a set, after the natives.** Rebuild `native/` from the
   checkout the bank measured (`native_build.sh`), then
   `./tiers_run.py`: every tier both arms, one verdict line each. Green

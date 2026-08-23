@@ -183,7 +183,8 @@ the C# DDC witness path with zig -- C# stops at "compiles", zig RUNS.
 - **PR 76** -- absorbed in Update 49 (`bdf0049b`); the eight census reds
   it owed all flipped. Closed.
 - **PR 77** -- the heap unification, sent 2026-08-23 on `8cb8a0e4`
-  (21 commits on the u49 pin). Filed, not landed.
+  (21 commits on the u49 pin); verified at ladder tag `pr77-verified`.
+  Filed, not landed.
 - **Then: the refusal gaps** (item 4), rebased onto it.
 - PRs 71-75: absorbed, one line each in DONE.md.
 
