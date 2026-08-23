@@ -416,7 +416,9 @@ precedes them. In order:
    tiers 13 green / 6 noted (finding 19's rows retired), census 10 min:
    all eight reds to match, 0 differ / 0 crashed over 325 clean programs
    (`d186bad`). One new mover: ident-letters markers -> refused, finding
-   35 (non-ASCII identifier emitted raw) -- the emitter item is next.
+   35 (non-ASCII identifier emitted raw) -- CLOSED 2026-08-23 by
+   `1249ad8a`, verified entirely on the droplet (natives 11 min, tiers,
+   ident-letters -> match, rebank+sweep 14/14 in 53 min).
 
 ## 1.95 The tiers run as a set, per Update -- BUILT 2026-08-22
 

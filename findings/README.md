@@ -1702,7 +1702,10 @@ the decision.
 ## 35. A non-ASCII identifier is emitted raw, and zig's identifiers are ASCII
 
 **Found 2026-08-22 by the u49 census (the first on natives from the heap
-branch rebased onto the pin). Ours. OPEN, emitter-shaped, small.**
+branch rebased onto the pin). Ours. CLOSED 2026-08-23 by `1249ad8a`
+(`zig-ascii-ident`, transliteration to `_<code>` in both sanitizers):
+ident-letters refused -> match on droplet-built natives, tiers 13/6 green,
+rebank+sweep 14/14 in sandbox `20260823T021627Z-u49-f35`.**
 
 `codex/test/ident-letters` is new at Update 49 and names a definition
 `café` -- one of the thirty-one Tier-0 letters at CCE 97..127 that the
