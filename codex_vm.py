@@ -12,10 +12,10 @@ from ladder_root import CODEX
 
 REPO = str(CODEX)
 ACCEL = __import__("os").environ.get("CODEX_ACCEL", "tcg")
-# The guest-size default honors CODEX_MEM_MB so a small host (the
-# droplet: 2 GB beside the live site) caps EVERY driver by exporting one
-# variable, instead of trusting each wrapper to pass 1300 explicitly. A
-# 3 GB guest on that box is a host-OOM aimed at the site.
+# The guest-size default honors CODEX_MEM_MB so a host caps EVERY driver
+# by exporting one variable (~/.codex_ladder_env on the droplet), instead
+# of trusting each wrapper to pass a number explicitly. The 2 GB site box
+# needed 1300 for this reason; the 8 GB ladder droplet runs the 3072 default.
 MEM_MB = int(__import__("os").environ.get("CODEX_MEM_MB", "3072"))
 BASE_PORT = 56400
 

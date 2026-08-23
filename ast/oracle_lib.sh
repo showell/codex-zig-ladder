@@ -450,7 +450,7 @@ ring_arm() {
 # asks here rather than carrying a list of its own.
 arm_for() {
     # CODEX_ALL_RING=1 sends every unit through the ring: the TCP plug
-    # cannot boot inside a 1300 MB guest (measured 2026-08-20 -- it
+    # cannot boot inside a guest under 1600 MB (measured 2026-08-20 -- it
     # connects at 1600 and exits SILENTLY below that), so a small-RAM
     # venue runs all-ring and consciously surrenders the TCP-transport
     # coverage to laptop runs. The transports are measured

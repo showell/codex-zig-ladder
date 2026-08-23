@@ -82,8 +82,9 @@ sha256sum ast/ringplug-source.codex | cut -d' ' -f1 > ast/ringplug.cdx.fp
 rm -f "$T/.prep-ring.blob"
 
 # --- push the ring kernel, its fingerprint, and the drivers ---
-# Only the ring kernel travels: the TCP plug cannot boot inside the
-# appliance's 1300 MB cap (see remote_arm_for in sweep_lib.sh), so the
+# Only the ring kernel travels: the TCP arm has no remote plumbing yet
+# (see remote_arm_for in sweep_lib.sh; the 8 GB droplet's 3072 MB cap
+# would hold its boot reservation), so the
 # freshly compiled zig-plug.cdx stays in build-output for the LOCAL
 # arms, where plug_provenance still wants it fresh.
 scp -qC "$T/ast/ringplug.cdx" "$HOST:ring/ringplug.cdx"

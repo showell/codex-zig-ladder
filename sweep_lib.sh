@@ -49,8 +49,9 @@ remote_ring_arm() {
 # Every droplet arm rides the ring, unlike the local split in arm_for:
 # the TCP plug's boot-time heap reservation needs >= 1600 MB of guest
 # RAM (measured 2026-08-20: connects at 1600, exits SILENTLY at 1500 --
-# nothing on serial, clean debug-port exit) and the droplet holds 2 GB
-# total with the live site on it, so the appliance caps guests at 1300.
+# nothing on serial, clean debug-port exit). The 8 GB ladder droplet's
+# 3072 MB cap would hold that now, but only the ring kernel travels
+# (sweep_prep.sh), so the TCP arm stays local until it does.
 # The ring plug boots and serves there comfortably. The Codex network
 # stack keeps its oracle coverage in the local venues -- cycle.sh's
 # warmups and the all-local allcycles.sh both push IR over TCP -- and

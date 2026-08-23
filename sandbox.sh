@@ -78,9 +78,10 @@ fi
 cat > "$run/env" <<EOF
 export CODEX_ROOT="$run/codex"
 export SANDBOX="$run"
-# Host tuning belongs to the host, not to the experiment. The droplet caps
-# guests at 1300 MB and pins TCG; the laptop wants the tool defaults, and a
-# native build inside a 1300 MB guest does not finish. Baking one venue's
+# Host tuning belongs to the host, not to the experiment. The droplet pins
+# its guest ceiling (3072 MB) and TCG in ~/.codex_ladder_env; the laptop
+# wants the tool defaults. When the 2 GB site box was the venue its 1300 MB
+# cap made a native build hang rather than fail, and baking one venue's
 # numbers into a host-agnostic script is how that failure arrives silently.
 if [ -f "\$HOME/.codex_ladder_env" ]; then . "\$HOME/.codex_ladder_env"; fi
 # Sourcing this must succeed even when the host file is absent: a trailing

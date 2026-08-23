@@ -13,8 +13,9 @@
 # ast/ringplug.cdx.fp), the same check the local arm runs.
 # The kernel travels only when the droplet's fingerprint copy differs.
 # The droplet invokes the driver with an explicit kernel path, skipping
-# the droplet-side re-bundle, and caps the guest at mem_mb=1300 -- the
-# droplet holds 2 GB total and the appliance must never swap.
+# the droplet-side re-bundle, and caps the guest at mem_mb=3072, the seed
+# guest's measured ceiling on the 8 GB ladder droplet (droplet_compile.sh
+# has the measurement); the appliance must never swap.
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(python3 "$T/ladder_root.py" codex)"
@@ -40,12 +41,13 @@ print('ringplug fresh against the checkout')"
     RNAME=ringplug.cdx
     ;;
 tcp)
-    # Measured 2026-08-20: the TCP plug's boot-time heap reservation
-    # needs >= 1600 MB of guest RAM (connects at 1600, exits silently at
-    # 1500), and the appliance caps guests at 1300 because the droplet
-    # holds the live site in its 2 GB. Refusing here beats reproducing
-    # the silent exit; the ring arm serves every unit remotely.
-    echo "the TCP plug cannot boot inside the appliance's 1300 MB cap -- use the ring arm"
+    # The TCP plug's boot-time heap reservation needs >= 1600 MB of guest
+    # RAM (measured 2026-08-20: connects at 1600, exits silently at 1500).
+    # The 8 GB droplet's 3072 cap would hold it now, but the TCP kernel
+    # does not travel (sweep_prep.sh pushes only the ring kernel, and
+    # sweep_lib's remote_arm_for routes ring-only), so the arm stays
+    # local until that plumbing exists -- a queued item, not a cap.
+    echo "the TCP plug does not travel to the droplet yet -- use the ring arm"
     exit 1
     ;;
 *)
@@ -63,7 +65,7 @@ fi
 scp -qC $SSH_OPTS "$IR" "$HOST:ring/job.ir"
 ssh $SSH_OPTS "$HOST" 'cd ring && rm -f out.zig out.zig.cce out.zig.blob && CODEX_ACCEL=tcg nice -n 15 flock -n lock python3 -u -c "
 import plug_run_ring
-plug_run_ring.run_ring_plug(\"job.ir\", \"out.zig\", plug_cdx=\"ringplug.cdx\", mem_mb=1300)"'
+plug_run_ring.run_ring_plug(\"job.ir\", \"out.zig\", plug_cdx=\"ringplug.cdx\", mem_mb=3072)"'
 rm -f "$OUT"
 scp -qC $SSH_OPTS "$HOST:ring/out.zig" "$OUT"
 [ -s "$OUT" ] || { echo "no zig came back"; exit 1; }

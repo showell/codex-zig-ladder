@@ -8,9 +8,13 @@
 # failure needs no forensics. flock -n refuses a second job loudly (the
 # per-host one-compute-job rule); nice keeps the live site responsive.
 #
-# CODEX_MEM_MB=1300: the droplet has 2 GB total, no swap, and shares the
-# box with the site. If a compile OOMs the guest at 1300, that is a real
-# sizing fact to record, not a number to bump quietly.
+# CODEX_MEM_MB=3072: the ladder droplet has 8 GB, dedicated, no swap. 3072
+# is the seed guest's measured ceiling there (2026-08-22: READY at 3072,
+# dies silently pre-READY at 3584), the same figure ~/.codex_ladder_env
+# pins for jobs launched on the box itself. If a compile OOMs the guest
+# at 3072, that is a real sizing fact to record, not a number to bump
+# quietly. (The 1300 this replaced was the 2 GB site box's share; raised
+# by Steve 2026-08-22 when the venue moved.)
 #
 # TCG on purpose, measured 2026-08-20 (JUSTIFICATIONS.md): this guest
 # streams its output through port I/O, and under KVM every port access is
@@ -37,7 +41,7 @@ OUT=$2
 SEED_SHA=$(sha256sum "$REPO/seed/Codex.cdx" | cut -d' ' -f1)
 
 scp -q $SSH_OPTS "$BLOB" "$HOST:ring/job.blob"
-ssh $SSH_OPTS "$HOST" "cd ring && [ \"\$(sha256sum seed/Codex.cdx | cut -d' ' -f1)\" = \"$SEED_SHA\" ] || { echo 'SEED STALE on droplet vs the checkout -- run droplet_vm_setup.sh'; exit 1; } && rm -f out.cdx out.cdx.map out.cdx.diags job.blob.stage1 && CODEX_ACCEL=tcg CODEX_MEM_MB=1300 nice -n 15 flock -n lock python3 -u ring_compile.py job.blob out.cdx"
+ssh $SSH_OPTS "$HOST" "cd ring && [ \"\$(sha256sum seed/Codex.cdx | cut -d' ' -f1)\" = \"$SEED_SHA\" ] || { echo 'SEED STALE on droplet vs the checkout -- run droplet_vm_setup.sh'; exit 1; } && rm -f out.cdx out.cdx.map out.cdx.diags job.blob.stage1 && CODEX_ACCEL=tcg CODEX_MEM_MB=3072 nice -n 15 flock -n lock python3 -u ring_compile.py job.blob out.cdx"
 rm -f "$OUT" "$OUT.map" "$OUT.diags"
 scp -q $SSH_OPTS "$HOST:ring/out.cdx" "$OUT"
 scp -q $SSH_OPTS "$HOST:ring/out.cdx.map" "$OUT.map" 2>/dev/null || true
