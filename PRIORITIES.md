@@ -61,6 +61,17 @@ Finding 33 carries the numbers. What stands between it and a PR:
   frames. Cheap to add, and the shape is already written twice.
 - **No ladder sweep has run against the branch.** The two ir_to_x86
   rungs agreeing natively is strong but it is two of fourteen.
+- **The branch layout is wrong and blocks the send.** The
+  invariant-parameter rule -- the commit that made the transformation
+  actually reach `sort-partition` -- sits ABOVE the parser commit on
+  `parser-scan-self-recursive`, so `zig-plug-tail-calls` as pushed is
+  the version that leaves 10,000 frames on the stack. It also carries
+  `d33fecff`, a superseded cut that does not compile, between two
+  correct ones. End state: `zig-plug-tail-calls` = `6cd40143` +
+  `07495229` + one coherent invariant-parameter commit;
+  `parser-scan-self-recursive` = that, plus `33f72baa` alone. Verify the
+  rewrite with `git diff` against the tree the sweep verified -- an
+  empty diff is what proves the history surgery changed nothing real.
 - The PR body wants the `Ladder:` line contrib/README.md asks for.
 
 ## 3.5. Verify the parser restructure (finding 37), IN FLIGHT
