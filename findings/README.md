@@ -848,9 +848,12 @@ semantics.
   self call passes back unchanged never varies, so it stays the
   function's own (const) parameter: `cmp`, `hi` and `pv` need no
   variable and only `xs`, `j`, `i` move. A function-typed parameter is
-  then a problem only when it actually changes. VERIFICATION PENDING --
-  the plug builds and the natives are rebuilding; whether
-  `sort_partition` leaves the trace is the probe's to say.
+  then a problem only when it actually changes. VERIFIED: `sort_partition` is
+  gone from the trace and the stack requirement fell from 32 MB to 4 MB
+  (finding 37's table). Stating the discard rule took three attempts --
+  zig rejects an unused parameter AND a pointless discard of a used one,
+  and the loop deletes exactly one class of occurrence: the parameter
+  standing as its own argument in a tail self call.
 
 **What this does NOT close.** The 512 MB stack in every emitted `main`
 stays, and finding 37 is why: other recursions hold it up, none of them
@@ -1054,13 +1057,42 @@ natives, and a check of whether a THIRD cycle appears once these two are
 flat. The 512 MB should not be lowered until that sweep exists -- this
 entry establishes what one input needs, not what every input needs.
 
-**Confidence: HIGH on the measurements, MEDIUM on the fix.** The
-numbers are reproducible from the banked gold and the cycles are named
-by the programs' own backtraces, not inferred. What is not measured is
-the restructure itself: that `try-*` returning a decision preserves the
-scan's behaviour exactly, that the two cycles are the only per-definition
-ones, and that no third appears beneath them. The direction is sound --
-every edge in both cycles is a tail call, and self tail calls are what
-the whole fleet already flattens -- but the claim "this retires the
-512 MB stack" is UNMEASURED until the change exists and the probe is
-re-run against it.
+**MEASURED 2026-08-24, and the fix works: 32 MB -> 4 MB.** Both cycles
+restructured so the `try-*` functions return their item and the loop
+tail-calls itself (`parser-scan-self-recursive`, `33f72baa`), in sandbox
+`20260824T132742Z-f37-parser`:
+
+    emitter     min    cliff  cycle on the failing trace
+    6f18a4b9    32 MB  24 MB  try_top_level_type_def x3386, parse_top_level x3385
+    43ea7875    32 MB  24 MB  sort_partition x10000
+    bb2e6b38     4 MB   2 MB  desugar_expr_at x297
+
+Read the middle row before the last. The parser cycles were gone at
+`43ea7875` and the number had not moved, because a THIRD recursion sat
+underneath: `sort-partition`, left recursing by our own emitter
+declining any definition with a function-typed parameter (finding 33's
+second sub-finding). Only with that fixed does the parser change show
+its own effect, and a pass/fail arm would have reported the parser
+change as worthless.
+
+**What is left is a different class.** `desugar_expr_at` recurses over
+the SHAPE of one expression, so its depth is the nesting depth of the
+deepest expression in the document -- 297 frames -- not the number of
+definitions. The per-definition growth that made document size the
+stack's driver is gone.
+
+**Correctness, which a stack number cannot speak to:** the restructured
+parser compiled the 2.5 MB back-end unit to a 13,206,964-byte IR,
+through zigemit and `zig build-exe` to a running binary, and both its
+rungs are byte-identical to `truth/u49`. Parse, check, lower and emit
+agree with the bank end to end.
+
+**Confidence: HIGH on the measurements and on the restructure; MEDIUM on
+what remains.** The cycles are named by the programs' own backtraces,
+not inferred, and the restructure is verified against the bank. NOT
+established: that 4 MB is the floor for every input (two documents
+measured, and only through `codexir` -- `zigemit` and the other natives
+have their own recursion), and whether the desugarer's nesting-depth
+recursion has a worse case than 297 in real source. The 512 MB stack
+should not be lowered on this evidence. What this shows is that its
+margin on the largest document we have is now 128x rather than 16x.
