@@ -1,0 +1,35 @@
+Chapter: ProbeClosureSaturated
+
+ A SATURATED call whose result type is a function. No recursion anywhere,
+ no self call, nothing that could be compiled as a loop.
+
+ `make-adder` takes one argument and returns a function. `relay-once`
+ calls it with exactly one argument, so the call is saturated and should
+ simply return what make-adder returns.
+
+ `relayed-once 47` means saturated calls returning a function are fine and
+ the wrong answer seen in the mutual-recursion probe needs another
+ explanation. Anything else -- particularly a number in the bivy heap
+ range around 6291456 -- means a saturated call returning a function is
+ not being called at all, and this is a silent miscompilation reachable
+ without any recursion.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+  make-adder : Integer -> (Integer, Integer -> Integer)
+  make-adder (n) = add3 n
+
+ One saturated call. Nothing else.
+
+  relay-once : Integer -> (Integer, Integer -> Integer)
+  relay-once (n) = make-adder n
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("direct 47 expected: " & show (((make-adder 5) 20) 22))
+    print-line-uni ("relayed-once 47 expected: " & show (((relay-once 5) 20) 22))
+  end

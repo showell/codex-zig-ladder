@@ -1,0 +1,30 @@
+Chapter: ProbeClosureContagion
+
+ The sharpest form of the question. `relay-once` is DEFINED and never
+ called. The driver exercises only `make-adder`, which prints 47 both in
+ probe-closure-solo.codex and in probe-closure-return.codex.
+
+ `contagion 47` means a bad definition only hurts callers of itself.
+ A fault means merely DEFINING a function is enough to miscompile a
+ different, correct function in the same chapter -- damage that no
+ reading of the working definition could predict, and that arrives
+ without the bad definition ever running.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+  make-adder : Integer -> (Integer, Integer -> Integer)
+  make-adder (n) = add3 n
+
+ Defined, never called.
+
+  relay-once : Integer -> (Integer, Integer -> Integer)
+  relay-once (n) = make-adder n
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("contagion " & show (((make-adder 5) 20) 22))
+  end

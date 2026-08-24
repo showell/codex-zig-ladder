@@ -1,0 +1,41 @@
+Chapter: ProbeClosureMutual
+
+ Is the predicate really a SELF tail call, or anything that looks like a
+ loop? Two cells, cheapest control first, because a fault halts.
+
+ `pick` is a control: a function-returning definition with two return
+ paths and no recursion at all. If it faults, the conditional is doing
+ the work and the whole recursion story is wrong.
+
+ `even-fn` and `odd-fn` are MUTUAL tail recursion. Neither contains a
+ call to itself, so a self-call test sees nothing in either, and neither
+ should be compiled as a loop.
+
+ `picked 47` then `mutual 47` means the predicate is exactly the self
+ tail call. `picked 47` then a fault means mutual tail recursion breaks
+ it too and the predicate is wider than any self-call test.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+ Two return paths, no recursion.
+
+  pick : Integer -> (Integer, Integer -> Integer)
+  pick (n) = if n == 0 then add3 5 else add3 6
+
+ Mutual tail recursion, neither definition calling itself.
+
+  even-fn : Integer -> (Integer, Integer -> Integer)
+  even-fn (n) = if n == 0 then add3 5 else odd-fn (n - 1)
+
+  odd-fn : Integer -> (Integer, Integer -> Integer)
+  odd-fn (n) = even-fn n
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("picked " & show (((pick 0) 20) 22))
+    print-line-uni ("mutual " & show (((even-fn 4) 20) 22))
+  end

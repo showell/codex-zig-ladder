@@ -1,0 +1,25 @@
+Chapter: ProbeClosureSolo
+
+ The known-good cell, alone in its own chapter. `make-adder` and one
+ driver line, nothing else defined.
+
+ This exists to test INTERFERENCE. The same expression printed 47 in
+ probe-closure-return.codex, where a faulting definition was also
+ present, but faulted as the FIRST line of probe-closure-saturated.codex,
+ where a different faulting definition was present. If it prints 47 here,
+ then a bad definition elsewhere in the chapter can break a good one, and
+ the damage is not confined to the definition that causes it.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+  make-adder : Integer -> (Integer, Integer -> Integer)
+  make-adder (n) = add3 n
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("solo " & show (((make-adder 5) 20) 22))
+  end
