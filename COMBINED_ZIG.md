@@ -60,20 +60,69 @@ So the transform is:
 - patch `codexir`'s `cx_write_all` to append to a buffer instead of stderr
 - patch `zigemit`'s `cx_read_file_uni` to return that buffer
 
+**That buffer must NOT live in codexir's arena.** Allocate it from the page
+allocator in the merged main. The reason is the next section: codexir's
+arena is reclaimed before zigemit runs, and a buffer inside it would be the
+program freeing its own input.
+
 Everything else stays byte-identical to what the emitter produced, which is
 the property worth protecting: the less this rewrites, the less it drifts
 when the emitter moves.
 
+## Two heaps, and why only one of the two costs anything
+
+The obvious worry is that a merged process carries two runtimes and so
+reserves 4 GiB twice. Separate the two costs and only one is real.
+
+**Address space is free.** `cx_heap_base()` reserves LAZILY -- one
+`page_allocator.rawAlloc` of `cx_heap_reserve` on first call, cached in
+`cx_heap_mem` -- and JUSTIFICATIONS' resident bound already measured what
+that costs: peak resident 2,469,888,000 bytes (2.30 GiB) against a 4 GiB
+region, "the reservation is lazily faulted exactly as claimed". Two
+reservations on 64-bit is 8 GiB of virtual address space and approximately
+no memory. Optimising the reservation count is optimising the number that
+does not matter.
+
+**Resident is the real cost, and it is reclaimable** (Steve, 2026-08-24).
+The moment codexir has produced the IR its entire arena is dead -- every
+byte of that 2.3 GiB peak. Reclaim it before zigemit starts and the merged
+program's peak is `max(codexir, zigemit)` rather than the sum, which is a
+better memory profile than the two-process pipeline has today, since there
+the two peaks are merely separated in time rather than shared.
+
+The cheap version is about three lines and touches nothing inside the
+generated code:
+
+1. copy the IR out (13.2 MB for `ir_to_x86`, finding 33's subject)
+2. `madvise(cx_heap_mem.ptr, high_water, MADV_DONTNEED)` -- the kernel
+   drops the pages and RSS falls immediately
+3. `cx_hp = base`, so the cursor does not still believe it is high
+
+Both inputs are already exposed: `cx_heap_save()` returns `cx_hp`, which
+is the high-water mark, and `cx_heap_mem.ptr` is the base.
+
+**Do this only outside a deck extent.** `8cb8a0e4` is literally "main may
+not overlap the deck's live span", and while an extent is open the deck has
+parked `cx_hp` in the bivy -- so a reset there would restore a cursor the
+deck still owns. Assert the nest counter is zero and refuse loudly rather
+than reclaiming on trust.
+
+**The tempting worse option is sharing one region between the two.** It
+sounds tidier and it is not: sharing the region means sharing the CURSOR,
+and `cx_hp` is read and written throughout `cx_bump_alloc`, the
+save/restore/advance trio, and every deck function. That is many sites
+rewritten inside generated code for the same resident win two independent
+arenas already give once one of them is reclaimed. Two cursors over one
+region, which is what a partial job would leave, is a corruption bug.
+
+None of this is measured yet either -- but `bounded_run`'s cgroup
+`MemoryMax` is exactly the instrument for it, so the peak can be a number
+rather than an argument.
+
 ## What to check before believing any of it
 
-- **Two runtimes means two heaps.** Each reserves 4 GiB since PR 77, so a
-  merged process reserves 8 GiB of address space. JUSTIFICATIONS' resident
-  bound says the reservation is lazily faulted (peak resident 2.30 GiB
-  against a 4 GiB region), so this is probably fine -- but `8cb8a0e4` is
-  literally "main may not overlap the deck's live span", and that
-  interaction wants measuring rather than assuming.
-- **The IR buffer lives in codexir's arena.** Copy it across before zigemit
-  runs, or the program depends on nobody resetting that arena.
+- **The IR buffer lives in codexir's arena unless you put it elsewhere.**
+  See the seam above: allocate it outside, or reclaiming frees the input.
 - **One thread, not two.** Both files spawn their own 512 MB thread and
   join it; the merged main should spawn once and run both `opening()`s on
   it, at the larger of the two stacks.
