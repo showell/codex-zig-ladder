@@ -180,3 +180,37 @@ IR 13,223,342 bytes, byte-identical across two runs. Peak resident
 reservation is lazily faulted exactly as claimed, and the same subject
 was IMPOSSIBLE under the old 2560 MB address-space cap, which the
 reservation alone exceeded.
+
+## The act-block tail arm does not move bare metal (2026-08-24)
+
+`64d7db8e` ("tail loops: an act block is on the spine") puts `IrAct` on
+the tail spine in all four ZigEmitter walks. The question a sweep can
+answer about it is the narrow one -- does putting it there change what
+the compiler emits -- and the answer is no.
+
+Sandbox `20260824T193723Z-tailcall-sweep`, ladder `3e14078`, codex
+`64d7db8e`, seed `a01c1547e92eb0d0` (Update 49). Natives built from
+`64d7db8e`; phase 0b confirmed the same-day `ring_compile.py` change
+compiles identical bytes, so the transport is not a variable here.
+
+    rebank   12 units, 1637 s
+    sweep    14/14 rungs green, 658 s
+    census   CDX6020 x43, unmoved
+    bare     14/14 byte-identical to truth/u49
+
+The bare-metal row is the one worth keeping. The truths recorded in this
+run came off the seed compiler with the emitter change in the tree, and
+every one of them matches the bank taken before the change -- so the
+emitter edit stayed on the emitter's side and did not reach the image.
+`bank_truth.py` then took the bank from this sandbox and produced a
+ZERO-BYTE diff against the committed `truth/u49`, which checks the same
+claim through the provenance gate rather than through the sweep's own
+comparison: all 14 sidecars matched the on-disk seed sha AND the
+harness-content sha, so the files are not merely equal, they are equal
+and were measured under the tree that is on disk.
+
+What this does NOT establish, and the commit message says so first:
+whether an act-bodied loop now FLATTENS. No stack number was taken
+anywhere in the chain. 14/14 green is arm agreement against truths from
+this same tree; it prices the change at "breaks nothing", and the
+benefit the change was written for is still unmeasured.
