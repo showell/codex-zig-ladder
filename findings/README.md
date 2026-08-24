@@ -1190,11 +1190,31 @@ must not.
 
 **Confidence: HIGH for riscv and java as source facts, and the dead-code
 claim is a grep anyone can rerun.** What is NOT measured is the runtime
-consequence: nothing in the harness compiles emitted Java, and no
-riscv over-application probe has been run, so "this produces a broken
-program" is inference from the emitted shape rather than an observed
-failure. Finding 40 is the same defect observed end to end, which is
-why it is the one with a reproducer.
+consequence: "this produces a broken program" is inference from the
+emitted shape rather than an observed failure. Finding 40 is the same
+defect observed end to end, which is why it is the one with a reproducer.
+
+**CORRECTION 2026-08-24, and it was in the sent PR.** This finding first
+said the runtime consequence could not be checked here because the host
+has no PowerShell. That is FALSE: pwsh 7.5.4 is installed at
+`~/.local/pwsh/pwsh` -- the ladder's own `truth_arm` invokes it by that
+path for every bundle -- it is simply not on `PATH`, which is all
+`which pwsh` was reporting. The claim was written from one negative
+command and never checked against a tree that uses the thing daily.
+
+What is actually true is narrower and, for the finding, stronger:
+
+- **`test-plugs.ps1` never compiles what it emitted**, so for `java` it
+  cannot detect this defect no matter how often it runs.
+- **It does not run `riscv` or `arm64` AT ALL.** Its own prose says why:
+  the harness drives every plug as `run.ps1 -Src <codex> -Out <text>`
+  and asserts non-empty text with markers, while the native backends
+  take `-IrInput` and emit the binary wire protocol, so they "fail
+  parameter binding and exit 1 in under a second having done no work at
+  all". They are excluded from the plug list deliberately.
+- Running either plug here is possible but is a real job, not a grep:
+  `run.ps1` shells to `build/compile.ps1`, which compiles through the
+  seed, which on this box means the QEMU appliance. Not yet done.
 
 **Why nothing caught any of them:** `codex/plugs/test-input/partial.codex`
 covers under-application, saturation, and over-application of a LOCAL,
