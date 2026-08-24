@@ -413,28 +413,18 @@ Open, none landed:
 
 Ready or nearly so:
 
-- **Finding 41's java half, measured rather than read** -- QUEUED, and
-  the ceiling is known before starting. PR 80's row says the runtime
-  consequence for riscv and java is INFERRED from the dispatch code, and
-  a comment on that PR promises to post an observed miscompile if one
-  turns up. **What is achievable here is less than that, and the row must
-  not be updated as though it were more.** There is no JDK on this box --
-  `javac` and `java` are both absent -- so the emitted Java cannot be
-  compiled, and "produces a broken program" stays inference. Installing
-  one is not a decision to take quietly: the depot's own backlog records
-  Damian's standing rule that no new build environment is installed now
-  (`plugs-backlog.md:134`, `:154`), and whether that binds our droplet is
-  Steve's call rather than mine.
-  What IS achievable, and is worth having: build the java plug, run it on
-  a probe that over-applies a NAMED top-level definition, and read the
-  emitted call site against its own declaration. That moves the finding
-  from "the dispatch code has no `args > ar` branch" to "here is the
-  output, and it calls a one-ary method with three arguments" -- the
-  emitted artifact rather than the emitter's source, which is the
-  distinction this file's own standing hazard about name censuses is
-  making. Cost is a seed compile of the plug through the appliance.
-  `findings/prim-closure.codex` is the probe; `pwsh` needs
-  `~/.local/pwsh` on PATH because `java/run.ps1` calls it bare.
+- **Finding 41's java/riscv half is HEDGED AND HANDED OFF, not queued**
+  (Steve, 2026-08-24). We are not running the java plug. The ladder host
+  has no JDK, installing one is not our call given the depot's standing
+  rule on new build environments, and Damian's bots are where a
+  toolchain-bearing verification belongs. The row on PR 80 now says that
+  in its own text -- source-level report, verification on the depot side,
+  and the concrete experiment named rather than left as "someone should
+  check". A comment on the PR retracts the earlier promise to run it, so
+  nobody is waiting on us for something that was never going to arrive.
+  **The general rule this is an instance of: when a finding needs a
+  toolchain we do not have, hedge the row and say who can settle it. Do
+  not hold the finding back, and do not imply a follow-up.**
 - **Finding 36** (python plug's TCO keys on name, not arity) -- MEDIUM
   confidence, reproducer NOT run, wants a `plugs-backlog.md` row once it
   is. It is the same rule as findings 40 and 41 broken at a fourth site,
