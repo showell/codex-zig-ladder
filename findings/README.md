@@ -1660,8 +1660,36 @@ that is a question for Damian rather than a decision to take here.
 ## 33. No tail calls: recursion depth on this arm is bounded by the thread stack, bare metal's is not
 
 **Found 2026-08-22 while running the native chain on the ir_to_x86 subject
-(finding 24's closing experiment). Ours. OPEN -- an emitter feature, not a
-patch.**
+(finding 24's closing experiment). Ours. FIXED 2026-08-24 on branch
+`zig-plug-tail-calls` (`6cd40143` + the two follow-ups), verified end to
+end; not landed upstream.**
+
+**The measurement that closes it** (sandbox `20260824T115824Z-f33-tailcalls`,
+natives from the branch, region 4 GiB from the heap branch beneath it):
+`native/zigemit` on the 13,219,750-byte `ir_to_x86.ir` completes rc 0 in
+27 s **at the stock 512 MB stack** and emits 3,021,734 bytes of zig --
+against the recorded baseline where 512 MB died, 2 GiB died, and 3.5 GiB
+reached only the end of tokenizing. `tokenize_collect`, the function it
+died in, is among the 887 definitions of 3,633 that now emit as loops.
+
+That the emitted program is also RIGHT is the other half, and it is the
+half a stack fix could have faked: the zig compiles (2.5 s, 35,550,072
+bytes), runs in 0.37 s, and both of its rungs are **byte-identical to
+`truth/u49`** -- a full ir_to_x86 unit through the native loop with no
+QEMU anywhere in the arm. `findings/probe-tail-loop.codex` covers the
+four spine shapes separately and is byte-identical on both arms,
+including `sum-nontail`, the control that must NOT be looped.
+
+Note what is NOT closed by this. The 512 MB stack in every emitted
+`main` stays load-bearing: the emitter's own prose (`zig-main`) records
+that the case which reaches the limit is MUTUAL recursion --
+`scan-token -> skip-prose-line -> scan-token` -- which no self-tail-call
+elimination flattens, and that .NET overflows on a 96-byte chapter with
+a 1 MB main thread. This finding was latent from Update 30, when bare
+metal gained `st-set-tail-pos` and the python plug gained TCO in the
+same commit; the 512 MB spawn added at Update 43 (2026-08-15) hid the
+symptom for a week, until the native loop pointed the plug's own output
+at the largest IR we have.
 
 `native/zigemit` on the 13.2 MB native-produced `ir_to_x86.ir` dies in
 `tokenize_loop`: a self-recursive loop that advances one TOKEN per frame.

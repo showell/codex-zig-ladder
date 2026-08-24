@@ -1,0 +1,65 @@
+Chapter: ProbeTailLoop
+
+ Finding 33: bare metal tracks tail position and a self tail call there is
+ a jump, so a `*-loop (xs) (i) (acc)` costs no stack; the zig plug called
+ instead, and a Debug frame per element is a stack no thread has.
+
+ Each definition here is a self tail call in one of the spine shapes the
+ emitter now walks, and each is driven deep enough that a per-frame arm
+ would be visibly different in cost while still finishing on both arms --
+ the probe is about the ANSWER, and depth is what makes the answer
+ evidence about frames rather than about arithmetic.
+
+   count-if     the tail call sits under `if`
+   count-let    a `let` binding stands between the if and the call
+   count-match  the call sits in a `when` arm, which is tokenize-collect's
+                own shape: if -> when -> if -> self call
+   sum-nontail  NOT a tail call -- it must keep its frames and its answer,
+                because an emitter that loops this one is wrong
+
+ Expected on bare metal:
+
+   count-if 200000
+   count-let 200000
+   count-match 200000
+   sum-nontail 500500
+
+Section: Shapes
+
+  count-if : Integer, Integer -> Integer
+  count-if (n) (acc) =
+   if n == 0 then acc
+   else count-if (n - 1) (acc + 1)
+
+  count-let : Integer, Integer -> Integer
+  count-let (n) (acc) =
+   if n == 0 then acc
+   else let step = 1
+   in count-let (n - 1) (acc + step)
+
+  Step =
+   | Stop
+   | Go (Integer)
+
+  next-step : Integer -> Step
+  next-step (n) = if n == 0 then Stop else Go (n - 1)
+
+  count-match : Integer, Integer -> Integer
+  count-match (n) (acc) =
+   when next-step n
+    is Stop -> acc
+    is Go (m) -> count-match m (acc + 1)
+
+  sum-nontail : Integer -> Integer
+  sum-nontail (n) =
+   if n == 0 then 0
+   else n + sum-nontail (n - 1)
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("count-if " & show (count-if 200000 0))
+    print-line-uni ("count-let " & show (count-let 200000 0))
+    print-line-uni ("count-match " & show (count-match 200000 0))
+    print-line-uni ("sum-nontail " & show (sum-nontail 1000))
+  end
