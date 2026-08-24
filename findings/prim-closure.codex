@@ -39,12 +39,21 @@ Chapter: PrimClosure
  answers 47 on any arm that can add, and it runs FIRST because a fault
  halts the program and a control after the defect would never print.
 
- `control-base` takes `even-fn`'s non-recursive branch. It reaches the
- same `add3 5` closure through the same annotation and the same
- three-argument application, differing from the row below only in that
- no recursion happens on the way. It is what makes `under-mutual` a
- statement about under-application rather than about closure-returning
- types in general.
+ `control-pick` is a closure-returning definition with two return paths
+ and no recursion. It reaches `add3 5` through the same annotation and
+ the same three-argument application as the row below, so it is what
+ makes `under-mutual` a statement about under-application rather than
+ about closure-returning types in general. This chapter -- add3, pick,
+ even-fn, odd-fn -- is probe-closure-mutual's, which is known to run
+ both its lines to completion; that is why the control is `pick` and not
+ something newly invented here.
+
+ `even-fn 0` would be the tighter control, differing from the defect row
+ only in the recursion, and it CANNOT be used: taken alone it faults
+ (probe-t14-a, and probe-closure-basecase before it), while `even-fn 4`
+ four levels deeper answers. That inversion is real and unexplained --
+ PR 79 says so in as many words -- and a tier is not the place to argue
+ it.
 
  `under-mutual` is the defect. `even-fn 4` recurses through `odd-fn` and
  returns `add3 5`; the two remaining arguments then arrive separately.
@@ -56,7 +65,7 @@ Chapter: PrimClosure
  Expected on bare metal:
 
    control-flat 47
-   control-base 47
+   control-pick 47
    under-mutual not-47
 
 Section: Shapes
@@ -65,6 +74,13 @@ Section: Shapes
 
   add3 : Integer, Integer, Integer -> Integer
   add3 (x) (y) (z) = x + y + z
+
+ Two return paths, no recursion. The control for everything the defect
+ row also does: a closure-returning annotation, and three arguments
+ arriving at a partial application.
+
+  pick : Integer -> (Integer, Integer -> Integer)
+  pick (n) = if n == 0 then add3 5 else add3 6
 
  Mutual recursion returning a partial application. Neither definition
  calls itself, so no self-call test sees anything here; the arity is
@@ -80,6 +96,6 @@ Section: Driver
 
   opening : [Console] Nothing = act
     print-line-uni ("control-flat " & show (add3 5 20 22))
-    print-line-uni ("control-base " & (if (((even-fn 0) 20) 22) == 47 then "47" else "not-47"))
+    print-line-uni ("control-pick " & (if (((pick 0) 20) 22) == 47 then "47" else "not-47"))
     print-line-uni ("under-mutual " & (if (((even-fn 4) 20) 22) == 47 then "47" else "not-47"))
   end
