@@ -1,0 +1,34 @@
+Chapter: ProbeIndirectUnder
+
+ Is the defect confined to the over-apply path, or does the local-rooted
+ path carry it too? emit-apply routes a FunTy result to emit-indirect-call
+ when the callee is a LOCAL (Emit/X86_64Compound.codex:166-169), so a
+ local closure entered with fewer arguments than it still wants goes
+ through a different function than the top-level case.
+
+ The control is the tree's own fixture shape
+ (codex/plugs/test-input/partial.codex:9-10): bind the closure, then apply
+ BOTH remaining arguments at once. It is green in-tree.
+
+ The test splits that into two steps, so the closure is entered with one
+ argument while it still wants two.
+
+ `both 42` then `split 42` means the local path is sound and only the
+ over-apply path is affected. `both 42` then anything else means the
+ defect is in the closure representation rather than in one caller, and
+ fixing a single application site cannot close it.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    let h = add3 10
+    in print-line-uni ("both 42 expected: " & show ((h 20) 12))
+    let j = add3 10
+    in let g = j 20
+    in print-line-uni ("split 42 expected: " & show (g 12))
+  end
