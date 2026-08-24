@@ -1,0 +1,6 @@
+# stack_probe, seed a01c1547e92eb0d0, bank u49
+# emitter: ast/codexir.zig sha256 6f18a4b9fd382387
+# min = smallest passing step; cliff = largest failing step below it
+# cycle = repeated frames in the failing trace, most frequent first
+back-end-unit	min=32MB	cliff=24MB	cycle=try_top_level_type_defx3386 parse_top_levelx3385 try_top_level_defx3185
+one-chapter	min=1MB	cliff=none	cycle=(none recorded)

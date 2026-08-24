@@ -39,6 +39,7 @@ probe that quietly did it would hide which emitter the number belongs to.
 """
 
 import argparse
+import hashlib
 import pathlib
 import re
 import shutil
@@ -154,13 +155,19 @@ def bisect(src_text, doc, work):
     return best, cliff, cycle
 
 
-def render(rows, slug):
+def render(rows, slug, emitter):
+    # The emitted source's own hash, because this number belongs to an
+    # EMITTER as much as to a seed: the same document measured through two
+    # plugs is two different answers, and a gold row that named only the
+    # seed would read as a contradiction rather than as a different arm.
     out = [f'# stack_probe, seed {seed_sha256()[:16]}, bank {slug}',
+           f'# emitter: ast/codexir.zig sha256 {emitter[:16]}',
            '# min = smallest passing step; cliff = largest failing step below it',
            '# cycle = repeated frames in the failing trace, most frequent first']
     for name, (mb, cliff, cycle) in rows.items():
         c = ' '.join(f'{f}x{n}' for f, n in cycle) or '(none recorded)'
-        out.append(f'{name}\tmin={mb}MB\tcliff={cliff}MB\tcycle={c}')
+        cl = f'{cliff}MB' if cliff is not None else 'none'
+        out.append(f'{name}\tmin={mb}MB\tcliff={cl}\tcycle={c}')
     return "\n".join(out) + "\n"
 
 
@@ -197,7 +204,7 @@ def main():
     if not rows:
         raise SystemExit('stack_probe: no document was readable; nothing measured')
 
-    text = render(rows, s['slug'])
+    text = render(rows, s['slug'], hashlib.sha256(src_text.encode()).hexdigest())
     print('\n' + text)
 
     if args.bank:

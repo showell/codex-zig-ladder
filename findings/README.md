@@ -1830,6 +1830,13 @@ The zig plug takes the other choice: `zig-tail-self-call` requires
 over-application is not a tail call and emits `return <expr>;`
 unchanged.
 
+**Confidence: MEDIUM.** The source reading is unambiguous -- the two
+loops are keyed on different lengths and nothing reconciles them -- but
+no python arm has been run, so whether any real program reaches the
+shape is unknown, and the stale-temporary path is reasoned from python's
+scoping rather than observed. Run the reproducer before filing
+upstream.
+
 
 ## 37. The 512 MB stack is protecting the parser's header scan, not the lexer's prose cycle -- and that scan is mutual TAIL recursion
 
@@ -1872,11 +1879,28 @@ definitions), the 8 MB run's backtrace is 7,096 frames of:
 the three-cycle per top-level definition, and **every edge is a tail
 call** -- no frame in the cycle is live when the next is entered.
 
-The cliff on that subject:
+The cliff on that subject, from `stack_probe.py` (banked
+`findings/gold/u49/stack.txt`):
 
     stack    verdict
     24 MB    abort
     32 MB    rc 0
+
+**There are at least TWO such cycles, not one, and the probe found the
+second on its first run.** The 8 MB trace above is the streaming header
+scan. The trace at the 24 MB cliff names different functions:
+
+    try_top_level_type_def x3386
+    parse_top_level        x3385
+    try_top_level_def      x3185
+
+-- `parse-top-level` / `try-top-level-type-def` / `try-top-level-def`,
+the real parse, with the same three-function mutual-tail shape and the
+same one-turn-per-definition cost. So the scan cycle is what dies first
+at 8 MB, and once there is room for it the parse cycle dies at 24 MB.
+Flattening either alone moves the number by one cycle's worth and leaves
+the other; a fix that claims to retire the 512 MB has to do both, and
+the probe's `cycle` column is what says whether it did.
 
 So the workaround is load-bearing -- about 28 MB for the largest real
 document, roughly 7 KB per definition -- and 512 MB is about 18x that,
@@ -1903,6 +1927,17 @@ and the 512 MB spawn stops being load-bearing for the case that actually
 drives it.
 
 Not yet done: the same measurement on `zigemit` and on the other
-natives, and a check of whether any OTHER cycle appears once this one is
+natives, and a check of whether a THIRD cycle appears once these two are
 flat. The 512 MB should not be lowered until that sweep exists -- this
 entry establishes what one input needs, not what every input needs.
+
+**Confidence: HIGH on the measurements, MEDIUM on the fix.** The
+numbers are reproducible from the banked gold and the cycles are named
+by the programs' own backtraces, not inferred. What is not measured is
+the restructure itself: that `try-*` returning a decision preserves the
+scan's behaviour exactly, that the two cycles are the only per-definition
+ones, and that no third appears beneath them. The direction is sound --
+every edge in both cycles is a tail call, and self tail calls are what
+the whole fleet already flattens -- but the claim "this retires the
+512 MB stack" is UNMEASURED until the change exists and the probe is
+re-run against it.
