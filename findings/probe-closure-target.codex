@@ -1,0 +1,42 @@
+Chapter: ProbeClosureTarget
+
+ Is the damage chapter-wide, or aimed at the function a partial
+ application NAMES?
+
+ `make-adder` and `twin` are character-for-character the same definition
+ under two names. `relay-once` is defined, never called, and names
+ `make-adder` -- not `twin`. The driver runs `twin` first, then
+ `make-adder`.
+
+ `twin 47` then `made 47` means neither is hurt and something else
+ explains the earlier result. `twin 47` then a fault means the damage
+ lands on the definition a partial application NAMES, and calling it
+ chapter-wide contagion is wrong. A fault on `twin` means the damage
+ really is indiscriminate.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+ Never named by a partial application.
+
+  twin : Integer -> (Integer, Integer -> Integer)
+  twin (n) = add3 n
+
+ Named by relay-once below.
+
+  make-adder : Integer -> (Integer, Integer -> Integer)
+  make-adder (n) = add3 n
+
+ Defined, never called. Names make-adder and not twin.
+
+  relay-once : Integer -> (Integer, Integer -> Integer)
+  relay-once (n) = make-adder n
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("twin " & show (((twin 5) 20) 22))
+    print-line-uni ("made " & show (((make-adder 5) 20) 22))
+  end
