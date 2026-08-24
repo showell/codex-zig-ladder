@@ -40,9 +40,13 @@ Chapter: PrimTailCall
  -- needs a definition whose return type is itself a function, and the
  first draft's `make-adder : Integer -> (Integer, Integer -> Integer)`
  broke BOTH arms: bare metal dumped registers instead of answering, and
- the zig arm would not compile the closure return type. Whether that is
- a defect or a syntax error of mine is finding 36's question to settle
- with a minimal reproducer, not this file's to carry as a red row.
+ the zig arm would not compile the closure return type. Both halves have
+ since been settled, and neither was a syntax error: bare metal is
+ finding 39, and the zig arm's refusal is finding 40, which is narrower
+ than this paragraph guessed -- the plug compiles closure return types
+ fine (tier 14's `pick` control does), and fails only where it cannot
+ inline the definition. Tier 14 (`prim-closure.codex`) carries the row
+ this file left out.
 
  `mutual` is the pair no arm flattens: two definitions that tail-call each
  other. Every TCO in the fleet is self-only -- bare metal's `is-self-call`

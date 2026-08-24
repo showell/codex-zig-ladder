@@ -1123,6 +1123,56 @@ lowering it now exists: one capped class at 1024 frames, one data
 dependent class in the sort, and no per-definition growth.
 
 
+## 40. The zig plug calls a curried definition flat, so an under-applied chain it cannot inline will not compile
+
+**Found 2026-08-24 on tier 14's first run against both arms. OURS -- the
+zig plug (ZigEmitter), not upstream. OPEN, not sent.**
+
+`((even-fn 4) 20) 22`, where `even-fn : Integer -> (Integer, Integer ->
+Integer)`, is emitted as a saturated three-argument call to a definition
+the plug itself emitted as one-ary returning a closure:
+
+    fn even_fn(n: i64) CxFn2(i64, i64, i64) { ... }
+    even_fn(4, 20, 22)
+    error: expected 1 argument(s), found 3
+
+**The discriminator is inlinability, and the control is in the same
+file.** `pick`, a closure-returning definition with two return paths and
+no recursion, compiles and answers 47: the pipeline inlines it
+(`CDX4030: fold-constants,inline-leaf-calls,inline-single-caller`) and
+the call site materialises the closure properly as
+`_f5.call(_f5.ctx, 20, 22)`. `probe-closure-solo`'s `make-adder`, a leaf,
+answers `solo 47` for the same reason. `even-fn` is MUTUALLY recursive,
+so nothing can inline it, the flat call survives to the emitter, and zig
+rejects it. So the plug knows how to call a closure; it just does not
+know it is holding one when the definition stayed a definition.
+
+**This is finding 39's shape on our side of the fence.** There the call
+site assumed an arity the closure could not honour at run time; here the
+call site assumes an arity the definition was not emitted with, and zig
+catches it at compile time. Upstream corrupts silently, we refuse
+loudly, and the disagreement is the same disagreement.
+
+**It fails as a raw zig error, not a `@compileError("zig plug: ...")`
+marker**, so `zig-is-unmapped` and `corpus_run.py --transpile` score it
+zero. PRIORITIES item 5's open question names three findings in that
+class; this is the fourth.
+
+**Reproducers:** `findings/prim-closure.codex` (tier 14, which is
+EXCLUDED from the set while this stands), `probe-closure-silent`,
+`probe-closure-rec-cmp`. Control: `probe-closure-solo`.
+
+**Confidence: HIGH.** The error is a compile-time refusal with the
+emitted text in hand, and the inlined control passes in the same
+chapter.
+
+**Not established:** whether the fix belongs at the call site (emit a
+closure call whenever the callee's emitted arity is short of the
+applied count) or at the definition (emit closure-returning definitions
+n-ary flat and let over-application saturate them). Tier 13's prose says
+the zig arm "would not compile the closure return type" -- that is now
+out of date, and `pick` is the counter-example.
+
 ## 39. A partial-application closure carries no remaining-arity, so under-application corrupts silently
 
 **Found 2026-08-24 by measuring finding 38 until its framing collapsed.

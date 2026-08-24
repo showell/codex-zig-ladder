@@ -68,6 +68,25 @@ Chapter: PrimClosure
  would stop matching the moment the value it names changes, which is the
  one moment it has to speak.
 
+ The ZIG arm does not build this file at all, which is finding 40: it
+ emits `even_fn(4, 20, 22)` against a definition it emitted as
+ `fn even_fn(n: i64) CxFn2(i64, i64, i64)`. `control-pick` survives
+ there only because the pipeline inlines `pick` and materialises the
+ closure at the call site; `even-fn` is mutually recursive and nothing
+ can inline it. So this tier is EXCLUDED from the set until the plug
+ emits a closure call, with the reason recorded in tiers_run.py rather
+ than left for someone to rediscover. The bare column below is banked
+ and correct in the meantime, and the exclusion is the thing to delete
+ first when finding 40 closes. Being out of the set costs something and
+ the cost is named here rather than discovered: the set will not refresh
+ this bare column either, so a seed re-pin wants
+ `./tier_run.py findings/prim-closure.codex --bare` run by hand until
+ the row is back in.
+
+ Until then this file is NOT yet the detector it is for. What makes a
+ fixed COMPILER-18 announce itself is the ledger row going STALE when
+ the arms agree, and there is no ledger row while one arm cannot build.
+
  Expected on bare metal:
 
    control-flat  47
