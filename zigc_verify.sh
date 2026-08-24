@@ -90,11 +90,31 @@ python3 -u plug_run_ring.py ast/zigc.ir ast/zigc.zig > ast/zigc.transport.log 2>
     || { echo "TRANSPORT FAILED (ast/zigc.transport.log):"; tail -6 ast/zigc.transport.log; exit 1; }
 [ -s ast/zigc.zig ] || { echo "TRANSPORT FAILED: no zigc.zig"; exit 1; }
 
-# A marker means the plug refused a construct and said so. zigc built with
-# none in the README's run; if that changes it is a finding, not a detail.
-marks=$(grep -c '@compileError("zig plug:' ast/zigc.zig || true)
-echo "    zigc.zig: $(wc -l < ast/zigc.zig) lines, $marks plug refusal markers"
-[ "$marks" -eq 0 ] || { echo "PLUG REFUSED $marks constructs -- read them before believing anything below"; exit 1; }
+# A marker means the plug refused a construct the subject actually uses,
+# and it must stop the build. It must NOT count a prelude precondition --
+# a defensive prong of a comptime type switch that nothing instantiates.
+# findings/prelude-comptime-guards.txt is the list, and its own header
+# records what counting them costs: cx_address_of "blocked every native
+# build at the marker scan and printed a spurious gap: on every tier run,
+# from a line in the prelude no subject reaches". A plain grep here did
+# exactly that on the first run of this script. Read the same file
+# native_build.sh and tier_run.py read, so a third spelling cannot drift
+# from the two that already agree.
+python3 - <<'PY' || { echo "read them before believing anything below"; exit 1; }
+import pathlib, re, sys
+MARKER = re.compile(r'@compileError\("zig plug: ([^"]*)"\)')
+guards = {m.group(1) for ln in
+          pathlib.Path('findings/prelude-comptime-guards.txt').read_text().splitlines()
+          if ln.strip() and not ln.startswith('#')
+          for m in [MARKER.search(ln)] if m}
+zig = pathlib.Path('ast/zigc.zig').read_text()
+marks = [m for m in MARKER.findall(zig) if m not in guards]
+print(f"    zigc.zig: {len(zig.splitlines())} lines, "
+      f"{len(marks)} plug refusals ({len(MARKER.findall(zig)) - len(marks)} prelude guards excluded)")
+for m in marks:
+    print(f"    PLUG REFUSED: {m}")
+sys.exit(1 if marks else 0)
+PY
 
 # 3. Build it.
 rm -f "$T/zigc"
