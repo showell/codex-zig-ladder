@@ -1829,3 +1829,80 @@ The zig plug takes the other choice: `zig-tail-self-call` requires
 `list-length (chain.args) == tail-arity`, so an under- or
 over-application is not a tail call and emits `return <expr>;`
 unchanged.
+
+
+## 37. The 512 MB stack is protecting the parser's header scan, not the lexer's prose cycle -- and that scan is mutual TAIL recursion
+
+**Found 2026-08-24 by measuring what the workaround actually holds up,
+after finding 33 removed the self-recursion it was blamed on. Ours to
+report; the cycle is THEIRS. OPEN.**
+
+`zig-main` emits every program onto a 512 MB thread and its prose names
+the reason:
+
+    the case that reaches the limit is MUTUAL recursion, the lexer's
+    scan-token -> skip-prose-line -> scan-token cycle, and no amount of
+    self-tail-call elimination flattens that
+
+**The named cycle does not reach any limit.** `scan-to-eol-end` stops AT
+the newline without consuming it, so the third call in the cycle sees a
+newline, returns a `Newline` token, and unwinds: three frames per prose
+line, constant, never chaining to the next line. Measured on native
+`codexir` built from the finding-33 branch, one constant changed in the
+emitted source (the JUSTIFICATIONS slack methodology):
+
+    prose lines   stack    verdict
+        100       256 KB   rc 0
+    100,000       256 KB   rc 0        <- identical; no accumulation
+    100,000        64 KB   abort
+        100        64 KB   abort       <- control: 64 KB is too small for anything
+
+**What does reach the limit** is in the parser, and the same binaries
+name it. On the real 2,503,544-byte compiler subject (4,511 top-level
+definitions), the 8 MB run's backtrace is 7,096 frames of:
+
+    2,393 x scan_top_level
+    2,393 x try_scan_type_def
+    2,287 x try_scan_def_header
+
+`Parser.codex` "Header Scanning (streaming)": `scan-top-level` ends
+`else try-scan-type-def ... st`; `try-scan-type-def` ends
+`scan-top-level ...` on Just and `try-scan-def-header ...` on None;
+`try-scan-def-header` ends `scan-top-level ...` on Just. One full turn of
+the three-cycle per top-level definition, and **every edge is a tail
+call** -- no frame in the cycle is live when the next is entered.
+
+The cliff on that subject:
+
+    stack    verdict
+    24 MB    abort
+    32 MB    rc 0
+
+So the workaround is load-bearing -- about 28 MB for the largest real
+document, roughly 7 KB per definition -- and 512 MB is about 18x that,
+which is the headroom nobody had measured. It also bounds the compiler:
+a document of ~75,000 definitions overflows even 512 MB, and the failure
+is a segfault rather than a diagnostic.
+
+**The fix is a source change with no new emitter machinery anywhere in
+the fleet.** Nobody flattens mutual tail calls: bare metal's TCO is
+self-only (`X86_64.codex:75`, `is-self-call (expr) (func-name)`), and so
+is the python plug's and so is the zig plug's new one. But this cycle
+does not need mutual TCO -- it needs to stop being mutual. The two
+`try-*` functions are continuations that always return to
+`scan-top-level`; have them RETURN their decision instead of calling
+back:
+
+    try-scan-type-def   : ... -> ScanStep   (found td + state | not a type def)
+    try-scan-def-header : ... -> ScanStep   (found hdr + state | not a header)
+
+and `scan-top-level` dispatches on that and tail-calls ITSELF. A self
+tail call is what every TCO in the fleet already flattens, so the scan
+becomes O(1) stack on bare metal, on zig, on python and on C# at once,
+and the 512 MB spawn stops being load-bearing for the case that actually
+drives it.
+
+Not yet done: the same measurement on `zigemit` and on the other
+natives, and a check of whether any OTHER cycle appears once this one is
+flat. The 512 MB should not be lowered until that sweep exists -- this
+entry establishes what one input needs, not what every input needs.
