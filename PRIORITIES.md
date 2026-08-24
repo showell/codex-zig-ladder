@@ -77,19 +77,28 @@ actually see the effect: on the u49 pin the plug has no self-TCO, so the
 change would flatten nothing there and the measurement would be a null
 result.
 
-**Nothing has run yet.** The natives are building; then `stack_probe.py`
-against the recorded baseline (emitter `6f18a4b9`,
-`back-end-unit min=32MB cliff=24MB`, cycle
-`try_top_level_type_def/parse_top_level/try_top_level_def`). Read the
-CYCLE column first: the three names being gone is the result, and the
-same names under a smaller number would mean the emitter declined to
-loop the rewritten functions rather than that the parser changed.
+**MEASURED: 32 MB -> 4 MB**, and the remaining recursion is no longer
+per-definition (finding 37 carries the three-row table). Both ir_to_x86
+rungs came out byte-identical to `truth/u49` through the native chain,
+so the restructure is semantics-preserving as far as that reaches.
+It took the emitter's invariant-parameter rule to see it: with the
+parser cycles gone the number had not moved, because `sort_partition`
+sat underneath.
 
-Then, in order: does it still parse correctly (tiers + a sweep, since a
-parser change reaches every rung), rebase onto the pin for an upstream
-branch, and a `compiler-backlog.md` row -- which is how a finding
-reaches Damian at all (contrib/README.md; findings sitting in our
-register reach nobody).
+Left, in order:
+
+- **The full rebank+sweep**, running (`logs/rebank-20260824-143156.log`).
+  A parser change reaches every rung, and two rungs agreeing natively is
+  two of fourteen. All fourteen truths should come back byte-identical
+  to the bank -- the parser's OUTPUT does not change, only its shape.
+- **Rebase onto the u49 pin** for the outbound branch. It sits on
+  `zig-plug-tail-calls` because that is the only arm here that can SEE
+  the effect (the pin's plug has no self-TCO), but upstream reproduces
+  through arms it already has, so the branch it receives should not
+  carry ours.
+- **A `compiler-backlog.md` row**, which is how a finding reaches Damian
+  at all. Findings 37 and 38 both want one; 38 is a bare-metal fault
+  with a six-line reproducer and is the more valuable of the two.
 
 ## 4. The refusal-gaps branch, rebased and re-verified
 
@@ -130,17 +139,14 @@ property is observable from inside a program so bare metal is the oracle,
 zig-only otherwise and labelled so; never print an address; keep a control
 column.
 
-**IN FLIGHT: tier 13 (`findings/prim-tailcall.codex`) is WRITTEN AND
-NEVER COMPILED.** Six rows on what a self tail call may do to its own
-arguments -- arg-swap and acc-grows are the ones an implementation can
-break by assigning parameters without temporaries, and both produce
-plausible wrong numbers rather than crashes. Next: `./tiers_run.py
---bare` to bank its bare-metal column under `findings/gold/u49/` (bare
-metal is the oracle; a zig column means nothing until that exists), then
-the set. Its `make-adder : Integer -> (Integer, Integer -> Integer)`
-return type is unverified syntax and is the likeliest thing to refuse.
-Expected values were hand-simulated, not predicted -- the first draft of
-arg-swap said 30 and it is 15.
+**Tier 13 (`findings/prim-tailcall.codex`) is GREEN**, five rows
+byte-identical on both arms, gold banked under `findings/gold/u49/`. It
+earned its keep on its first run: the sixth row broke both arms and
+minimizing it produced finding 38, a bare-metal fault. The row is gone
+and the hole is documented in the file rather than left as a red.
+`arg-swap` and `acc-grows` are the rows that matter -- an implementation
+that assigns loop parameters without temporaries fails them with a
+plausible number rather than a crash.
 
 **The open question:** three findings in one day (`probe-tyvar-leak`,
 `probe-show-types`, finding 32's `IrTry`) failed as raw zig errors rather
