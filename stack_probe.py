@@ -30,6 +30,15 @@ Banked per Update under `findings/gold/<slug>/stack.txt`, read back on the
 next run, and rewritten only with --bank: the benchmark pattern, so a
 number that moves is a question rather than a surprise.
 
+**Bank only a VERBATIM-emitter measurement.** The number belongs to an
+emitter, and the ladder's rule for what a `uNN` bank stands behind is the
+release's own emitter (README, "Decide what the zig arms measure"). A run
+whose `ast/codexir.zig` came from an unlanded branch is a real
+measurement and a useful one, but it is not what u<NN> means; keep it in
+the finding that motivated it, where the branch can be named, and bank
+here when the branch lands. The `# emitter:` line records which arm a
+banked row came from so the two can never be confused after the fact.
+
     ./stack_probe.py            measure and diff against the bank
     ./stack_probe.py --bank     measure and write the bank
 
