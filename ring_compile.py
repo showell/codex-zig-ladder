@@ -191,15 +191,28 @@ def compile_ring(blob_path, out_path, mem_mb=MEM_MB, timeout=1800, seed=None):
             stalled = 0
             last_rpos = -1
             t_fill = time.time()
+            # PRIORITIES 5.4, which side is the soda straw. Room free at
+            # wake is what the guest drained while the host slept; the
+            # write duration is what the gdbstub costs to put it back.
+            # Rounds that are mostly wait, freeing little room, mean a
+            # guest-bound ring that is already fine as it is; rounds that
+            # are mostly write mean the host is the cap. The 150 ms sleep
+            # stays until this says which.
+            t_write_total = 0.0
+            rounds = 0
+            dry_rounds = 0
             gdb.cont_nowait()
             while True:
+                t_wake = time.time()
                 time.sleep(0.15)
                 gdb.interrupt()
                 rpos = int.from_bytes(gdb.read_mem(RPOS_ADDR, 8), "little")
+                wait = time.time() - t_wake
                 if rpos >= len(blob):
                     break
                 room = RING_SIZE - (wpos - rpos)
                 if room > 0 and wpos < len(blob):
+                    t_write = time.time()
                     chunk = blob[wpos:wpos + room]
                     off = 0
                     # 1 KB per M packet: hex doubles the payload and QEMU's
@@ -214,13 +227,30 @@ def compile_ring(blob_path, out_path, mem_mb=MEM_MB, timeout=1800, seed=None):
                         off += len(piece)
                     wpos += len(chunk)
                     gdb.write_mem(WPOS_ADDR, wpos.to_bytes(8, "little"))
-                    print(f"  refill: wpos {wpos}/{len(blob)} rpos {rpos}", flush=True)
+                    dt_write = time.time() - t_write
+                    t_write_total += dt_write
+                    rounds += 1
+                    print(f"  refill: wpos {wpos}/{len(blob)} rpos {rpos}"
+                          f" room {room} wait {wait*1000:.0f}ms"
+                          f" write {len(chunk)}B in {dt_write*1000:.0f}ms",
+                          flush=True)
+                elif wpos < len(blob):
+                    # Woke with data still to send to a ring the guest had
+                    # not drained a byte of. Rounds past the last byte are
+                    # drain-wait, not straw width, so they do not count.
+                    dry_rounds += 1
                 stalled = 0 if rpos != last_rpos else stalled + 1
                 last_rpos = rpos
                 if stalled > 400:
                     raise RuntimeError(f"guest stopped consuming at rpos {rpos} of {len(blob)}")
                 gdb.cont_nowait()
-            print(f"ring refill consumed: {len(blob)} bytes in {time.time()-t_fill:.1f}s", flush=True)
+            fill_secs = time.time() - t_fill
+            print(f"ring refill consumed: {len(blob)} bytes in {fill_secs:.1f}s"
+                  f" ({rounds} refills, {t_write_total:.1f}s of that in"
+                  f" gdbstub writes ="
+                  f" {100 * t_write_total / max(fill_secs, 1e-9):.0f}%,"
+                  f" {dry_rounds} rounds with no room freed)",
+                  flush=True)
         print("detaching", flush=True)
         gdb.detach()
 
