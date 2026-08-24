@@ -98,10 +98,14 @@ sat underneath.
 
 Left, in order:
 
-- **The full rebank+sweep**, running (`logs/rebank-20260824-143156.log`).
-  A parser change reaches every rung, and two rungs agreeing natively is
-  two of fourteen. All fourteen truths should come back byte-identical
-  to the bank -- the parser's OUTPUT does not change, only its shape.
+- ~~The full rebank+sweep~~ **DONE 2026-08-24: SWEEP 14/14 GREEN**
+  (1716s), census unmoved (CDX6020 x43), fixed point held, and 13 of 14
+  truths byte-identical to `truth/u49`. The one mover is `parse`, whose
+  own program IS the edited `Parser.codex`: its diff is exactly four
+  removed defs, three added, two added type-defs and 50 line shifts,
+  with **no existing definition changing params, anns or slug**. Both
+  arms agree on the new dump, which is the rung that most directly
+  tests the change.
 - **Rebase onto the u49 pin** for the outbound branch. It sits on
   `zig-plug-tail-calls` because that is the only arm here that can SEE
   the effect (the pin's plug has no self-TCO), but upstream reproduces
@@ -166,6 +170,34 @@ than a `@compileError("zig plug: ...")` marker. `zig-is-unmapped` and
 ranking that sets priorities however often they bite. The systemic fix --
 every unhandled construct refuses by name -- is worth more than any one
 of them. Item 4's census is where the count would show.
+
+## 5.4. Is the ring's soda straw actually full?
+
+**Objective: instrument work, then maybe a cheap win.** Measured in
+passing 2026-08-24 while the `ir_to_x86` zig arm ran: the ring moved
+about **28 KB/s** (two 1 MB refills in 75 s) while QEMU sat near 0% CPU,
+`wa=0` and load average near zero. Idle on both sides usually means
+someone is sleeping, and `ring_compile.py`'s refill loop does
+`time.sleep(0.15)` on every poll regardless of state -- it refills
+whenever there is ANY room, which is right, but it learns about freed
+room up to 150 ms late, every time.
+
+**Do not change the sleep before measuring which side is the cap.** Two
+possibilities and they want opposite fixes: if the guest is decode-bound
+under TCG the sleep costs nothing and the real lever is a smaller
+subject (item: the tree-shaker question, `bundle_reach.py`); if the host
+is arriving late, the guest idles on an empty ring and an adaptive poll
+is a free win.
+
+**The discriminator is a few lines:** log, per refill, how much room was
+free at wake and how long the write took. Room consistently large at
+wake = host arriving late. Room small = guest is the cap and the ring is
+fine as it is. One rung's run answers it.
+
+**Distrust the casual reading here, including mine.** `top -bn1` reports
+0% on its first sample, and a 20-second window over a ~35-second refill
+interval already reported "no progress" on a healthy job earlier the
+same day.
 
 ## 5.5. The stack is measured now, and the emitter's prose about it is wrong
 
