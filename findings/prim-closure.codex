@@ -1,0 +1,85 @@
+Chapter: PrimClosure
+  cites Foreword chapter Console
+
+ Tier 14: what a partial application is allowed to forget.
+
+ A partial application is a heap object here -- a code pointer followed
+ by the captured arguments, `(1 + num-captures) * 8` bytes, built by
+ `emit-partial-application` in Emit/X86_64Compound.codex. The code
+ pointer is an inline trampoline that shifts the arguments it is entered
+ with into place behind the captures and jumps. There is no word in that
+ object saying how many arguments are still owed, so the trampoline is
+ correct only when it is entered with ALL of them at once. Enter it with
+ fewer and it jumps anyway, with whatever happened to be in the argument
+ registers.
+
+ DevelopersRulebook.md:258-260 makes this the language's own model rather
+ than an exotic case: a def emitted n-ary is "over-applied by applying
+ the rest one at a time". One at a time is precisely what the
+ representation cannot express. Finding 39 is the register, COMPILER-18
+ the upstream row, PR 79 the ruling asked for -- whether the closure
+ gains an arity word or under-application is refused where it is
+ emitted.
+
+ The rows here are RELATIONS, not values. Under-application usually
+ yields the closure pointer itself, so the wrong answers are heap
+ addresses in the 6291456 range -- unstable across any allocator change,
+ and an address is the one thing a tier must never print. `47` against
+ `not-47` says the same thing and keeps saying it.
+
+ This tier is deliberately three lines. Adding shapes is not free: the
+ probes established that a broken definition damages GOOD ones in the
+ same chapter -- probe-closure-solo prints 47, and
+ probe-closure-saturated faults on that same expression with only an
+ unused `relay-once` added beside it. A tier that grows until it faults
+ stops reporting anything at all, so the other shapes stay in their
+ probes, where each one can die alone.
+
+ `control-flat` calls `add3` at full arity. No closure is built, so it
+ answers 47 on any arm that can add, and it runs FIRST because a fault
+ halts the program and a control after the defect would never print.
+
+ `control-base` takes `even-fn`'s non-recursive branch. It reaches the
+ same `add3 5` closure through the same annotation and the same
+ three-argument application, differing from the row below only in that
+ no recursion happens on the way. It is what makes `under-mutual` a
+ statement about under-application rather than about closure-returning
+ types in general.
+
+ `under-mutual` is the defect. `even-fn 4` recurses through `odd-fn` and
+ returns `add3 5`; the two remaining arguments then arrive separately.
+ The bare-metal answer is a pointer printed as an integer, so the row
+ reads `not-47` there and `47` on an arm that keeps the arity. It is
+ admitted in gold/EXPECTED.txt, and it is the whole point of the file
+ that the admission becomes STALE the day the arms agree.
+
+ Expected on bare metal:
+
+   control-flat 47
+   control-base 47
+   under-mutual not-47
+
+Section: Shapes
+
+ Full arity, no closure. The floor.
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+ Mutual recursion returning a partial application. Neither definition
+ calls itself, so no self-call test sees anything here; the arity is
+ lost in the representation, not in a loop transformation.
+
+  even-fn : Integer -> (Integer, Integer -> Integer)
+  even-fn (n) = if n == 0 then add3 5 else odd-fn (n - 1)
+
+  odd-fn : Integer -> (Integer, Integer -> Integer)
+  odd-fn (n) = even-fn n
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("control-flat " & show (add3 5 20 22))
+    print-line-uni ("control-base " & (if (((even-fn 0) 20) 22) == 47 then "47" else "not-47"))
+    print-line-uni ("under-mutual " & (if (((even-fn 4) 20) 22) == 47 then "47" else "not-47"))
+  end
