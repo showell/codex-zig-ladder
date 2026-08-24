@@ -1724,3 +1724,80 @@ non-empty string) or transliterates it to an escape (`caf_u00e9`);
 quoting is simpler and `zig-sanitize` already quotes keywords. The
 prefixed names through `zig-raw-ident` need the same rule. One program
 hits this today; the census column is `refused`, not a wrong answer.
+
+
+## 36. The python plug's TCO matches a self-call by NAME, so a partial or over-application in tail position loops instead of applying
+
+**Found 2026-08-24 by source reading, while implementing the same
+transformation for the zig plug (finding 33). THEIRS.
+SOURCE-READ ONLY -- no python arm has been run against it, and the
+reproducer below is the thing to run before this is filed upstream.**
+
+`codex/plugs/python/PythonEmitter.codex`, Section: Tail Call
+Optimization. `is-self-call` collects the apply chain and compares the
+ROOT's name to the definition's name:
+
+    is-self-call-root (e) (func-name) =
+     when e
+      is IrName (n) (ty) (sp) -> n == func-name
+      is otherwise -> False
+
+Nothing compares `list-length (chain.args)` against
+`list-length (d.params)`. `emit-py-tco-jump` then evaluates one
+temporary per ARGUMENT and `emit-py-tco-assign` assigns one parameter
+per PARAMETER:
+
+    emit-py-tco-temps  args   -> _tco_0 .. _tco_{nargs-1}
+    emit-py-tco-assign params -> p_0 = _tco_0 .. p_{nparams-1} = _tco_{nparams-1}
+
+So the two loops agree only when a self-call is applied at exactly full
+arity, and codex applies partially by design -- "a 4-argument function
+called with 2 yields something callable with the remaining 2" is the
+zig emitter's own description of the language.
+
+**Under-application** (`f a` in tail position, where `f` takes three):
+the assign loop reads `_tco_1` and `_tco_2`, which this iteration never
+bound. On the FIRST iteration that is a NameError. On any later one it
+is worse: python function locals persist across the `while` body, so
+`_tco_1` still holds the previous iteration's value and the loop
+continues with a stale argument and no diagnostic at all. The program
+was supposed to return a closure and instead loops.
+
+**Over-application** (`f a b c` where `f` takes two, returning a
+function): `(f a b) c` is an apply of the RESULT. The jump assigns the
+two parameters, evaluates `_tco_2` for its side effects, drops it, and
+continues -- the outer application disappears silently.
+
+Both directions are wrong answers rather than crashes, which is the
+shape worth the register entry. The fix is one clause in `is-self-call`
+or in `should-tco`: a self-call is a tail call only at full arity;
+anything else falls through to `emit-py-normal-def` and stays an
+ordinary call, which is correct however it is applied.
+
+Reproducer to run before filing (not yet run):
+
+    Chapter: ProbePyTcoArity
+
+    Section: Shapes
+
+      add3 : Integer, Integer, Integer -> Integer
+      add3 (a) (b) (c) = a + b + c
+
+      pick : Integer -> (Integer, Integer -> Integer)
+      pick (n) = if n == 0 then add3 1 else pick (n - 1)
+
+      opening : [Console] Nothing = act
+        print-line-uni (show ((pick 3) 2 3))
+      end
+
+`pick` is one-parameter and its tail position holds a self-call at full
+arity, so it is TCO'd correctly; the interesting case is a definition
+whose tail position applies ITSELF undersaturated. Shape that second
+probe against the emitted python -- read
+`emit-py-tco-jump`'s output directly rather than inferring from the
+answer, since the stale-temporary path produces a plausible number.
+
+The zig plug takes the other choice: `zig-tail-self-call` requires
+`list-length (chain.args) == tail-arity`, so an under- or
+over-application is not a tail call and emits `return <expr>;`
+unchanged.
