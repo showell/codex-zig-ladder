@@ -6,6 +6,15 @@ findings register, JUSTIFICATIONS.md, a bank, an essay). If an entry
 needs a paragraph, it needs a register section or a JUSTIFICATIONS entry
 instead -- write that and point at it.
 
+- **2026-08-24 — PR 78 CLOSED unmerged**, in favour of PR 79, with a
+  comment saying why. Finding 38 was a symptom; 79 carries the framing
+  that replaced it and took COMPILER-18 with it. Record: register 38/39,
+  the PR thread, and the standing note in PRIORITIES' outbound queue --
+  a cold agent reviewing an outbound artifact needs the REPO, not just
+  the artifact.
+- **2026-08-24 — PR 76 absorbed in Update 49** (`bdf0049b`); the eight
+  census reds it owed all flipped, and it is closed. Record: the u49
+  census, DONE.md's 08-20 "PR 76 sent" line above.
 - **2026-08-24 — Finding 37 is SENT as PR 82** (COMPILER-19; the parser
   restructure plus its row, off `upstream/master`, ladder tag
   `parser-self-tail`). PRIORITIES item 3.5 closed: measured 32 MB -> 4 MB,
