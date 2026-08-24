@@ -65,6 +65,14 @@ logs/*
 ast/ringplug.cdx.fp
 ringplug-source-check.codex
 *.truth.prov
+# ...except a banked one, for the same reason its truth is kept. The sidecar
+# is the measurement's own record of what produced it -- the seed, and the
+# harness content -- and a bank without it is a set of numbers nobody can
+# place afterwards. Keeping it is also what lets restore_truths.py put a
+# bank back into a fresh sandbox instead of re-measuring for half an hour:
+# the arms then check a sidecar that travelled with its truth, rather than
+# one somebody reconstructed.
+!truth/**/*.truth.prov
 .agentgrid
 !logs/INDEX.md
 findings/.tier-run/

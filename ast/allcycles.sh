@@ -33,6 +33,26 @@ fail=0
 # subject run included -- before the sweep could start. ensure_ir.sh does
 # the half that is actually needed. It is silent when the .ir is already
 # good, so a sweep after a rebank looks exactly as it did.
+# A fresh sandbox is missing BOTH halves of what a sweep reads: the truths
+# to diff against and the .ir to transpile. The truths are already banked,
+# so restore them rather than re-measuring; restore_truths.py copies each
+# banked sidecar with its truth and then checks it through the same gate
+# the arms use, so a seed that does not match refuses here with a name
+# instead of rung by rung an hour in. Silent and harmless when the working
+# truths are already there.
+truths_restored=""
+if ! python3 "$T/restore_truths.py" > "$T/ast/.restore.log" 2>&1; then
+    # Not fatal on its own: a bank with no sidecars (taken before
+    # 2026-08-24) cannot be restored from, and a tree that already has its
+    # truths does not need to be. The arms refuse individually and loudly
+    # if what is on disk is not usable, which is the check that matters.
+    echo "--- restore_truths: nothing restored (see ast/.restore.log)"
+    sed 's/^/    /' "$T/ast/.restore.log" | head -8
+else
+    truths_restored=$(grep -c '^restored' "$T/ast/.restore.log" || true)
+    sed 's/^/    /' "$T/ast/.restore.log" | grep -E 'restored|NOTE|harness' | head -6
+fi
+
 ir_rebuilt=""
 for m in $LADDER_UNITS; do
     if [ ! -s "$T/ast/${m}.ir" ] \
@@ -103,6 +123,13 @@ echo "SWEEP: $rungs_green/$rungs_total rungs green ($((SECONDS - started))s elap
 # sweep came from the run that also measured bare metal, or was rebuilt
 # here from source.
 [ -n "$ir_rebuilt" ] && echo "  IR REBUILT for$ir_rebuilt -- bare metal was NOT re-measured in this sweep"
+# The two claims a sweep can make are not the same one. Against truths this
+# run measured, green says bare metal and the plug agree today. Against
+# truths restored from the bank, green says the plug still reproduces the
+# BANK -- which is the ladder's question, but it is not a statement about
+# bare metal, and a log read next week must not have to infer which it was.
+[ -s "$T/ast/.restore.log" ] && grep -q '^restored [1-9]' "$T/ast/.restore.log" \
+    && echo "  TRUTHS RESTORED FROM THE BANK -- this sweep says the plug still reproduces the bank, NOT that bare metal was re-measured"
 # A green sweep records truths and diffs in the working tree and nothing
 # else: "banked" is bank_truth.py's word, and a session that reads this
 # log after a crash must not believe the bank was taken (D1).
