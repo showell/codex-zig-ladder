@@ -33,14 +33,16 @@ fail=0
 # subject run included -- before the sweep could start. ensure_ir.sh does
 # the half that is actually needed. It is silent when the .ir is already
 # good, so a sweep after a rebank looks exactly as it did.
-# A fresh sandbox is missing BOTH halves of what a sweep reads: the truths
-# to diff against and the .ir to transpile. The truths are already banked,
+# A fresh sandbox is missing THREE things, and the list was arrived at by
+# running it rather than by reasoning: the generated harness, the .ir to
+# transpile, and the truths to diff against. ensure_ir.sh below covers the
+# first two -- the harness only after a first run handed pwsh a
+# LexHarness.codex that was never there. The truths are already banked,
 # so restore them rather than re-measuring; restore_truths.py copies each
 # banked sidecar with its truth and then checks it through the same gate
 # the arms use, so a seed that does not match refuses here with a name
 # instead of rung by rung an hour in. Silent and harmless when the working
 # truths are already there.
-truths_restored=""
 if ! python3 "$T/restore_truths.py" > "$T/ast/.restore.log" 2>&1; then
     # Not fatal on its own: a bank with no sidecars (taken before
     # 2026-08-24) cannot be restored from, and a tree that already has its
@@ -49,7 +51,6 @@ if ! python3 "$T/restore_truths.py" > "$T/ast/.restore.log" 2>&1; then
     echo "--- restore_truths: nothing restored (see ast/.restore.log)"
     sed 's/^/    /' "$T/ast/.restore.log" | head -8
 else
-    truths_restored=$(grep -c '^restored' "$T/ast/.restore.log" || true)
     sed 's/^/    /' "$T/ast/.restore.log" | grep -E 'restored|NOTE|harness' | head -6
 fi
 

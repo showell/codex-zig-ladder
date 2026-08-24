@@ -314,6 +314,14 @@ are the keyboard-tempo tools, and both models share the box under the
 compute lock. Nothing else here is open; the sandbox and `.ir` items
 above carry what used to sit in this one.
 
+## Not an item: one zig program, for the zig community
+
+Merging the two emitted natives into a single program to hand to the zig
+community -- publicity, not engineering, and we keep the separate binaries
+because the intermediate IR is what most of our questions are asked about.
+Feasibility read and the two-function seam are in
+[COMBINED_ZIG.md](COMBINED_ZIG.md). Unscheduled; nothing depends on it.
+
 ---
 
 ## Outbound queue
