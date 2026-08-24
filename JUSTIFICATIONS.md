@@ -291,3 +291,37 @@ Cost note for the ERGONOMICS queue: of the ~38 minutes this took, 27 were
 the rebank, and the rebank was needed only to produce `.ir` files. The
 seed did not change and bare metal was never in question. That is the
 measurement behind `ast/ensure_ir.sh`.
+
+## A fresh sandbox can sweep, and it costs 1499 s (2026-08-24)
+
+The claim being tested is that a sweep does not need a rebank behind it.
+Sandbox `20260824T225947Z-ensure-ir-test`, cut from nothing: no natives, no
+`.ir`, no `.truth`, no generated harness.
+
+    full rebank + sweep   2294 s   (1637 s rebank + 657 s sweep, same 12 units)
+    restore + ensure_ir + sweep   1499 s
+
+**13 minutes back, against the 27 that was estimated.** The estimate
+assumed `ensure_ir.sh` skipped most of the truth arm; it skips the cheaper
+half. What it drops is the bare-metal binary compile and the subject run.
+What it still pays, per unit, is the bundle and the IR-CCE compile through
+the ring -- and the ring compile is where the time is, which the Nagle
+entry above already measured at 148 s of stream for `ir_to_x86` alone.
+
+The percentage is the smaller result. The larger one is that a fresh
+sandbox can sweep at all: before this it could not, and the only way to
+make the files it was missing was to re-measure an answer already banked.
+Three things were missing, and the list was arrived at by running rather
+than by reasoning -- the generated harness (found when pwsh was handed a
+`LexHarness.codex` that was never there), the `.ir`, and the truths.
+
+What this run does NOT establish: that `allcycles.sh`'s integrated restore
+works from empty. The truths were already on disk from a manual
+`restore_truths.py`, so the sweep took the "keeping" branch. The restore
+tool is proven -- 14 truths and sidecars, all passing `check_rung`, no
+harness drift -- but the wiring has not fired in anger.
+
+The sweep says so itself, which is the point of the two lines it now
+prints: `IR REBUILT for <units> -- bare metal was NOT re-measured in this
+sweep`, and a census that declines to compare rather than judging half a
+population against a whole-population pin.

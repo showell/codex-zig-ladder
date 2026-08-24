@@ -123,11 +123,35 @@ So the item is blocked on a decision about provenance, not on code:
   gate that exists because a truth from another seed diffs just as
   confidently as a fresh one.
 
-Still owed either way: **run it and get the number.** The claim is that
-~27 of ~38 minutes comes back, and that is an estimate until a sweep
-does it. Also unresolved: the census currently declines to compare when
-any IR was rebuilt, which is honest and leaves a cheap sweep with no
-census at all; the banked-diagnostics item below is the real answer.
+**RUN, AND THE NUMBER IS SMALLER THAN THE ESTIMATE (2026-08-24).** Sandbox
+`20260824T225947Z-ensure-ir-test`, from nothing: **14/14 rungs green in
+1499 s** against **2294 s** for the full rebank+sweep of the same 12 units
+earlier the same evening (1637 s rebank + 657 s sweep). That is **13
+minutes back, not the 27 this item claimed** -- about 35% off, not 71%.
+
+The estimate was wrong because `ensure_ir.sh` skips the cheaper half of
+the truth arm, not the dearer one. What it drops is the bare-metal binary
+compile and the subject RUN; what it still pays, per unit, is the bundle
+and the IR-CCE compile through the ring -- and the ring compile is where
+the time is (JUSTIFICATIONS' Nagle entry: 148 s of stream on the
+`ir_to_x86` unit alone). Reading the truth arm top to bottom would have
+shown that before the run did.
+
+It is still the right change: 35% off the loop we run most, and a fresh
+sandbox can now sweep AT ALL, which was the actual goal and is not a
+percentage. But the item's own headline number was an estimate presented
+as a saving, which is the shape of claim this queue is supposed to catch.
+
+Left:
+
+- **The restore path has not been exercised from empty.** In the run
+  above the truths were already on disk from a manual `restore_truths.py`,
+  so `allcycles.sh` took the "keeping" branch and its integrated restore
+  never fired. `restore_truths.py` itself is proven (14 truths and
+  sidecars, all passing `check_rung`); the WIRING is not.
+- **The census still declines to compare** when any IR was rebuilt, which
+  is honest and leaves a cheap sweep with no census at all. The
+  banked-diagnostics item below is the real answer.
 
 ## 2. Launching a detached job is a foot-gun with a live tripwire
 
