@@ -50,7 +50,7 @@ Chapter: PrimClosure
 
  `even-fn 0` would be the tighter control, differing from the defect row
  only in the recursion, and it CANNOT be used: taken alone it faults
- (probe-t14-a, and probe-closure-basecase before it), while `even-fn 4`
+ (probe-closure-base-show, and probe-closure-basecase before it), while `even-fn 4`
  four levels deeper answers. That inversion is real and unexplained --
  PR 79 says so in as many words -- and a tier is not the place to argue
  it.

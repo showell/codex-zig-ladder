@@ -1,0 +1,30 @@
+Chapter: ProbeClosureRecCmp
+
+ Isolator for tier 14's row form. probe-closure-silent prints the
+ under-applied result with `show` and gets a heap address; this consumes
+ the same result with `== 47` instead.
+
+ It answers `rec-cmp not-47`. So the comparison does not change the
+ defect and does not fault: a tier can state the disagreement as a
+ RELATION and never print the pointer, which is both unstable across
+ allocator changes and the one thing a tier must not emit.
+
+ Pairs with probe-closure-base-show, which faults on the same chapter's
+ non-recursive branch.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+  even-fn : Integer -> (Integer, Integer -> Integer)
+  even-fn (n) = if n == 0 then add3 5 else odd-fn (n - 1)
+
+  odd-fn : Integer -> (Integer, Integer -> Integer)
+  odd-fn (n) = even-fn n
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("rec-cmp " & (if (((even-fn 4) 20) 22) == 47 then "47" else "not-47"))
+  end

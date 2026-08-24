@@ -1,0 +1,32 @@
+Chapter: ProbeClosureBaseShow
+
+ Isolator for tier 14's missing control. `even-fn 0` takes the branch
+ that returns `add3 5` with no recursion at all, and the three arguments
+ arrive exactly as they do in the recursive case.
+
+ It FAULTS. probe-closure-rec-cmp, the same chapter with `even-fn 4`
+ four levels deeper, answers instead. The base case being the fatal one
+ is why tier 14's control is `pick` rather than this, and it is the
+ sharp form of the recursion oddity finding 39 records as unexplained:
+ recursion is not merely load-bearing for the silent case, its absence
+ here is fatal.
+
+ Pairs with probe-closure-basecase, which found the same inversion in
+ the count-down shape and retired PR 78's framing.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+  even-fn : Integer -> (Integer, Integer -> Integer)
+  even-fn (n) = if n == 0 then add3 5 else odd-fn (n - 1)
+
+  odd-fn : Integer -> (Integer, Integer -> Integer)
+  odd-fn (n) = even-fn n
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("base-show " & show (((even-fn 0) 20) 22))
+  end
