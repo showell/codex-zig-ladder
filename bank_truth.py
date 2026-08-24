@@ -134,13 +134,38 @@ def main():
     if tmp.exists():
         shutil.rmtree(tmp)
     tmp.mkdir(parents=True)
+    banked_prov = 0
     for m, src in ready:
         shutil.copy2(src, tmp / f"{s['slug']}-{m}.truth")
+        # The sidecar travels WITH the truth. A banked truth without its
+        # provenance is a measurement nobody can place afterwards: SEED
+        # below records the seed, but a truth is keyed on the seed AND the
+        # harness content it was measured under, and only the sidecar
+        # carries the second. Restoring a bank into a fresh sandbox is
+        # then a copy rather than a re-measurement, and it stays HONEST
+        # because truth_prov.check still validates the restored sidecar
+        # against what is on disk now -- a harness that moved since the
+        # bank was taken refuses exactly as it always did. Nothing is
+        # loosened here; something previously thrown away is kept.
+        prov = truth_prov.sidecar(m)
+        if prov.is_file():
+            shutil.copy2(prov, tmp / f"{s['slug']}-{m}.truth.prov")
+            banked_prov += 1
     (tmp / 'SEED').write_text(f"{s['sha256']}\n{s['bytes']}\n{s['update']}\n")
     if dest.exists():
         shutil.rmtree(dest)
     tmp.rename(dest)
     print(f"banked {len(ready)} truths as {s['slug']}-<rung>.truth")
+    # Say it either way. A bank whose sidecars are missing still works as a
+    # bank and CANNOT be restored from, and a reader who is told only the
+    # truth count has no way to know which kind they have.
+    if banked_prov == len(ready):
+        print(f"       {banked_prov} provenance sidecars beside them "
+              "(this bank can be restored into a fresh sandbox)")
+    else:
+        print(f"       {banked_prov} of {len(ready)} provenance sidecars -- "
+              "this bank CANNOT be restored from; re-bank from a tree that "
+              "has them if you want that")
 
     # Keeping every Update forever is how a directory of measurements becomes a
     # directory nobody reads. Three is enough to see a trend and small enough
