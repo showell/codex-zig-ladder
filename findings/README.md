@@ -1211,7 +1211,18 @@ same rule broken in a fourth place, at a different stage.
 ## 40. The zig plug calls a curried definition flat, so an under-applied chain it cannot inline will not compile
 
 **Found 2026-08-24 on tier 14's first run against both arms. OURS -- the
-zig plug (ZigEmitter), not upstream. OPEN, not sent.**
+zig plug (ZigEmitter), not upstream. FIXED 2026-08-24 on
+`zig-plug-curried-apply` (`835639b7`, off PR 77's `8cb8a0e4`), both sites
+in one commit. NOT sent; the sweep is what decides whether it goes.**
+
+What is established: the plug emits
+`b5: { const _o5 = even_fn(4); break :b5 _o5.call(_o5.ctx, 20, 22); }`,
+tier 14's program compiles and prints 47/47/47, and the tier SET is GREEN
+at 22 tiers with `prim-closure` back in it -- 0 unexpected, 1 expected,
+0 expected-but-agreeing. What is NOT yet established is whether the
+emitter change moved anything else; `rebank_all.sh` is in flight in
+sandbox `20260824T220516Z-f40-fix2` and until it answers this is a fix
+that passes its own reproducer, which is the weaker claim.
 
 `((even-fn 4) 20) 22`, where `even-fn : Integer -> (Integer, Integer ->
 Integer)`, is emitted as a saturated three-argument call to a definition
