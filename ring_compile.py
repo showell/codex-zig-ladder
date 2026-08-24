@@ -43,6 +43,16 @@ def free_port():
 class Gdb:
     def __init__(self, port):
         self.s = socket.create_connection(("127.0.0.1", port), timeout=10)
+        # TCP_NODELAY, or every gdbstub round trip costs a delayed ACK.
+        # cmd() acks a reply with a bare "+" and then sends the next
+        # packet as a separate small write, which is exactly the pattern
+        # Nagle holds until the "+" is acknowledged -- and the peer sits
+        # on that ack for 40 ms. Measured on the 2.9 MB compiler source
+        # (PRIORITIES 5.4): 41 ms per 1 KB M packet, giving 25 KB/s and
+        # 99% of a ring fill spent writing, against a guest draining the
+        # whole 1 MB ring in under 191 ms. The stall was the transport,
+        # not the ring, the poll interval, or the guest.
+        self.s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.s.settimeout(5)
         # QEMU halts the VM on connect and may emit a spontaneous stop
         # packet; drain and ack anything queued before the first command.
