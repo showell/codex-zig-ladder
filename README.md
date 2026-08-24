@@ -111,7 +111,8 @@ none of them probably belongs somewhere else.
    output, up to the whole compiler emitting a complete CDX image.
 2. **Find defects -- in the plug and in Codex itself.** The byte-exactness
    pressure is the instrument; `findings/README.md` is the register of what
-   it has caught, and probes-then-filings is the loop.
+   it has caught (`findings/CLOSED.md` holds the ones that are done, keeping
+   their numbers), and probes-then-filings is the loop.
 3. **Build toward a Diverse Double-Compiling witness in Wheeler's sense.**
    "What the check proves" below is scrupulous about how far along that road
    this is; taking the seed out of the loop is the standing endgame.
