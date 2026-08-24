@@ -14,9 +14,11 @@ instead -- write that and point at it.
   payload-independent, because `cmd()` acks with a bare `+` and Nagle
   held the next packet until a delayed ACK arrived 40 ms later. One
   `TCP_NODELAY` took the 2.9 MB compiler's fill from 76.2 s to 0.7 s,
-  109x. `ring_refill_test.sh` passes with it set. Record: `961438c`
-  carries both measurements; the per-refill telemetry is now standing
-  instrumentation in the refill loop.
+  109x, and one real `ir_to_x86` rung compile 208.8 s to 150.5 s, 28%.
+  `ring_refill_test.sh` passes with it set. Record: JUSTIFICATIONS "The
+  gdbstub refill was Nagle-bound, and the rungs paid it" has the rung
+  numbers and which six units cross the ring; the per-refill telemetry
+  is now standing instrumentation in the refill loop.
 - **2026-08-23 — The rung rename, verified** (`262ad8e` prep, `f94db81`
   atomic, `3b349a4` prose, README rewritten `538b5cd`/`a3d7d1b`, gate
   `c6364a9`): fib/text/pingpong/lir/fibx/scale/whole/clamp became
