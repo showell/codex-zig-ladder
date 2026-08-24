@@ -1162,9 +1162,23 @@ class; this is the fourth.
 EXCLUDED from the set while this stands), `probe-closure-silent`,
 `probe-closure-rec-cmp`. Control: `probe-closure-solo`.
 
-**Confidence: HIGH.** The error is a compile-time refusal with the
+**Confidence: HIGH, and the tree is named because it has to be.** First
+measured against natives built from the bare u49 pin `bdf0049b`, which
+was the WRONG tree: the tier set's zig expectations come from PR 77's
+tip `8cb8a0e4`, and `ast/zigemit-source.codex` -- the committed
+provenance snapshot -- says so, since a build on the pin rewrites its
+`cx_heap_mem`/`cx_heap_reserve`/`cx_heap_vtable` to `cx_arena_state`
+while a build on `8cb8a0e4` leaves it byte-identical. Re-measured there:
+the same error at the same declaration, only the line number moved
+(534 to 800, PR 77's prelude being longer), with `probe-closure-solo`
+still answering `solo 47`. So the defect is present on BOTH trees and is
+not an artifact of either. The error is a compile-time refusal with the
 emitted text in hand, and the inlined control passes in the same
 chapter.
+
+The seed is byte-identical across the two trees
+(`a01c1547e92eb0d0`), so tier 14's banked bare column never depended on
+which was chosen.
 
 **Not established:** whether the fix belongs at the call site (emit a
 closure call whenever the callee's emitted arity is short of the
