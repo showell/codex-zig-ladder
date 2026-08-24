@@ -47,6 +47,17 @@ fi
 echo "--- ensure_ir: ${m}.ir is missing or refused; rebuilding it from source"
 cd "$T/ast"
 
+# The harness is GENERATED, and a fresh sandbox has none -- which is how
+# the first run of this script found out, by handing pwsh a LexHarness.codex
+# that was never there. Removed first and guarded after, for the reason
+# truth_arm gives: an unguarded generator crash would bundle YESTERDAY'S
+# harness and reproduce the previous answer, which is a wrong-PASS rather
+# than a failure.
+h=$(harness_for "$m")
+rm -f "$h"
+python3 "gen_${m}_harness.py" || { echo "HARNESS GEN FAILED for $m"; exit 1; }
+[ -s "$h" ] || { echo "HARNESS GEN FAILED: no $h"; exit 1; }
+
 # The subject is removed first so a bundle refusal cannot leave a stale one
 # that looks fresh -- the failure that once let four rungs compile the
 # PREVIOUS subject and banked truth from two of them.
