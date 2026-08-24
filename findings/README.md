@@ -799,8 +799,12 @@ that is a question for Damian rather than a decision to take here.
 
 **Found 2026-08-22 on the native chain (finding 24's closing experiment).
 Ours. FIXED 2026-08-24 on `zig-plug-tail-calls` -- `6cd40143` the
-transformation, `07495229` two zig-shape corrections, `a1398e0b` the
-invariant-parameter rule. Pushed to the fork, NOT sent upstream.**
+transformation, `07495229` two zig-shape corrections, `912daac7` the
+invariant-parameter rule. NOT sent upstream, and the fork is BEHIND: it
+still holds the pre-surgery `07495229` tip, whose history put the
+invariant-parameter rule on the parser branch instead, so what is pushed
+there is the version that still leaves 10,000 frames on the stack. The
+repaired branches are local until a force-push.**
 
 **The defect.** Bare metal has tracked tail position since Update 30
 (`st-set-tail-pos`) and a self tail call there is a jump; the plug turned
@@ -1059,7 +1063,8 @@ entry establishes what one input needs, not what every input needs.
 
 **MEASURED 2026-08-24, and the fix works: 32 MB -> 4 MB.** Both cycles
 restructured so the `try-*` functions return their item and the loop
-tail-calls itself (`parser-scan-self-recursive`, `33f72baa`), in sandbox
+tail-calls itself (`parser-scan-self-recursive`, `50a81942`, was
+`33f72baa` before the branch layout surgery), in sandbox
 `20260824T132742Z-f37-parser`:
 
     emitter     min    cliff  cycle on the failing trace

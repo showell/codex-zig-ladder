@@ -49,8 +49,7 @@ loop unless it says otherwise.
 ## 3. Send the tail-call branch (finding 33 is FIXED, not sent)
 
 **Objective: outbound.** The emitter change is done and verified
-(`zig-plug-tail-calls` on the fork, tip `07495229`, off PR 77's
-`8cb8a0e4`): `zigemit` clears the 13.2 MB IR at the stock 512 MB stack
+(`zig-plug-tail-calls`, tip `912daac7`, off PR 77's `8cb8a0e4`): `zigemit` clears the 13.2 MB IR at the stock 512 MB stack
 in 27 s where 2 GiB used to die, and both ir_to_x86 rungs come out
 byte-identical to `truth/u49` through a chain with no QEMU in it.
 Finding 33 carries the numbers. What stands between it and a PR:
@@ -61,17 +60,17 @@ Finding 33 carries the numbers. What stands between it and a PR:
   frames. Cheap to add, and the shape is already written twice.
 - **No ladder sweep has run against the branch.** The two ir_to_x86
   rungs agreeing natively is strong but it is two of fourteen.
-- **The branch layout is wrong and blocks the send.** The
-  invariant-parameter rule -- the commit that made the transformation
-  actually reach `sort-partition` -- sits ABOVE the parser commit on
-  `parser-scan-self-recursive`, so `zig-plug-tail-calls` as pushed is
-  the version that leaves 10,000 frames on the stack. It also carries
-  `d33fecff`, a superseded cut that does not compile, between two
-  correct ones. End state: `zig-plug-tail-calls` = `6cd40143` +
-  `07495229` + one coherent invariant-parameter commit;
-  `parser-scan-self-recursive` = that, plus `33f72baa` alone. Verify the
-  rewrite with `git diff` against the tree the sweep verified -- an
-  empty diff is what proves the history surgery changed nothing real.
+- ~~The branch layout is wrong and blocks the send.~~ **DONE
+  2026-08-24, LOCAL ONLY -- both branches still want a force-push, which
+  is Steve's to run.** `zig-plug-tail-calls` = `6cd40143` + `07495229` +
+  `912daac7`, one coherent invariant-parameter commit squashed from
+  `a1398e0b`/`d33fecff`/`65cb244b`; the non-compiling middle cut is
+  gone. `parser-scan-self-recursive` = that plus `50a81942`, the parser
+  commit alone. The two changes are file-disjoint (ZigEmitter against
+  Syntax/Parser), and `git diff 65cb244b 50a81942` is EMPTY -- the tree
+  the 14/14 sweep verified, reached by the repaired history. Old tips
+  kept at `refs/backup/pre-surgery-tail-calls` and
+  `refs/backup/pre-surgery-parser`.
 - The PR body wants the `Ladder:` line contrib/README.md asks for.
 
 ## 3.5. Verify the parser restructure (finding 37), IN FLIGHT
@@ -82,8 +81,9 @@ scan-top-level/try-scan-type-def/try-scan-def-header and
 parse-top-level/try-top-level-type-def/try-top-level-def -- are
 restructured so the try-functions RETURN their item and the loop
 tail-calls itself, which every TCO in the fleet already flattens.
-Committed on `parser-scan-self-recursive` (`33f72baa`, sandbox
-`20260824T132742Z-f37-parser`), off the tail-call branch so the arm can
+Committed on `parser-scan-self-recursive` (`50a81942`, was `33f72baa`
+before the layout surgery; sandbox `20260824T132742Z-f37-parser`, now
+detached at `65cb244b` so the branch ref could move), off the tail-call branch so the arm can
 actually see the effect: on the u49 pin the plug has no self-TCO, so the
 change would flatten nothing there and the measurement would be a null
 result.
