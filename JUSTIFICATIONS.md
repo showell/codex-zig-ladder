@@ -126,6 +126,40 @@ under MemoryMax=6G in 33 s) the diff is ONE line of 3,825: the chapter
 name, `"Program"` on the seed's arm against `"Parsmi--FibxHarness"` on
 the native one. Def order matched too -- it was RESOLVE's reordering.
 
+## The gdbstub refill was Nagle-bound, and the rungs paid it (2026-08-24)
+
+Six of the ladder's units bundle past the 1 MB ring, so `truth_arm`
+refills for each of them -- twice, once per blob:
+
+    passes_to_x86  2636469    1.59 MB over the ring
+    ir_to_x86      2503544    1.46 MB over
+    ir_to_wire     1158758     110 KB over
+    lower          1114391      66 KB over
+    ir_to_codex    1049870     1.3 KB over
+    ir_to_codex_roundtrip 1049851  1.3 KB over
+    check           974387    74 KB UNDER, the near miss to watch
+
+Before `TCP_NODELAY` on the gdb socket, every 1 KB M packet cost 41 ms
+-- a delayed ACK, not throughput, and the same 41 ms showed up on an
+interrupt-plus-8-byte-read. Measured on `ir_to_x86-cdx.blob`, the whole
+2503563-byte compile:
+
+    fill 0.6s, stream 148s, SIZE 2150397     TOTAL 150.5s
+
+The 1454987 bytes that crossed the ring are 1421 packets, so the old
+path added 58.3 s of wall clock -- additive, because the guest is halted
+for the entire write. 208.8 s before against 150.5 s after, 28% off one
+rung compile, and about 258 s off a full pass over the units.
+
+That lands on the REBANK, not the sweep: `truth_arm` is called by
+`rebank_all.sh` and the `truthcycle_*` scripts, while `allcycles.sh`
+runs `zig_arm`/`ring_arm` against truths already banked. Against a
+rebank of roughly 1460 s (the 53-minute rebank+sweep of 2026-08-23 less
+its 1716 s sweep, derived rather than timed) that is near a fifth.
+
+The subject sizes come from bundling in the shared checkout, whose
+generated harnesses may lag; the margins are wide except for `check`.
+
 ## The resident bound, measured (2026-08-23)
 
 Every emitted-binary and corpus run is bounded by cgroup MemoryMax
