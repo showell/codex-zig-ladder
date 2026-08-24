@@ -68,24 +68,28 @@ Chapter: PrimClosure
  would stop matching the moment the value it names changes, which is the
  one moment it has to speak.
 
- The ZIG arm does not build this file at all, which is finding 40: it
- emits `even_fn(4, 20, 22)` against a definition it emitted as
- `fn even_fn(n: i64) CxFn2(i64, i64, i64)`. `control-pick` survives
- there only because the pipeline inlines `pick` and materialises the
- closure at the call site; `even-fn` is mutually recursive and nothing
- can inline it. So this tier is EXCLUDED from the set until the plug
- emits a closure call, with the reason recorded in tiers_run.py rather
- than left for someone to rediscover. The bare column below is banked
- and correct in the meantime, and the exclusion is the thing to delete
- first when finding 40 closes. Being out of the set costs something and
- the cost is named here rather than discovered: the set will not refresh
- this bare column either, so a seed re-pin wants
- `./tier_run.py findings/prim-closure.codex --bare` run by hand until
- the row is back in.
+ The ZIG arm could not build this file at all until 2026-08-24, which
+ was finding 40: it emitted `even_fn(4, 20, 22)` against a definition it
+ emitted as `fn even_fn(n: i64) CxFn2(i64, i64, i64)`. `control-pick`
+ survived there only because the pipeline inlines `pick` and
+ materialises the closure at the call site; `even-fn` is mutually
+ recursive and nothing can inline it. The tier was EXCLUDED from the set
+ for exactly as long as that lasted.
 
- Until then this file is NOT yet the detector it is for. What makes a
- fixed COMPILER-18 announce itself is the ledger row going STALE when
- the arms agree, and there is no ledger row while one arm cannot build.
+ Finding 40 is FIXED (`zig-plug-curried-apply`) and the exclusion is
+ gone, which is what it was there to allow. The plug now emits
+ `b5: { const _o5 = even_fn(4); break :b5 _o5.call(_o5.ctx, 20, 22); }`
+ -- flat at the emitted arity, then the remainder through the closure --
+ and this file compiles, runs, and answers `47` on the row where bare
+ metal answers `not-47`.
+
+ So the file IS the detector now. The two controls agree across the
+ arms; `under-mutual` does not, and that single disagreement is
+ COMPILER-18 with nothing else mixed into it. It is admitted in
+ gold/EXPECTED.txt, tier_run marks it `ex`, and the day bare metal
+ keeps the arity the arms will AGREE and the mark becomes `??` -- which
+ is the ledger saying, without anyone remembering to check, that either
+ the finding closed or the admission went stale.
 
  Expected on bare metal:
 

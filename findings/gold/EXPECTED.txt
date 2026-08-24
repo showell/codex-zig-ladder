@@ -75,3 +75,4 @@ prim-records	record 8 fields64	cost: record is fields*8 on bare metal; ours carr
 prim-records	capturing lambda 16	cost: record is fields*8 on bare metal; ours carries alignment/closure env (primitive-costs.md tier 4; zig values moved 11->15 on the 1db8a78c natives)
 prim-records	non-capturing	cost: record is fields*8 on bare metal; ours carries alignment/closure env (primitive-costs.md tier 4; zig values moved 11->15 on the 1db8a78c natives)
 probe-approx-eq	one-ulp 1	finding 20: IrApproxEq emits ==, the 4-ULP band has zero width on this arm (OPEN, ours)
+prim-closure	under-mutual	finding 39 / COMPILER-18 (PR 79): bare metal's partial application carries no remaining-arity word, so entering the trampoline with fewer arguments than it still owes returns the closure pointer -- printed as not-47. This arm keeps the arity and answers 47. The two controls agree; this row is the defect. STALE the day the arms agree, which is what tier_run's `??` is for.

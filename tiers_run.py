@@ -64,7 +64,6 @@ EXCLUDED = {
     'probe-deck-substring': 'needs a rewind and a clobber read by hand (finding 29)',
     'probe-arith-edges':    'abs minInt kills the zig arm on purpose, at compile time now (its own prose, finding 18 family)',
     'probe-deck-init':      'declares its own deck-record; the zig arm brackets it by name and faults (finding 25) -- re-include when the gate is ported',
-    'prim-closure':         'tier 14: the zig arm calls the curried definition flat and will not compile (finding 40, OURS) -- re-include the moment the plug emits a closure call. Excluded means the SET no longer refreshes its bare column either, so a seed re-pin wants `./tier_run.py findings/prim-closure.codex --bare` by hand',
 }
 
 
