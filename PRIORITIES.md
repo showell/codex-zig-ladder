@@ -308,12 +308,21 @@ the C# DDC witness path with zig -- C# stops at "compiles", zig RUNS.
   Filed, not landed.
 - **Finding 33's fix** -- `zig-plug-tail-calls` pushed to the fork, NOT
   sent. Item 3 says what it wants first.
-- **PR 78** -- finding 38, the self-tail-call-returning-a-closure fault,
-  sent 2026-08-24 as one `compiler-backlog.md` row (COMPILER-18) off
-  `upstream/master` 5b8091e2. Doc-only: THEIRS, and we have no fix. Open,
-  not landed. It deliberately does NOT add the pinning row to
-  `codex/test/plug-oracle-arith.codex`'s Lambdas section -- that would
-  hand Damian a red arm -- but the row says where it would go.
+- **PR 79** -- finding 39, the closure-representation defect, sent
+  2026-08-24 as one `compiler-backlog.md` row (COMPILER-18) off
+  `upstream/master` 5b8091e2, ladder tag `closure-arity`. Doc-only:
+  THEIRS, and we have no fix. Open, not landed. Asks for ONE ruling --
+  whether the closure gains a remaining-arity word, or under-application
+  is refused where emitted -- and deliberately does not add a pinning
+  fixture, because accepting a red arm is Damian's call.
+- **PR 78** -- finding 38's framing. CLOSED unmerged 2026-08-24 in favour
+  of PR 79, with a comment saying why. Two cold-agent reviews are the
+  reason it is not still open and wrong; the second one's seven asks are
+  all answered in 79. **The lesson worth keeping: a cold agent reviewing
+  an outbound artifact needs the REPO, not just the artifact** -- round
+  one was firewalled from the tree and its findings were mostly
+  "I cannot verify this", while round two opened every cited line and
+  found two false claims.
 - **Finding 37's fix** -- `parser-scan-self-recursive`. Item 3.5.
   MEASURED now (32 MB -> 4 MB, sweep 14/14 green); what is left is the
   rebase onto the u49 pin and the row. This is compiler code rather than
