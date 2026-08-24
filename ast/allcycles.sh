@@ -27,6 +27,21 @@ if ! ringout=$(bash "$T/ast/ringplug_build.sh" 2>&1); then
 fi
 echo "REBUILT"
 fail=0
+# A sweep needs a per-sandbox <unit>.ir, which a FRESH sandbox does not
+# have; the arms refuse without one. Making those files is the truth arm's
+# first half, so this used to mean a full rebank -- bare-metal binary and
+# subject run included -- before the sweep could start. ensure_ir.sh does
+# the half that is actually needed. It is silent when the .ir is already
+# good, so a sweep after a rebank looks exactly as it did.
+ir_rebuilt=""
+for m in $LADDER_UNITS; do
+    if [ ! -s "$T/ast/${m}.ir" ] \
+       || ! python3 "$T/truth_prov.py" check-ir "$m" "$(mode_flags $m)" >/dev/null 2>&1; then
+        bash "$T/ast/ensure_ir.sh" "$m" || { echo "ENSURE_IR FAILED for $m"; exit 1; }
+        ir_rebuilt="$ir_rebuilt $m"
+    fi
+done
+
 for m in $LADDER_UNITS; do
     rung_stamp "$m"
     # NOT `arm | head`: under a pipe the exit status is head's, so a
@@ -67,10 +82,27 @@ diag_files=""
 for _u in $LADDER_UNITS; do
     diag_files="$diag_files $T/ast/${_u}-subject.cdx.diags $T/ast/${_u}.ir.diags"
 done
-python3 "$T/check_diags.py" --census $diag_files || fail=1
+# The pinned counts were taken over BOTH halves of every unit. ensure_ir.sh
+# writes no <unit>-subject.cdx.diags, so a sweep that rebuilt any IR is
+# judging a smaller population, and a smaller population under-counts every
+# pin -- which reads as drift and is not. Say which sweep this was instead
+# of comparing anyway; the real answer is a banked diagnostics set, which
+# PRIORITIES carries as its own item.
+if [ -n "$ir_rebuilt" ]; then
+    echo "CENSUS NOT COMPARED: the IR for$ir_rebuilt was rebuilt by"
+    echo "  ensure_ir.sh, so no bare-metal .diags exists for those units and"
+    echo "  this population is not the one the counts are pinned over. Run"
+    echo "  ast/rebank_all.sh for a census that can be believed."
+else
+    python3 "$T/check_diags.py" --census $diag_files || fail=1
+fi
 
 summary_done=1
 echo "SWEEP: $rungs_green/$rungs_total rungs green ($((SECONDS - started))s elapsed)"
+# What a reader must not have to reconstruct: whether the IR under this
+# sweep came from the run that also measured bare metal, or was rebuilt
+# here from source.
+[ -n "$ir_rebuilt" ] && echo "  IR REBUILT for$ir_rebuilt -- bare metal was NOT re-measured in this sweep"
 # A green sweep records truths and diffs in the working tree and nothing
 # else: "banked" is bank_truth.py's word, and a session that reads this
 # log after a crash must not believe the bank was taken (D1).
