@@ -800,11 +800,11 @@ that is a question for Damian rather than a decision to take here.
 **Found 2026-08-22 on the native chain (finding 24's closing experiment).
 Ours. FIXED 2026-08-24 on `zig-plug-tail-calls` -- `6cd40143` the
 transformation, `07495229` two zig-shape corrections, `912daac7` the
-invariant-parameter rule. NOT sent upstream, and the fork is BEHIND: it
-still holds the pre-surgery `07495229` tip, whose history put the
-invariant-parameter rule on the parser branch instead, so what is pushed
-there is the version that still leaves 10,000 frames on the stack. The
-repaired branches are local until a force-push.**
+invariant-parameter rule, `64d7db8e` the act-block arm. **SENT as PR 81
+on 2026-08-24**, stacked on PR 77, ladder tag `tail-calls`. The branch
+layout was repaired and both branches are pushed and level with origin;
+the pre-surgery tips are kept at `refs/backup/pre-surgery-tail-calls`
+and `refs/backup/pre-surgery-parser`.**
 
 **The defect.** Bare metal has tracked tail position since Update 30
 (`st-set-tail-pos`) and a self tail call there is a jump; the plug turned

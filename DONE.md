@@ -6,6 +6,13 @@ findings register, JUSTIFICATIONS.md, a bank, an essay). If an entry
 needs a paragraph, it needs a register section or a JUSTIFICATIONS entry
 instead -- write that and point at it.
 
+- **2026-08-24 — The tail-call branch is SENT as PR 81** (finding 33's
+  fix; stacked on PR 77, four commits, `ZigEmitter.codex` only, ladder
+  tag `tail-calls`). PRIORITIES item 3 closed: the `IrAct` arm landed at
+  `64d7db8e`, the ladder sweep ran 14/14 green against that exact tree,
+  the branch layout was repaired and pushed, and the PR body carries the
+  `Ladder:` line. Record: register 33, JUSTIFICATIONS "The act-block tail
+  arm does not move bare metal" and "The act arm fires", tag `tail-calls`.
 - **2026-08-24 — The ring's soda straw was Nagle** (`9b05e72`
   telemetry, `961438c` the fix): PRIORITIES 5.4 asked which side capped
   the refill at 28 KB/s. Neither candidate it named. The guest drained
