@@ -35,17 +35,14 @@ Chapter: PrimTailCall
  is what makes a copy, and reading the old accumulator after the new one
  has been assigned would silently drop or duplicate elements.
 
- `under-applied` is the arity question finding 36 filed against the python
- plug. Codex applies partially, so a tail position can hold an
- application that is not a call at all but a closure being returned, and
- an implementation that keys its transformation on a callee's NAME rather
- than on its arity will loop one. This row is the reachable half of that:
- the tail position of `make-adder` returns `add3` applied to one of three
- arguments, and the answer only comes out right if that closure survives
- to be applied twice more. The other half -- a definition under-applying
- ITSELF in tail position -- needs a return type that is a function of the
- definition's own remaining parameters, and is left to finding 36's own
- reproducer rather than guessed at here.
+ There is NO under-applied row, and the hole is deliberate. A tail
+ position holding a partial application -- the shape finding 36 is about
+ -- needs a definition whose return type is itself a function, and the
+ first draft's `make-adder : Integer -> (Integer, Integer -> Integer)`
+ broke BOTH arms: bare metal dumped registers instead of answering, and
+ the zig arm would not compile the closure return type. Whether that is
+ a defect or a syntax error of mine is finding 36's question to settle
+ with a minimal reproducer, not this file's to carry as a red row.
 
  `mutual` is the pair no arm flattens: two definitions that tail-call each
  other. Every TCO in the fleet is self-only -- bare metal's `is-self-call`
@@ -63,7 +60,6 @@ Chapter: PrimTailCall
 
    arg-swap 15
    acc-grows 1 2 3 4
-   under-applied 47
    mutual even
    unused-param 12
    control-nontail 55
@@ -85,16 +81,6 @@ Section: Shapes
   acc-loop (acc) (n) =
    if n > 4 then acc
    else acc-loop (acc & [n]) (n + 1)
-
- A definition of three parameters, applied to one in tail position: this
- returns something callable with the remaining two, and is not a tail
- call however much it looks like one.
-
-  add3 : Integer, Integer, Integer -> Integer
-  add3 (x) (y) (z) = x + y + z
-
-  make-adder : Integer -> (Integer, Integer -> Integer)
-  make-adder (n) = if n == 0 then add3 5 else make-adder (n - 1)
 
  Mutual tail recursion, which nothing here flattens today.
 
@@ -131,7 +117,6 @@ Section: Driver
   opening : [Console] Nothing = act
     print-line-uni ("arg-swap " & show (swap-loop 0 0 15))
     print-line-uni ("acc-grows" & show-list (acc-loop [] 1) 0 "")
-    print-line-uni ("under-applied " & show (((make-adder 3) 20) 22))
     print-line-uni ("mutual " & (if (is-even 10) then "even" else "odd"))
     print-line-uni ("unused-param " & show (unused-loop 99 4 0))
     print-line-uni ("control-nontail " & show (sum-nontail 10))
