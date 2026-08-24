@@ -1,0 +1,22 @@
+Chapter: ProbeClosureSilent
+
+ Candidate for the minimal silent case. Three ordinary definitions, one
+ driver line. No let binding, no never-called function, no self call --
+ even-fn and odd-fn simply call each other.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+  even-fn : Integer -> (Integer, Integer -> Integer)
+  even-fn (n) = if n == 0 then add3 5 else odd-fn (n - 1)
+
+  odd-fn : Integer -> (Integer, Integer -> Integer)
+  odd-fn (n) = even-fn n
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("47 expected: " & show (((even-fn 4) 20) 22))
+  end
