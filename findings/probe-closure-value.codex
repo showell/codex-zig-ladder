@@ -1,0 +1,18 @@
+Chapter: ProbeDefAsValue
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (a) (b) (c) = a + b + c
+
+  even-fn : Integer -> (Integer, Integer -> Integer)
+  even-fn (n) = if n == 0 then add3 5 else odd-fn (n - 1)
+
+  odd-fn : Integer -> (Integer, Integer -> Integer)
+  odd-fn (n) = even-fn n
+
+  apply-it : (Integer -> (Integer, Integer -> Integer)), Integer -> Integer
+  apply-it (g) (n) = (g n) 20 22
+
+  opening : [Console] Nothing = act
+   print-line-uni ("a: " & show (apply-it even-fn 4))
+   print-line-uni ("b: " & show (apply-it even-fn 2))
+  end

@@ -1316,6 +1316,24 @@ curried arrow, so `Integer -> (Integer, Integer -> Integer)` and
 the definition discards it, and would need an eta-expansion `emit-zig-def`
 does not have (`:2625` emits the body verbatim).
 
+**The second site is OBSERVED now, not predicted (2026-08-24).**
+`findings/probe-closure-value.codex` passes `even-fn` to a helper as a
+bare VALUE. The helper has to survive the inliner for the shape to
+appear at all -- with one call site it is inlined and the defect shows
+up as the ordinary flat call instead -- so the probe calls it twice.
+`emit-zig-name` then eta-wraps the definition using the TYPE-spine count:
+
+    fn call(_ctx5: *anyopaque, p0: i64, p1: i64, p2: i64) i64 {
+        _ = _ctx5; return even_fn(p0, p1, p2); }
+    ... packaged as CxFn3(i64, i64, i64, i64)
+
+The wrapper's own signature is self-consistent, so `zigemit` returns rc 0
+and the defect survives to the zig compiler, which refuses it at BOTH
+call sites: `p2.zig:804:190: error: expected 1 argument(s), found 3`,
+`note: function declared here` at `even_fn`. So the two sites fail the
+same way for the same reason and neither is reachable from the other's
+reproducer.
+
 **One caution for the fix: the rulebook's "one at a time" is wrong for
 zig specifically.** `zig-closure-invoke` (`:2284-2286`) applies all
 remaining arguments at once, which is what the working `_f5.call(_f5.ctx,
