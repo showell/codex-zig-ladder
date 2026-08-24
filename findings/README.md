@@ -1233,7 +1233,8 @@ same rule broken in a fourth place, at a different stage.
 **Found 2026-08-24 on tier 14's first run against both arms. OURS -- the
 zig plug (ZigEmitter), not upstream. FIXED 2026-08-24 on
 `zig-plug-curried-apply` (`835639b7`, off PR 77's `8cb8a0e4`), both sites
-in one commit. NOT sent; the sweep is what decides whether it goes.**
+in one commit. **SENT as PR 83**, stacked on PR 77 and a sibling of
+PR 81 rather than stacked on it; ladder tag `curried-apply-fix`.**
 
 VERIFIED end to end in sandbox `20260824T220516Z-f40-fix2` (natives from
 `835639b7`): the plug emits

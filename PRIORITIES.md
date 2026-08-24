@@ -339,6 +339,14 @@ Open, none landed:
   true three-dot diff is two files. Stacked deliberately rather than
   rebased, because the 14/14 sweep verified THAT tree and a rebase would
   have made the branch a tree nothing had measured. Tag `tail-calls`.
+- **PR 83** -- finding 40's fix, ours: the zig plug's half of the
+  curried-application rule. One commit, one file, +92/-2, stacked on
+  PR 77 and a SIBLING of PR 81 rather than stacked on it, so either can
+  land first. Tag `curried-apply-fix`. Verified before sending: tier set
+  green at 22, sweep 14/14 green, census unmoved, bank a zero-byte diff
+  against `truth/u49`. It also puts tier 14 back in the set as the live
+  COMPILER-18 detector, which is the argument PR 79 could not make for
+  itself.
 - **PR 82** -- finding 37, the parser's mutual-tail top-level scans, two
   commits off 5b8091e2: the `Syntax/Parser.codex` restructure and its
   `COMPILER-19` row. Tag `parser-self-tail`. Measured on our tail-call
@@ -350,13 +358,6 @@ Open, none landed:
 
 Ready or nearly so:
 
-- **Finding 40's fix**, branch `zig-plug-curried-apply` (`835639b7`, off
-  `8cb8a0e4`), NOT sent. Both sites in one commit: `emit-zig-apply`
-  gains an `args > ar` branch, and `zig-closure-make` stops passing
-  type-spine parameters flat. **VERIFIED 2026-08-24 and ready to send:**
-  tier set green at 22, sweep 14/14 green, census unmoved, and the bank
-  a zero-byte diff against `truth/u49`. Ladder tag wants cutting. When it
-  goes it is a sibling of PR 81, stacked on 77, not stacked on 81.
 - **Finding 36** (python plug's TCO keys on name, not arity) -- MEDIUM
   confidence, reproducer NOT run, wants a `plugs-backlog.md` row once it
   is. It is the same rule as findings 40 and 41 broken at a fourth site,
