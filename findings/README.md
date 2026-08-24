@@ -1087,15 +1087,40 @@ through zigemit and `zig build-exe` to a running binary, and both its
 rungs are byte-identical to `truth/u49`. Parse, check, lower and emit
 agree with the bank end to end.
 
+**What remains is bounded, and that is the answer to "can the 512 MB
+come down".** `desugar-expr-at` carries explicit fuel:
+
+    desugar-expr-at (node) (depth) =
+     if depth >= max-recursion-depth then AErrorExpr "desugar fuel exhausted"
+
+`max-recursion-depth` is 1024 (`Core/BuildSettings.codex:201`) and ten
+chapters walk their trees under it -- desugarer, name resolver, type
+inference, unifier, lowering, occurrence, IRCheck, LIR, CodexEmitter.
+So the 297 frames measured are not luck: this whole class is capped at
+1024 frames by the compiler's own constant, whatever the input. The
+stack requirement is now a function of a source constant rather than of
+document size, which it was not before the parser change.
+
+**One residual is NOT fuel-bounded, and it is quicksort.** `qsort-by`
+recurses on the left partition with the result in hand -- not a tail
+call, so nothing flattens it -- and its depth is O(log n) on balanced
+data and O(n) on adversarial. `sort-med3` makes the degenerate case
+unlikely rather than impossible. Worth knowing that the tail-call change
+already halved its class for free: the SECOND recursion
+(`qsort-by xs3 cmp (pr.pivot + 1) hi`) is a self tail call at full
+arity sitting in a let chain, so it now loops, which is the textbook
+recurse-on-one-side-iterate-on-the-other shape obtained without asking.
+
 **Confidence: HIGH on the measurements and on the restructure; MEDIUM on
 what remains.** The cycles are named by the programs' own backtraces,
 not inferred, and the restructure is verified against the bank. NOT
 established: that 4 MB is the floor for every input (two documents
 measured, and only through `codexir` -- `zigemit` and the other natives
-have their own recursion), and whether the desugarer's nesting-depth
-recursion has a worse case than 297 in real source. The 512 MB stack
-should not be lowered on this evidence. What this shows is that its
-margin on the largest document we have is now 128x rather than 16x.
+have their own recursion), and where quicksort's unbounded left-hand
+recursion actually lands on real data. The 512 MB stack should not be
+lowered on this evidence alone, but the shape of the argument for
+lowering it now exists: one capped class at 1024 frames, one data
+dependent class in the sort, and no per-definition growth.
 
 
 ## 38. A self tail call in a definition that returns a FUNCTION jumps to a poison address on bare metal
