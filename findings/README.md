@@ -1128,6 +1128,78 @@ lowering it now exists: one capped class at 1024 frames, one data
 dependent class in the sort, and no per-definition growth.
 
 
+## 41. `riscv` and `java` break the same curried-application rule as finding 40, and riscv's correct fix is already in the tree, dead
+
+**Found 2026-08-24 by an independent read of the plug family while
+settling finding 40's open question. THEIRS -- `codex/plugs/riscv` and
+`codex/plugs/java`, no ladder arm in the path. OPEN, not sent.**
+
+`docs/DevelopersRulebook.md:256-260` requires three cases of a plug that
+knows the callee's arity: flat at that arity, under-applied with one
+arrow per missing parameter, over-applied by applying the rest. Surveying
+the family for finding 40 turned up two more plugs implementing two of
+the three, and the way each fails is worth a row of its own.
+
+**`riscv` has the fix and never calls it.** The named-definition path
+(`RiscVCodeGen2.codex:583-591`) tests `list-length args < known-arity`
+and routes to `rv-emit-partial-application`; every other case, including
+`args > known-arity`, falls into `rv-emit-direct-call` with the whole
+argument list. Seventy lines further down,
+`rv-emit-closure-over-apply` (`:660-668`) is a correct take/drop
+over-apply -- and `grep -rn rv-emit-closure-over-apply codex/plugs/`
+returns exactly three hits: its signature, its definition, and its own
+self-recursive tail. **Nothing in the tree calls it.** Someone wrote the
+right thing and never wired it up.
+
+**`java` never consults arity at all.** `JavaEmitter.codex:158-168`
+emits `func & "(" & emit-jv-apply-args args ... & ")"` for both the
+`IrName` root and the `otherwise` root, with no lookup on either path.
+`lookup-arity` is defined at `:69-70` and `grep -n lookup-arity
+JavaEmitter.codex` returns only those two lines -- the signature and the
+definition. It is dead code in a second plug, for a second reason.
+
+**`arm64` is a near miss worth recording rather than filing.** It has
+the mechanism -- `a64-emit-oversaturated-call` (`Arm64CodeGen2.codex:927-932`),
+reached from `:980-981` -- but the arity it consults is
+`a64-known-arity` (`:901-915`), a hardcoded table of builtin names
+(`list-at`, `par-map`, ...). It does not fire for user definitions. Its
+local-closure path at `:976-978` does use a real def-arity table.
+
+**How the family actually splits**, which is the context a backlog row
+wants: `csharp` (`CSharpEmitterExpressions.codex:830-841`), `python`
+(`PythonEmitter.codex:646-655`), `javascript` (`:501-511`) and `rust`
+(`RustEmitter.codex:547-560`) route every non-exact case to a curried
+spine, so over-application is handled by construction. The TS family --
+`typescript` (`TypeScriptEmitter.codex:205-214`) plus `angular`,
+`electron`, `react`, `svelte`, `vue` -- splits on `args > ar` explicitly
+with take/drop. `haskell` (`HaskellEmitter.codex:411`) and `ocaml`
+(`OCamlEmitter.codex:380`) emit juxtaposition, which is already correct
+in those languages; both build an arity map and never consult it, which
+is harmless there. The compiler's own x86-64 backend does the take/drop
+split at `X86_64Compound.codex:154`. That leaves `zig` (finding 40),
+`riscv` and `java` as the three that look flat where the rule says they
+must not.
+
+**Confidence: HIGH for riscv and java as source facts, and the dead-code
+claim is a grep anyone can rerun.** What is NOT measured is the runtime
+consequence: nothing in the harness compiles emitted Java, and no
+riscv over-application probe has been run, so "this produces a broken
+program" is inference from the emitted shape rather than an observed
+failure. Finding 40 is the same defect observed end to end, which is
+why it is the one with a reproducer.
+
+**Why nothing caught any of them:** `codex/plugs/test-input/partial.codex`
+covers under-application, saturation, and over-application of a LOCAL,
+but never over-application of a named top-level definition -- the exact
+shape all three plugs mishandle. `codex/plugs/test-plugs.ps1` judges
+exit code, non-empty output and text markers (`:93-97`, `:163-177`) and
+never compiles what it emitted. A one-line addition to `partial.codex`
+would put all three in front of a compiler.
+
+Related: finding 36 (the python plug's TCO matches a self-call by name,
+so over-application in tail position loops instead of applying) is the
+same rule broken in a fourth place, at a different stage.
+
 ## 40. The zig plug calls a curried definition flat, so an under-applied chain it cannot inline will not compile
 
 **Found 2026-08-24 on tier 14's first run against both arms. OURS -- the
@@ -1141,16 +1213,28 @@ the plug itself emitted as one-ary returning a closure:
     even_fn(4, 20, 22)
     error: expected 1 argument(s), found 3
 
-**The discriminator is inlinability, and the control is in the same
-file.** `pick`, a closure-returning definition with two return paths and
-no recursion, compiles and answers 47: the pipeline inlines it
-(`CDX4030: fold-constants,inline-leaf-calls,inline-single-caller`) and
-the call site materialises the closure properly as
-`_f5.call(_f5.ctx, 20, 22)`. `probe-closure-solo`'s `make-adder`, a leaf,
-answers `solo 47` for the same reason. `even-fn` is MUTUALLY recursive,
+**The discriminator is inlinability.** `even-fn` is MUTUALLY recursive,
 so nothing can inline it, the flat call survives to the emitter, and zig
-rejects it. So the plug knows how to call a closure; it just does not
-know it is holding one when the definition stayed a definition.
+rejects it. The emitted `opening` does contain a correct closure call --
+`_f5.call(_f5.ctx, 20, 22)` -- so the plug knows how to call a closure;
+it just does not know it is holding one when the definition stayed a
+definition.
+
+**The two "controls" this finding first claimed are weaker than it said,
+corrected 2026-08-24.** `grep '^fn ' prim-closure.zig` returns only
+`add3`, `even_fn`, `odd_fn` and `opening`: **`pick` is not emitted as a
+function at all**, so "pick compiles" was never a statement about
+emitting a closure-returning DEFINITION -- the inliner erased it and the
+surviving `_f5.call` is the inlined body's call site, reached through
+`emit-zig-apply`'s `is otherwise ->` branch because its root is an
+`IrIf`, not an `IrName`. Worse for the other one: `probe-closure-solo`'s
+whole `opening` body folds to `((5 +% 20) +% 22)` and `make_adder` is not
+emitted either, so it exercises constant folding and nothing about
+closures. It is not a control. The `CDX4030` pipeline line is also a
+global default printed for essentially every unit, not a per-file
+observation about `prim-closure`. The conclusion survives all three
+corrections -- the emitted artifact shows it directly -- but the
+evidence it was resting on did not.
 
 **This is finding 39's shape on our side of the fence.** There the call
 site assumed an arity the closure could not honour at run time; here the
@@ -1185,12 +1269,63 @@ The seed is byte-identical across the two trees
 (`a01c1547e92eb0d0`), so tier 14's banked bare column never depended on
 which was chosen.
 
-**Not established:** whether the fix belongs at the call site (emit a
-closure call whenever the callee's emitted arity is short of the
-applied count) or at the definition (emit closure-returning definitions
-n-ary flat and let over-application saturate them). Tier 13's prose says
-the zig arm "would not compile the closure return type" -- that is now
-out of date, and `pick` is the counter-example.
+**SETTLED 2026-08-24: the call site is the wrong half, and this is a
+documented rule the plug does not follow.** `docs/DevelopersRulebook.md`
+lines 256-260 state it, and line 254 names `zig` as one of the plugs the
+section governs:
+
+> Application is curried on the wire ... a plug must emit `f(a)(b)`,
+> never `f(a, b)`, unless it KNOWS the callee's arity: a def it emitted
+> n-ary is called flat at that arity, under-applied with one arrow per
+> missing parameter, **over-applied by applying the rest one at a
+> time.**
+
+Three cases; the plug implements two. `emit-zig-apply`
+(`ZigEmitter.codex:2067-2071`) looks the arity up, branches correctly on
+`args < ar`, and then lets `args > ar` fall into the saturated-call
+branch, which emits every argument in the chain -- the loop bound in
+`emit-zig-call-args` is `list-length args`, never `ar`. `ar` is computed
+and discarded. The over-supplied arguments are not even type-checked:
+`zig-callee-param-type` returns `VoidTy` past the parameter list
+(`:656`).
+
+The definition-flattening alternative is contradicted, not merely
+unchosen. The compiler's own x86-64 backend builds its arity map from
+`list-length (d.params)` (`X86_64Compound.codex:38`) exactly as
+ZigEmitter does at `:537`, and splits on `args > user-arity` into
+`emit-over-apply` (`:154`, implemented `:245-274`). A Codex `FunTy` is a
+curried arrow, so `Integer -> (Integer, Integer -> Integer)` and
+`Integer, Integer, Integer -> Integer` are the SAME type and
+`list-length (d.params)` is the only signal separating them -- flattening
+the definition discards it, and would need an eta-expansion `emit-zig-def`
+does not have (`:2625` emits the body verbatim).
+
+**One caution for the fix: the rulebook's "one at a time" is wrong for
+zig specifically.** `zig-closure-invoke` (`:2284-2286`) applies all
+remaining arguments at once, which is what the working `_f5.call(_f5.ctx,
+20, 22)` does. The right shape is to chunk by each closure's arity.
+`emit-ts-apply-split` (`TypeScriptEmitter.codex:208-214`) is the
+structural template; `zig-closure-invoke` is the correct tail. And
+rerouting `args > ar` into `emit-zig-expr-curried` (`:2461-2468`) does
+NOT fix it: that path reaches `emit-zig-name:1053-1057`, which eta-wraps
+using `zig-fn-param-count` -- the TYPE-spine arrow count, 3 for
+`even-fn`, not the emitted 1 -- and lands back on a flat
+`even_fn(p0, p1, p2)`. **The emitter carries two disagreeing notions of a
+definition's arity** and knows it: `zig-untrusted-return-note`
+(`:2513-2518`) prints `"type-val has N arrows for M params"`, and
+`zig-def-return-trusted` (`:2520-2522`) tests `>=` rather than `==`,
+tolerating the very mismatch that breaks the call path. Both sites move
+together or neither does.
+
+**Why nothing caught it:** `codex/plugs/test-input/partial.codex`
+exercises under-application, saturation, and over-application of a
+LOCAL, but never over-application of a named top-level definition --
+the only shape that reaches `ZigEmitter.codex:2070`. And
+`codex/plugs/test-plugs.ps1` judges exit code, non-empty output and text
+markers (`:93-97`, `:163-177`); it never compiles the emitted target.
+
+Tier 13's prose says the zig arm "would not compile the closure return
+type" -- that is out of date; the return type emits fine.
 
 ## 39. A partial-application closure carries no remaining-arity, so under-application corrupts silently
 
