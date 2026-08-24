@@ -54,13 +54,20 @@ printf '%s\n' "$bout" | tail -1
 [ -s zigc-subject.codex ] || { echo "BUNDLE FAILED: no zigc-subject.codex"; exit 1; }
 python3 "$T/check_bundles.py" zigc || { echo "BUNDLE REFUSED"; exit 1; }
 
-# 2. Subject to IR through the seed, then IR to zig through the plug. zigc
-#    takes no mode flags (mode_flags has no arm for it): the 512 MB deck it
-#    needs is baked into the harness by HOSTED_DECK_BYTES, not passed here.
+# 2. Subject to IR through the seed, then IR to zig through the plug.
+#    decks=172 because this subject IS the passes_to_x86 chapter set with an
+#    I/O boundary bolted on -- 55,746 lines against codexir's 55,745 -- and
+#    native_build.sh compiles that size class with exactly this flag.
+#    HOSTED_DECK_BYTES is a different deck: it is the one the BUILT zigc
+#    gives itself at run time, baked into the harness source. This one is
+#    the deck the SEED needs to compile the harness at all, and the first
+#    run of this script passed no flags and was refused for it --
+#    "CDX9002: Deck overflow in CHECK; deck floor exceeded", loudly and
+#    before emitting anything, which is the honest direction to be wrong in.
 python3 - <<'PY' || { echo "BLOB WRITE FAILED"; exit 1; }
 src = open('zigc-subject.codex', 'rb').read()
-open('zigc-ir-cce.blob', 'wb').write(b"IR-CCE\n" + src + b"\x04")
-print(f"blob written ({len(src)} bytes of source)")
+open('zigc-ir-cce.blob', 'wb').write(b"IR-CCE decks=172\n" + src + b"\x04")
+print(f"blob written ({len(src)} bytes of source), decks=172")
 PY
 cd "$T"
 rm -f ast/zigc.ir ast/zigc.zig
