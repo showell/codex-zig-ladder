@@ -1271,8 +1271,12 @@ which was chosen.
 
 **SETTLED 2026-08-24: the call site is the wrong half, and this is a
 documented rule the plug does not follow.** `docs/DevelopersRulebook.md`
-lines 256-260 state it, and line 254 names `zig` as one of the plugs the
-section governs:
+lines 256-260 state it, in the section headed "What the wire carries,
+for anyone writing a plug" (`:243`). The rule is UNQUALIFIED -- it binds
+"a plug", with no list narrowing it, so it reaches every plug that keeps
+an arity map. (The plug list at `:254` is the neighbouring LAMBDA
+bullet's and does not scope this one; the application bullet names the
+TS/JS family only as plugs that already carry the model.)
 
 > Application is curried on the wire ... a plug must emit `f(a)(b)`,
 > never `f(a, b)`, unless it KNOWS the callee's arity: a def it emitted
