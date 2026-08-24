@@ -1,0 +1,138 @@
+Chapter: PrimTailCall
+  cites Foreword chapter Console
+
+ Tier 13: what a self tail call is allowed to do to its own arguments.
+
+ Finding 33 gave the zig plug self-tail-call elimination -- a definition
+ whose tail positions call itself at full arity becomes a loop, with the
+ parameters as mutable locals. Bare metal has done this since Update 30
+ and the python plug since the same commit. Three implementations of one
+ transformation, and the transformation is only correct if it preserves
+ a handful of properties no type checker states.
+
+ This tier pins those properties. It is deliberately NOT about depth:
+ whether a frame was reused is invisible from inside a program, and
+ `stack_probe.py` is where that is measured. Every row here would be
+ answered identically by an arm that loops and an arm that recurses --
+ which is exactly the point, because the rows an optimisation can break
+ are the ones where it changes an ANSWER.
+
+ The counts are small on purpose. A row that needed a hundred thousand
+ turns to show its answer would be measuring the stack again.
+
+ `arg-swap` is the row this tier exists for. When a loop's next arguments
+ read the parameters the loop is about to overwrite, an implementation
+ that assigns left to right builds the second argument out of the first
+ one's NEW value. The classic answer is to evaluate every argument into a
+ temporary before assigning any of them, and the classic bug is to skip
+ that step, because it produces a plausible number rather than a crash --
+ with `a` and `b` swapping, a wrong arm counts twice as fast and still
+ terminates. The zig plug's own commit for this took the temporaries; the
+ row is here so a future one cannot quietly stop.
+
+ `acc-grows` is the same hazard in the shape the compiler actually writes
+ it: an accumulator built FROM ITSELF. Lists mutate in place here, so `&`
+ is what makes a copy, and reading the old accumulator after the new one
+ has been assigned would silently drop or duplicate elements.
+
+ `under-applied` is the arity question finding 36 filed against the python
+ plug. Codex applies partially, so a tail position can hold an
+ application that is not a call at all but a closure being returned, and
+ an implementation that keys its transformation on a callee's NAME rather
+ than on its arity will loop one. This row is the reachable half of that:
+ the tail position of `make-adder` returns `add3` applied to one of three
+ arguments, and the answer only comes out right if that closure survives
+ to be applied twice more. The other half -- a definition under-applying
+ ITSELF in tail position -- needs a return type that is a function of the
+ definition's own remaining parameters, and is left to finding 36's own
+ reproducer rather than guessed at here.
+
+ `mutual` is the pair no arm flattens: two definitions that tail-call each
+ other. Every TCO in the fleet is self-only -- bare metal's `is-self-call`
+ included -- so this row is not expected to move, and its job is to keep
+ answering correctly if some future arm starts flattening it, and to say
+ so loudly if flattening breaks it. Finding 37 is the standing reason to
+ care.
+
+ `unused-param` covers the discard path: zig rejects a local nothing
+ reads, so a loop variable for a parameter the body never mentions has to
+ be discarded rather than dropped, and dropping it would change which
+ argument each remaining parameter receives.
+
+ Expected on bare metal:
+
+   arg-swap 15
+   acc-grows 1 2 3 4
+   under-applied 47
+   mutual even
+   unused-param 12
+   control-nontail 55
+
+Section: Shapes
+
+ Two parameters that trade places every turn. `b` reads `a`, and `a` is
+ assigned first, so an arm without temporaries reads the new `a` here.
+
+  swap-loop : Integer, Integer, Integer -> Integer
+  swap-loop (a) (b) (n) =
+   if n == 0 then a + b
+   else swap-loop b (a + 1) (n - 1)
+
+ The accumulator is built from itself. `&` copies; `list-push` would
+ mutate the list the caller still holds.
+
+  acc-loop : List Integer, Integer -> List Integer
+  acc-loop (acc) (n) =
+   if n > 4 then acc
+   else acc-loop (acc & [n]) (n + 1)
+
+ A definition of three parameters, applied to one in tail position: this
+ returns something callable with the remaining two, and is not a tail
+ call however much it looks like one.
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+  make-adder : Integer -> (Integer, Integer -> Integer)
+  make-adder (n) = if n == 0 then add3 5 else make-adder (n - 1)
+
+ Mutual tail recursion, which nothing here flattens today.
+
+  is-even : Integer -> Boolean
+  is-even (n) = if n == 0 then True else is-odd (n - 1)
+
+  is-odd : Integer -> Boolean
+  is-odd (n) = if n == 0 then False else is-even (n - 1)
+
+ `tag` is never read by the body; it still has to survive as a parameter
+ so that `n` and `acc` keep receiving the arguments meant for them.
+
+  unused-loop : Integer, Integer, Integer -> Integer
+  unused-loop (tag) (n) (acc) =
+   if n == 0 then acc
+   else unused-loop tag (n - 1) (acc + 3)
+
+ The control: the call is inside an addition, so it is NOT in tail
+ position and must keep its frames and its answer. An arm that loops this
+ one has discarded the pending add.
+
+  sum-nontail : Integer -> Integer
+  sum-nontail (n) =
+   if n == 0 then 0
+   else n + sum-nontail (n - 1)
+
+Section: Driver
+
+  show-list : List Integer, Integer, Text -> Text
+  show-list (xs) (i) (acc) =
+   if i >= list-length xs then acc
+   else show-list xs (i + 1) (acc & " " & show (list-at xs i))
+
+  opening : [Console] Nothing = act
+    print-line-uni ("arg-swap " & show (swap-loop 0 0 15))
+    print-line-uni ("acc-grows" & show-list (acc-loop [] 1) 0 "")
+    print-line-uni ("under-applied " & show (((make-adder 3) 20) 22))
+    print-line-uni ("mutual " & (if (is-even 10) then "even" else "odd"))
+    print-line-uni ("unused-param " & show (unused-loop 99 4 0))
+    print-line-uni ("control-nontail " & show (sum-nontail 10))
+  end
