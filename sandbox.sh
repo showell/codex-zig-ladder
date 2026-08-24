@@ -17,7 +17,8 @@
 #
 #   ./sandbox.sh <label> [ladder-ref] [codex-repo] [codex-ref]
 #   ./sandbox.sh --prune [keep]        keep the newest N (default 10)
-#   ./sandbox.sh --list
+#   ./sandbox.sh --list                live head of each worktree, MOVED if it
+#                                      no longer matches what it was cut from
 #
 # Then:  cd <path>/ladder && . ../env && ...
 set -u
@@ -26,9 +27,44 @@ LADDER_SRC="${LADDER_SRC:-$HOME/showell_repos/codex-zig-ladder}"
 
 die() { echo "sandbox: $*" >&2; exit 1; }
 
+# The MANIFEST records what a worktree was cut FROM. Git records what it holds
+# NOW, and the two diverge legitimately: a detached worktree gets moved so a
+# branch ref can advance, which is what 20260824T132742Z-f37-parser did. The
+# divergence is allowed; it being SILENT is not. That MANIFEST went on reading
+# `codex 8cb8a0e4` while the tree held 65cb244b, and a measurement was nearly
+# attributed to the wrong tree on the strength of it. So --list answers from
+# git, which is always current, and prints the recorded commit only as the
+# provenance it actually is.
+manifest_field() {          # <manifest> <worktree> -> recorded sha, or empty
+    # Reads the current `<name>-at-creation` key and the bare `<name>` key
+    # written before 2026-08-24, because the sandboxes that exposed this are
+    # still on disk and are precisely the ones worth checking.
+    awk -v a="$2-at-creation" -v b="$2" \
+        '$1 == a { print $2; exit } $1 == b { print $2; exit }' "$1" 2>/dev/null
+}
+
 case "${1:-}" in
     --list)
-        ls -1dt "$ROOT"/*/ 2>/dev/null || echo "(no sandboxes)"
+        listed=0
+        for d in $(ls -1dt "$ROOT"/*/ 2>/dev/null); do
+            listed=1
+            echo "$d"
+            for w in ladder codex; do
+                rec=$(manifest_field "${d}MANIFEST" "$w")
+                live=$(git -C "${d}${w}" rev-parse HEAD 2>/dev/null)
+                if [ -z "$live" ]; then
+                    printf '    %-7s (no worktree)\n' "$w"
+                elif [ -z "$rec" ]; then
+                    printf '    %-7s %s  (MANIFEST does not say)\n' "$w" "${live:0:8}"
+                elif [ "$live" = "$rec" ]; then
+                    printf '    %-7s %s\n' "$w" "${live:0:8}"
+                else
+                    printf '    %-7s %s  MOVED -- cut from %s\n' \
+                        "$w" "${live:0:8}" "${rec:0:8}"
+                fi
+            done
+        done
+        [ "$listed" = 1 ] || echo "(no sandboxes)"
         exit 0 ;;
     --prune)
         keep="${2:-10}"
@@ -95,10 +131,10 @@ EOF
     echo "label       $label"
     echo "created     $(date -u +%Y-%m-%dT%H:%M:%SZ)"
     echo "host        $(hostname)"
-    echo "ladder      $(git -C "$run/ladder" rev-parse HEAD)  ($ladder_ref)"
+    echo "ladder-at-creation $(git -C "$run/ladder" rev-parse HEAD)  ($ladder_ref)"
     echo "ladder-desc $(git -C "$run/ladder" log --oneline -1)"
     echo "codex-src   $codex_src"
-    echo "codex       $(git -C "$run/codex" rev-parse HEAD)  ($codex_ref)"
+    echo "codex-at-creation  $(git -C "$run/codex" rev-parse HEAD)  ($codex_ref)"
     echo "codex-desc  $(git -C "$run/codex" log --oneline -1 | cut -c1-90)"
 } > "$run/MANIFEST"
 

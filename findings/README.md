@@ -1232,7 +1232,11 @@ surviving `_f5.call` is the inlined body's call site, reached through
 `IrIf`, not an `IrName`. Worse for the other one: `probe-closure-solo`'s
 whole `opening` body folds to `((5 +% 20) +% 22)` and `make_adder` is not
 emitted either, so it exercises constant folding and nothing about
-closures. It is not a control. The `CDX4030` pipeline line is also a
+closures. It is not a control. Checked on BOTH trees, because this
+finding has been measured on the wrong one before: identical in
+`20260824T184156Z-tier14b` (the bare u49 pin) and in
+`20260824T185614Z-tier14-pr77` (`8cb8a0e4`, which is the tree the tier
+set's zig arm belongs to). The `CDX4030` pipeline line is also a
 global default printed for essentially every unit, not a per-file
 observation about `prim-closure`. The conclusion survives all three
 corrections -- the emitted artifact shows it directly -- but the
