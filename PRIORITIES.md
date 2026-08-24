@@ -112,10 +112,11 @@ Left, in order:
   through arms it already has, so the branch it receives should not
   carry ours.
 - **A `compiler-backlog.md` row**, which is how a finding reaches Damian
-  at all. **Finding 38's is SENT: PR 78, COMPILER-18**, doc-only, off
+  at all. **Finding 39's is SENT: PR 79, COMPILER-18**, doc-only, off
   `upstream/master` 5b8091e2, `Ladder:` line naming ladder tag
-  `finding-38`. That PR is the worked example of the route, and it is
-  where the numbering now stands. **Finding 37 still wants its row**,
+  `closure-arity`. That PR is the worked example of the route, and it is
+  where the numbering now stands. (PR 78 carried COMPILER-18 first, for
+  finding 38, and was closed unmerged; the number went with 79.) **Finding 37 still wants its row**,
   and unlike 38 it is not doc-only -- the fix is a change to
   `Syntax/Parser.codex`, so the branch carries the restructure and the
   row together. Draft in `BACKLOG-ROW-37.md`.
