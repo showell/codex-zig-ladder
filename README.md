@@ -49,13 +49,20 @@ source: `prog.ir -> prog.zig`, which `zig build-exe` then makes native. Point it
 at the compiler's own IR and you get the Codex compiler as an ordinary Linux
 process instead of a kernel.
 
-**A rung** is one test. It bundles part of the compiler into a single
-compilable unit -- the **subject** -- and compiles that subject twice. The
-first compile is the real one: the seed, on bare metal, under QEMU. The second
-goes through the plug: the same subject, transpiled to zig, built by
-`zig build-exe`, run as a Linux process. Both print the same thing, and the two
-outputs must be **byte-identical**. A rung that passes says the transpiled
-compiler and the real compiler agree about that much of the compiler.
+**A unit** is one compile. It bundles part of the compiler into a single
+compilable **subject**, and that subject is compiled twice. The first compile
+is the real one: the seed, on bare metal, under QEMU. The second goes through
+the plug: the same subject, transpiled to zig, built by `zig build-exe`, run
+as a Linux process.
+
+**A rung** is one claim, and it is what the two runs are compared over. Both
+print the same thing, and the two outputs must be **byte-identical**. A rung
+that passes says the transpiled compiler and the real compiler agree about
+that much of the compiler. Usually a unit carries one rung and the two words
+name the same thing; two units carry two rungs each, because one compiled
+compiler can be handed more than one program to compile, and each answer is
+its own claim. Fourteen rungs, twelve units -- "The twelve units" below is
+organised by the compile, and names the rungs riding in each.
 
 The ladder exists to test whether the transpile is faithful. The answer has to
 be byte-exactness rather than "it seems to work", because a transpiled compiler
@@ -64,8 +71,8 @@ that is subtly wrong produces subtly wrong binaries forever after.
 ## The parts
 
 **A chapter** is Codex's module: one `.codex` file, naming what it `cites` from
-other chapters. The compiler is about sixty of them, and a rung's subject is
-some subset concatenated into one compilable unit.
+other chapters. The compiler is about sixty of them, and a unit's subject is
+some subset concatenated into one compilable whole.
 
 **The seed is not only a compiler.** It is an operating system with the compiler
 inside it: it has a network stack, a FAT16 driver, a framebuffer and a process
@@ -154,7 +161,7 @@ for the PROGRAM, and the generated harness spells it `subject-<rung>` --
 a Codex identifier that reaches the compiled subject, so renaming it costs
 a measurement. The code's word is older than this section's.
 
-**A harness stands in for the driver.** Every rung's subject carries one instead,
+**A harness stands in for the driver.** Every subject carries one instead,
 because two chapters cannot both define `opening` -- and because the driver is
 an operating-system program, not just a compiler one: its effect row is
 `[Console, FileSystem, Device.Block]`, its first two acts are painting a
@@ -681,9 +688,9 @@ Which leaves two sentences worth being careful about.
 
 **What this establishes.** Given IR produced by the seed, the zig plug plus an
 unrelated x86-64 code generator reproduce, byte for byte, the observable output
-of the seed's own back end across fourteen subjects, up to and including the
-entire compiler minus its driver -- and for four of those, the complete CDX
-image the compiler emits.
+of the seed's own back end across fourteen rungs over twelve subjects, up to
+and including the entire compiler minus its driver -- and for three of those
+rungs, the complete CDX image the compiler emits.
 
 **What it does not establish.** That the seed is honest. The seed sits upstream
 of the divergence on both arms, and it also compiled the plug that produces the
