@@ -46,17 +46,50 @@ loop unless it says otherwise.
 
 ---
 
-## 3. Tail calls become loops (finding 33)
+## 3. Send the tail-call branch (finding 33 is FIXED, not sent)
 
-**Objective: instrument work on the emitter; scheduled high by Steve
-2026-08-22.** Every `*-loop (xs) (i) (acc)` in the compiler is a self-call
-in tail position; bare metal jumps, the plug calls, and Debug zig keeps
-every frame -- `zigemit` on the 13 MB ir_to_x86 IR wants >2 GiB of thread stack
-for 3.28M `tokenize_loop` frames. The change: a def whose body's tail
-positions are self-calls of the same arity becomes `while (true) {` with
-parameter reassignment through temporaries; non-self tail calls stay
-calls. Proof: the chain, then zigemit past tokenizing on the stock 512 MB
-stack on the ir_to_x86 subject.
+**Objective: outbound.** The emitter change is done and verified
+(`zig-plug-tail-calls` on the fork, tip `07495229`, off PR 77's
+`8cb8a0e4`): `zigemit` clears the 13.2 MB IR at the stock 512 MB stack
+in 27 s where 2 GiB used to die, and both ir_to_x86 rungs come out
+byte-identical to `truth/u49` through a chain with no QEMU in it.
+Finding 33 carries the numbers. What stands between it and a PR:
+
+- **`IrAct` is not on the tail spine.** The walk descends if, let and
+  unguarded match; the python plug also descends the last statement of
+  an act block, and ours treats it as a leaf, so those loops keep their
+  frames. Cheap to add, and the shape is already written twice.
+- **No ladder sweep has run against the branch.** The two ir_to_x86
+  rungs agreeing natively is strong but it is two of fourteen.
+- The PR body wants the `Ladder:` line contrib/README.md asks for.
+
+## 3.5. Verify the parser restructure (finding 37), IN FLIGHT
+
+**Objective: hunting, and the upstream item this queue most wants.**
+Both per-definition mutual-tail cycles in `Syntax/Parser.codex` --
+scan-top-level/try-scan-type-def/try-scan-def-header and
+parse-top-level/try-top-level-type-def/try-top-level-def -- are
+restructured so the try-functions RETURN their item and the loop
+tail-calls itself, which every TCO in the fleet already flattens.
+Committed on `parser-scan-self-recursive` (`33f72baa`, sandbox
+`20260824T132742Z-f37-parser`), off the tail-call branch so the arm can
+actually see the effect: on the u49 pin the plug has no self-TCO, so the
+change would flatten nothing there and the measurement would be a null
+result.
+
+**Nothing has run yet.** The natives are building; then `stack_probe.py`
+against the recorded baseline (emitter `6f18a4b9`,
+`back-end-unit min=32MB cliff=24MB`, cycle
+`try_top_level_type_def/parse_top_level/try_top_level_def`). Read the
+CYCLE column first: the three names being gone is the result, and the
+same names under a smaller number would mean the emitter declined to
+loop the rewritten functions rather than that the parser changed.
+
+Then, in order: does it still parse correctly (tiers + a sweep, since a
+parser change reaches every rung), rebase onto the pin for an upstream
+branch, and a `compiler-backlog.md` row -- which is how a finding
+reaches Damian at all (contrib/README.md; findings sitting in our
+register reach nobody).
 
 ## 4. The refusal-gaps branch, rebased and re-verified
 
@@ -97,6 +130,18 @@ property is observable from inside a program so bare metal is the oracle,
 zig-only otherwise and labelled so; never print an address; keep a control
 column.
 
+**IN FLIGHT: tier 13 (`findings/prim-tailcall.codex`) is WRITTEN AND
+NEVER COMPILED.** Six rows on what a self tail call may do to its own
+arguments -- arg-swap and acc-grows are the ones an implementation can
+break by assigning parameters without temporaries, and both produce
+plausible wrong numbers rather than crashes. Next: `./tiers_run.py
+--bare` to bank its bare-metal column under `findings/gold/u49/` (bare
+metal is the oracle; a zig column means nothing until that exists), then
+the set. Its `make-adder : Integer -> (Integer, Integer -> Integer)`
+return type is unverified syntax and is the likeliest thing to refuse.
+Expected values were hand-simulated, not predicted -- the first draft of
+arg-swap said 30 and it is 15.
+
 **The open question:** three findings in one day (`probe-tyvar-leak`,
 `probe-show-types`, finding 32's `IrTry`) failed as raw zig errors rather
 than a `@compileError("zig plug: ...")` marker. `zig-is-unmapped` and
@@ -104,6 +149,28 @@ than a `@compileError("zig plug: ...")` marker. `zig-is-unmapped` and
 ranking that sets priorities however often they bite. The systemic fix --
 every unhandled construct refuses by name -- is worth more than any one
 of them. Item 4's census is where the count would show.
+
+## 5.5. The stack is measured now, and the emitter's prose about it is wrong
+
+**Objective: instrument work already half done.** `stack_probe.py` (item
+3.5's instrument) bisects the emitted thread stack against real
+documents and censuses the failing backtrace, so "512 MB" is a number
+with a mechanism behind it rather than a constant nobody has questioned.
+Left:
+
+- **Nothing is banked.** The only measurement so far is a branch-arm one
+  and deliberately not gold: a `uNN` bank stands behind the release's
+  emitter. Bank when a verbatim-emitter run exists.
+- **Only `codexir` is measured.** `zigemit` and the other natives have
+  their own recursion and are unmeasured, so what one input needs is
+  known and what every input needs is not. The 512 MB must not be
+  lowered before that sweep.
+- **`zig-main`'s prose names the wrong cycle** -- it blames the lexer's
+  scan-token/skip-prose-line pair, which measures flat (100,000
+  consecutive prose lines run in a 256 KB stack). A justification that
+  is wrong is worse than none, since the next reader trusts it. Correct
+  it in the same branch that carries the parser fix, or upstream beside
+  it.
 
 ## 6. Venue plumbing
 
@@ -185,6 +252,16 @@ the C# DDC witness path with zig -- C# stops at "compiles", zig RUNS.
 - **PR 77** -- the heap unification, sent 2026-08-23 on `8cb8a0e4`
   (21 commits on the u49 pin); verified at ladder tag `pr77-verified`.
   Filed, not landed.
+- **Finding 33's fix** -- `zig-plug-tail-calls` pushed to the fork, NOT
+  sent. Item 3 says what it wants first.
+- **Finding 37's fix** -- `parser-scan-self-recursive`, unmeasured. Item
+  3.5. This is compiler code rather than plug code, so it goes as a
+  small branch plus a `compiler-backlog.md` row, not as a ladder finding.
+- **Finding 36** (python plug's TCO keys on name, not arity) -- filed in
+  our register at MEDIUM confidence, reproducer NOT run. It is the
+  fleet's lane, so it wants a `plugs-backlog.md` row once run.
+- **Standing:** a finding in `findings/README.md` reaches Damian only
+  when someone opens a PR carrying it. Nothing notifies anyone.
 - **Then: the refusal gaps** (item 4), rebased onto it.
 - PRs 71-75: absorbed, one line each in DONE.md.
 
