@@ -1659,54 +1659,68 @@ that is a question for Damian rather than a decision to take here.
 
 ## 33. No tail calls: recursion depth on this arm is bounded by the thread stack, bare metal's is not
 
-**Found 2026-08-22 while running the native chain on the ir_to_x86 subject
-(finding 24's closing experiment). Ours. FIXED 2026-08-24 on branch
-`zig-plug-tail-calls` (`6cd40143` + the two follow-ups), verified end to
-end; not landed upstream.**
+**Found 2026-08-22 on the native chain (finding 24's closing experiment).
+Ours. FIXED 2026-08-24 on `zig-plug-tail-calls` -- `6cd40143` the
+transformation, `07495229` two zig-shape corrections, `a1398e0b` the
+invariant-parameter rule. Pushed to the fork, NOT sent upstream.**
 
-**The measurement that closes it** (sandbox `20260824T115824Z-f33-tailcalls`,
-natives from the branch, region 4 GiB from the heap branch beneath it):
-`native/zigemit` on the 13,219,750-byte `ir_to_x86.ir` completes rc 0 in
-27 s **at the stock 512 MB stack** and emits 3,021,734 bytes of zig --
-against the recorded baseline where 512 MB died, 2 GiB died, and 3.5 GiB
-reached only the end of tokenizing. `tokenize_collect`, the function it
-died in, is among the 887 definitions of 3,633 that now emit as loops.
+**The defect.** Bare metal has tracked tail position since Update 30
+(`st-set-tail-pos`) and a self tail call there is a jump; the plug turned
+every one into a call. Every `*-loop (xs) (i) (acc)` in the compiler has
+that shape, so depth on this arm grew one frame per element where bare
+metal's is flat. `native/zigemit` on the 13.2 MB `ir_to_x86.ir` died in
+`tokenize_collect`, one frame per token over 3,282,147 tokens: 512 MB
+died, 2 GiB died, 3.5 GiB reached only the end of tokenizing. The same
+Update 30 commit gave the python plug its TCO; the zig plug was missed.
 
-That the emitted program is also RIGHT is the other half, and it is the
-half a stack fix could have faked: the zig compiles (2.5 s, 35,550,072
-bytes), runs in 0.37 s, and both of its rungs are **byte-identical to
-`truth/u49`** -- a full ir_to_x86 unit through the native loop with no
-QEMU anywhere in the arm. `findings/probe-tail-loop.codex` covers the
-four spine shapes separately and is byte-identical on both arms,
-including `sum-nontail`, the control that must NOT be looped.
+**The fix.** A definition whose tail positions call itself at full arity
+emits as `while (true)` with its parameters as loop variables. The spine
+walks if, let and unguarded match; any other tail position emits
+`return <expr>;` unchanged, so an unhandled shape loses the loop and
+never the meaning.
 
-Note what is NOT closed by this. The 512 MB stack in every emitted
-`main` stays load-bearing: the emitter's own prose (`zig-main`) records
-that the case which reaches the limit is MUTUAL recursion --
-`scan-token -> skip-prose-line -> scan-token` -- which no self-tail-call
-elimination flattens, and that .NET overflows on a 96-byte chapter with
-a 1 MB main thread. This finding was latent from Update 30, when bare
-metal gained `st-set-tail-pos` and the python plug gained TCO in the
-same commit; the 512 MB spawn added at Update 43 (2026-08-15) hid the
-symptom for a week, until the native loop pointed the plug's own output
-at the largest IR we have.
+**The measurement that closes it** (sandbox
+`20260824T115824Z-f33-tailcalls`, natives from the branch, 4 GiB region
+from PR 77 beneath it): `zigemit` on that same IR completes rc 0 in 27 s
+**at the stock 512 MB stack**, emitting 3,021,734 bytes of zig.
+`tokenize_collect` is among the 887 definitions of 3,633 that emit as
+loops at `6cd40143`.
 
-`native/zigemit` on the 13.2 MB native-produced `ir_to_x86.ir` dies in
-`tokenize_loop`: a self-recursive loop that advances one TOKEN per frame.
-The IR holds 3,282,147 tokens. The emitted program's `main` spawns its work
-on a 512 MB thread (`std.Thread.spawn(.{ .stack_size = 512 MB }`), and a
-Debug frame of `tokenize_loop` is several hundred bytes, so the stack is
-gone before the tokenizer is. Measured: 512 MB dies, 2 GiB dies, 3.5 GiB
-gets through tokenizing (and then hits finding 34). Bare metal's emitter
-tracks tail position (`st-set-tail-pos` is everywhere in X86_64) and a
-tail call there is a jump: its depth is zero for this loop. Every
-`*-loop (xs) (i) (acc)` in the compiler has the same shape, and the plug
-turns every one into a call.
+That the program is also RIGHT is the half a stack fix could have faked:
+the zig compiles (2.5 s), runs in 0.37 s, and both its rungs are
+**byte-identical to `truth/u49`** -- a full ir_to_x86 unit through the
+native loop with no QEMU in the arm. `findings/probe-tail-loop.codex`
+covers the spine shapes, `findings/prim-tailcall.codex` (tier 13) the
+semantics.
 
-The fix is in ZigEmitter: a self-tail-call in tail position becomes a
-`while (true)` with parameter reassignment. Until then the native loop's
-ceiling is subjects whose recursion-per-element stays inside 512 MB --
-`codexir.ir` (8.6 MB) fits, `ir_to_x86.ir` (13.2 MB) does not.
+**Two sub-findings the fix produced, both worth keeping:**
+
+- **The next arguments must go through temporaries.** They read the
+  parameters the loop is about to overwrite, so assigning left to right
+  builds the second argument from the first one's new value. It does not
+  crash -- it returns a plausible number. Tier 13's `arg-swap` row is
+  the guard.
+- **Declining every function-typed parameter was too broad, and cost
+  10,000 frames.** Zig will not hold a bare function type in a var, so
+  the first cut refused any definition having one. `sort-partition` --
+  the compiler's own partition loop, self tail-recursive in both
+  branches -- has a comparator among its six parameters and was left
+  recursing 10,000 deep, which `stack_probe.py` surfaced only because it
+  censuses frames rather than reporting pass/fail. A parameter every
+  self call passes back unchanged never varies, so it stays the
+  function's own (const) parameter: `cmp`, `hi` and `pv` need no
+  variable and only `xs`, `j`, `i` move. A function-typed parameter is
+  then a problem only when it actually changes. VERIFICATION PENDING --
+  the plug builds and the natives are rebuilding; whether
+  `sort_partition` leaves the trace is the probe's to say.
+
+**What this does NOT close.** The 512 MB stack in every emitted `main`
+stays, and finding 37 is why: other recursions hold it up, none of them
+the one `zig-main`'s prose blames. That prose says the case reaching the
+limit is the lexer's `scan-token -> skip-prose-line` cycle; measured,
+that cycle is flat (100,000 consecutive prose lines run in 256 KB). Read
+finding 37 for what actually drives the number, and do not repeat the
+lexer claim -- it was the reason nobody looked for a year.
 
 ## 34. The hosted harnesses never reclaim, so a 13 MB IR exhausts zigemit's 1.5 GiB arena
 
