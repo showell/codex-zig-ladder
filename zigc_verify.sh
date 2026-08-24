@@ -34,6 +34,9 @@ SUBJ="${1:-$T/ast/repro.codex}"
 [ -s "$SUBJ" ] || { echo "no subject at $SUBJ"; exit 2; }
 REPO="$(python3 "$T/ladder_root.py" codex)"
 PLUG="$REPO/codex/plugs/zig/build-output/zig-plug.cdx"
+# Presence check only: the ring arm re-bundles its own kernel, but a tree
+# with no built plug at all has not had cycle.sh run and nothing below
+# would work.
 [ -s "$PLUG" ] || { echo "no built plug at $PLUG; run cycle.sh first"; exit 1; }
 
 echo "### zigc_verify $(date +%H:%M:%S)"
@@ -73,7 +76,17 @@ cd "$T"
 rm -f ast/zigc.ir ast/zigc.zig
 python3 -u ring_compile.py ast/zigc-ir-cce.blob ast/zigc.ir 2>&1 | tail -5
 [ -s ast/zigc.ir ] || { echo "COMPILE FAILED: no zigc.ir"; exit 1; }
-python3 -u plug_run_checked.py "$PLUG" ast/zigc.ir ast/zigc.zig > ast/zigc.transport.log 2>&1 \
+# The RING, not TCP. arm_for sends ir_to_x86 and passes_to_x86 through the
+# ring and everything else over TCP, and this subject is the passes_to_x86
+# chapter set -- its IR is 13.9 MB. The first run of this script used the
+# TCP arm and the guest dropped the connection at byte 7,770,000; the
+# agreement retry then tried four chunk sizes and refused rather than
+# picking one, which is the check doing its job. plug_run_ring takes the
+# IR and the output and re-bundles the ring plug itself, so it needs no
+# plug path.
+bash "$T/ast/ringplug_build.sh" > ast/ringplug.build.log 2>&1 \
+    || { echo "RING PLUG BUILD FAILED:"; tail -8 ast/ringplug.build.log; exit 1; }
+python3 -u plug_run_ring.py ast/zigc.ir ast/zigc.zig > ast/zigc.transport.log 2>&1 \
     || { echo "TRANSPORT FAILED (ast/zigc.transport.log):"; tail -6 ast/zigc.transport.log; exit 1; }
 [ -s ast/zigc.zig ] || { echo "TRANSPORT FAILED: no zigc.zig"; exit 1; }
 
