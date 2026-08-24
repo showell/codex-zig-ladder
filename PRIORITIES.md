@@ -169,13 +169,30 @@ and the hole is documented in the file rather than left as a red.
 that assigns loop parameters without temporaries fails them with a
 plausible number rather than a crash.
 
+**Tier 14 (`findings/prim-closure.codex`) is written, banked on bare
+metal, and EXCLUDED from the set.** It pins finding 39: `control-flat`
+and `control-pick` answer 47, `under-mutual` answers `not-47`, as
+relations rather than values because under-application yields a heap
+pointer and a tier must not print an address. Like tier 13 it earned its
+keep on the first run -- against both arms it produced **finding 40**,
+ours: the zig plug emits `even_fn(4, 20, 22)` against its own
+`fn even_fn(n: i64) CxFn2(i64, i64, i64)` whenever it cannot inline the
+definition. That refusal is what excludes it, and until the plug is
+fixed tier 14 is NOT the detector it exists to be -- what would announce
+a fixed COMPILER-18 is the ledger row going STALE when the arms agree,
+and there is no ledger row while one arm will not build. Set verified
+GREEN with the row excluded (15 green, 6 noted) on natives from
+`8cb8a0e4`.
+
 **The open question:** three findings in one day (`probe-tyvar-leak`,
 `probe-show-types`, finding 32's `IrTry`) failed as raw zig errors rather
 than a `@compileError("zig plug: ...")` marker. `zig-is-unmapped` and
 `corpus_run.py --transpile` read only markers, so these score ZERO in the
 ranking that sets priorities however often they bite. The systemic fix --
 every unhandled construct refuses by name -- is worth more than any one
-of them. Item 4's census is where the count would show.
+of them. Item 4's census is where the count would show. **Finding 40 is
+the fourth in that class** -- a raw zig `error: expected 1 argument(s)`,
+no marker, scoring zero.
 
 ## 5.5. The stack is measured now, and the emitter's prose about it is wrong
 
