@@ -972,7 +972,13 @@ upstream.
 
 **Found 2026-08-24 by measuring what the workaround actually holds up,
 after finding 33 removed the self-recursion it was blamed on. Ours to
-report; the cycle is THEIRS. OPEN.**
+report; the cycle is THEIRS. OPEN. SENT as PR 82 (COMPILER-19) --
+the `Syntax/Parser.codex` restructure plus its row, off `upstream/master`
+5b8091e2, ladder tag `parser-self-tail`. The commit carries the parser
+change ALONE, with none of our emitter work under it: `Parser.codex` at
+5b8091e2 is byte-identical to the base the change was measured against,
+and the file the commit produces is byte-identical to the verified
+one.**
 
 `zig-main` emits every program onto a 512 MB thread and its prose names
 the reason:

@@ -46,54 +46,6 @@ loop unless it says otherwise.
 
 ---
 
-## 3.5. Verify the parser restructure (finding 37), IN FLIGHT
-
-**Objective: hunting, and the upstream item this queue most wants.**
-Both per-definition mutual-tail cycles in `Syntax/Parser.codex` --
-scan-top-level/try-scan-type-def/try-scan-def-header and
-parse-top-level/try-top-level-type-def/try-top-level-def -- are
-restructured so the try-functions RETURN their item and the loop
-tail-calls itself, which every TCO in the fleet already flattens.
-Committed on `parser-scan-self-recursive` (`50a81942`, was `33f72baa`
-before the layout surgery; sandbox `20260824T132742Z-f37-parser`, now
-detached at `65cb244b` so the branch ref could move), off the tail-call branch so the arm can
-actually see the effect: on the u49 pin the plug has no self-TCO, so the
-change would flatten nothing there and the measurement would be a null
-result.
-
-**MEASURED: 32 MB -> 4 MB**, and the remaining recursion is no longer
-per-definition (finding 37 carries the three-row table). Both ir_to_x86
-rungs came out byte-identical to `truth/u49` through the native chain,
-so the restructure is semantics-preserving as far as that reaches.
-It took the emitter's invariant-parameter rule to see it: with the
-parser cycles gone the number had not moved, because `sort_partition`
-sat underneath.
-
-Left, in order:
-
-- ~~The full rebank+sweep~~ **DONE 2026-08-24: SWEEP 14/14 GREEN**
-  (1716s), census unmoved (CDX6020 x43), fixed point held, and 13 of 14
-  truths byte-identical to `truth/u49`. The one mover is `parse`, whose
-  own program IS the edited `Parser.codex`: its diff is exactly four
-  removed defs, three added, two added type-defs and 50 line shifts,
-  with **no existing definition changing params, anns or slug**. Both
-  arms agree on the new dump, which is the rung that most directly
-  tests the change.
-- **Rebase onto the u49 pin** for the outbound branch. It sits on
-  `zig-plug-tail-calls` because that is the only arm here that can SEE
-  the effect (the pin's plug has no self-TCO), but upstream reproduces
-  through arms it already has, so the branch it receives should not
-  carry ours.
-- **A `compiler-backlog.md` row**, which is how a finding reaches Damian
-  at all. **Finding 39's is SENT: PR 79, COMPILER-18**, doc-only, off
-  `upstream/master` 5b8091e2, `Ladder:` line naming ladder tag
-  `closure-arity`. That PR is the worked example of the route, and it is
-  where the numbering now stands. (PR 78 carried COMPILER-18 first, for
-  finding 38, and was closed unmerged; the number went with 79.) **Finding 37 still wants its row**,
-  and unlike 38 it is not doc-only -- the fix is a change to
-  `Syntax/Parser.codex`, so the branch carries the restructure and the
-  row together. Draft in `BACKLOG-ROW-37.md`.
-
 ## 4. The refusal-gaps branch, rebased and re-verified
 
 **Objective: hunting reached through our own gap-filling** -- every
@@ -293,11 +245,16 @@ the C# DDC witness path with zig -- C# stops at "compiles", zig RUNS.
   one was firewalled from the tree and its findings were mostly
   "I cannot verify this", while round two opened every cited line and
   found two false claims.
-- **Finding 37's fix** -- `parser-scan-self-recursive`. Item 3.5.
-  MEASURED now (32 MB -> 4 MB, sweep 14/14 green); what is left is the
-  rebase onto the u49 pin and the row. This is compiler code rather than
-  plug code, so it goes as a small branch plus a `compiler-backlog.md`
-  row, not as a ladder finding.
+- **PR 82** -- finding 37, the parser's mutual-tail top-level scans,
+  SENT 2026-08-24 as two commits off `upstream/master` 5b8091e2: the
+  `Syntax/Parser.codex` restructure and its `COMPILER-19` row. Ladder
+  tag `parser-self-tail`. The measurement was taken on our tail-call
+  branch (the pin's plug has no self-TCO, so the change would have
+  flattened nothing there), but the commit carries the parser change
+  ALONE -- and that rebase is VERIFIED, not assumed: `Parser.codex` at
+  5b8091e2 is byte-identical to the base it was measured against, and
+  the file the commit produces is byte-identical to the verified one.
+  Open, not landed.
 - **Finding 36** (python plug's TCO keys on name, not arity) -- filed in
   our register at MEDIUM confidence, reproducer NOT run. It is the
   fleet's lane, so it wants a `plugs-backlog.md` row once run.

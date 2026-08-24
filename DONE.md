@@ -6,6 +6,12 @@ findings register, JUSTIFICATIONS.md, a bank, an essay). If an entry
 needs a paragraph, it needs a register section or a JUSTIFICATIONS entry
 instead -- write that and point at it.
 
+- **2026-08-24 — Finding 37 is SENT as PR 82** (COMPILER-19; the parser
+  restructure plus its row, off `upstream/master`, ladder tag
+  `parser-self-tail`). PRIORITIES item 3.5 closed: measured 32 MB -> 4 MB,
+  sweep 14/14 green, and the rebase off our tail-call branch onto master
+  verified byte-identical rather than assumed. Record: register 37, tag
+  `parser-self-tail`, PR 82.
 - **2026-08-24 — The tail-call branch is SENT as PR 81** (finding 33's
   fix; stacked on PR 77, four commits, `ZigEmitter.codex` only, ladder
   tag `tail-calls`). PRIORITIES item 3 closed: the `IrAct` arm landed at
