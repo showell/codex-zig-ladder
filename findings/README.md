@@ -1123,13 +1123,65 @@ lowering it now exists: one capped class at 1024 frames, one data
 dependent class in the sort, and no per-definition growth.
 
 
+## 39. A partial-application closure carries no remaining-arity, so under-application corrupts silently
+
+**Found 2026-08-24 by measuring finding 38 until its framing collapsed.
+THEIRS -- the native x86-64 backend, no plug in the path. OPEN. SENT as
+PR 79 (COMPILER-18); ladder tag `closure-arity`. Supersedes finding 38.**
+
+**The two programs that carry it.** `let h = add3 10 in show ((h 20) 12)`
+prints 42 -- the shape of upstream's own fixture at
+`codex/plugs/test-input/partial.codex:9-10`. The same computation in two
+steps, `let j = add3 10 in let g = j 20 in show (g 12)`, FAULTS one line
+later in the same program (`findings/probe-indirect-under.codex`). And
+`findings/probe-closure-silent.codex` -- three ordinary definitions --
+prints **6291488** (`0x600020`, a heap address) where 47 belongs, with no
+crash and no diagnostic.
+
+**Control:** `add3` returns an Integer, is named by a partial application
+in every program in the series, and is correct in all of them. Only
+definitions whose return type is a function are affected.
+
+**Mechanism, read from source and NOT measured.** A partial application
+is `[code-ptr][capture...]` of `(1 + num-captures) * 8` bytes
+(`Emit/X86_64Compound.codex:715-733`). Its code pointer is a trampoline
+that shifts the incoming argument registers up by the capture count
+(`:703-707`), loads the captures beneath (`:709-713`) and `jmp rax`
+(`:724-725`) -- so it only works when entered with every remaining
+argument at once, and the object stores no count for any caller to
+consult. Both entry paths reach it: `emit-over-apply-extras`
+(`:154`, `:253-274`) one argument per `call rax` by construction, and
+`emit-indirect-call` (`:166-169`, `:205-219`) with whatever the source
+wrote.
+
+**Why it is not exotic.** `docs/DevelopersRulebook.md:258-260` declares
+the model -- "over-applied by applying the rest one at a time".
+`test-input/lambda.codex:19` drives the over-apply path every build and
+passes, because its closure wants exactly one more argument. The tree
+tests the boundary and nothing past it. COMPILER-12 records the same
+shape on the plug side.
+
+**Confidence: HIGH on the measurements, and the mechanism is labelled as
+a reading.** Two things are NOT established and are stated as such in the
+PR: why the silent case needs its mutual recursion (the flat form
+`f (n) = add3 5` prints 47), and why appending a third statement to an
+unrelated two-statement program stops its FIRST statement from printing
+(`findings/probe-closure-luck.codex` against `-luck2`).
+
+**Everything else in `findings/probe-closure-*.codex` is the search, not
+the evidence.** The outbound case is the three files named above.
+
 ## 38. A self tail call in a definition that returns a FUNCTION jumps to a poison address on bare metal
 
 **Found 2026-08-24 while writing tier 13, isolated the same hour. THEIRS
--- bare metal, not the plug. OPEN upstream; SENT 2026-08-24 as PR 78,
-where it is COMPILER-18. Reproducer:
-`findings/probe-closure-return.codex`, six lines of shapes; the tree the
-PR points at is ladder tag `finding-38`.**
+-- bare metal, not the plug. **SUPERSEDED 2026-08-24 by finding 39.**
+PR 78 carried this framing and was CLOSED unmerged in favour of PR 79.
+The self tail call is not the mechanism: it is one route into the
+closure-representation defect that finding 39 describes, and the same
+corruption is reachable with no recursion at all. What survives here is
+the observation and its register dump; the predicate, the title and the
+mechanism paragraph below are all WRONG and are kept only because the
+2x2 is how the trail started. Read finding 39 instead.**
 
     add3 : Integer, Integer, Integer -> Integer
     add3 (x) (y) (z) = x + y + z
