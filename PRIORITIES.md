@@ -368,6 +368,33 @@ the C# DDC witness path with zig -- C# stops at "compiles", zig RUNS.
 - **Finding 36** (python plug's TCO keys on name, not arity) -- filed in
   our register at MEDIUM confidence, reproducer NOT run. It is the
   fleet's lane, so it wants a `plugs-backlog.md` row once run.
+- **Finding 41** (riscv and java break the curried-application rule;
+  riscv's correct over-apply is in the tree and never called) -- THEIRS,
+  filed 2026-08-24. This is the strongest doc-only row in the queue: the
+  rule is already written at `DevelopersRulebook.md:256-260`, so the row
+  reports non-compliance against upstream's own stated contract rather
+  than proposing a design. Wants ONE `plugs-backlog.md` row covering
+  both plugs, and it should say plainly that the runtime consequence is
+  inferred from the emitted shape, not observed. Findings 36, 40 and 41
+  are one rule broken in four places; consider whether the row names the
+  rule once and lists the sites, which is likelier to get a ruling than
+  four separate reports.
+- **Finding 40** (ours, the zig plug's half of that same rule) -- the
+  design question is SETTLED and the fix is scoped: `emit-zig-apply`
+  needs a third branch for `args > ar`, chunked by each closure's arity
+  rather than one at a time, AND `emit-zig-name:1053-1057` must stop
+  eta-wrapping on the type-spine count. Both sites or neither. Tier 14
+  stays excluded until it lands. **One thing is predicted and not
+  measured**: that the `emit-zig-name` wrap actually misfires. Cheapest
+  check is transpile-only, no zig compile and no lock -- pass a
+  closure-returning definition as a bare value and grep the output for a
+  `CxFn3` wrapper containing `even_fn(p0, p1, p2)`.
+- **A one-line corpus fix would have caught all four.**
+  `codex/plugs/test-input/partial.codex` covers over-application of a
+  LOCAL but never of a named top-level definition, and
+  `test-plugs.ps1` never compiles what it emitted. Worth offering
+  upstream alongside the row -- it is the cheapest thing in this queue
+  and it is the reason the family drifted.
 - **Standing:** a finding in `findings/README.md` reaches Damian only
   when someone opens a PR carrying it. Nothing notifies anyone.
 - **Then: the refusal gaps** (item 4), rebased onto it.
