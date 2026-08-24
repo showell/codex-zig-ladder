@@ -1096,3 +1096,65 @@ have their own recursion), and whether the desugarer's nesting-depth
 recursion has a worse case than 297 in real source. The 512 MB stack
 should not be lowered on this evidence. What this shows is that its
 margin on the largest document we have is now 128x rather than 16x.
+
+
+## 38. A self tail call in a definition that returns a FUNCTION jumps to a poison address on bare metal
+
+**Found 2026-08-24 while writing tier 13, isolated the same hour. THEIRS
+-- bare metal, not the plug. OPEN. Reproducer:
+`findings/probe-closure-return.codex`, six lines of shapes.**
+
+    add3 : Integer, Integer, Integer -> Integer
+    add3 (x) (y) (z) = x + y + z
+
+    make-adder : Integer -> (Integer, Integer -> Integer)
+    make-adder (n) = add3 n                                    -- prints 47
+
+    count-down : Integer -> (Integer, Integer -> Integer)
+    count-down (n) = if n == 0 then add3 5
+                     else count-down (n - 1)                   -- FAULTS
+
+Both definitions return a closure -- `add3` applied to one of its three
+arguments. The first reaches it directly and answers `applied 47`. The
+second reaches it through a **self tail call**, and the seed-compiled
+binary takes a general protection fault:
+
+    applied 47
+    !EXC=0d RIP=a5f000ff53f000ff CR2=a5f000ff53f000ff
+            R13=000000000000000a R15=0000000000000019 RBP=000000003ffffff0
+
+`a5f000ff53f000ff` is a poison fill, not an address: the program jumped
+through a code pointer nothing ever wrote. No diagnostic, no CDX code --
+a register dump, which is what a Codex program's fault looks like.
+
+**The 2x2 is what makes it sharp.** Three cells are measured and the
+fourth is the crash:
+
+    return type   reached directly        reached by self tail call
+    Integer       fine (everywhere)       fine (tier 13, arg-swap et al)
+    a function    fine (make-adder, 47)   FAULTS (count-down)
+
+So neither ingredient is enough on its own. It takes a self tail call
+whose value is a closure.
+
+**Hypothesis, stated as one.** Bare metal has turned self tail calls into
+jumps since Update 30, which reuses the caller's frame; a closure built
+in that frame would be clobbered by the jump that is supposed to return
+it. That is consistent with a poison code pointer, but it is inference
+from the shape and the register dump, NOT something measured in the
+emitter -- `emit-expr`'s tail-position path and where a partial
+application's environment is allocated are what a fix would have to read.
+
+**Why nothing caught it.** Every `*-loop` in the compiler returns a
+value, not a function, so the compiler cannot reproduce this on itself,
+and the plug oracle's Lambdas section (added at Update 48 for
+COMPILER-13) exercises capture and application but not a self-recursive
+definition that RETURNS a closure. Our own tier 13 tried to and hit it
+by accident on its first run.
+
+**Confidence: HIGH.** Reproducible, minimal, and isolated by a control
+in the same file that answers correctly on the same arm in the same
+run. What is NOT established is the mechanism above, or whether the zig
+arm shares it: the zig arm cannot answer yet, because it refuses this
+shape at compile time (`fn make_adder(n: i64) CxFn2(i64, i64, i64)` --
+a separate gap, and ours).

@@ -1,0 +1,30 @@
+Chapter: ProbeClosureReturn
+
+ Minimal: does a definition whose RETURN TYPE is a function compile, and
+ what does bare metal do with it? Found while writing tier 13, where
+ `make-adder : Integer -> (Integer, Integer -> Integer)` dumped registers
+ on bare metal instead of answering or refusing.
+
+ Expected if the shape is legal: `applied 47` then `recursed 47`.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+  make-adder : Integer -> (Integer, Integer -> Integer)
+  make-adder (n) = add3 n
+
+ The same definition, but reaching its result through a SELF TAIL CALL.
+ Bare metal turns a self tail call into a jump; the value being returned
+ here is a closure rather than a word.
+
+  count-down : Integer -> (Integer, Integer -> Integer)
+  count-down (n) = if n == 0 then add3 5 else count-down (n - 1)
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("applied " & show (((make-adder 5) 20) 22))
+    print-line-uni ("recursed " & show (((count-down 3) 20) 22))
+  end
