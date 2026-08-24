@@ -1,0 +1,25 @@
+Chapter: ProbeClosureLuck2
+
+ probe-closure-luck faulted before printing anything, including its FIRST
+ line -- a line that printed 47 in probe-closure-solo. This drops only
+ the third statement to find out whether the fault really belongs to a
+ later statement, or whether output was simply lost.
+
+ Output is known to survive a fault: probe-closure-nocapture printed
+ `direct-bare 47` and then dumped registers. So if `a` and `b` print
+ here, the third statement in probe-closure-luck broke the first one.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+  make-adder : Integer -> (Integer, Integer -> Integer)
+  make-adder (n) = add3 n
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("a 47 expected: " & show (((make-adder 5) 20) 22))
+    print-line-uni ("b 6 expected: " & show (((add3 1) 2) 3))
+  end

@@ -1,0 +1,27 @@
+Chapter: ProbeClosureLuck
+
+ Tests whether the correct answer is luck. The chapter is
+ probe-closure-solo's, which printed 47. The driver evaluates the SAME
+ expression twice, with one unrelated call in between to disturb whatever
+ the registers happen to hold.
+
+ If a and c both read 47, the result is stable and the 47 is real.
+ If a reads 47 and c does not, then the value of an expression depends on
+ what ran before it, and every correct answer in this whole series is
+ provisional -- including the ones used as controls.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+  make-adder : Integer -> (Integer, Integer -> Integer)
+  make-adder (n) = add3 n
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("a 47 expected: " & show (((make-adder 5) 20) 22))
+    print-line-uni ("b 6 expected: " & show (((add3 1) 2) 3))
+    print-line-uni ("c 47 expected: " & show (((make-adder 5) 20) 22))
+  end

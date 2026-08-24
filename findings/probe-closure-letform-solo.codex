@@ -1,0 +1,29 @@
+Chapter: ProbeClosureLetformSolo
+
+ Separates the driver SHAPE from the chapter CONTENTS. This is
+ probe-closure-letform with relay-once removed, so the chapter is exactly
+ probe-closure-solo's and only the driver differs.
+
+ probe-closure-solo   chain driver, no relay-once  -> 47
+ probe-closure-letform  let driver, relay-once      -> 6291472
+ this probe           let driver, no relay-once     -> ?
+
+ 47 here means the chapter contents matter: relay-once's presence is what
+ breaks the let form. A heap address here means the let form is broken on
+ its own, relay-once is irrelevant, and solo's 47 came from the chain
+ form rather than from the chapter being clean.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+  make-adder : Integer -> (Integer, Integer -> Integer)
+  make-adder (n) = add3 n
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    let f = make-adder 5
+    in print-line-uni ("letform-solo " & show ((f 20) 22))
+  end

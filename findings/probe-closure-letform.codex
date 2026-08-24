@@ -1,0 +1,34 @@
+Chapter: ProbeClosureLetform
+
+ Same chapter as probe-closure-contagion -- make-adder plus a defined,
+ never-called relay-once -- with ONE thing changed: the driver binds the
+ intermediate closure to a local and applies both remaining arguments to
+ it, instead of writing one flattened chain from the global name.
+
+ The in-tree fixture codex/plugs/test-input/partial.codex:9-10 uses
+ exactly this shape, and it is the only shape the tree exercises.
+
+ `letform 47` means the chain form and the let form compile differently
+ and the defect is in the chain form's path, not in make-adder. A fault
+ means the two forms share it and the local binding is irrelevant.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+  make-adder : Integer -> (Integer, Integer -> Integer)
+  make-adder (n) = add3 n
+
+ Defined, never called. Present so this chapter matches
+ probe-closure-contagion, which faulted.
+
+  relay-once : Integer -> (Integer, Integer -> Integer)
+  relay-once (n) = make-adder n
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    let f = make-adder 5
+    in print-line-uni ("letform " & show ((f 20) 22))
+  end
