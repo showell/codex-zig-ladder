@@ -68,3 +68,4 @@ ringplug-source-check.codex
 .agentgrid
 !logs/INDEX.md
 findings/.tier-run/
+ast/.stack-probe/
