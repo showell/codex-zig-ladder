@@ -91,9 +91,13 @@ def document(kind, rel):
 
 def build(src_text, mb, work):
     """One binary at one stack size. Returns its path."""
-    patched = STACK_RE.sub(f'const stack_bytes: usize = {mb} * 1024 * 1024;', src_text, count=1)
-    if patched == src_text:
-        raise SystemExit('stack_probe: the stack constant did not change; '
+    # Count the substitutions rather than diffing the text: at the emitter's
+    # own 512 MB the patched source is byte-identical to the original, and a
+    # diff-based guard reads that as a failure to find the constant.
+    patched, n = STACK_RE.subn(f'const stack_bytes: usize = {mb} * 1024 * 1024;',
+                               src_text, count=1)
+    if n != 1:
+        raise SystemExit('stack_probe: the stack constant was not found; '
                          'zig-main\'s shape moved and this probe is reading '
                          'the wrong line. Fix STACK_RE before trusting a number.')
     zsrc = work / f'stack{mb}.zig'
