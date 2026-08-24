@@ -1,0 +1,24 @@
+Chapter: ProbeClosureArity2Solo
+
+ Control for the two arity-2 probes, which produced byte-identical faults
+ and so may both be failing for a reason that has nothing to do with what
+ they meant to vary. Here `make2` stands alone: nothing names it.
+
+ `solo2 53` means make2 is sound by itself and the two arity-2 probes
+ really were discriminating. A fault means make2 is broken with nothing
+ naming it at all, both arity-2 probes are void, and the saturation
+ question is still open.
+
+Section: Shapes
+
+  add4 : Integer, Integer, Integer, Integer -> Integer
+  add4 (w) (x) (y) (z) = w + x + y + z
+
+  make2 : Integer, Integer -> (Integer, Integer -> Integer)
+  make2 (a) (b) = (add4 a) b
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("solo2 53 expected: " & show ((((make2 5) 6) 20) 22))
+  end

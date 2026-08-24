@@ -1,0 +1,28 @@
+Chapter: ProbeClosureArity2Sat
+
+ Positive control at arity 2. `make2` takes two parameters and returns a
+ function. `sat2` names it with BOTH -- a complete call -- and is never
+ called itself. The driver exercises only make2.
+
+ A fault reproduces the saturated-naming effect at an arity other than 1,
+ and pairs with probe-closure-arity2-unsat, which names the same
+ definition incompletely.
+
+Section: Shapes
+
+  add4 : Integer, Integer, Integer, Integer -> Integer
+  add4 (w) (x) (y) (z) = w + x + y + z
+
+  make2 : Integer, Integer -> (Integer, Integer -> Integer)
+  make2 (a) (b) = (add4 a) b
+
+ Names make2 with 2 of its 2 parameters. Defined, never called.
+
+  sat2 : Integer -> (Integer, Integer -> Integer)
+  sat2 (n) = (make2 n) n
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("sat 53 expected: " & show ((((make2 5) 6) 20) 22))
+  end

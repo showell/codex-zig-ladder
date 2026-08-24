@@ -1,0 +1,29 @@
+Chapter: ProbeClosureArity2Unsat
+
+ The discriminator. Same `make2` as the saturated probe, but `half` names
+ it with ONE of its two parameters -- a genuinely incomplete call, the
+ same situation `add3` is in everywhere `add3` survives.
+
+ `unsat 53` means SATURATION is the trigger: naming a definition
+ incompletely is harmless, naming it completely corrupts it.
+ A fault means merely being named by a partial application is enough,
+ and saturation is not the discriminator after all.
+
+Section: Shapes
+
+  add4 : Integer, Integer, Integer, Integer -> Integer
+  add4 (w) (x) (y) (z) = w + x + y + z
+
+  make2 : Integer, Integer -> (Integer, Integer -> Integer)
+  make2 (a) (b) = (add4 a) b
+
+ Names make2 with 1 of its 2 parameters. Defined, never called.
+
+  half : Integer -> (Integer -> (Integer, Integer -> Integer))
+  half (n) = make2 n
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("unsat 53 expected: " & show ((((make2 5) 6) 20) 22))
+  end
