@@ -1132,7 +1132,9 @@ dependent class in the sort, and no per-definition growth.
 
 **Found 2026-08-24 by an independent read of the plug family while
 settling finding 40's open question. THEIRS -- `codex/plugs/riscv` and
-`codex/plugs/java`, no ladder arm in the path. OPEN, not sent.**
+`codex/plugs/java`, no ladder arm in the path. OPEN. SENT as PR 80
+(plugs-backlog 1.57), doc-only, off `upstream/master` 5b8091e2, ladder
+tag `curried-apply`.**
 
 `docs/DevelopersRulebook.md:256-260` requires three cases of a plug that
 knows the callee's arity: flat at that arity, under-applied with one

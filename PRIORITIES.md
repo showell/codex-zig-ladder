@@ -368,17 +368,20 @@ the C# DDC witness path with zig -- C# stops at "compiles", zig RUNS.
 - **Finding 36** (python plug's TCO keys on name, not arity) -- filed in
   our register at MEDIUM confidence, reproducer NOT run. It is the
   fleet's lane, so it wants a `plugs-backlog.md` row once run.
-- **Finding 41** (riscv and java break the curried-application rule;
-  riscv's correct over-apply is in the tree and never called) -- THEIRS,
-  filed 2026-08-24. This is the strongest doc-only row in the queue: the
-  rule is already written at `DevelopersRulebook.md:256-260`, so the row
-  reports non-compliance against upstream's own stated contract rather
-  than proposing a design. Wants ONE `plugs-backlog.md` row covering
-  both plugs, and it should say plainly that the runtime consequence is
-  inferred from the emitted shape, not observed. Findings 36, 40 and 41
-  are one rule broken in four places; consider whether the row names the
-  rule once and lists the sites, which is likelier to get a ruling than
-  four separate reports.
+- **PR 80** -- finding 41, the curried-application rule, SENT
+  2026-08-24 as one `plugs-backlog.md` row (1.57) off `upstream/master`
+  5b8091e2, ladder tag `curried-apply`. Doc-only: THEIRS, and the fix is
+  theirs to choose. Asks ONE ruling -- whether over-application is
+  required of every plug that keeps an arity map, or whether some are
+  exempt and `:258` should say which. The row states in its own text
+  that riscv's and java's runtime consequence is INFERRED from the
+  dispatch code, because the plug harness is PowerShell and this host has
+  none. Every line citation was re-verified against 5b8091e2, the PR's
+  base, rather than the tree the finding was made on -- the trees agreed,
+  but PR 78 is why that is now a step. Open, not landed.
+- **Finding 36** is the same rule broken at a fourth site (python plug's
+  TCO keying on name) and is still unsent; if PR 80 draws a ruling, 36
+  and 40 both follow from it rather than needing their own arguments.
 - **Finding 40** (ours, the zig plug's half of that same rule) -- the
   design question is SETTLED and the fix is scoped: `emit-zig-apply`
   needs a third branch for `args > ar`, chunked by each closure's arity
