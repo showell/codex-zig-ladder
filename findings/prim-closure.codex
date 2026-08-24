@@ -62,11 +62,17 @@ Chapter: PrimClosure
  admitted in gold/EXPECTED.txt, and it is the whole point of the file
  that the admission becomes STALE the day the arms agree.
 
+ The two spaces before each value are load-bearing: tier_run's line_key
+ splits a row on the first double space, so a single space would key the
+ ledger on `under-mutual not-47` -- value included -- and the admission
+ would stop matching the moment the value it names changes, which is the
+ one moment it has to speak.
+
  Expected on bare metal:
 
-   control-flat 47
-   control-pick 47
-   under-mutual not-47
+   control-flat  47
+   control-pick  47
+   under-mutual  not-47
 
 Section: Shapes
 
@@ -95,7 +101,7 @@ Section: Shapes
 Section: Driver
 
   opening : [Console] Nothing = act
-    print-line-uni ("control-flat " & show (add3 5 20 22))
-    print-line-uni ("control-pick " & (if (((pick 0) 20) 22) == 47 then "47" else "not-47"))
-    print-line-uni ("under-mutual " & (if (((even-fn 4) 20) 22) == 47 then "47" else "not-47"))
+    print-line-uni ("control-flat  " & show (add3 5 20 22))
+    print-line-uni ("control-pick  " & (if (((pick 0) 20) 22) == 47 then "47" else "not-47"))
+    print-line-uni ("under-mutual  " & (if (((even-fn 4) 20) 22) == 47 then "47" else "not-47"))
   end
