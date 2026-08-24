@@ -337,9 +337,9 @@ Ready or nearly so:
 - **Finding 40's fix**, branch `zig-plug-curried-apply` (`835639b7`, off
   `8cb8a0e4`), NOT sent. Both sites in one commit: `emit-zig-apply`
   gains an `args > ar` branch, and `zig-closure-make` stops passing
-  type-spine parameters flat. Tier 14 is back in the set and the set is
-  green; **what it waits on is the sweep**, because an emitter change
-  that has only passed its own reproducer has not been priced. When it
+  type-spine parameters flat. **VERIFIED 2026-08-24 and ready to send:**
+  tier set green at 22, sweep 14/14 green, census unmoved, and the bank
+  a zero-byte diff against `truth/u49`. Ladder tag wants cutting. When it
   goes it is a sibling of PR 81, stacked on 77, not stacked on 81.
 - **Finding 36** (python plug's TCO keys on name, not arity) -- MEDIUM
   confidence, reproducer NOT run, wants a `plugs-backlog.md` row once it

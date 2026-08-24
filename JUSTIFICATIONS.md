@@ -257,3 +257,37 @@ plug has always descended into an act's last statement and ours did
 not. The two plugs disagreed about what a tail position is, and the arm
 ends the disagreement. No stack saving for upstream is evidenced here,
 and none should be claimed.
+
+## The curried-apply fix does not move bare metal either (2026-08-24)
+
+Finding 40's fix is two sites in `ZigEmitter.codex` and nothing else, so
+the question a sweep answers about it is the narrow one: does correcting
+how an over-applied definition is CALLED change what the compiler emits
+anywhere else. It does not.
+
+Sandbox `20260824T220516Z-f40-fix2`, ladder `91020ad`, codex `835639b7`
+(off PR 77's `8cb8a0e4`), seed `a01c1547e92eb0d0`.
+
+    tiers    22 tiers, SET GREEN (prim-closure rejoined)
+    rebank   12 units, 1637 s
+    sweep    14/14 rungs green, 657 s
+    census   CDX6020 x43, unmoved
+    bare     14/14 byte-identical to truth/u49
+
+The bare-metal row is the one that prices the change. The truths in this
+run came off the seed compiler with the fix in the tree, and every one
+matches the bank taken before it; `bank_truth.py` then produced a
+zero-byte diff, which checks the same claim through the provenance gate
+rather than through the sweep's own comparison.
+
+The tier that motivated the fix now reads as designed: `control-flat` and
+`control-pick` agree across the arms, `under-mutual` answers 47 here and
+`not-47` on bare metal, and that single row is admitted in
+`gold/EXPECTED.txt` as COMPILER-18. It is the detector arming, not a
+workaround -- the day bare metal keeps the arity the arms agree and the
+mark turns `??`.
+
+Cost note for the ERGONOMICS queue: of the ~38 minutes this took, 27 were
+the rebank, and the rebank was needed only to produce `.ir` files. The
+seed did not change and bare metal was never in question. That is the
+measurement behind `ast/ensure_ir.sh`.
