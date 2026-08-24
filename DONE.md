@@ -6,6 +6,17 @@ findings register, JUSTIFICATIONS.md, a bank, an essay). If an entry
 needs a paragraph, it needs a register section or a JUSTIFICATIONS entry
 instead -- write that and point at it.
 
+- **2026-08-24 — The ring's soda straw was Nagle** (`9b05e72`
+  telemetry, `961438c` the fix): PRIORITIES 5.4 asked which side capped
+  the refill at 28 KB/s. Neither candidate it named. The guest drained
+  the whole 1 MB ring inside a 191 ms wait, and the 150 ms poll was 0.4%
+  of a round; the host was spending 41 ms on every gdbstub round trip,
+  payload-independent, because `cmd()` acks with a bare `+` and Nagle
+  held the next packet until a delayed ACK arrived 40 ms later. One
+  `TCP_NODELAY` took the 2.9 MB compiler's fill from 76.2 s to 0.7 s,
+  109x. `ring_refill_test.sh` passes with it set. Record: `961438c`
+  carries both measurements; the per-refill telemetry is now standing
+  instrumentation in the refill loop.
 - **2026-08-23 — The rung rename, verified** (`262ad8e` prep, `f94db81`
   atomic, `3b349a4` prose, README rewritten `538b5cd`/`a3d7d1b`, gate
   `c6364a9`): fib/text/pingpong/lir/fibx/scale/whole/clamp became

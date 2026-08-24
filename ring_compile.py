@@ -48,7 +48,7 @@ class Gdb:
         # packet as a separate small write, which is exactly the pattern
         # Nagle holds until the "+" is acknowledged -- and the peer sits
         # on that ack for 40 ms. Measured on the 2.9 MB compiler source
-        # (PRIORITIES 5.4): 41 ms per 1 KB M packet, giving 25 KB/s and
+        # (DONE 2026-08-24): 41 ms per 1 KB M packet, giving 25 KB/s and
         # 99% of a ring fill spent writing, against a guest draining the
         # whole 1 MB ring in under 191 ms. The stall was the transport,
         # not the ring, the poll interval, or the guest.
@@ -201,13 +201,18 @@ def compile_ring(blob_path, out_path, mem_mb=MEM_MB, timeout=1800, seed=None):
             stalled = 0
             last_rpos = -1
             t_fill = time.time()
-            # PRIORITIES 5.4, which side is the soda straw. Room free at
-            # wake is what the guest drained while the host slept; the
-            # write duration is what the gdbstub costs to put it back.
-            # Rounds that are mostly wait, freeing little room, mean a
-            # guest-bound ring that is already fine as it is; rounds that
-            # are mostly write mean the host is the cap. The 150 ms sleep
-            # stays until this says which.
+            # Room free at wake is what the guest drained while the host
+            # slept; the write duration is what the gdbstub costs to put
+            # it back. That pair is what convicted Nagle on the gdb
+            # socket (see Gdb.__init__), and it stays because a transport
+            # this fast is one regression away from being slow again
+            # without anything else noticing.
+            #
+            # With NODELAY the 2.9 MB compiler fills in 0.7 s and the
+            # guest still drains the whole ring between polls, so the
+            # 150 ms sleep is now the larger half of a negligible cost.
+            # Shortening it buys tenths of a second on a compile measured
+            # in minutes; it is not worth the extra guest stops.
             t_write_total = 0.0
             rounds = 0
             dry_rounds = 0

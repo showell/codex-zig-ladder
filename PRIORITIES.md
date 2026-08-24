@@ -176,34 +176,6 @@ ranking that sets priorities however often they bite. The systemic fix --
 every unhandled construct refuses by name -- is worth more than any one
 of them. Item 4's census is where the count would show.
 
-## 5.4. Is the ring's soda straw actually full?
-
-**Objective: instrument work, then maybe a cheap win.** Measured in
-passing 2026-08-24 while the `ir_to_x86` zig arm ran: the ring moved
-about **28 KB/s** (two 1 MB refills in 75 s) while QEMU sat near 0% CPU,
-`wa=0` and load average near zero. Idle on both sides usually means
-someone is sleeping, and `ring_compile.py`'s refill loop does
-`time.sleep(0.15)` on every poll regardless of state -- it refills
-whenever there is ANY room, which is right, but it learns about freed
-room up to 150 ms late, every time.
-
-**Do not change the sleep before measuring which side is the cap.** Two
-possibilities and they want opposite fixes: if the guest is decode-bound
-under TCG the sleep costs nothing and the real lever is a smaller
-subject (item: the tree-shaker question, `bundle_reach.py`); if the host
-is arriving late, the guest idles on an empty ring and an adaptive poll
-is a free win.
-
-**The discriminator is a few lines:** log, per refill, how much room was
-free at wake and how long the write took. Room consistently large at
-wake = host arriving late. Room small = guest is the cap and the ring is
-fine as it is. One rung's run answers it.
-
-**Distrust the casual reading here, including mine.** `top -bn1` reports
-0% on its first sample, and a 20-second window over a ~35-second refill
-interval already reported "no progress" on a healthy job earlier the
-same day.
-
 ## 5.5. The stack is measured now, and the emitter's prose about it is wrong
 
 **Objective: instrument work already half done.** `stack_probe.py` (item
