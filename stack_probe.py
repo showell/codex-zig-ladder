@@ -103,7 +103,7 @@ def build(src_text, mb, work):
     zsrc = work / f'stack{mb}.zig'
     zsrc.write_text(patched)
     out = work / f'stack{mb}'
-    r = subprocess.run([zig(), 'build-exe', str(zsrc), '-femit-bin', str(out)],
+    r = subprocess.run([zig(), 'build-exe', str(zsrc), f'-femit-bin={out}'],
                        capture_output=True, text=True, cwd=work)
     if r.returncode != 0:
         raise SystemExit(f'stack_probe: zig refused the patched source at {mb} MB:\n'
