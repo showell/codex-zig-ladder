@@ -64,7 +64,7 @@ def main():
     show_all = '--all' in sys.argv
     if not SUBJECT.is_file():
         raise SystemExit(f'no {SUBJECT} -- bundle the passes_to_x86 unit first '
-                         '(ast/bundle_whole.ps1), since the count is against real source')
+                         '(ast/bundle_passes_to_x86.ps1), since the count is against real source')
 
     names = sorted(set(re.findall(r'ZigBuiltinEmitter \{ name = "([^"]+)"',
                                   EMITTER.read_text())))

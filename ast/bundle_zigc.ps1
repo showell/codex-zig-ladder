@@ -1,8 +1,8 @@
 # The hosted-compiler subject: the whole rung's chapters, a different driver.
-# Identical chapter set to bundle_whole.ps1 for the same reason that one
-# wraps bundle_fibx.ps1 -- one list, kept in one place.
+# Identical chapter set to bundle_passes_to_x86.ps1 for the same reason
+# that one wraps bundle_ir_to_x86.ps1 -- one list, kept in one place.
 $ErrorActionPreference = 'Stop'
-& (Join-Path $PSScriptRoot 'bundle_fibx.ps1') `
+& (Join-Path $PSScriptRoot 'bundle_ir_to_x86.ps1') `
     -Harness 'ZigcHarness.codex' `
     -OutName 'zigc-subject.codex' `
     -PlugName 'zigc-subject' `
