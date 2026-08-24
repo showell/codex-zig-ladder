@@ -1,0 +1,28 @@
+Chapter: ProbeClosureRelay
+
+ Does the closure have to be BUILT in the tail-recursive definition, or
+ merely returned by it? Here the base case calls another definition that
+ makes the closure, so the trampoline in the recursive definition targets
+ `make-adder` rather than a leaf like `add3`.
+
+ `relayed 47` means what matters is building the closure in a
+ tail-recursive definition, not returning one from it. A fault means any
+ function-returning tail-recursive definition is affected regardless of
+ where the closure comes from, which widens the predicate.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+  make-adder : Integer -> (Integer, Integer -> Integer)
+  make-adder (n) = add3 n
+
+  count-relay : Integer -> (Integer, Integer -> Integer)
+  count-relay (n) = if n == 0 then make-adder 5 else count-relay (n - 1)
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("relayed " & show (((count-relay 3) 20) 22))
+  end

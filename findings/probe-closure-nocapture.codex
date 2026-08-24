@@ -1,0 +1,36 @@
+Chapter: ProbeClosureNocapture
+
+ Do the CAPTURES matter? A definition returning a bare function name still
+ goes through emit-partial-application (X86_64.codex:2219 routes a bare
+ FunTy name to emit-partial-application st name []), so the inline
+ trampoline is still emitted and the closure is still one word -- the code
+ pointer -- but nothing is captured and emit-store-closure-captures does
+ nothing.
+
+ `tco-bare 47` means captures are required, and the capture store is the
+ suspect. A fault means captures are irrelevant and the trampoline or the
+ code-pointer word is, which is a much narrower place to look.
+
+ The expected-fine cell is driven first: a fault halts the program.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+ Reached directly, no self call anywhere in the definition.
+
+  give-add3 : Integer -> (Integer, Integer, Integer -> Integer)
+  give-add3 (n) = add3
+
+ Contains a self tail call, returns the same bare function.
+
+  count-bare : Integer -> (Integer, Integer, Integer -> Integer)
+  count-bare (n) = if n == 0 then add3 else count-bare (n - 1)
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("direct-bare " & show ((((give-add3 1) 5) 20) 22))
+    print-line-uni ("tco-bare " & show ((((count-bare 3) 5) 20) 22))
+  end
