@@ -112,8 +112,13 @@ Left, in order:
   through arms it already has, so the branch it receives should not
   carry ours.
 - **A `compiler-backlog.md` row**, which is how a finding reaches Damian
-  at all. Findings 37 and 38 both want one; 38 is a bare-metal fault
-  with a six-line reproducer and is the more valuable of the two.
+  at all. **Finding 38's is SENT: PR 78, COMPILER-18**, doc-only, off
+  `upstream/master` 5b8091e2, `Ladder:` line naming ladder tag
+  `finding-38`. That PR is the worked example of the route, and it is
+  where the numbering now stands. **Finding 37 still wants its row**,
+  and unlike 38 it is not doc-only -- the fix is a change to
+  `Syntax/Parser.codex`, so the branch carries the restructure and the
+  row together. Draft in `BACKLOG-ROW-37.md`.
 
 ## 4. The refusal-gaps branch, rebased and re-verified
 
@@ -303,9 +308,17 @@ the C# DDC witness path with zig -- C# stops at "compiles", zig RUNS.
   Filed, not landed.
 - **Finding 33's fix** -- `zig-plug-tail-calls` pushed to the fork, NOT
   sent. Item 3 says what it wants first.
-- **Finding 37's fix** -- `parser-scan-self-recursive`, unmeasured. Item
-  3.5. This is compiler code rather than plug code, so it goes as a
-  small branch plus a `compiler-backlog.md` row, not as a ladder finding.
+- **PR 78** -- finding 38, the self-tail-call-returning-a-closure fault,
+  sent 2026-08-24 as one `compiler-backlog.md` row (COMPILER-18) off
+  `upstream/master` 5b8091e2. Doc-only: THEIRS, and we have no fix. Open,
+  not landed. It deliberately does NOT add the pinning row to
+  `codex/test/plug-oracle-arith.codex`'s Lambdas section -- that would
+  hand Damian a red arm -- but the row says where it would go.
+- **Finding 37's fix** -- `parser-scan-self-recursive`. Item 3.5.
+  MEASURED now (32 MB -> 4 MB, sweep 14/14 green); what is left is the
+  rebase onto the u49 pin and the row. This is compiler code rather than
+  plug code, so it goes as a small branch plus a `compiler-backlog.md`
+  row, not as a ladder finding.
 - **Finding 36** (python plug's TCO keys on name, not arity) -- filed in
   our register at MEDIUM confidence, reproducer NOT run. It is the
   fleet's lane, so it wants a `plugs-backlog.md` row once run.

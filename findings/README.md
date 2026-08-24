@@ -1126,8 +1126,10 @@ dependent class in the sort, and no per-definition growth.
 ## 38. A self tail call in a definition that returns a FUNCTION jumps to a poison address on bare metal
 
 **Found 2026-08-24 while writing tier 13, isolated the same hour. THEIRS
--- bare metal, not the plug. OPEN. Reproducer:
-`findings/probe-closure-return.codex`, six lines of shapes.**
+-- bare metal, not the plug. OPEN upstream; SENT 2026-08-24 as PR 78,
+where it is COMPILER-18. Reproducer:
+`findings/probe-closure-return.codex`, six lines of shapes; the tree the
+PR points at is ladder tag `finding-38`.**
 
     add3 : Integer, Integer, Integer -> Integer
     add3 (x) (y) (z) = x + y + z
@@ -1169,6 +1171,23 @@ it. That is consistent with a poison code pointer, but it is inference
 from the shape and the register dump, NOT something measured in the
 emitter -- `emit-expr`'s tail-position path and where a partial
 application's environment is allocated are what a fix would have to read.
+
+**Read from source while writing PR 78, still not measured.** `emit-apply`
+(`Emit/X86_64Compound.codex:148`) tests
+`st.tco.active & saved-tail & is-self-call` FIRST and routes straight to
+`emit-tail-call`, which shuffles the arguments into the parameter slots
+and `jmp`s to `loop-top`. That short-circuits ahead of every arity and
+result-type decision below it in the same function -- including the
+`is FunTy` arm that sends `make-adder`'s body to
+`emit-partial-application`. And `is-self-call` (`Emit/X86_64.codex:75`)
+walks the `IrApply` chain to its `IrName` and matches on NAME alone: no
+arity test, no return-type test. So the two cells of the 2x2 that differ
+are reached through different code, and the faulting one skips the arm
+the working one takes. That names the asymmetry; it does not establish
+that the environment is what gets clobbered. Where `build-partial-app`
+(`IR/LambdaLifting.codex:312`) allocates relative to the reused frame is
+the next thing to read. Note the name-only rule is the same shape as
+finding 36 in the python plug.
 
 **Why nothing caught it.** Every `*-loop` in the compiler returns a
 value, not a function, so the compiler cannot reproduce this on itself,
