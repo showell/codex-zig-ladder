@@ -130,8 +130,9 @@ rather than an argument.
   with `@setEvalBranchQuota` already needed for the emitter's big literals.
   Probably fine, not known.
 
-None of the four has been tried. The symbol counts and the seam are read
-from the emitted files; everything after that is design, not measurement.
+None of these has been tried, and nor has the reclaim above. The symbol
+counts, the seam, and the heap primitives are read from the emitted files;
+everything built on top of them is design, not measurement.
 
 ## The pitch, if it is ever made
 
