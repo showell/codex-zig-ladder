@@ -94,17 +94,40 @@ truth sidecars hash that file whole, so adding to it would invalidate
 every recorded truth's provenance, which is the item below biting the
 first change that would have edited it.
 
-What is left is the part that makes it real:
+**AND IT IS NOT ENOUGH -- checked 2026-08-24 before running it.** The
+`.ir` is only half of what a fresh sandbox is missing. `zig_verdict`
+diffs the arm against the WORKING `ast/<rung>.truth` and calls
+`truth_prov.py check` on it first; a fresh sandbox has neither the truth
+nor its sidecar, so the sweep still cannot start. Measured in sandbox
+`20260824T225947Z-ensure-ir-test`: 0 working truths, 0 sidecars, 14
+truths sitting in the bank, and `truth_prov.py check lex` answering
+`STALE TRUTH for lex: no provenance sidecar (rerun the truth arm)`.
 
-- **Run it.** A fresh sandbox, no natives needed, `allcycles.sh` alone.
-  Until that happens this is syntax-checked reasoning, not a feature.
-- **Get the number.** The claim is that ~27 of ~38 minutes comes back.
-  Measure it rather than repeating the estimate.
-- **Decide what the census should do.** It currently declines to compare
-  when any IR was rebuilt, because the pinned counts were taken over
-  both halves of every unit and a smaller population under-counts every
-  pin. That is honest but it means a cheap sweep has no census at all;
-  the banked-diagnostics item below is what would fix it properly.
+So the item is blocked on a decision about provenance, not on code:
+
+- **The truths the sweep wants ARE in the bank**, and the bank is the
+  ladder's oracle across Updates -- comparing today's plug against it is
+  the premise, not a shortcut. What stops a restore is that the sidecar
+  cannot be reconstructed: it records the seed AND the harness-content
+  hash the truth was measured under, and **`truth/uNN/SEED` records only
+  the seed** (sha, bytes, Update number).
+- **The clean fix is to make the bank carry what it was measured under.**
+  `bank_truth.py` already reads each sidecar to decide a truth is
+  bankable; writing that harness hash into the bank costs nothing at bank
+  time and makes a restored truth fully checkable afterwards. Existing
+  banks lack it; u49 could be re-stamped from the sandbox that produced
+  it, which still exists.
+- **The alternative is to restore on seed alone** and mark the sweep as
+  bank-restored, which is weaker and would have to say so in the summary
+  the way the census note already does. **Steve's call** -- it loosens a
+  gate that exists because a truth from another seed diffs just as
+  confidently as a fresh one.
+
+Still owed either way: **run it and get the number.** The claim is that
+~27 of ~38 minutes comes back, and that is an estimate until a sweep
+does it. Also unresolved: the census currently declines to compare when
+any IR was rebuilt, which is honest and leaves a cheap sweep with no
+census at all; the banked-diagnostics item below is the real answer.
 
 ## 2. Launching a detached job is a foot-gun with a live tripwire
 
