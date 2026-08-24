@@ -80,15 +80,31 @@ emitter change pays a full rebank first -- roughly 27 minutes of truth arm
 to produce inputs the bank could have provided -- before the 11 minutes
 that answer the question actually asked.
 
-Make `allcycles.sh` REGENERATE a refused or missing `.ir` instead of
-stopping: `ring_compile.py` per unit plus `stamp-ir` is the whole cost.
 The f35 chain lost a run to this on 2026-08-23, and the finding-40 fix
 paid the full 27 minutes for it on 2026-08-24 with an unchanged seed and
 an unchanged bare-metal arm -- nothing about the rebank was in question,
-it was there to make files.
+it was there to make files. It is charged against every emitter change,
+which is the change we make most.
 
-This is the highest-leverage item in the queue: it is charged against
-every emitter change, which is the change we make most.
+**WRITTEN, NOT RUN (`ed6abff`).** `ast/ensure_ir.sh` is the truth arm's
+first half -- bundle, IR-CCE blob, `ring_compile`, `stamp-ir` -- and
+`allcycles.sh` calls it for any unit whose `.ir` is missing or refused.
+A new file rather than a function in `oracle_lib.sh` on purpose: the
+truth sidecars hash that file whole, so adding to it would invalidate
+every recorded truth's provenance, which is the item below biting the
+first change that would have edited it.
+
+What is left is the part that makes it real:
+
+- **Run it.** A fresh sandbox, no natives needed, `allcycles.sh` alone.
+  Until that happens this is syntax-checked reasoning, not a feature.
+- **Get the number.** The claim is that ~27 of ~38 minutes comes back.
+  Measure it rather than repeating the estimate.
+- **Decide what the census should do.** It currently declines to compare
+  when any IR was rebuilt, because the pinned counts were taken over
+  both halves of every unit and a smaller population under-counts every
+  pin. That is honest but it means a cheap sweep has no census at all;
+  the banked-diagnostics item below is what would fix it properly.
 
 ## 2. Launching a detached job is a foot-gun with a live tripwire
 
