@@ -1,0 +1,43 @@
+Chapter: ProbeClosureCapture
+
+ Finding 38's 2x2 has a confound, spotted in review: its two cells differ
+ in HOW the closure is reached (directly vs by a self tail call) but also
+ in WHAT the closure captures. `make-adder (n) = add3 n` captures a
+ PARAMETER; `count-down`'s base case `add3 5` captures a LITERAL. The
+ suspected mechanism turns on where a partial application's environment
+ is allocated relative to the reused frame, so capture provenance is
+ exactly the axis that should have been held fixed.
+
+ This closes the grid. Two cells, both new:
+
+   reached directly,  captures a literal   -- make-adder-lit, expected fine
+   self tail call,    captures a parameter -- count-up, UNKNOWN
+
+ A fault halts the program, so the expected-fine cell is driven first and
+ the unknown second. `applied-lit 47` alone means count-up faulted and the
+ self tail call is the discriminator, exactly as finding 38 claims. Both
+ lines means capture provenance is the discriminator instead, and finding
+ 38's headline is wrong.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+ Reached directly, but capturing a literal rather than its parameter.
+
+  make-adder-lit : Integer -> (Integer, Integer -> Integer)
+  make-adder-lit (n) = add3 5
+
+ Reached by a self tail call, but capturing a parameter rather than a
+ literal. Counts UP so the base case closes over `n` and not a constant.
+
+  count-up : Integer -> (Integer, Integer -> Integer)
+  count-up (n) = if n == 5 then add3 n else count-up (n + 1)
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("applied-lit " & show (((make-adder-lit 5) 20) 22))
+    print-line-uni ("captured-param " & show (((count-up 0) 20) 22))
+  end

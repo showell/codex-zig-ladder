@@ -1,0 +1,29 @@
+Chapter: ProbeClosureBasecase
+
+ Finding 38 says the fault needs a self tail call to be EXECUTED. This
+ asks whether it needs one at all, or only needs the definition to
+ contain one.
+
+ `count-down 0` takes the base case immediately: the recursive arm is
+ never entered, so no jump to loop-top ever happens, but the definition
+ still contains a self tail call and so is still compiled with TCO
+ active. Finding 38's own reproducer only ever called `count-down 3`.
+
+ `basecase 47` means the tail call must actually run, and finding 38's
+ headline stands. A fault means the defect is about a function-returning
+ definition being compiled with TCO active at all, the executed jump is
+ incidental, and the headline is wrong.
+
+Section: Shapes
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (x) (y) (z) = x + y + z
+
+  count-down : Integer -> (Integer, Integer -> Integer)
+  count-down (n) = if n == 0 then add3 5 else count-down (n - 1)
+
+Section: Driver
+
+  opening : [Console] Nothing = act
+    print-line-uni ("basecase " & show (((count-down 0) 20) 22))
+  end
