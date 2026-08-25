@@ -14,6 +14,12 @@ param(
     # real painter; everything else about the unit is identical, so it stays
     # one list rather than two that have to be kept in step.
     [string[]]$ExtraChapters = @(),
+    # Sections to drop from a named ExtraChapter. A plug chapter carries its
+    # own copies of helpers it cannot cite when it is bundled standalone; in a
+    # bundle that already has the originals those copies are duplicates, and a
+    # duplicate TYPE is CDX3001, a hard error. Same mechanism the BootPaint and
+    # AstNodes 'Deck Copies' drop already use.
+    [hashtable]$ExtraDrops = @{},
     [string]$BootPaint = 'BootPaintStubs.codex'
 )
 $ErrorActionPreference = 'Stop'
@@ -116,7 +122,8 @@ foreach ($ch in @('codex/compiler/Core/OffsetTable.codex',
 # names a chapter, so the unit has to carry one. See BootPaintStubs.codex for
 # why it is a stub and not the real 341-line screen painter.
 foreach ($ch in $ExtraChapters) {
-    Add-PlugChapter -Lines $lines -Path (Join-Path $repo $ch) -Quire 'Parsmi'
+    $drop = if ($ExtraDrops.ContainsKey($ch)) { $ExtraDrops[$ch] } else { @() }
+    Add-PlugChapter -Lines $lines -Path (Join-Path $repo $ch) -Quire 'Parsmi' -DropSections $drop
 }
 $bootPaintPath = if ($BootPaint -match '/') { Join-Path $repo $BootPaint } else { Join-Path $here $BootPaint }
 Add-PlugChapter -Lines $lines -Path $bootPaintPath -Quire 'Parsmi'
