@@ -83,25 +83,14 @@ take_compute_lock() {
     export LADDER_COMPUTE_LOCK=$$
     # The lock only binds processes that take it. Until nothing computes
     # without it, a legacy job beside a free lock reads as protection it
-    # is not (process review D3) -- so also refuse on the evidence of
-    # the processes themselves. Our own ancestor chain and immediate
-    # children are excluded: the caller's own command line matches these
-    # very patterns, and so can the shell that launched it.
-    local anc="" p=$$
-    while [ -n "$p" ] && [ "$p" -gt 1 ]; do
-        anc="$anc $p"
-        p=$(ps -o ppid= -p "$p" 2>/dev/null | tr -d ' ')
-    done
-    local running
-    running=$(ps -eo pid=,ppid=,args= | awk -v anc="$anc" -v self=$$ '
-            BEGIN { n = split(anc, a); for (i = 1; i <= n; i++) skip[a[i]] = 1 }
-            !(($1 in skip) || $2 == self)' \
-        | grep -E 'qemu-system|rebank_all|allcycles\.sh|corpus_run|native_build' \
-        | grep -v grep | head -1)
-    [ -n "$running" ] && {
-        echo "COMPUTE JOB RUNNING WITHOUT THE LOCK -- refusing beside: $running"
-        exit 1
-    }
+    # is not (process review D3) -- so also refuse on the evidence of the
+    # processes themselves. ONE spelling of what that evidence IS, in
+    # compute_lock.py: this was a second one in awk, kept in step with
+    # the Python by hand, and both were wrong the same way -- they
+    # matched a job's name anywhere in a process's argv, so a shell that
+    # merely NAMED a script read as the script running. job_program
+    # there carries the rule and the two runs it refused.
+    python3 "$T/compute_lock.py" --evidence || exit 1
     return 0
 }
 

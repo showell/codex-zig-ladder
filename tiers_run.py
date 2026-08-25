@@ -177,6 +177,12 @@ def main():
     # normal two-column run with the bare column pinned to gold, and that is
     # enforced before any tier runs rather than requested by a flag.
     mode = '--bare' if a.bare else None
+    # The set runner takes the lock ONCE for a bare set: every tier below
+    # is a tier_run.py subprocess that would take it itself, and
+    # LADDER_COMPUTE_LOCK makes that re-entrant down the tree. A zig set
+    # starts no guest and takes nothing.
+    if mode == '--bare':
+        compute_lock.take()
 
     stems = a.stems or (sorted(p.stem for p in FINDINGS.glob('prim-*.codex'))
                         + PROBES + sorted(ZIG_REFUSALS))

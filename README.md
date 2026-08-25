@@ -991,9 +991,11 @@ pulled the shared checkout mid-run" stop being a thing that can happen.
    it does not compile.
 4. **One compute job per host.** QEMU, a sweep, a census run, a native
    build: one at a time. Every compute entry point takes
-   `take_compute_lock` (in `ast/oracle_lib.sh`, with `compute_lock.py`
-   as the Python half), which also refuses on the evidence of a running
-   job that did not take it. Two guests stacked do not fail -- they
+   `take_compute_lock` (in `ast/oracle_lib.sh`, which calls
+   `compute_lock.py` for the rule; that file is also the Python half),
+   which also refuses on the evidence of a running job that did not take
+   it -- identified by the program the process is EXECUTING, never by a
+   string in its argv. Two guests stacked do not fail -- they
    thrash, which reads as mysterious slowness rather than as the refused
    launch it should have been.
 5. **Every emitted-binary run is bounded** (`bounded_run`: cgroup

@@ -25,21 +25,32 @@ set -e
 
 # An hours-class run does not belong to a terminal: run bare, this script
 # relaunches itself detached into a timestamped log and prints where to
-# watch (D4). The child takes the real lock; the parent only refuses
-# early so a held lock is reported to the terminal, not to a log nobody
-# is tailing yet.
+# watch (D4). The child takes the real lock; the parent runs both of its
+# refusals first, so a held lock OR a job computing without one reaches
+# the terminal rather than a log nobody is tailing yet.
 if [ -z "$REBANK_DETACHED" ]; then
     flock -n "$T/.compute.lock" true || {
         echo "COMPUTE LOCK HELD -- another sweep/build/census owns this laptop; refusing"
         exit 1
     }
+    # Both halves of the refusal have to reach the TERMINAL, and only this
+    # copy can speak to it. On 2026-08-24 the lock was genuinely free, so
+    # the check above passed and the run detached; the child then refused
+    # on the evidence check and printed it into a log nobody was tailing
+    # yet, and for four minutes the run looked launched and did not exist.
+    # The child still checks -- it is the one that computes -- but the
+    # answer is the same answer, taken here while there is someone to
+    # tell.
+    python3 "$T/compute_lock.py" --evidence || exit 1
     mkdir -p "$T/logs"
     log="$T/logs/rebank-$(date +%Y%m%d-%H%M%S).log"
-    # The detached child is re-parented to init, so the shell that launched
-    # it is no longer an ancestor -- and that shell's command line names
-    # this script, which is exactly what the lockless-job detector looks
-    # for. Hand it our pid so it can excuse our ancestry (2026-08-22: the
-    # u49 rebank refused itself at launch beside its own launcher).
+    # The detached child is re-parented to init, so this copy is no longer
+    # one of its ancestors -- and this copy IS executing rebank_all.sh, so
+    # for the moment the two overlap the child sees a second rebank.
+    # Hand it our pid to excuse that chain (2026-08-22: the u49 rebank
+    # refused itself at launch beside its own launcher; the launching
+    # SHELL used to match too, on the strength of naming the script, and
+    # compute_lock.job_program ended that class on 2026-08-25).
     REBANK_DETACHED=1 LADDER_LAUNCHER_PID=$$ nohup "$0" > "$log" 2>&1 &
     echo "rebank detached (pid $!); watch with: tail -f $log"
     exit 0

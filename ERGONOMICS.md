@@ -23,82 +23,36 @@ go to `JUSTIFICATIONS.md` and everything else is in git.
 
 ---
 
-## Launching a detached job is a foot-gun with a live tripwire
-
-`ast/rebank_all.sh` relaunches itself detached so a dead terminal
-cannot kill an hour-long run. The detached child is
-reparented to init, so the shell that launched it is no longer an
-ancestor -- and `compute_lock.py`'s lockless-job detector then sees that
-shell's command line, which names the script, and refuses the run as a
-legacy job computing without the lock. The script already knows: it hands
-its pid over in `LADDER_LAUNCHER_PID` for exactly this, with a comment
-recording that the u49 rebank refused itself this way on 2026-08-22.
-
-The excuse does not always land. The launcher copy `exit 0`s immediately,
-so by the time the child checks, that pid is gone from `ps` and the chain
-cannot be walked back to the shell that still matches. **2026-08-24: a
-rebank refused itself again this way and printed its refusal into a log
-nobody was tailing** -- from the terminal it looked launched, and the
-run simply did not exist for four minutes.
-
-Three things to fix, and the first matters more:
-
-- **A refusal must reach the launcher, not only the log.** The parent's
-  early `flock -n` check exists for this and did not fire, because the
-  lock was genuinely free; what refused was the child's evidence check,
-  after detaching. Have the child report a refusal back to the terminal
-  (or have the parent run the evidence check too, while it is still an
-  ancestor of nothing and can speak).
-- **Walk the launcher's ancestry before it exits**, or record it: pass
-  the whole chain rather than a pid that is about to die.
-- **The detector reads the wrong thing, and it already knows.** `EVIDENCE`
-  is searched against the FULL argv of every process, so anything that
-  merely mentions a job's name looks like the job -- which is why the
-  check carries a `'grep' not in args` exception, a paper-over of the
-  class rather than a fix. It bit again on 2026-08-25 in a different
-  tool: a watcher waiting for the natives to finish with
-  `pgrep -f "native_build.sh|tiers_run.py"` matched its own command
-  line and waited for itself, so a job that had FINISHED read as still
-  running. What identifies a job is the program it is executing, not a
-  string in a shell's `-c`; match the script path (`comm`, or argv[0]
-  resolved) and the exception can go with it.
-
-Until then: launch through a wrapper script whose own argv does not match
-`EVIDENCE` (`qemu-system|rebank_all|allcycles\.sh|corpus_run|native_build`),
-never leave a `sleep` in the launching shell, and do not name a job in
-the command line of anything that watches for it.
-
-Verified still live 2026-08-25 against `compute_lock.py`: `roots` is
-`[me, LADDER_LAUNCHER_PID]` and each is walked up through `parent`, so a
-launcher pid that has already exited contributes nothing to `skip` and
-the shell that still matches is never excused. Today's runs did not trip
-it because `native_build.sh` and `allcycles.sh` do not self-detach --
-their launching shell stays an ancestor. `rebank_all.sh` is the one that
-does, and it is the one that has refused itself twice.
-
 ## The compute lock protects the job that asks, not the box
 
 `compute_lock.py` refuses a job when it can SEE another one computing.
-The protection is one-directional, and two live paths walk around it:
+Since 2026-08-25 it identifies what it sees by the program a process is
+EXECUTING and not by a string in that process's argv -- `job_program`,
+with `--evidence` as the single entry point the shell side calls too, so
+there is one spelling of the rule instead of two that had to be kept in
+step. That closed the false-positive half of this item, which had cost
+two real runs: a shell that merely NAMES a script and a watcher that
+greps for one are not jobs. `tier_run.py --bare` and `tiers_run.py
+--bare` take the lock now, because a bare column is a QEMU guest.
 
-- **`tiers_run.py` and `tier_run.py` call `require_venue()` and never
-  `take()`** (`tiers_run.py:170`, `tier_run.py:231`). A `--bare` column
-  is a QEMU guest, so it can start beside a live sweep, and then that
-  guest trips the lockless-job detector and refuses the NEXT ladder job.
-  The zig-only mode is genuinely lock-free and lock-safe -- 45 seconds,
-  no guest -- and that is worth keeping; it is the bare mode that wants
-  the lock.
-- **The codex tree's own plug scripts take no ladder lock at all.**
-  `codex/plugs/*/run.ps1` asks `build/plug-run.ps1` for a 3072 MB guest,
-  which is the ladder's whole guest budget on this box.
-  `compute_lock.py:5-6` records what two 3 GB guests do here: "thrash at
-  2% CPU each instead of failing (2026-08-20)".
+**The rule has a runner: `./compute_lock.py --selftest`** -- thirteen
+real command lines, including both that bit us, and no processes
+touched. Nothing calls it automatically; `PRIORITIES.md`'s Batch 3
+`tests/` session is where it should land when that session happens.
 
-Both are the same class -- a guest started by something that never asked
--- and the fix is the same as the one the detached-job item names: match
-what a process is EXECUTING, not a string in some shell's `-c`, and have
-the things that start guests take the lock. Found 2026-08-25 by a cold
-read of the queue.
+What is left is the half that cannot be closed from this side. **The
+codex tree's own plug scripts take no ladder lock at all.**
+`codex/plugs/*/run.ps1` asks `build/plug-run.ps1` for a 3072 MB guest,
+which is the ladder's whole guest budget on this box, and
+`compute_lock.py`'s header records what two 3 GB guests do here: "thrash
+at 2% CPU each instead of failing (2026-08-20)". The asymmetry is
+exactly that a job is protected only when it ASKS -- a ladder job
+starting beside such a guest refuses, because a `qemu-system` is a job
+under any rule, while a plug script starting beside a live sweep is
+refused by nothing. Fixing it means teaching an upstream script about a
+lock that is ours, so until someone decides that is worth doing, the
+mitigation is discipline: nothing in the codex tree gets run by hand
+while a sweep is up.
 
 ## Wiring the python plug onto a transport that exists here
 
