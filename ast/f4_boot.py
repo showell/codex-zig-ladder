@@ -18,6 +18,7 @@ from roots import LADDER
 
 sys.path.insert(0, str(LADDER))
 import codex_vm  # noqa: E402
+import compute_lock  # noqa: E402
 
 HERE = pathlib.Path(__file__).parent
 
@@ -111,6 +112,12 @@ if __name__ == "__main__":
                 f"{len(s[k])} {k}" for k in ("header", "content", "tail")))
         print(f"PARSE OK: {len(RUNGS)} banked dumps carve cleanly")
         raise SystemExit(0)
+
+    # Past the --parse branch, every rung below boots a CDX under QEMU.
+    # The lock belongs HERE and not at the top: --parse exists so the
+    # carve can be checked with no VM, and a mode that starts no guest
+    # must not refuse beside a sweep.
+    compute_lock.take()
 
     results = []
     for rung, expected in RUNGS:

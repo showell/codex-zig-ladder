@@ -28,6 +28,9 @@
 # the drift would present as a plug defect.
 set -e
 . "$(dirname "${BASH_SOURCE[0]}")/oracle_lib.sh"
+# The truth arm's first half is still a guest: bundle, blob, compile to
+# IR-CCE through the seed.
+take_compute_lock
 
 m="${1:-}"
 [ -n "$m" ] || { echo "usage: ensure_ir.sh <unit>"; exit 2; }

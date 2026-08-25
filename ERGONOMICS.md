@@ -32,8 +32,18 @@ with `--evidence` as the single entry point the shell side calls too, so
 there is one spelling of the rule instead of two that had to be kept in
 step. That closed the false-positive half of this item, which had cost
 two real runs: a shell that merely NAMES a script and a watcher that
-greps for one are not jobs. `tier_run.py --bare` and `tiers_run.py
---bare` take the lock now, because a bare column is a QEMU guest.
+greps for one are not jobs.
+
+**Every ladder entry point that starts a guest takes the lock now** --
+`tier_run.py --bare` and `tiers_run.py --bare` (a bare column IS a
+guest), `cycle.sh`, `ast/ringplug_build.sh`, `ast/ensure_ir.sh`,
+`warmups/regen.sh`, `ring_refill_test.sh`, `recon.sh`, and
+`ast/f4_boot.py` past its `--parse` branch. Every one of those was
+missing it, and the omission is invisible from the script: none of them
+names QEMU, because the guest is two files away behind
+`ring_compile.py` and `plug_run.py`. The list was found by asking which
+files reach those two, which is a question worth re-asking whenever a
+new entry point lands.
 
 **The rule has a runner: `./compute_lock.py --selftest`** -- thirteen
 real command lines, including both that bit us, and no processes

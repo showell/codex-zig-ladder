@@ -6,6 +6,9 @@
 # divergence convicts the transport, not the subject.
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
+. "$T/ast/oracle_lib.sh"
+# The refill test is a real ring compile of a padded blob: a guest.
+take_compute_lock
 REPO="$(python3 "$T/ladder_root.py" codex)"
 S="${TMPDIR:-/tmp}/ring-refill-test"
 mkdir -p "$S"

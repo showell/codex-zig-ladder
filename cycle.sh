@@ -5,6 +5,13 @@
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(python3 "$T/ladder_root.py" codex)"
+. "$T/ast/oracle_lib.sh"
+# This is a COMPUTE job -- it ring-compiles the plug and then boots it
+# once per warmup -- and it took no lock until 2026-08-25. Nothing in
+# the script names QEMU, which is exactly why the omission survived:
+# the guest is two files away, behind ring_compile.py and plug_run.py.
+# Re-entrant, so a locked parent calling this is a no-op.
+take_compute_lock
 # Warmup blobs and IRs live in the repo, not /tmp: a reboot wiped the
 # original scratchpad location and every warmup IR with it.
 S=$T/warmups
@@ -58,7 +65,6 @@ printf '%s\n' "$cout" | grep -vE "^(WD|HEAP|STACK):" | tail -25
 # to a branch without the __deck-set fix, the plug was rebuilt without it, and
 # `lower` failed with an error we had already fixed. Nothing said the ground had
 # moved. Now the arms check this and say so.
-. "$T/ast/oracle_lib.sh"
 plug_fingerprint > "$(dirname "$PLUG_CDX")/zig-plug.fingerprint" || exit 1
 echo "plug fingerprint: $(cut -c1-16 "$(dirname "$PLUG_CDX")/zig-plug.fingerprint")"
 
