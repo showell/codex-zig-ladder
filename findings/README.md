@@ -899,6 +899,66 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
+## 42. A self-tail loop reads a TOP-LEVEL definition where the source reads its own parameter, and only zig's unused-parameter error made it visible
+
+**Found 2026-08-25 by the Update 50 census re-pin. OURS -- the zig plug's
+self-tail-call transformation, PR 81, ABSORBED UPSTREAM in Update 50's
+interim push (main 19131). OPEN, unfixed, unsent.** The census moved
+exactly three verdicts against the 2026-08-23 bank and one of them was
+`dtls-fragment`, **match -> refused**: `corpus/dtls-fragment.zig:942:57:
+error: unused function parameter`.
+
+The refusal is the symptom. The defect underneath it is silent.
+
+**The source** (`codex/foreword/encode/DtlsMessage.codex:97`):
+
+    dtls-frag-loop (msg-type) (message-seq) (body) (max-body) (off) (acc) =
+      let n = list-length body
+      ...
+      in let piece = dtls-slice-at body off take
+      in dtls-frag-loop msg-type message-seq body max-body ...
+
+Every `body` and `msg-type` in that definition is its own parameter.
+
+**The emitted loop** declares `_arg_msg_type` and `_arg_body` -- the
+plug's rename, correct in itself, because the test program bundled
+alongside defines top-level `body` and `msg-type`
+(`codex/test/dtls-fragment.codex:21,23`) and a parameter of the same name
+would collide. Then the body of the loop calls **`body()` and
+`msg_type()`**, which are those top-level definitions, and never reads
+either parameter. `_arg_msg_type` and `_arg_body` each occur exactly once
+in the function: their own declaration.
+
+**So the emitted program reads a global where the source reads an
+argument.** It happens to print the right answer here, because this
+caller passes the top-level `body` and `msg-type` in, so the two values
+coincide -- a property of this test, not of the transformation. A caller
+that passes anything else gets a wrong answer with no diagnostic at all.
+Zig refused only because after the substitution NO reference to the
+parameters survived, and zig makes an unused function parameter a hard
+error. Had one other use remained, this would have compiled and lied.
+
+**It is specific to the loop path.** `dtls_msg_encode` in the same file
+takes the same two renamed parameters and reads them correctly
+(`cx_list_len(_arg_body)`). The non-loop emission binds the rename; the
+self-tail-loop emission does not.
+
+**Where the instrument was blind.** `prim-tailcall` is green and has been
+since it was written: it exercises loop conversion but no row gives a
+loop a parameter that shadows a top-level definition, so the whole class
+is outside the tier set. The census caught it because the depot's own
+corpus contains the collision by accident -- exactly the property
+`corpus_run.py`'s docstring claims for it, that a program written by
+someone with no knowledge of this plug tests what our own probes do not
+suspect.
+
+**Next, in order:** minimize to a tier row (a top-level `x`, a self-tail
+definition with a parameter `x`, the two given different values -- the
+row must FAIL before the fix); then the fix in `ZigEmitter.codex`, which
+is to make the loop body resolve a renamed parameter to its `_arg_` name
+the way the non-loop path does; then a sweep, then outbound. It is ours
+and it is upstream, so it goes out with a `plugs-backlog.md` row.
+
 ## 41. `riscv` and `java` break the same curried-application rule as finding 40, and riscv's correct fix is already in the tree, dead
 
 **Found 2026-08-24 by an independent read of the plug family while

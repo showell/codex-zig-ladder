@@ -483,10 +483,19 @@ Left:
 - **Tag: DONE.** `seed-6cf4a8e0-14of14` on `9a1e424`, pushed. Steve chose
   the name on 2026-08-25; it breaks the `uNN-14of14` shape on purpose,
   because what it names is a bank and not an Update.
-- **Natives and tiers: DONE.** Sandbox
+- **Natives, tiers and the census: DONE.** Sandbox
   `20260825T135832Z-u50-natives-tiers`, natives `d7e148e7b699` built from
   the pin, then `./tiers_run.py --zig` green: 15 green, 7 noted. It cost
   one instrument fix first -- see the tier item above.
+- **The census RE-PINNED, and it found something.** 593 programs, 325
+  clean, banked to `corpus/census.json` (natives `48af65aa7cb7c47d` /
+  `3550e6d78dc71c67`). Every emitted zig moved, as an emitter change
+  requires, so all 325 were rerun; **three verdicts moved and one is a
+  regression: `dtls-fragment`, match -> refused.** That is
+  **finding 42**, ours, from PR 81 and already upstream -- a self-tail
+  loop reading a top-level definition where the source reads its own
+  parameter. The refusal is luck; the defect is silent. **It is now the
+  most valuable thing in this file.**
 - **The prose branch's due-diligence run: DONE and GREEN.** Sandbox
   `20260825T142003Z-prose-verify`, 14/14 rungs green in 1627 s, and all
   thirteen emitted `.zig` files byte-identical to the seed-6cf4a8e0
