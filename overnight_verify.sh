@@ -51,7 +51,6 @@ PHASE=init
 trap 'echo "@@@@ CHAIN ENDED at phase $PHASE $(date +%H:%M:%S)"' EXIT
 
 CODEX_ROOT="$PIN" . "$T/ast/oracle_lib.sh"
-take_compute_lock
 
 # PHASE_FROM resumes the chain at a later phase. PHASE_FROM=C runs the gaps
 # half on its own, which is what the heap half going red asks for: the two

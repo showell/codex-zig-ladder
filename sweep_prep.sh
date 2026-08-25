@@ -16,7 +16,6 @@ T="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(python3 "$T/ladder_root.py" codex)"
 HOST=steve@143.244.172.148
 . "$T/sweep_lib.sh"
-take_compute_lock
 
 echo "### sweep_prep $(date +%H:%M:%S)"
 

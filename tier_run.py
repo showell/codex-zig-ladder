@@ -229,17 +229,11 @@ def main():
                     help='where artifacts land (default: beside the program)')
     a = ap.parse_args()
     both = not (a.zig or a.bare)
-    # A bare column IS a QEMU guest, so it takes the lock like every other
-    # thing that starts one. Until 2026-08-25 this asked only for the
-    # venue: a bare column could start beside a live sweep, and then that
-    # guest -- lockless, by our own doing -- tripped the evidence check
-    # and refused the NEXT ladder job. The zig-only mode is genuinely
-    # lock-free (45 seconds, no guest) and stays that way, which is the
-    # whole reason the two modes are told apart here.
-    if both or a.bare:
-        compute_lock.take()
-    else:
-        compute_lock.require_venue()
+    # The venue rule only. A bare column IS a guest and takes the lock,
+    # but it takes it at the door (codex_vm.launch) rather than here --
+    # which is also why the zig-only mode stays lock-free without anyone
+    # arranging it: it starts no guest, so it asks for nothing.
+    compute_lock.require_venue()
 
     src = a.program.resolve()
     work = (a.work or src.parent / '.tier-run').resolve()

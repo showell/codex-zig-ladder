@@ -10,7 +10,6 @@
 # staleness checks in droplet_transpile.sh make forgetting that loud.
 T="$(cd "$(dirname "$0")" && pwd)"
 . "$T/sweep_lib.sh"
-take_compute_lock
 
 fail=0
 green=0

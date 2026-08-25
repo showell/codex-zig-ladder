@@ -52,47 +52,11 @@ harness_for() {
     echo "$(echo "$1" | sed -E 's/(^|_)([a-z0-9])/\U\2/g')Harness.codex"
 }
 
-# One compute job per host. The droplet side is flocked inside its
-# wrappers; this is the laptop side, taken by every entry point that
-# computes (rebank_all, allcycles, native_build, corpus_run, the sweep
-# trio). Refuse loudly, never queue: two 3 GB guests on this box thrash
-# at 2% CPU each instead of failing (2026-08-20).
-# The laptop does not compute (Steve, 2026-08-22, firmly: no fallbacks).
-# The ladder droplet carries ~/.codex_ladder_env, which exports
-# CODEX_LADDER_VENUE along with its guest tuning; no other host has it,
-# by design. A compute entry point on a host without it refuses before
-# touching the lock -- the refusal is the feature, not a venue switch.
-require_compute_venue() {
-    [ -n "${CODEX_LADDER_VENUE:-}" ] && return 0
-    echo "NOT A COMPUTE VENUE: CODEX_LADDER_VENUE is unset. Ladder jobs run on the" >&2
-    echo "  droplet only (sandbox.sh there, . ../env). The laptop orchestrates." >&2
-    exit 1
-}
-
-take_compute_lock() {
-    require_compute_venue
-    # Re-entrant down the process tree: rebank_all holds the lock and
-    # then runs allcycles.sh, which must not refuse its own parent. The
-    # variable dies with the holder, so it cannot leak past a crash.
-    [ -n "${LADDER_COMPUTE_LOCK:-}" ] && return 0
-    exec 9>"$T/.compute.lock"
-    flock -n 9 || {
-        echo "COMPUTE LOCK HELD -- another sweep/build/census owns this laptop; refusing"
-        exit 1
-    }
-    export LADDER_COMPUTE_LOCK=$$
-    # The lock only binds processes that take it. Until nothing computes
-    # without it, a legacy job beside a free lock reads as protection it
-    # is not (process review D3) -- so also refuse on the evidence of the
-    # processes themselves. ONE spelling of what that evidence IS, in
-    # compute_lock.py: this was a second one in awk, kept in step with
-    # the Python by hand, and both were wrong the same way -- they
-    # matched a job's name anywhere in a process's argv, so a shell that
-    # merely NAMED a script read as the script running. job_program
-    # there carries the rule and the two runs it refused.
-    python3 "$T/compute_lock.py" --evidence || exit 1
-    return 0
-}
+# The compute lock is NOT here any more (2026-08-25). It is taken by
+# codex_vm.launch, the one line in this tree that runs qemu, so a script
+# cannot start a guest without asking and no script has to remember to.
+# This file held the shell half of a rule that also lived in Python, and
+# the two spellings had to be kept in step by hand.
 
 # Per-rung wall-clock, printed at the marker so the split point and every
 # future scheduling decision come from measured time, not intuition (S1).

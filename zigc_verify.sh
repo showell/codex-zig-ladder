@@ -36,7 +36,6 @@
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 . "$T/ast/oracle_lib.sh"
-take_compute_lock
 
 SUBJ="${1:-$T/ast/repro.codex}"
 [ -s "$SUBJ" ] || { echo "no subject at $SUBJ"; exit 2; }

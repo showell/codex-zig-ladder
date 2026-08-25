@@ -990,12 +990,14 @@ pulled the shared checkout mid-run" stop being a thing that can happen.
    bank plus the same through the plug, for the expensive rungs -- discovering
    it does not compile.
 4. **One compute job per host.** QEMU, a sweep, a census run, a native
-   build: one at a time. Every compute entry point takes
-   `take_compute_lock` (in `ast/oracle_lib.sh`, which calls
-   `compute_lock.py` for the rule; that file is also the Python half),
-   which also refuses on the evidence of a running job that did not take
-   it -- identified by the program the process is EXECUTING, never by a
-   string in its argv. Two guests stacked do not fail -- they
+   build: one at a time. The lock is taken by `codex_vm.launch` --
+   the one line in this tree that runs qemu -- so an entry point cannot
+   start a guest without asking, and none of them has to remember to.
+   It also refuses beside a FOREIGN guest, one started by something that
+   never asks (the Codex tree's own `build/compile.ps1` does): a guest
+   is a process whose argv[0] is `qemu-system-*`, and that is the whole
+   identification rule. `corpus_run.py` takes it directly, being an
+   hours-class job that runs no guest at all. Two guests stacked do not fail -- they
    thrash, which reads as mysterious slowness rather than as the refused
    launch it should have been.
 5. **Every emitted-binary run is bounded** (`bounded_run`: cgroup

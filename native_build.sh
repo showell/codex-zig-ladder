@@ -21,7 +21,6 @@
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 . "$T/ast/oracle_lib.sh"
-take_compute_lock
 OUT="$T/native"
 
 # VENUE. CODEX_NATIVE_VENUE=droplet sends the two QEMU stages to the

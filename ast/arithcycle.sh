@@ -5,7 +5,6 @@
 # third witness beside our banked truth.
 set -e
 . "$(dirname "$0")/oracle_lib.sh"   # T, REPO, bounded_run, the venue gate
-take_compute_lock
 SUBJ=$REPO/codex/test/plug-oracle-arith.codex
 
 cd $T/ast

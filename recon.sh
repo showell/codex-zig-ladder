@@ -16,7 +16,6 @@ T="$(cd "$(dirname "$0")" && pwd)"
 . "$T/ast/oracle_lib.sh"
 # Self-hosting the whole compiler through the ring and then through
 # the plug: the longest guest in the tree.
-take_compute_lock
 REPO="$(python3 "$T/ladder_root.py" codex)"
 R=$T/recon
 mkdir -p "$R"

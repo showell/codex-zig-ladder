@@ -9,7 +9,6 @@ T="$(cd "$(dirname "$0")/.." && pwd)"  # ladder-root-bootstrap: reaches the LADD
 # A ring compile is a guest. Re-entrant, so allcycles.sh and
 # zigc_verify.sh -- which hold the lock when they call this -- are
 # unaffected.
-take_compute_lock
 cd "$T/ast"
 rm -f ringplug-source.codex
 out=$(~/.local/pwsh/pwsh -NoProfile -File ./bundle_ringplug.ps1 2>&1) || { printf '%s\n' "$out" | tail -5; exit 1; }

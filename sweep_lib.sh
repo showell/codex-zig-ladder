@@ -12,7 +12,7 @@
 
 T="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$T/ast/oracle_lib.sh"
-# take_compute_lock and rung_stamp live in oracle_lib.sh now, shared with
+# rung_stamp lives in oracle_lib.sh now, shared with
 # the legacy loops (wiring batch, process review D3/S1).
 
 # The remote arm: same rm-stale-first discipline, same transport-log

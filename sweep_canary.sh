@@ -10,7 +10,6 @@
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 . "$T/sweep_lib.sh"
-take_compute_lock
 
 # The split point is provisional until the rung_stamp timings from a few
 # sweeps say where the knee is; these are the three cheapest by the

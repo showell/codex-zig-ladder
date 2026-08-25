@@ -5,7 +5,6 @@
 # passed yesterday proves nothing about the plug built today.
 set -e
 . "$(dirname "$0")/oracle_lib.sh"
-take_compute_lock
 
 # A detached sweep that dies must not be indistinguishable from one still
 # running: the trap makes the log's last line say how far it got (C1).

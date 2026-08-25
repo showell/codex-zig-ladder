@@ -73,12 +73,11 @@ def main():
         held = subprocess.run(['flock', '-n', str(lock), 'true'],
                               capture_output=True).returncode != 0
     # What is computing comes from compute_lock, which owns the rule --
-    # this printed its own regex until 2026-08-25 and it had already
-    # drifted (`allcycles` unanchored, and matching any command line that
-    # merely NAMED a job, so a watcher or an editor read as a running
-    # sweep). Facts only: a held lock beside nothing running is worth
-    # seeing, not worth interpreting here.
-    jobs = compute_lock.compute_jobs()
+    # this printed its own regex until 2026-08-25, and it had drifted.
+    # A guest is a qemu-system process; nothing else is asked about.
+    # Facts only: a held lock beside nothing running is worth seeing, not
+    # worth interpreting here.
+    jobs = compute_lock.guests()
     print(f"lock     {'HELD' if held else 'free'}")
     if not jobs:
         print("compute  nothing running"

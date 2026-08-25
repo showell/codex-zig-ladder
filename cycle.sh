@@ -11,7 +11,6 @@ REPO="$(python3 "$T/ladder_root.py" codex)"
 # the script names QEMU, which is exactly why the omission survived:
 # the guest is two files away, behind ring_compile.py and plug_run.py.
 # Re-entrant, so a locked parent calling this is a no-op.
-take_compute_lock
 # Warmup blobs and IRs live in the repo, not /tmp: a reboot wiped the
 # original scratchpad location and every warmup IR with it.
 S=$T/warmups

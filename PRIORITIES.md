@@ -88,11 +88,11 @@ item says which it is:
 
 **Every tag names the ENTRY POINT it means.** A cold read of this queue on
 2026-08-25 found three cost claims wrong, and all three came from an item
-describing a step in prose while the script that performs it opens with
-`take_compute_lock` -- "one light run" for a plug with no runner on this
-host, "3 seconds" for a script with five QEMU legs. One script name per
-bullet makes the claim checkable with `grep take_compute_lock` instead of
-by reading five files.
+describing a step in prose while the script that performs it starts a
+guest -- "one light run" for a plug with no runner on this host, "3
+seconds" for a script with five QEMU legs. One script name per bullet
+makes the claim checkable: follow it to `codex_vm.launch`, which every
+guest in the tree goes through, and if it reaches there it is BOX.
 
 An item marked BOX is not blocked on anything else; it is blocked on the
 box being free. When one is running, the KEYBOARD items above it are the

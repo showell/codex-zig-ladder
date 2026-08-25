@@ -25,37 +25,28 @@ set -e
 
 # An hours-class run does not belong to a terminal: run bare, this script
 # relaunches itself detached into a timestamped log and prints where to
-# watch (D4). The child takes the real lock; the parent runs both of its
-# refusals first, so a held lock OR a job computing without one reaches
-# the terminal rather than a log nobody is tailing yet.
+# watch (D4). Every guest under the child is guarded at the door by
+# codex_vm.launch; the parent asks the same question first so the answer
+# reaches the terminal rather than a log nobody is tailing yet.
 if [ -z "$REBANK_DETACHED" ]; then
-    flock -n "$T/.compute.lock" true || {
-        echo "COMPUTE LOCK HELD -- another sweep/build/census owns this laptop; refusing"
-        exit 1
-    }
-    # Both halves of the refusal have to reach the TERMINAL, and only this
-    # copy can speak to it. On 2026-08-24 the lock was genuinely free, so
-    # the check above passed and the run detached; the child then refused
-    # on the evidence check and printed it into a log nobody was tailing
-    # yet, and for four minutes the run looked launched and did not exist.
-    # The child still checks -- it is the one that computes -- but the
-    # answer is the same answer, taken here while there is someone to
-    # tell.
-    python3 "$T/compute_lock.py" --evidence || exit 1
+    # This copy detaches and exits, so a refusal from the child lands in a
+    # log nobody is tailing yet -- on 2026-08-24 that made a run look
+    # launched for four minutes when it had already refused. Ask the same
+    # question here, where there is still someone to tell. The child (and
+    # every guest under it) is still guarded at the door by
+    # codex_vm.launch; this is only about who hears the answer.
+    python3 "$T/compute_lock.py" --probe || exit 1
     mkdir -p "$T/logs"
     log="$T/logs/rebank-$(date +%Y%m%d-%H%M%S).log"
-    # The detached child is re-parented to init, so this copy is no longer
-    # one of its ancestors -- and this copy IS executing rebank_all.sh, so
-    # for the moment the two overlap the child sees a second rebank.
-    # Hand it our pid to excuse that chain (2026-08-22: the u49 rebank
-    # refused itself at launch beside its own launcher; the launching
-    # SHELL used to match too, on the strength of naming the script, and
-    # compute_lock.job_program ended that class on 2026-08-25).
-    REBANK_DETACHED=1 LADDER_LAUNCHER_PID=$$ nohup "$0" > "$log" 2>&1 &
+    # LADDER_LAUNCHER_PID is gone with the check that needed it: the old
+    # detector scanned ps for anything whose command line NAMED a job, so
+    # a detached child saw its own launcher and refused itself (twice --
+    # 2026-08-22 and 08-24). Nothing recognises jobs by name any more; a
+    # guest is a qemu-system process, and this script is not one.
+    REBANK_DETACHED=1 nohup "$0" > "$log" 2>&1 &
     echo "rebank detached (pid $!); watch with: tail -f $log"
     exit 0
 fi
-take_compute_lock
 
 # The log's last line must say how far a dead run got (C1): "recorded",
 # not "banked" -- the working truths are recorded here, the bank is
