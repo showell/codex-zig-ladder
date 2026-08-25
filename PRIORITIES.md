@@ -42,7 +42,10 @@ is open; these are the words in use.
   sandboxes, foot-guns removed. **This is why ergonomic items sit at the
   front of the queue** -- they are the only kind whose payoff multiplies
   across everything below them, and an hour saved on the verification
-  chain is an hour returned every time it runs.
+  chain is an hour returned every time it runs. The exception is a
+  correctness defect of OURS that is already shipped: item 1 is one, and
+  it leads because a wrong answer nobody can see does not wait for the
+  tooling to get faster.
 - **INTEGRITY.** Making the instrument honest. A measurement that can lie
   is worse than no measurement, because the next reader believes it.
   HUNTING and DUE_DILIGENCE are worth exactly what this is worth.
