@@ -290,18 +290,32 @@ documents and censuses the failing backtrace, so "512 MB" is a number
 with a mechanism behind it rather than a constant nobody has questioned.
 Left:
 
-- **Nothing is banked.** The only measurement so far is a branch-arm one
-  and deliberately not gold: a `uNN` bank stands behind the release's
-  emitter. Bank when a verbatim-emitter run exists.
+- **Nothing is banked, and the blocker is GONE.** The only measurement so
+  far was a branch-arm one and deliberately not gold, because a bank
+  stands behind the release's emitter. Update 50 absorbed our emitter
+  verbatim, so a verbatim-emitter run now exists and the condition this
+  bullet was waiting on is met. Bank it.
 - **Only `codexir` is measured.** `zigemit` and the other natives have
   their own recursion and are unmeasured, so what one input needs is
   known and what every input needs is not. The 512 MB must not be
-  lowered before that sweep.
-- **`zig-main`'s prose names the wrong cycle** -- it blames the lexer's
-  scan-token/skip-prose-line pair, which measures flat (100,000
-  consecutive prose lines run in a 256 KB stack). A justification that
-  is wrong is worse than none, since the next reader trusts it. Correct
-  it upstream beside the parser fix (PR 82).
+  lowered before that sweep -- which is why the item below corrects the
+  PROSE and leaves the constant alone.
+- **`zig-main`'s prose is still wrong, and Update 50 made it wronger.**
+  It survived absorption verbatim at `ZigEmitter.codex:3221-3228`. It
+  blames the lexer's scan-token/skip-prose-line pair, which measures FLAT
+  (100,000 consecutive prose lines in a 256 KB stack; finding 37 measured
+  the parser's `scan-top-level` as the real driver). It then says the
+  limiting case "is MUTUAL recursion ... and no amount of
+  self-tail-call elimination flattens that. Emitting loops for
+  self-recursion would be a real feature and would still not remove the
+  need for this." Both halves shipped in the same push it now sits in:
+  PR 81 emits loops for self-recursion, and PR 82 turned that very scan
+  from mutual into SELF recursion so that TCO does flatten it. A
+  justification that is wrong is worse than none, since the next reader
+  trusts it -- and this one now argues against two changes standing
+  beside it in the tree. **OUTBOUND: a small prose-correction PR to the
+  zig plug, constant untouched.** It was meant to ride PR 82 and did
+  not, which is how a stale justification survives a fix.
 
 ## 9. Diagnostics as a banked set
 
