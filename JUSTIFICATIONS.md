@@ -325,3 +325,28 @@ The sweep says so itself, which is the point of the two lines it now
 prints: `IR REBUILT for <units> -- bare metal was NOT re-measured in this
 sweep`, and a census that declines to compare rather than judging half a
 population against a whole-population pin.
+
+## A prose block moves the plug and not its output (2026-08-25)
+
+The zig plug's stack note is compiled source, not a comment in a host
+language, so "it is only prose" is an argument rather than a measurement.
+Steve gated the outbound prose PR on the measurement.
+
+Branch `zig-plug-stack-prose` at `87f55675` against the seed-6cf4a8e0
+sweep, both on the same pin (`0c4327d5`), sandbox
+`20260825T142003Z-prose-verify`:
+
+    bundle        10072 lines, 484804 bytes  ->  10094 lines, 486098 bytes
+    fingerprint   1aba3c41196cb74e           ->  73dc2f1e8cd0ed81
+    sweep         14/14 rungs green, 1627 s
+    emitted zig   13 files, every one byte-identical
+
+A different plug binary, by 22 lines and 1294 bytes, emitting the same
+program for all thirteen subjects. That is the whole claim: the prose is
+carried through the bundle and the fingerprint and reaches nothing the
+emitter writes.
+
+The comparison counted what it compared -- thirteen files against thirteen
+files -- because a glob that matches nothing produces the same happy
+verdict as a glob that matches everything, and this one is run once and
+believed.
