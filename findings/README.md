@@ -899,6 +899,61 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
+## 45. The deck reservation is advisory: overrunning it is detected, printed, ignored, and then faults 200% in
+
+Found 2026-08-25 on the ladder droplet against our fork's stack. **THEIRS**,
+the emitted runtime's heap/deck machinery. Cheap to reproduce and it needs
+no QEMU: the reservation is a literal in the emitted zig.
+
+`__heap-advance N` (the harness's deck prologue, `emit_harness.deck_prologue`)
+reserves N bytes of deck; the hosted tools use 512 MB. **Nothing enforces
+it.** The runtime's own tracer computes the headroom and prints it going
+negative on every allocation after the boundary, and no code path acts on
+that number. The program keeps allocating until it walks off something and
+takes a fault.
+
+Reproduced by rebuilding `native/codexzig` with the reservation lowered --
+`sed s/cx_heap_advance(536870912)/cx_heap_advance(16777216)/` on the emitted
+zig, then `zig build-exe`, about ten seconds and no VM -- and feeding it
+`ast/parse-subject.codex`, which wants ~68 MB:
+
+    CX-DECK used=16574254 reserved=16777216 headroom=202962     <- last good
+    CX-DECK used=18816630 reserved=16777216 headroom=-2039414   <- over
+    ... 15 more traced steps, all negative ...
+    CX-DECK used=33496942 reserved=16777216 headroom=-16719726  <- 200%
+    General protection exception (no address available)
+    cz16.zig:141:25: 0x13fbace in cx_list_at__anon_53837
+        return l.items.items[@intCast(i)];
+
+**It reaches exactly 200% of the reservation before dying**, and it dies in
+`cx_list_at` reading past the end of a list -- a memory fault in the middle
+of the compiler, not a diagnosis. A user who meets this sees a GP exception
+in a list accessor and has no reason to suspect the deck.
+
+**The good half, established by the same run:** no partial output is
+produced. The emitted zig is built as one Text and printed at the end, so
+the 12,931 bytes on stderr are the panic trace and contain zero lines of zig
+source. The failure cannot be mistaken for a successful transpile.
+
+**A different overrun IS guarded**, which is what makes this one a gap
+rather than a policy: the ladder's own `probe-deck-overrun` tier catches the
+heap-and-deck cursors meeting and says so by name -- "cx heap: the two
+cursors met -- alloc at 6295544 + 64 crosses (hp=... dptr=... deck_base=...
+bivy=... nest=0)". So the machinery can refuse; the reservation boundary
+just is not one of the things it refuses on.
+
+**Why it matters now.** JUSTIFICATIONS "The deck costs 145 MB per MB of
+source" measures the hosted compiler at 421 MB of its 512 MB deck on its own
+2.87 MB bundle, and `passes_to_x86` at 385 MB. Every Update adds chapters.
+The first Update that crosses the line will not report a deck problem -- it
+will report a GP fault in `cx_list_at`, most likely during a rebank, and the
+hour spent finding that is the cost of the missing check.
+
+**Suggested fix, unattempted:** refuse in the allocator when the deck cursor
+would pass the reservation, with the numbers the tracer already computes.
+Hedged: we have not tried it, it is core runtime, and we can verify only the
+zig arm.
+
 ## 44. The AST does not carry a record's implicit type parameters -- only the IR text emitter derives them, so every consumer of the AST that is not the wire sees an incomplete type
 
 Found 2026-08-25 on the ladder droplet against `0c4327d5`. THEIRS,

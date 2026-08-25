@@ -397,3 +397,10 @@ bundles the most chapters.
 This is the deck (the phase allocator's region), NOT the 512 MB thread
 stack `stack_probe.py` measures for finding 37. Two constants that happen to
 share a number.
+
+**And the reservation is not enforced -- finding 45.** Rebuilding codexzig
+with the literal lowered (ten seconds, no VM) and feeding it a subject that
+wants more: the tracer prints negative headroom for fifteen more steps, the
+program reaches 200% of the reservation, and then takes a General protection
+exception inside `cx_list_at`. No partial zig is written, so the failure
+cannot be mistaken for success -- but nothing names the deck, either.
