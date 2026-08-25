@@ -903,8 +903,8 @@ upstream.
 
 **Found 2026-08-25 by the Update 50 census re-pin. OURS -- the zig plug's
 self-tail-call transformation, PR 81, ABSORBED UPSTREAM in Update 50's
-interim push (main 19131). FIXED AND VERIFIED 2026-08-25; the branch is
-cut and the send is Steve's call.** The census moved
+interim push (main 19131). FIXED, VERIFIED and SENT as PR 85 on
+2026-08-25.** The census moved
 exactly three verdicts against the 2026-08-23 bank and one of them was
 `dtls-fragment`, **match -> refused**: `corpus/dtls-fragment.zig:942:57:
 error: unused function parameter`.
@@ -986,7 +986,7 @@ once that the collision was not behind a guard. A `dtls-fragment` whose
 `body` were read from a guard would have compiled and shipped a wrong
 answer.
 
-**THE FIX, three hunks, measured 2026-08-25.** Branch
+**THE FIX, three hunks, measured 2026-08-25 and SENT as PR 85.** Branch
 `zig-plug-loop-param-rename` off `upstream/master` `0c4327d5`, ladder tag
 `shadow-loop-rename`, `plugs-backlog.md` row 1.58. Sandbox
 `20260825T160701Z-f42-row`.

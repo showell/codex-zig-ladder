@@ -126,11 +126,11 @@ across the two native builds; and the census moving exactly one verdict
 -- `dtls-fragment`, `refused -> match` -- with 320 of 325 clean programs
 byte-identical to the bank.
 
-**What is left is the send, and it is Steve's call.** The branch is cut
-and committed: `zig-plug-loop-param-rename` off `upstream/master`
-`0c4327d5`, one emitter commit carrying `plugs-backlog.md` row 1.58, a
-`Ladder: shadow-loop-rename` line, and the ladder tag pushed. It has not
-been pushed to the fork and no PR is open.
+**SENT as PR 85** (2026-08-25), `zig-plug-loop-param-rename` off
+`upstream/master` `0c4327d5`, one emitter commit carrying
+`plugs-backlog.md` row 1.58 and a `Ladder: shadow-loop-rename` line;
+the ladder tag is pushed. **This item is done but for the landing**, and
+nothing here waits on it.
 
 **When it lands, the tier row's job changes.** `shadow-guard` stops
 being a red that must go green and becomes the regression detector for
