@@ -4,8 +4,12 @@
     ./tiers_run.py                 all tiers and the listed probes
     ./tiers_run.py --bare          bare-metal columns only (bank them; seconds
                                    each under QEMU, run right after a re-pin)
-    ./tiers_run.py --zig           zig columns only (run after the natives
-                                   rebuild; the bare column comes from gold)
+    ./tiers_run.py --zig           after a natives rebuild: the zig columns
+                                   are re-run and every bare column MUST come
+                                   from gold. It refuses up front if any is
+                                   missing or stale rather than paying QEMU
+                                   for it, which is the only thing separating
+                                   it from a bare run of this script.
     ./tiers_run.py prim-text       one or more stems
 
 Each tier is one tier_run.py invocation; this adds only the set, the
@@ -100,6 +104,29 @@ def natives_stamp():
     return h.hexdigest()[:12]
 
 
+def gold_gaps(stems):
+    """Which tiers have no usable banked bare column, and why.
+
+    The key is the program's bytes plus the seed, so a stale column is a tier
+    whose source was edited or a seed that was re-pinned; both mean the bank
+    owes a `--bare` run before a zig-only pass can mean anything."""
+    import tier_run
+    gaps = []
+    for stem in stems:
+        src = FINDINGS / f'{stem}.codex'
+        if not src.is_file():
+            gaps.append((stem, f'{src} does not exist'))
+            continue
+        gold = tier_run.gold_path(src)
+        if not gold.is_file():
+            gaps.append((stem, f'no {gold}'))
+            continue
+        head = gold.read_text().partition('\n')[0]
+        if head != f'# key {tier_run.gold_key(src)}':
+            gaps.append((stem, f'stale key in {gold}'))
+    return gaps
+
+
 def run_one(stem, mode):
     src = FINDINGS / f'{stem}.codex'
     if not src.is_file():
@@ -141,7 +168,15 @@ def main():
     ap.add_argument('--zig', action='store_true')
     a = ap.parse_args()
     compute_lock.require_venue()
-    mode = '--bare' if a.bare else ('--zig' if a.zig else None)
+    # NOT '--zig': that flag means "the zig arm ALONE" to tier_run.py, which
+    # prints a column and never compares it to anything. Passed down, every
+    # tier came back with no summary line to parse and run_one's last branch
+    # called all 21 of them RED -- a set runner that cannot report anything
+    # but failure, from the commit that introduced it (6fc3841) until
+    # 2026-08-25, because nothing had run it. What --zig means HERE is a
+    # normal two-column run with the bare column pinned to gold, and that is
+    # enforced before any tier runs rather than requested by a flag.
+    mode = '--bare' if a.bare else None
 
     stems = a.stems or (sorted(p.stem for p in FINDINGS.glob('prim-*.codex'))
                         + PROBES + sorted(ZIG_REFUSALS))
@@ -154,6 +189,14 @@ def main():
         for stem in [s for s in stems if s in ZIG_REFUSALS]:
             print(f'  skipped {stem}: zig-only refusal probe, no bare column')
             stems.remove(stem)
+    if a.zig:
+        missing = gold_gaps([s for s in stems if s not in ZIG_REFUSALS])
+        if missing:
+            for stem, why in missing:
+                print(f'  no gold  {stem:<24} {why}')
+            print(f'### {len(missing)} bare columns are not banked -- '
+                  '`./tiers_run.py --bare` first, or drop --zig to pay QEMU for them')
+            sys.exit(1)
     counts = {}
     bad = 0
     for stem in stems:
