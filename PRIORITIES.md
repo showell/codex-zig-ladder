@@ -338,6 +338,31 @@ are the keyboard-tempo tools, and both models share the box under the
 compute lock. Nothing else here is open; the sandbox and `.ir` items
 above carry what used to sit in this one.
 
+## 12. zigc has a runner now, and one inconclusive result
+
+**Objective: INTEGRITY.** `zigc` -- the whole compiler as a Linux
+process -- was the only claim in this tree with no runner behind it, and
+Damian asked about it directly. `zigc_verify.sh` is that runner: it
+builds zigc and compiles one program with both zigc and the seed, which
+is the check `gen_zigc_harness.py`'s own docstring names and is stronger
+than a rung, since the seed is the oracle directly.
+
+It builds clean and runs (17,994 lines, 0 plug refusals, 3 s to build,
+under a second to compile). **The byte comparison is inconclusive**: the
+README's subject `ast/repro-mid.codex` is gitignored and gone, and the
+substituted `ast/repro.codex` produces output ~2 KB larger than the
+seed's -- the direction expected from what zigc documents itself as
+dropping (proof pruning, dropped-def handling). Two drivers, not two
+compilers.
+
+Left: find or write a subject that needs none of the driver's extras, so
+the comparison means something. Until then the honest claim is "zigc
+builds and runs". Getting there three times cost three wrong assumptions
+of mine, each caught by a guard already in the tree -- no mode flags
+(CDX9002), the TCP arm on a 13.9 MB IR (the agreement retry refused), and
+a naive marker grep that counted a prelude guard
+(`findings/prelude-comptime-guards.txt` exists for exactly that).
+
 ## Not an item: one zig program, for the zig community
 
 Merging the two emitted natives into a single program to hand to the zig

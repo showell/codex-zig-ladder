@@ -134,6 +134,42 @@ None of these has been tried, and nor has the reclaim above. The symbol
 counts, the seam, and the heap primitives are read from the emitted files;
 everything built on top of them is design, not measurement.
 
+## zigc already exists, and is probably the better artifact
+
+Damian asked (2026-08-24) whether anyone had tried transpiling the whole
+compiler straight away. Someone had: `zigc` is the `passes_to_x86`
+chapter set with a real I/O boundary -- **source in on stdin, a CDX out
+on stdout** -- and the README has carried it since before this note. It
+is ALREADY one program, and for a publicity artifact it is the stronger
+one: a compiler that takes source and emits a bootable image beats a
+merged two-stage transpiler pipeline. The idea above targets a different
+output (Codex to zig rather than Codex to CDX), so it is not redundant,
+but `zigc` should be the first thing anyone reaches for.
+
+**Re-verified 2026-08-25 by `zigc_verify.sh`, which is new, because
+`zigc` was the one ladder claim with no runner behind it.** What the run
+establishes:
+
+    zigc.zig     17,994 lines, 0 plug refusals (1 prelude guard excluded)
+    zig build-exe    3 s
+    zigc compiling ast/repro.codex   under 1 s, 93,104 bytes
+    the seed on the same source      91,010 bytes
+
+So it still builds clean and still runs, which is what had gone
+unchecked. **The byte comparison is INCONCLUSIVE on this subject and is
+not being reported as either a pass or a finding.** The README's original
+subject was `ast/repro-mid.codex`, which is gitignored under
+`repro-*.codex` and no longer exists; `ast/repro.codex` was substituted
+because it is tracked. zigc's output is about 2 KB LARGER than the
+seed's, which is the direction you would expect from precisely what zigc
+documents itself as dropping -- proof pruning and dropped-def handling.
+That is two DRIVERS disagreeing, which the README says is expected, and
+not two compilers.
+
+What would settle it is a subject that needs none of the driver's extras.
+Finding or making one is the open work; until then the honest claim is
+"zigc builds and runs", not "zigc agrees with the seed".
+
 ## The pitch, if it is ever made
 
 **Lead with the stronger claim.** "Zig compiles another language" is the
