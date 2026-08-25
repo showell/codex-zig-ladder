@@ -122,6 +122,26 @@ def _ps():
     return rows, parent
 
 
+def _matches(rows):
+    for pid, ppid, args in rows:
+        prog = job_program(args)
+        if prog and EVIDENCE.search(prog):
+            yield pid, args
+
+
+def compute_jobs():
+    """Every process executing a compute job right now, as (pid, command
+    line) -- whether or not it holds the lock.
+
+    ladder_status.py prints this. It carried a THIRD spelling of the rule
+    until 2026-08-25, with `allcycles` unanchored and a `grep -v grep` of
+    its own, which is what happens to a rule that lives in more than one
+    file: the copy a post-crash session reads is the copy nobody
+    maintains.
+    """
+    return list(_matches(_ps()[0]))
+
+
 def lockless_job():
     """The command line of the first process computing without the lock,
     or None.
@@ -148,11 +168,8 @@ def lockless_job():
         while p > 1 and p not in skip:
             skip.add(p)
             p = parent.get(p, 0)
-    for pid, ppid, args in rows:
-        if pid in skip:
-            continue
-        prog = job_program(args)
-        if prog and EVIDENCE.search(prog):
+    for pid, args in _matches(rows):
+        if pid not in skip:
             return args
     return None
 

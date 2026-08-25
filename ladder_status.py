@@ -13,6 +13,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # ladder-root-bootstrap
+import compute_lock
 import seed_identity
 from ladder_root import LADDER
 
@@ -40,7 +41,14 @@ def main():
     banks = sorted(p.name for p in (LADDER / 'truth').iterdir() if p.is_dir())
     print(f"banks    {', '.join(banks) if banks else 'none'}")
 
-    tags = sh(f"git -C {LADDER} tag -l 'u*-14of14' | sort -V | tail -1")
+    # Newest by the date it was MADE, and every shape of the name. The
+    # glob was 'u*-14of14' sorted -V, and the bank taken on 2026-08-25 is
+    # `seed-6cf4a8e0-14of14` -- named for a bank rather than an Update,
+    # on purpose, because Update 50's push was interim. So this line
+    # answered `u49-14of14` for three days: a tool for a session that has
+    # lost its state, naming the wrong bank with no way to tell.
+    tags = sh(f"git -C {LADDER} for-each-ref --sort=-creatordate "
+              f"--format='%(refname:short)' 'refs/tags/*-14of14' | head -1")
     print(f"tag      {tags or 'none'}")
 
     fresh, stale, unproven = [], [], []
@@ -64,9 +72,20 @@ def main():
     if lock.exists():
         held = subprocess.run(['flock', '-n', str(lock), 'true'],
                               capture_output=True).returncode != 0
-    procs = sh("ps -eo args | grep -E 'qemu-system|rebank_all|allcycles|corpus_run|native_build' | grep -v grep | cut -c1-60")
+    # What is computing comes from compute_lock, which owns the rule --
+    # this printed its own regex until 2026-08-25 and it had already
+    # drifted (`allcycles` unanchored, and matching any command line that
+    # merely NAMED a job, so a watcher or an editor read as a running
+    # sweep). Facts only: a held lock beside nothing running is worth
+    # seeing, not worth interpreting here.
+    jobs = compute_lock.compute_jobs()
     print(f"lock     {'HELD' if held else 'free'}")
-    print(f"compute  {procs if procs else 'nothing running'}")
+    if not jobs:
+        print("compute  nothing running"
+              + ("  (lock held by a process that is not computing)"
+                 if held else ""))
+    for pid, args in jobs:
+        print(f"compute  {pid} {args[:60]}")
 
     logs = sorted((LADDER / 'logs').glob('*.log'), key=lambda p: p.stat().st_mtime)
     if logs:
