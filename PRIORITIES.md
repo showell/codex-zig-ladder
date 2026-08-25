@@ -104,63 +104,38 @@ loop unless it says otherwise.
 
 ---
 
-## 1. Finding 42: the self-tail loop reads a global where the source reads its parameter
+## 1. Finding 42 is FIXED; the send is the last step
 
-**Objective: INTEGRITY, then OUTBOUND. BOX, and it is the one running.**
-It leads because it is a correctness defect that is OURS, is SILENT, and
-is already upstream; nothing in [ERGONOMICS.md](ERGONOMICS.md) outranks
+**Objective: INTEGRITY, then OUTBOUND. The box work is DONE.** It led
+because it was a correctness defect that is OURS, is SILENT, and is
+already upstream; nothing in [ERGONOMICS.md](ERGONOMICS.md) outranks
 that.
 
-The register has the mechanism (finding 42). The short form: a definition
-whose parameter shadows a top-level definition gets that parameter
-renamed to `_arg_<name>`, correctly, and then the SELF-TAIL-LOOP emission
-resolves the name in its body to the top-level definition instead of to
-the renamed parameter. The non-loop emission binds it correctly, so this
-is PR 81's path and nothing else. Absorbed upstream in Update 50's
-interim push (main 19131).
+The register carries the mechanism, the three hunks and every
+measurement. The short form: a self-tail loop resolved an invariant
+parameter that shadows a top-level definition to THE DEFINITION, so the
+loop read a global where the source read its own argument. Two more
+blind spots had to line up for it to be silent rather than loud, and the
+second walk that shared one is fixed with it.
 
-**`dtls-fragment` refused, and that was luck twice over.** Zig makes an
-unused function parameter a hard error, and the substitution left NO
-reference to either parameter, so the file would not compile -- that is
-the first accident. The second is that neither collision sat behind a
-match guard: had one, the plug would have emitted a discard, the file
-would have built, and the wrong answer would have shipped with no
-diagnostic. Treat the compile error as the accident it is, not as the
-failure mode.
+Measured 2026-08-25 in sandbox `20260825T160701Z-f42-row`: the tier row
+red first (`shadow-guard`, bare metal 3 against the zig arm's 5), then
+green; the 22-tier set green at 15/7, unchanged in shape; 14 of 14 rungs
+green in 1589 s; all fourteen ladder units emitting byte-identical zig
+across the two native builds; and the census moving exactly one verdict
+-- `dtls-fragment`, `refused -> match` -- with 320 of 325 clean programs
+byte-identical to the bank.
 
-**The tier row is in and RED** (`a8538b2`, 2026-08-25): `prim-tailcall`
-row `shadow-guard`, bare metal 3 against the zig arm's 5. Writing it
-found that the obvious minimization cannot fail this way at all -- the
-plug's occurrence check emits a `_ = _arg_x;` discard for a parameter it
-believes unread, so a read it CAN see means no discard, an unmentioned
-`_arg_x`, and a build refusal instead of a wrong answer. The silent form
-needs a read the check is blind to; a match guard inside a tail-call
-argument is one, because `zig-occurs` walks branch bodies and not
-guards. The register carries the mechanism and the measurement.
+**What is left is the send, and it is Steve's call.** The branch is cut
+and committed: `zig-plug-loop-param-rename` off `upstream/master`
+`0c4327d5`, one emitter commit carrying `plugs-backlog.md` row 1.58, a
+`Ladder: shadow-loop-rename` line, and the ladder tag pushed. It has not
+been pushed to the fork and no PR is open.
 
-What is left, in order:
-
-- **The emitter fix**, in `ZigEmitter.codex`'s loop emission: the loop
-  body must resolve a renamed parameter to its `_arg_` name the way the
-  non-loop path already does. The rules that file expects of an editor
-  are in its own prose, at the top and beside each helper; read them
-  before touching it. `shadow-guard` going green is the gate.
-- **Then the chain**: natives, `tiers_run.py`, a sweep, and the census
-  again -- `dtls-fragment` must go back to `match`, and nothing else may
-  move.
-- **Then outbound**, with a `plugs-backlog.md` row. Ours, shipped, so the
-  row says so plainly.
-
-**The row stays red until the fix lands, and it is NOT in
-`EXPECTED.txt`.** A ledger row would make it `noted`, and a defect of
-ours that is still shipping is not a divergence we accept. A red tier
-set is the correct state of the instrument right now.
-
-**`zig-occurs` misses handle clauses the same way it misses guards**, and
-nothing tests that. It is the same one-line class as the guard hole; if
-the fix below makes the loop path bind renames properly the hole stops
-mattering for THIS defect, but the occurrence check is also what drives
-every discard, so it is worth a look while the file is open.
+**When it lands, the tier row's job changes.** `shadow-guard` stops
+being a red that must go green and becomes the regression detector for
+the class -- which is the whole reason it was written before the fix
+rather than after.
 
 ## 2. The external review, batches 1 and 3
 

@@ -903,7 +903,8 @@ upstream.
 
 **Found 2026-08-25 by the Update 50 census re-pin. OURS -- the zig plug's
 self-tail-call transformation, PR 81, ABSORBED UPSTREAM in Update 50's
-interim push (main 19131). OPEN, unfixed, unsent.** The census moved
+interim push (main 19131). FIXED AND VERIFIED 2026-08-25; the branch is
+cut and the send is Steve's call.** The census moved
 exactly three verdicts against the 2026-08-23 bank and one of them was
 `dtls-fragment`, **match -> refused**: `corpus/dtls-fragment.zig:942:57:
 error: unused function parameter`.
@@ -985,12 +986,60 @@ once that the collision was not behind a guard. A `dtls-fragment` whose
 `body` were read from a guard would have compiled and shipped a wrong
 answer.
 
-**Next, in order:** the fix in `ZigEmitter.codex`, which is to make the
-loop body resolve a renamed parameter to its `_arg_` name the way the
-non-loop path does; then a sweep and the census (`dtls-fragment` must go
-back to `match`); then outbound. It is ours and it is upstream, so it
-goes out with a `plugs-backlog.md` row. The tier row stays red until the
-fix lands, and does NOT go in `EXPECTED.txt`.
+**THE FIX, three hunks, measured 2026-08-25.** Branch
+`zig-plug-loop-param-rename` off `upstream/master` `0c4327d5`, ladder tag
+`shadow-loop-rename`, `plugs-backlog.md` row 1.58. Sandbox
+`20260825T160701Z-f42-row`.
+
+1. **`emit-zig-def`'s loop branch composes both rename tables.** It built
+   the body context from `zig-push-tail-renames` alone, which covers the
+   parameters the loop REASSIGNS and only those; an invariant slot is
+   never assigned, gets no loop var, and so got no rename. Pushing
+   `zig-push-param-renames` underneath restores the `_arg_` name for
+   exactly those parameters, and the tail renames still win for the
+   reassigned ones because `zig-renamed-scan` reads from the end.
+2. **`zig-occurs-branches` walks a branch's guard.** Without this, hunk 1
+   turns the defect from a wrong answer into a BUILD failure rather than
+   fixing it: the discard `_ = _arg_x;` is emitted for a parameter the
+   check believes unread, and zig refuses `_ = x;` followed by a real use
+   as a pointless discard. Measured, not argued.
+3. **`zig-max-list-len-branches` walks it too.** The file's own prose says
+   that walk mirrors `zig-occurs`, "same nodes, same reason to visit them,
+   and the same consequence for a node it forgets". It had the identical
+   hole, shown before fixing: the same 40-element literal emits
+   `@setEvalBranchQuota` in a branch body and none in a branch guard. That
+   failure is LOUD (a zig comptime resource error) and no corpus program
+   reaches it today. Neither walk descends into an effect handler's
+   clauses, which is deliberate and now stated in the source --
+   `emit-zig-expr` answers `@compileError` for any `IrHandle` with
+   clauses, so nothing beneath one is ever emitted.
+
+**What the measurements say, in the order they were taken.**
+
+- **The tier row FIRST, red:** `prim-tailcall`'s `shadow-guard`,
+  `!! shadow-guard 3 | shadow-guard 5` (ladder `a8538b2`).
+- **After hunks 1 and 2** (natives `7fe0df50919f`): the row green on both
+  arms; the 22-tier set green at 15 green / 7 noted / 0 unexpected,
+  unchanged in shape from before the fix; **14 of 14 rungs green in a
+  sweep, 1589 s**.
+- **After hunk 3** (natives `40a72f63f172`): tier set green again, and the
+  hunk shown INERT by byte comparison rather than by a second sweep --
+  all fourteen ladder units, `lex` through `codexir` and the emitter's own
+  bundle, emit byte-identical zig under both native builds. That is the
+  honest claim: the sweep ran with hunks 1 and 2, and hunk 3 is proven to
+  change nothing the sweep measures.
+- **The census, which is what found it:** 320 of the 325 clean corpus
+  programs are byte-identical to the 2026-08-25 bank and were not rerun.
+  Five moved and **exactly one verdict moved with them --
+  `dtls-fragment`, `refused -> match`.**
+
+**Three more depot programs carry the collision.** The five whose emitted
+zig moved are `dtls-fragment`, `final-batch-test`, `lorawan-encode` and
+two hardware-only classifiers. The middle two stayed `refused` for
+unrelated reasons (`use of undeclared identifier 'Timestamp'`; a
+`std.Thread` startFn return type), so neither was ever run and neither
+could have shown the wrong answer -- but their emission moving says the
+shape is not a peculiarity of `dtls-fragment`.
 
 ## 41. `riscv` and `java` break the same curried-application rule as finding 40, and riscv's correct fix is already in the tree, dead
 
