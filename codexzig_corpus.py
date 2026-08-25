@@ -26,6 +26,11 @@ TWO CHECKS PER PROGRAM, and they answer different questions:
                     defect the pipeline shares, because the oracle is outside
                     both.
 
+MEASURED 2026-08-25, against our fork's stack (upstream `0c4327d5` plus
+PR 85's finding-42 fix and PR 89's IRTextParser rename -- the optimistic
+Update 51, not bare upstream): **correct 181, byte-identical to the pipeline
+181/181, in 104 seconds.**
+
 The comparison semantics are corpus_run's, imported rather than re-spelled:
 `expected_text` carries the 0x01/CRLF normalisation the depot's own
 adjudicator uses, output is read from STDERR because print-text is
