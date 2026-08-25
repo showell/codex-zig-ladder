@@ -12,7 +12,19 @@ set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 if [ $# -eq 2 ]; then OLD=$1; NEW=$2
 else
-    set -- $(ls -d "$T"/truth/u*/ 2>/dev/null | xargs -n1 basename | sort -V | tail -2)
+    # "The two newest" is a question about WHEN a bank was taken, and this
+    # answered it from the NAME: `truth/u*/` sorted -V. Update 50's push
+    # was interim, so its bank is `seed-6cf4a8e0` -- not a uNN, on
+    # purpose -- and the glob skipped the newest bank in the tree without
+    # a word, leaving a bare bank_diff.sh comparing u48 to u49 and
+    # reporting it as today's answer. Order by when each bank first
+    # landed in git, which is the same thing a bank IS: a measurement,
+    # committed once.
+    set -- $(cd "$T/truth" && for d in */; do
+                 d=${d%/}
+                 ts=$(git -C "$T" log --format=%ct --diff-filter=A -- "truth/$d" | tail -1)
+                 echo "${ts:-$(stat -c %Y "$T/truth/$d")} $d"
+             done | sort -n | tail -2 | cut -d' ' -f2)
     OLD=$1; NEW=$2
     [ -n "$NEW" ] || { echo "fewer than two banks under truth/"; exit 1; }
 fi
