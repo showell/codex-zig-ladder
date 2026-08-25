@@ -899,6 +899,65 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
+## 44. The AST does not carry a record's implicit type parameters -- only the IR text emitter derives them, so every consumer of the AST that is not the wire sees an incomplete type
+
+Found 2026-08-25 on the ladder droplet against `0c4327d5`. THEIRS,
+core-compiler. **SENT as PR 90** (COMPILER-20, ladder tag
+`codexzig-fixed-point`). Measured: it cost two attempts at a single-binary
+Codex-to-zig transpiler before it was understood.
+
+`foreword/core/Sort.codex:20` declares
+
+    SortPartition = record { list : List a, pivot : Integer }
+
+with no parameter list at all -- `a` is free in the field types. The AST
+value `ARecordTypeDef (name) (tparams) (fields) (is-mut) (span)` therefore
+carries `tparams = []`, and **nothing in the compiler ever fills it in.**
+
+What fills it in is the SERIALISER. `IRTextEmitter.codex:402-406` computes
+`inferred = ir-collect-rec-field-tparams fields ...` at write time and
+`ir-emit-tparams-text:386` writes the explicit list if there is one and the
+inferred list otherwise; `:408-410` does the same for variants through
+`ir-collect-var-ctor-tparams`. So the IR text says `(rec-def
+"SortPartition" (tparams "a") ...)` and every plug, which reads that text,
+sees a complete type. The AST it was derived from does not.
+
+**The consequence, measured rather than argued.** Hand that same ATypeDef
+straight to the zig plug's `emit-zig-chapter` -- which takes the compiler's
+own `IRChapter` and `List ATypeDef`, so this is a legitimate call -- and it
+emits
+
+    const SortPartitionS = struct { list: *CxList(a), ... };
+
+a monomorphic struct whose fields still mention `a`. That is zig that does
+not compile: `error: use of undeclared identifier 'a'`. The SAME emitter,
+handed the SAME program through the text wire, emits the generic form. The
+wire is load-bearing for semantics, not just transport.
+
+**A second instance of the same class, one level down.** Use-site
+annotations: the wire carries `(record-ty "SortPartition" (args (tvar 30)))`
+and the in-memory form renders without the args, so the emitter writes
+`SortPartitionS{...}` where the wire's version writes `SortPartitionS(T30){...}`.
+Deriving one and not the other is what makes this a class rather than a
+bug: we fixed the first by copying the derivation into our harness, and the
+second appeared immediately behind it.
+
+**Why it matters beyond us.** Any tool that consumes the AST directly --
+a second emitter, a linter, an editor integration -- inherits the
+incompleteness, and inherits it silently, because the type LOOKS complete.
+Whether a record is generic is a property of the type, not of its
+serialisation.
+
+**Our workaround, which is not a fix.** The combined transpiler emits the
+IR text and parses it back in memory, so it runs the same code in the same
+order as `codexir | zigemit`. That is a fixed point -- it emits its own
+2.8 MB bundle byte-identically -- and it is also an admission that the wire
+cannot be skipped today.
+
+**Hedged.** We have not attempted the fix. Moving the derivation to where
+the checker learns it touches the type checker and every plug that reads
+type-defs, and we can verify only the zig arm.
+
 ## 43. No plug `run.ps1` consults the VM host selection in the config it sources, so no plug can be run on Linux
 
 Found 2026-08-25 on the ladder droplet against `0c4327d5`, which is
