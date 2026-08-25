@@ -180,7 +180,9 @@ def main():
 
     stems = a.stems or (sorted(p.stem for p in FINDINGS.glob('prim-*.codex'))
                         + PROBES + sorted(ZIG_REFUSALS))
-    print(f'### tiers_run: {len(stems)} tiers, mode {mode or "both arms"}, natives {natives_stamp()}')
+    shown = '--bare' if mode == '--bare' else (
+        'zig re-measured, bare from gold' if a.zig else 'both arms')
+    print(f'### tiers_run: {len(stems)} tiers, mode {shown}, natives {natives_stamp()}')
     for stem, why in EXCLUDED.items():
         if stem in stems:
             print(f'  excluded {stem}: {why}')
