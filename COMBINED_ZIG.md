@@ -1,8 +1,31 @@
 # One zig program, for the zig community
 
-**Status: an idea, not a plan (Steve, 2026-08-24, brainstorming).** Nothing
-here is scheduled and nothing depends on it. PRIORITIES links this file and
-does not carry it as an item.
+**Status: SUPERSEDED 2026-08-25. The program exists, and it was built the
+other way.** `codexzig_build.sh` produces `native/codexzig` -- Codex source
+in, zig out, one process -- by merging the two halves in CODEX, as one
+bundle, rather than merging the two emitted zig files as this note proposed.
+Everything below is the study of the zig-level route and is kept as the
+record of why that route was not taken.
+
+**Why the Codex-level merge wins, in one line: the merge happens before the
+emitter runs.** So there is one program with one `main`, one arena and one
+thread -- and the whole of this note's hard part evaporates. No 94 duplicate
+symbols, no `@import` namespacing, no patching `cx_write_all` or
+`cx_read_file_uni` inside generated code, no two heaps and no `madvise`
+reclaim between them. Nothing generated is edited, so nothing rots when
+`ZigEmitter.codex` moves.
+
+**And the seam is smaller than this note assumed.** It is not two functions
+patched at the I/O boundary; it is one expression, because the two halves
+already meet at a type: `emit-zig-chapter : IRChapter, List ATypeDef -> Text`
+and `IRChapter` is the compiler's own. The front end has that value in hand,
+so the combined harness hands it over directly and `IRTextParser` is not
+carried at all -- it exists to rebuild those values from text off a serial
+ring, which is the plug's situation and not a hosted program's.
+
+Measured on the first build: 59,151-line bundle, 27.8 MB binary, no deck
+overflow and no plug refusals; Fib to 36,833 bytes of zig in 10 ms; and the
+output is byte-identical to `codexir | zigemit` on 85 programs.
 
 ## What it is
 

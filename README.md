@@ -1298,6 +1298,20 @@ code, F4 boots the emitted binary.
   std.debug.print in the emitted runtime -- a wart, and why every caller
   uses `2>` redirects) instead of the ring plug's serial framing, then
   transpiled and built like anything else here.
+- `codexzig_build.sh` -- builds `codexzig`, which is both of those in ONE
+  program: Codex source in on stdin, zig out on stderr, no intermediate IR
+  and no second process. Not a merge of the two emitted zig files (that is
+  what [COMBINED_ZIG.md](COMBINED_ZIG.md) studied, and why it never
+  happened); it is one Codex bundle, because the two halves already meet at
+  a type -- `emit-zig-chapter : IRChapter, List ATypeDef -> Text`, and
+  `IRChapter` is the COMPILER's own. So the bundle is codexir's chapter set
+  plus one chapter, the emitter, and the harness hands the front end's `ir`
+  straight to it. `IRTextParser` is not carried: it exists to rebuild those
+  values from text off a serial ring, which is the plug's problem, not a
+  hosted program's. **The two-process pipeline is its oracle, not merely its
+  predecessor** -- `./codexzig_build.sh --check <prog.codex>` runs both ways
+  and byte-compares. 85 programs agree byte for byte (2026-08-25: every
+  `codex/plugs/test-input`, every warmup, every `prim-*` and `probe-*`).
 
 ## zigc: the compiler as an ordinary process
 

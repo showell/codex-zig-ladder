@@ -342,13 +342,22 @@ Left:
   untouched. Verified inert first (ladder tag `stack-prose-verified`,
   JUSTIFICATIONS "A prose block moves the plug and not its output").
 
-## Not an item: one zig program, for the zig community
+## Not an item: one zig program, and it exists now
 
-Merging the two emitted natives into a single program to hand to the zig
-community -- publicity, not engineering, and we keep the separate binaries
-because the intermediate IR is what most of our questions are asked about.
-Feasibility read and the two-function seam are in
-[COMBINED_ZIG.md](COMBINED_ZIG.md). Unscheduled; nothing depends on it.
+**Built 2026-08-25 (Steve's call to take it up again): `codexzig_build.sh`,
+`native/codexzig`, Codex source in and zig out in one process.** Not the
+merge of two emitted zig files [COMBINED_ZIG.md](COMBINED_ZIG.md) studied --
+one Codex bundle, codexir's chapter set plus the emitter, joined by a single
+expression because `emit-zig-chapter` takes the compiler's own `IRChapter`.
+Byte-identical to `codexir | zigemit` on 85 programs.
+
+**We keep the two separate binaries**, for the reason that has not changed:
+the intermediate IR is what most of the ladder's questions are asked about.
+codexzig is the artifact for other people, and it is also its own regression
+test -- `--check` byte-compares it against the pipeline.
+
+Still unscheduled and nothing depends on it: what remains is publicity, not
+engineering, and the pitch notes are in COMBINED_ZIG.md.
 
 ---
 

@@ -39,8 +39,12 @@ if [ "${1:-}" = --check ]; then
         [ -x "$OUT/$t" ] || { echo "MISSING $OUT/$t -- build it first"; exit 1; }
     done
     echo "### oracle check on $subj"
-    "$OUT/codexir" "$subj" 2> "$W/pipe.ir"
-    "$OUT/zigemit" "$W/pipe.ir" 2> "$W/pipe.zig"
+    # BOTH read /dev/stdin -- their harnesses say read-file-uni "/dev/stdin"
+    # and nothing looks at argv. Handing them a PATH aborts with a core dump
+    # (the 10-byte CCE path on an empty read), which is what the usage line
+    # in native_build.sh used to show.
+    "$OUT/codexir" < "$subj" 2> "$W/pipe.ir"
+    "$OUT/zigemit" < "$W/pipe.ir" 2> "$W/pipe.zig"
     "$OUT/codexzig" < "$subj" 2> "$W/one.zig"
     echo "    two processes: $(stat -c%s "$W/pipe.zig") bytes"
     echo "    one  process:  $(stat -c%s "$W/one.zig") bytes"

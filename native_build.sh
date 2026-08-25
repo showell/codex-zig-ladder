@@ -9,7 +9,12 @@
 # step is the only one that is not a VM, which is the whole point of building
 # these -- afterwards the chain
 #
-#   codexir prog.codex 2>prog.ir && zigemit prog.ir 2>prog.zig && zig build-exe prog.zig
+#   codexir <prog.codex 2>prog.ir && zigemit <prog.ir 2>prog.zig && zig build-exe prog.zig
+#
+# Both read /dev/stdin and neither looks at argv, so the redirect is not a
+# style choice: this line said `codexir prog.codex` until 2026-08-25, and
+# that form aborts with a core dump -- the empty read takes the 10-byte CCE
+# path. A usage line nobody had run.
 #
 # is three native processes. Output lands on stderr because print-text is
 # cx_print is std.debug.print; that is a wart, not a design, and it is why the
