@@ -48,11 +48,19 @@ POLICY = {
                       'not something a subset bundle can fix.'),
     # Read all 37 on 2026-08-18, both sites. Benign at every one: the hazard is
     # a SIBLING field reading the record that was just mutated, and no site does.
-    #   X86_64State:923  EmitResult { state = __record-set st1 ..., reg = scratch }
-    #                    scratch is an Integer, not a read of st1.
-    #   Parser:764       ParseTypeDefResult { maybe-type-def = Just (__record-set td ...),
-    #                                         state = st-deriv }
-    #                    st-deriv is a ParseState; td is a TypeDef.
+    #   X86_64State, load-local:
+    #       EmitResult { state = __record-set st1 ..., reg = scratch }
+    #       scratch is an Integer, not a read of st1.
+    #   Parser, attach-deriving:
+    #       ParseTypeDefResult { maybe-type-def = Just (deck-record (__record-set td ...)),
+    #                            state = st-deriv }
+    #       st-deriv is a ParseState; td is a TypeDef.
+    # Cited by enclosing function rather than by line, because both line numbers
+    # this comment used to carry were wrong when re-read under seed 6CF4A8E0:
+    # X86_64State's 923 was right at Update 48 and Update 49 pushed the site to
+    # 930, and Parser's 764 never named the site at all (775 in all three
+    # Updates). A depot line number is a per-Update fact and this pin outlives
+    # Updates; a function name survives everything short of a rename.
     # Left as NOTE with the count pinned rather than promoted to OK, because
     # "benign in every instance we read" is a statement about a population, and
     # the population is what changes.
