@@ -71,84 +71,7 @@ loop unless it says otherwise.
 
 ---
 
-## 1. A fresh sandbox can sweep now, and the wiring is proven from empty
-
-**Objective: ERGONOMICS. DONE except the census bullet.** The problem it
-was written for: `allcycles.sh` runs the zig and ring arms against truths
-already banked, but `zig_arm` refused without a per-sandbox
-`ast/<rung>.ir` and a fresh sandbox had none, so every sweep after an
-emitter change paid a full rebank first -- roughly 27 minutes of truth arm
-to produce inputs the bank could have provided -- before the 11 minutes
-that answer the question actually asked.
-
-The f35 chain lost a run to it on 2026-08-23, and the finding-40 fix paid
-the full 27 minutes on 2026-08-24 with an unchanged seed and an unchanged
-bare-metal arm -- nothing about the rebank was in question, it was there
-to make files. It was charged against every emitter change, which is the
-change we make most, which is why it sat at the front of this list.
-
-**WRITTEN, NOT RUN (`ed6abff`).** `ast/ensure_ir.sh` is the truth arm's
-first half -- bundle, IR-CCE blob, `ring_compile`, `stamp-ir` -- and
-`allcycles.sh` calls it for any unit whose `.ir` is missing or refused.
-A new file rather than a function in `oracle_lib.sh` on purpose: the
-truth sidecars hash that file whole, so adding to it would invalidate
-every recorded truth's provenance, which is the item below biting the
-first change that would have edited it.
-
-**AND IT IS NOT ENOUGH -- checked 2026-08-24 before running it.** The
-`.ir` is only half of what a fresh sandbox is missing. `zig_verdict`
-diffs the arm against the WORKING `ast/<rung>.truth` and calls
-`truth_prov.py check` on it first; a fresh sandbox has neither the truth
-nor its sidecar, so the sweep still cannot start. Measured in sandbox
-`20260824T225947Z-ensure-ir-test`: 0 working truths, 0 sidecars, 14
-truths sitting in the bank, and `truth_prov.py check lex` answering
-`STALE TRUTH for lex: no provenance sidecar (rerun the truth arm)`.
-
-**The provenance decision was taken, and it was the clean one.** The bank
-now carries what each truth was measured under: `bank_truth.py` copies
-every `.truth.prov` sidecar in beside its truth, so a restored truth is
-fully checkable afterwards and `truth/uNN/SEED` is no longer the only
-provenance in the bank. The weaker alternative -- restore on seed alone
-and label the sweep bank-restored -- was not needed, so the gate that
-refuses a truth from another seed is intact rather than loosened.
-
-**RUN, AND THE NUMBER IS SMALLER THAN THE ESTIMATE (2026-08-24).** Sandbox
-`20260824T225947Z-ensure-ir-test`, from nothing: **14/14 rungs green in
-1499 s** against **2294 s** for the full rebank+sweep of the same 12 units
-earlier the same evening (1637 s rebank + 657 s sweep). That is **13
-minutes back, not the 27 this item claimed** -- about 35% off, not 71%.
-
-The estimate was wrong because `ensure_ir.sh` skips the cheaper half of
-the truth arm, not the dearer one. What it drops is the bare-metal binary
-compile and the subject RUN; what it still pays, per unit, is the bundle
-and the IR-CCE compile through the ring -- and the ring compile is where
-the time is (JUSTIFICATIONS' Nagle entry: 148 s of stream on the
-`ir_to_x86` unit alone). Reading the truth arm top to bottom would have
-shown that before the run did.
-
-It is still the right change: 35% off the loop we run most, and a fresh
-sandbox can now sweep AT ALL, which was the actual goal and is not a
-percentage. But the item's own headline number was an estimate presented
-as a saving, which is the shape of claim this queue is supposed to catch.
-
-Left:
-
-- ~~**The restore path has not been exercised from empty.**~~ **DONE
-  2026-08-25** (`~/runs/20260825T001111Z-restore-from-empty`). The run
-  existed to test the WIRING rather than the plug, and the wiring fired:
-  from a tree with no artifacts at all, `allcycles.sh` took the restore
-  branch ("restored 14 truths and their sidecars into ast/", all 14
-  passing `check_rung` against that tree), `ensure_ir.sh` rebuilt all
-  twelve `.ir` files, and the sweep came back **14/14 green in 1525 s** --
-  within 2% of the 1499 s measured when the truths were already on disk,
-  so the integrated path costs what the manual one did. Its honesty
-  footers all fired too: census declined to compare, and the summary said
-  the truths were bank-restored rather than re-measured.
-- **The census still declines to compare** when any IR was rebuilt, which
-  is honest and leaves a cheap sweep with no census at all. The
-  banked-diagnostics item below is the real answer.
-
-## 2. Launching a detached job is a foot-gun with a live tripwire
+## 1. Launching a detached job is a foot-gun with a live tripwire
 
 **Objective: ERGONOMICS.** `ast/rebank_all.sh` relaunches itself detached
 so a dead terminal cannot kill an hour-long run. The detached child is
@@ -166,7 +89,7 @@ rebank refused itself again this way and printed its refusal into a log
 nobody was tailing** -- from the terminal it looked launched, and the
 run simply did not exist for four minutes.
 
-Two things to fix, and the first matters more:
+Three things to fix, and the first matters more:
 
 - **A refusal must reach the launcher, not only the log.** The parent's
   early `flock -n` check exists for this and did not fire, because the
@@ -176,12 +99,32 @@ Two things to fix, and the first matters more:
   ancestor of nothing and can speak).
 - **Walk the launcher's ancestry before it exits**, or record it: pass
   the whole chain rather than a pid that is about to die.
+- **The detector reads the wrong thing, and it already knows.** `EVIDENCE`
+  is searched against the FULL argv of every process, so anything that
+  merely mentions a job's name looks like the job -- which is why the
+  check carries a `'grep' not in args` exception, a paper-over of the
+  class rather than a fix. It bit again on 2026-08-25 in a different
+  tool: a watcher waiting for the natives to finish with
+  `pgrep -f "native_build.sh|tiers_run.py"` matched its own command
+  line and waited for itself, so a job that had FINISHED read as still
+  running. What identifies a job is the program it is executing, not a
+  string in a shell's `-c`; match the script path (`comm`, or argv[0]
+  resolved) and the exception can go with it.
 
 Until then: launch through a wrapper script whose own argv does not match
 `EVIDENCE` (`qemu-system|rebank_all|allcycles\.sh|corpus_run|native_build`),
-and never leave a `sleep` in the launching shell.
+never leave a `sleep` in the launching shell, and do not name a job in
+the command line of anything that watches for it.
 
-## 3. Provenance watches one file too many
+Verified still live 2026-08-25 against `compute_lock.py`: `roots` is
+`[me, LADDER_LAUNCHER_PID]` and each is walked up through `parent`, so a
+launcher pid that has already exited contributes nothing to `skip` and
+the shell that still matches is never excused. Today's runs did not trip
+it because `native_build.sh` and `allcycles.sh` do not self-detach --
+their launching shell stays an ancestor. `rebank_all.sh` is the one that
+does, and it is the one that has refused itself twice.
+
+## 2. Provenance watches one file too many
 
 **Objective: ERGONOMICS.** The truth sidecars hash `oracle_lib.sh` whole,
 so a guard-or-comment edit to the zig-arm half invalidates every recorded
@@ -191,7 +134,7 @@ truth_arm, split plumbing) into its own sourced file the sidecar watches;
 the zig-arm half free to move. Do it right after a bank lands, never
 between recording and banking.
 
-## 4. Execute the rung renames (proposed, not started)
+## 3. Execute the rung renames (proposed, not started)
 
 **Objective: ERGONOMICS.** `RENAME-PROPOSAL.md` has the mapping and
 migration plan (temporary file; the executing commit deletes it). No
@@ -203,7 +146,7 @@ literals (`ast/f3_run.zig:222`, `ast/f4_boot.py:26-29`,
 passes GREEN. Clean the orphans before the first sweep. Waits until the
 findings that cite current names stop being re-read.
 
-## 5. The refusal-gaps branch, rebased and re-verified
+## 4. The refusal-gaps branch, rebased and re-verified
 
 **Objective: HUNTING, reached through our own gap-filling** -- every
 family implemented promotes a slab of census programs into the comparing
@@ -231,7 +174,7 @@ non-exhaustive switch. Also queued: the JS plug's IrNumLit takes bits as
 a NUMBER and its parseFloat is correctly rounded where bare metal's
 `__text_to_double` is not -- probe before filing.
 
-## 6. Every unhandled construct must refuse BY NAME
+## 5. Every unhandled construct must refuse BY NAME
 
 **Objective: INTEGRITY, and it is the one that sets the queue.** Four
 findings now fail as raw zig errors rather than a
@@ -246,7 +189,7 @@ that cannot see them. The systemic answer -- every unhandled construct
 refuses by name -- is worth more than any individual gap, and the census
 in "The refusal-gaps branch" is where the count would show it.
 
-## 7. The tiers stay green, and each one earns its keep
+## 6. The tiers stay green, and each one earns its keep
 
 **Objective: DUE_DILIGENCE that keeps turning into HUNTING.** The tiers
 and probes exist (DONE.md 2026-08-21); `tiers_run.py` runs them as a set
@@ -292,7 +235,7 @@ finding on its FIRST run:
   anyone remembering to check. That is what a tier is for, and it could
   not do it while one arm refused to compile.
 
-## 8. The stack is measured now, and the emitter's prose about it is wrong
+## 7. The stack is measured now, and the emitter's prose about it is wrong
 
 **Objective: INTEGRITY, already half done.** `stack_probe.py` -- finding
 37's instrument -- bisects the emitted thread stack against real
@@ -344,14 +287,22 @@ Left:
   trailer naming the tag from the ceremony section, and the worktree goes
   when it does.
 
-## 9. Diagnostics as a banked set
+## 8. Diagnostics as a banked set
 
 **Objective: INTEGRITY.** A pinned count (CDX6020 x43 in
 `check_diags.py`) says something changed; a banked set diffed like a
 truth file says WHAT, and retires the pins that move whenever the unit
-list changes rather than when the source does.
+list changes rather than when the source does. 2026-08-25 is the case
+for it: the count had not moved, so the pin said nothing, while both
+source citations under it had rotted -- one by an Update, one from the
+day it was written.
 
-## 10. The external review, batches 1 and 3
+It also closes the hole the cheap sweep leaves. `allcycles.sh` declines
+to run the census at all when any `.ir` was rebuilt, which is honest and
+which means the sweep we now run MOST is the one that reports no
+diagnostics. A banked set is comparable whatever produced the IR.
+
+## 9. The external review, batches 1 and 3
 
 **Objective: INTEGRITY** -- these are wrong-bank and wrong-PASS closers.
 `REVIEW-2026-08-19.md` (Marley, ~34 findings); Batch 2 is done (DONE.md
@@ -370,7 +321,7 @@ tree, since several have been fixed in passing.
   census json stays; LICENSE is Steve's call; errors='replace'
   byte-compare rides Batch 3.
 
-## 11. Venue plumbing, what is left of it
+## 10. Venue plumbing, what is left of it
 
 **Objective: ERGONOMICS.** Pushes go through the deploy keys
 (`github-ladder`, `github-nr`) since 2026-08-23. The straw scripts
@@ -379,7 +330,7 @@ are the keyboard-tempo tools, and both models share the box under the
 compute lock. Nothing else here is open; the sandbox and `.ir` items
 above carry what used to sit in this one.
 
-## 12. zigc has a runner now, and one inconclusive result
+## 11. zigc has a runner now, and one inconclusive result
 
 **Objective: INTEGRITY.** `zigc` -- the whole compiler as a Linux
 process -- was the only claim in this tree with no runner behind it, and

@@ -679,7 +679,8 @@ overrunning into main's live objects because the harness (by its own
 admission) guessed the number -- "too small shows up as CDX9002 or a
 fault, which is the honest direction to be wrong in". It did. The guard
 from `e4d2fcd1` missed it because the overrun runs main-from-below (the
-direction the guard does not see, still riding with PRIORITIES item 1).
+direction the guard does not see, and no queue item carries it -- the
+pointer here named a PRIORITIES numbering that no longer exists).
 The flagship commit's "capacity diverges at scale" should now read
 "the hosted harness reserves one placeholder-sized deck for every phase".
 Next instrument: per-allocation-path deck byte counts on a subject size
@@ -810,8 +811,10 @@ compiler's functions but drop the driver's reclaim discipline, and
 a lazily-faulted reservation since `c7feba61`, so raising `cx_heap_reserve`
 is free of resident cost and is the cheap way to lift this; the honest
 way is for the hosted harnesses to bracket per def the way the driver
-does. Either is an emitter/harness change, and PRIORITIES item 1 carries
-the decision.
+does. The cheap way is the one that shipped: PR 77 carried the zig
+one-heap with the emit deck's flat term at 24 to 28 MB, and Update 50
+absorbed it. The honest way is still unbuilt and no queue item carries
+it.
 
 ## 36. The python plug's TCO matches a self-call by NAME, so a partial or over-application in tail position loops instead of applying
 
