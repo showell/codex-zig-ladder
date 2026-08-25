@@ -899,68 +899,95 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
-## 43. `plug-run.ps1` launches a Windows-only VM binary it never checks for, so none of the 38 plugs it drives can run on Linux
+## 43. No plug `run.ps1` consults the VM host selection in the config it sources, so no plug can be run on Linux
 
 Found 2026-08-25 on the ladder droplet against `0c4327d5`, which is
-`upstream/master` verbatim. **THEIRS, and not a plug defect at all** --
-it is the harness that runs every plug. Measured, not read; the
-walk-through is the essay `what-run-ps1-does-on-this-box`.
+`upstream/master` verbatim. **THEIRS, and not a plug defect** -- it is
+how every plug reaches a VM. **SENT as PR 88** (plugs backlog 1.61,
+ladder tag `plug-run-no-vm-host`). Measured, not read; the walk-through
+is the essay `what-run-ps1-does-on-this-box`.
 
-`build/vm-config.ps1:14-19` states the platform rule: "codex-vm (the WHP
+`build/vm-config.ps1:14-16` states the contract: "codex-vm (the WHP
 hypervisor) is the primary and is Windows-only; QEMU is the fallback and
-the only host on Linux/WSL. Both paths are live." The file backs that up
--- `:21` decides between them, `:22-52` discovers a QEMU, and `:56`
-carries the error for having neither.
+the only host on Linux/WSL. Both paths are live." The file implements it
+-- `:21` chooses (`$script:UseCodexVm`), `:22-52` discovers a QEMU,
+`:55-56` is the error for having neither.
 
-`build/plug-run.ps1` dot-sources that file and then ignores every part of
-it. `:49` is `$vmBin = Join-Path $Repo 'tools\codex-vm.exe'` and `:53`
-launches it. There is no fallback and the word `qemu` does not occur in
-the file.
+**Nothing that runs a plug reads any of it.** Across all 56
+`codex/plugs/*/run.ps1`,
+`grep -lni 'qemu|UseCodexVm|Start-VmRun|FallbackVmBin'` returns nothing.
+They divide three ways: 38 delegate to `build/plug-run.ps1`, which
+hardcodes `tools\codex-vm.exe` (`:49`) and launches it (`:53`) with no
+fallback; 8 hardcode the same path themselves (`wasm:50`, `html:46`,
+`spirv:43`, `t3isa:43`, `winforms:40`, `ptx:39`, `wgsl:39`,
+`evidence:117`); and 10 use `$script:CodexVmBin` from the sourced config
+(`riscv:54`, `csharp:81`, `javascript:47`, `maui:65` and six more),
+reading its PATH variable while skipping its CHOICE variable, which is
+the worst of the three because it looks like consultation.
 
 What a Linux user gets, run here with the built zig plug and a real IR:
 
     [plug-run] IR input: 1481 bytes
+    [plug-run] Plug: codex/plugs/zig/build-output/zig-plug.cdx
     [plug-run] Listening on TCP 9145
     plug-run.ps1: The variable '$proc' cannot be retrieved because it
                   has not been set.
     exit 1, one second
 
-Two defects, and the second is the cheaper fix. The message names a
-PowerShell variable rather than the missing VM host: `Start-Process` on a
-path that does not exist leaves `$proc` unset, and `:59`'s
-`$proc.HasExited` reads it under `Set-StrictMode -Version Latest`
-(`:19`). The same file guards that variable where it matters less --
-`:168` is `if (($proc -and (-not $proc.HasExited)))`, in the cleanup --
-so the wait loop is the one place the guard is missing. The correct
-diagnosis is already in the file it sourced.
+**The diagnosis is wrong as well as the outcome.**
+`$ErrorActionPreference = 'Stop'` (`:20`) makes `Start-Process` on a
+missing path terminating at `:53`, so control leaves the `try` for the
+`finally` at `:167` **without reaching `:59`**; there `:168`'s
+`if (($proc -and (-not $proc.HasExited)))` reads a variable that was
+never assigned, and `Set-StrictMode -Version Latest` (`:19`) throws on
+that -- an exception in a `finally` replacing the original. Reproduced
+in isolation with those four lines and nothing else. And
+`vm-config.ps1:55-56`'s "no VM host" cannot fire here: its condition is
+having NEITHER host, and QEMU is present.
 
-**Scope: 38 of the 56 `codex/plugs/*/run.ps1` route through
-`plug-run.ps1`, every one with `-MemMB 3072`.** The other 18 (csharp,
-javascript, wasm, riscv, the native backends) take other paths and are
-not affected.
+**`build/compile.ps1` is the shape of the fix.** Same hardcoded binary
+at `:209`, but `:218` is `if ($script:UseCodexVm)` -- the line the plug
+scripts lack -- and `:239` falls back to `Invoke-VmCompileFallback`
+(`vm-config.ps1:821`). Measured here, that leg works: `hello.codex` to
+IR-CCE in four seconds, in a `qemu-system-x86_64 ... -m 3072` guest.
 
-**`build/compile.ps1` is the shape of the fix**: it hardcodes the same
-binary at `:209` and then falls back at `:239` to
-`Invoke-VmCompileFallback` (`vm-config.ps1:821`), which is the QEMU
-path. Measured here, that leg works: a `.codex` source to IR-CCE in four
-seconds, in a `qemu-system-x86_64 ... -m 3072` guest.
+**The design record already contains both halves.**
+`docs/Designs/Active/Build/Build.md:699` says of the non-delegating
+plugs "The remaining 17 are deliberately untouched and are not a residue
+to close" -- true of delegation, which is what that paragraph is about,
+and orthogonal to hosting, which cuts across all three groups. Its
+census reads 55 and 17 where the tree now has 56 and 18 (`evidence`).
+And `:684-694` names the mechanism outright: both generated scripts
+"carried defects that survived because a generator with no live target
+is compiled but never compared against anything". This is another one,
+and the live target it lacks is a Linux run.
 
-**The transport is the hard part, and the ladder has a working recipe.**
-Under codex-vm the guest dials the host's TCP listener; the QEMU
-consumers in `vm-config.ps1` carry their payload on a serial chardev
-socket instead, so `Invoke-VmCompileFallback` is not a template that can
-be copied across. The ladder does exactly what `plug-run.ps1` wants,
-daily, for weeks: `plug_run.py` listens on 9145 and lets the guest dial
-out, and `codex_vm.py:43-51` boots it with user-mode networking
-(`-netdev user,id=net0 -device ne2k_isa,netdev=net0,irq=9,iobase=0x300`).
+**The transport is the part that is not a copy-paste, and the ladder has
+a working recipe.** Under codex-vm the guest dials the host's TCP
+listener; the QEMU consumers in `vm-config.ps1` read the serial wire
+(`:835`), so `Invoke-VmCompileFallback` is not a template. The ladder
+does what `plug-run.ps1` wants, daily: `plug_run.py` listens on 9145 and
+lets the guest dial out, and `codex_vm.py:48-49` boots it with user-mode
+networking (`-netdev user,id=net0 -device
+ne2k_isa,netdev=net0,irq=9,iobase=0x300,mac=52:54:00:12:34:56`).
 
-**Hedges, stated because they are real.** We have not tried a fix on
-Windows and cannot. `plug-run.ps1` is generated ("GENERATED FROM THE
-CODEX SHELL DSL. Do not edit by hand"), so the change belongs in
-`codex/build/plugrunScript.codex` and not in the file quoted above.
-And we have no way to tell whether anyone runs plugs on Linux today --
-the ladder does not, because it wrote its own transport rather than wait
-for this one.
+**The ask sent with it is one ruling:** is Linux a supported host for
+RUNNING plugs, or only for building them? Either answer is a small
+change, and they are different changes.
+
+**Hedges, stated in the entry.** We have not tried a fix on Windows and
+cannot. `plug-run.ps1` is generated, so the change belongs in
+`codex/build/plugrunScript.codex`. And we cannot say whether anyone runs
+plugs on Linux today -- the ladder does not, because it wrote its own
+transport rather than wait for this one.
+
+**What the cold read cost, and it was the headline again.** The first
+draft said 38 of 56 were affected and "the other 18 take other paths and
+are not affected". Zero of 56 consult the host selection; the true scope
+is all of them. The same draft had the `$proc` chain backwards, crediting
+the wait loop at `:59` for a message that comes from the cleanup at
+`:168`. Both survived because they were read rather than run -- the
+second took four lines of PowerShell to settle.
 
 ## 42. A self-tail loop reads a TOP-LEVEL definition where the source reads its own parameter, and only zig's unused-parameter error made it visible
 

@@ -386,6 +386,14 @@ bold prose entries.
 against the tree the finding was made on. They usually agree; PR 78 is
 why it is a step rather than a courtesy.
 
+**Standing: the cold read is not optional, and it earns its keep every
+time.** PR 88's first draft claimed 38 of 56 plugs were affected and the
+other 18 "take other paths and are not affected"; the true answer is
+that none of the 56 consults the host selection. The same draft had its
+failure path backwards. Both were read rather than run, and both were
+caught by the cold agent rather than by me -- which is now three
+outbound artifacts in a row whose HEADLINE claim was the wrong one.
+
 **Standing: a cold agent reviewing an outbound artifact needs the REPO,
 not just the artifact.** PR 78's first review was firewalled from the
 tree and its findings were mostly "I cannot verify this"; the second
@@ -428,7 +436,7 @@ host has no JDK, and retracted the promise to run it -- and the ruling
 arrived anyway. Do not hold the finding back, and do not imply a
 follow-up we cannot make.
 
-**The queue is EMPTY as of 2026-08-25, and FOUR PRs are open:**
+**The queue is EMPTY as of 2026-08-25, and FIVE PRs are open:**
 
 - **84** the zig plug's stack-note correction (verified inert first,
   ladder tag `stack-prose-verified`)
@@ -439,6 +447,10 @@ follow-up we cannot make.
   case, plus COMPILER-18's third entry point; a follow-up comment
   carries the isolated precondition and CORRECTS the row it is on
 - **87** the python plug's TCO keyed on name and not arity, LATENT
+- **88** finding 43: no plug `run.ps1` consults the VM host selection in
+  the config it sources, so no plug runs on Linux -- doc-only, plugs
+  backlog 1.61, tag `plug-run-no-vm-host`, and it carries an ASK (is
+  Linux a supported host for RUNNING plugs, or only for building them?)
 
 On top of the six that landed in Update 50's interim push. Nothing is
 prepared and unsent, and the one question any of them left is the item
