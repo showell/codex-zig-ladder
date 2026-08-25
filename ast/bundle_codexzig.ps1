@@ -4,14 +4,21 @@
 # place) plus ONE chapter: the zig emitter. Everything else the emitter needs,
 # the hosted compiler already has -- which is the whole reason this works.
 #
-# NOT IRTextParser. emit-zig-chapter takes the compiler's own IRChapter, so a
-# bundle that carries the compiler has nothing to parse; the parser exists to
-# rebuild those values when the IR arrives over a serial ring, which is the
-# plug's situation and not ours. Leaving it out also drops seven name
-# collisions between it and the compiler's own Lexer/Parser -- tokenize,
-# parse-expr, parse-type, parse-type-atom, parse-type-args,
-# parse-record-fields-loop, scan-string-body -- two independent parsers that
-# picked the same obvious names.
+# IRTextParser IS carried, and that was the whole argument. The seam looked
+# like it could skip the parser -- emit-zig-chapter takes the compiler's own
+# IRChapter, so the front end holds the value already -- but the text wire
+# DERIVES what the AST does not carry (IRTextEmitter.codex:404-406 infers a
+# record's implicit type parameters as it serialises), and a direct hand-off
+# emits zig that does not compile for any type declared the way
+# foreword/core/Sort.codex declares SortPartition. Going through the wire in
+# memory makes this program the same code in the same order as
+# codexir | zigemit, so byte-agreement with the pipeline is structural.
+#
+# Carrying it needed an upstream rename: its unprefixed tokenize, parse-expr,
+# parse-type, parse-act-stmts, parse-handle-clauses and four more collided
+# with the compiler's own Lexer and Parser -- which is what made the direct
+# hand-off look like the only option. IRTextParser now carries the ir- prefix
+# its counterpart IRTextEmitter already uses on 99 of its 106 definitions.
 #
 # NOT PlugTypes either, and that one was measured rather than assumed. It has
 # exactly two sections and this bundle needs neither:
@@ -43,4 +50,6 @@ $ErrorActionPreference = 'Stop'
     -Harness 'CodexZigHarness.codex' `
     -OutName 'codexzig-subject.codex' `
     -PlugName 'codexzig-subject' `
-    -MoreChapters @('codex/plugs/zig/ZigEmitter.codex')
+    -MoreChapters @(
+        'codex/plugs/common/IRTextParser.codex',
+        'codex/plugs/zig/ZigEmitter.codex')
