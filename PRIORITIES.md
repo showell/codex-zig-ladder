@@ -104,40 +104,7 @@ loop unless it says otherwise.
 
 ---
 
-## 1. Finding 42 is FIXED; the send is the last step
-
-**Objective: INTEGRITY, then OUTBOUND. The box work is DONE.** It led
-because it was a correctness defect that is OURS, is SILENT, and is
-already upstream; nothing in [ERGONOMICS.md](ERGONOMICS.md) outranks
-that.
-
-The register carries the mechanism, the three hunks and every
-measurement. The short form: a self-tail loop resolved an invariant
-parameter that shadows a top-level definition to THE DEFINITION, so the
-loop read a global where the source read its own argument. Two more
-blind spots had to line up for it to be silent rather than loud, and the
-second walk that shared one is fixed with it.
-
-Measured 2026-08-25 in sandbox `20260825T160701Z-f42-row`: the tier row
-red first (`shadow-guard`, bare metal 3 against the zig arm's 5), then
-green; the 22-tier set green at 15/7, unchanged in shape; 14 of 14 rungs
-green in 1589 s; all fourteen ladder units emitting byte-identical zig
-across the two native builds; and the census moving exactly one verdict
--- `dtls-fragment`, `refused -> match` -- with 320 of 325 clean programs
-byte-identical to the bank.
-
-**SENT as PR 85** (2026-08-25), `zig-plug-loop-param-rename` off
-`upstream/master` `0c4327d5`, one emitter commit carrying
-`plugs-backlog.md` row 1.58 and a `Ladder: shadow-loop-rename` line;
-the ladder tag is pushed. **This item is done but for the landing**, and
-nothing here waits on it.
-
-**When it lands, the tier row's job changes.** `shadow-guard` stops
-being a red that must go green and becomes the regression detector for
-the class -- which is the whole reason it was written before the fix
-rather than after.
-
-## 2. The external review, batches 1 and 3
+## 1. The external review, batches 1 and 3
 
 **Objective: INTEGRITY. Batch 1 is KEYBOARD-ONLY** -- these are
 wrong-bank and wrong-PASS closers.
@@ -178,47 +145,37 @@ against the tree, since several have been fixed in passing.
   census json stays; LICENSE is Steve's call; errors='replace'
   byte-compare rides Batch 3.
 
-## 3. What the over-application family still owes
+## 2. One question left behind PR 87, and it needs no plug
 
-**Objective: OUTBOUND, and the queue is EMPTY as of 2026-08-25.** Both
-halves went out: **PR 86** (the corpus gap, a new
-`test-input/overapply.codex` plus the COMPILER-18 addendum) and **PR 87**
-(the python plug's TCO keyed on name and not arity, LATENT). PR 85
-carries finding 42. Nothing is prepared and unsent.
+**Objective: OUTBOUND, already sent; this is the loose end.** Does a
+well-typed Codex program exist in which a definition **tail-calls itself
+at non-full arity**? A definition's body has the definition's return
+type, and such a call has a function type, so possibly none does.
 
-**What a cold read cost and bought, because it is the reusable part.**
-The two rows were one branch, and its headline claim -- that the corpus
-hole is why the python defect went unnoticed -- was FALSE. The python
-defect is reachable only inside a self-recursive definition's tail
-position; row 1.57 already lists python as compliant on the
-over-application path, correct by construction. One page, two rows,
-flat contradiction. **Cold-read every outbound artifact before it goes**;
-it also caught a reproducer that was full-arity and could not reproduce,
-an unverified negative about thirty emitters we have no toolchain for,
-and a citation off by two lines.
+PR 87 reports the python plug's TCO gate as a MISSING GUARD on exactly
+that shape and says plainly that the reachability is unestablished.
+Settling it promotes the row to a live defect or closes it. **It is a
+type-checker question: no python, no toolchain we lack, KEYBOARD.** If
+one exists, the second half is to emit python for it and read
+`emit-py-tco-jump`'s output directly rather than inferring from the
+answer, since the stale-temporary path produces a plausible number.
 
-**The open questions these left, none of them ours to answer:**
+**Everything else in this family is answered and upstream.** The
+corpus gap and COMPILER-18's precondition -- a second CALL SITE, which
+defeats `inline-single-caller` so the partial-application object is
+really built and really entered -- are PR 86 and its follow-up comment.
+The register carries the five-program table.
 
-- **COMPILER-18 is in the upstream rulings queue** and everything here
-  waits on it. **DONE 2026-08-25: the precondition is isolated and it is
-  a second CALL SITE.** Five programs, one property changed at a time --
-  two return paths with one call site is CORRECT, and one return path
-  with two call sites FAULTS. With more than one call site
-  `inline-single-caller` cannot fire, so the partial-application object
-  is really built and really entered, which is the defect; inlined, the
-  closure is materialised at the call site and the trampoline is never
-  reached. Recursion, branches and argument-dependent captures are all
-  just ways of defeating the inliner. Register has the table; probes are
-  `probe-overapply-two-callers.codex` and its one-line-different control.
-  **Sent to PR 86 as a follow-up comment**, since it corrects what that
-  PR says.
-- **PR 87's reachability.** Does a well-typed Codex program exist in
-  which a definition tail-calls itself at non-full arity? A definition's
-  body has the definition's return type and such a call has a function
-  type, so possibly not. It is a type-checker question, needs no python,
-  and settling it either promotes the row or closes it.
+**The reusable lesson, which cost the most to learn:** the branch that
+became PRs 86 and 87 was ONE branch, and its headline claim was false --
+row 1.57 already listed python as compliant on the path that claim
+needed. One page, two rows, flat contradiction, caught by a cold read
+and not by me. **Cold-read every outbound artifact before it goes.** The
+same read caught a reproducer that was full-arity and could not
+reproduce, an unverified negative about thirty emitters we have no
+toolchain for, and a citation off by two lines.
 
-## 4. Diagnostics as a banked set
+## 3. Diagnostics as a banked set
 
 **Objective: INTEGRITY. KEYBOARD to build, then one `ast/rebank_all.sh`
 to bank -- a sweep will NOT do.** `<unit>-subject.cdx.diags` is written
@@ -256,7 +213,7 @@ to run the census at all when any `.ir` was rebuilt, which is honest and
 which means the sweep we now run MOST is the one that reports no
 diagnostics. A banked set is comparable whatever produced the IR.
 
-## 5. zigc has a runner now, and one inconclusive result
+## 4. zigc has a runner now, and one inconclusive result
 
 **Objective: INTEGRITY. BOX for the first run of a session, KEYBOARD
 after it** -- the build is cached now, measured 2026-08-25: **first run
@@ -292,7 +249,7 @@ of mine, each caught by a guard already in the tree -- no mode flags
 a naive marker grep that counted a prelude guard
 (`findings/prelude-comptime-guards.txt` exists for exactly that).
 
-## 6. Every unhandled construct must refuse BY NAME
+## 5. Every unhandled construct must refuse BY NAME
 
 **Objective: INTEGRITY, and it is the one that sets the queue. BOX.**
 Four
@@ -308,7 +265,7 @@ that cannot see them. The systemic answer -- every unhandled construct
 refuses by name -- is worth more than any individual gap, and the census
 in "The refusal-gaps branch" is where the count would show it.
 
-## 7. The refusal-gaps branch, rebased and re-verified
+## 6. The refusal-gaps branch, rebased and re-verified
 
 **Objective: HUNTING, reached through our own gap-filling. BOX.** Every
 family implemented promotes a slab of census programs into the comparing
@@ -336,7 +293,7 @@ non-exhaustive switch. Also queued: the JS plug's IrNumLit takes bits as
 a NUMBER and its parseFloat is correctly rounded where bare metal's
 `__text_to_double` is not -- probe before filing.
 
-## 8. The tiers stay green, and each one earns its keep
+## 7. The tiers stay green, and each one earns its keep
 
 **Objective: DUE_DILIGENCE that keeps turning into HUNTING. BOX** for
 any new row, since a bare column costs QEMU. The tiers
@@ -383,7 +340,7 @@ finding on its FIRST run:
   anyone remembering to check. That is what a tier is for, and it could
   not do it while one arm refused to compile.
 
-## 9. The stack is measured now, and the emitter's prose about it is wrong
+## 8. The stack is measured now, and the emitter's prose about it is wrong
 
 **Objective: INTEGRITY, already half done. BOX.** `stack_probe.py` --
 finding
@@ -481,9 +438,21 @@ host has no JDK, and retracted the promise to run it -- and the ruling
 arrived anyway. Do not hold the finding back, and do not imply a
 follow-up we cannot make.
 
-**The queue is EMPTY as of 2026-08-25.** PRs 85, 86 and 87 went out that
-day, on top of the six that landed in Update 50's interim push. Nothing
-is prepared and unsent.
+**The queue is EMPTY as of 2026-08-25, and FOUR PRs are open:**
+
+- **84** the zig plug's stack-note correction (verified inert first,
+  ladder tag `stack-prose-verified`)
+- **85** finding 42, the self-tail loop reading a top-level definition
+  where the source reads its own parameter -- OURS, three hunks, tag
+  `shadow-loop-rename`
+- **86** the plug corpus cannot reach the Rulebook's over-application
+  case, plus COMPILER-18's third entry point; a follow-up comment
+  carries the isolated precondition and CORRECTS the row it is on
+- **87** the python plug's TCO keyed on name and not arity, LATENT
+
+On top of the six that landed in Update 50's interim push. Nothing is
+prepared and unsent, and the one question any of them left is the item
+above.
 
 ## Per-Update ceremony
 
