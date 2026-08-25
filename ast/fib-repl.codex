@@ -1,0 +1,15 @@
+Chapter: Fib
+
+Section: Math
+  fib : Integer -> Integer
+  fib (n) =
+   if n <= 1 then n
+   else fib (n - 1) + fib (n - 2)
+
+  double : Integer -> Integer
+  double (n) = n + n
+
+Section: Main
+  opening : [Console] Nothing = act
+   print-line-uni (show (fib 20))
+  end
