@@ -62,7 +62,8 @@ FROM_CYCLE_BUILD = [
 # The ladder's own tree.
 FROM_LADDER = [
     ('ast/emit_harness.py', 'the shared harness template'),
-    ('ast/oracle_lib.sh', 'the rung machinery'),
+    ('ast/oracle_lib.sh', 'the rung machinery, and the truth arm'),
+    ('ast/plug_arm_lib.sh', "the plug's arms, sourced by oracle_lib.sh"),
     ('ast/allcycles.sh', 'the sweep'),
     ('codex_vm.py', 'the QEMU driver'),
     ('ring_compile.py', 'the ring transport'),

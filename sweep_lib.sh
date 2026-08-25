@@ -2,8 +2,10 @@
 # Steve + Claude 2026-08-20): ALL rung QEMU on the droplet, all zig
 # build/run/diff local, venue by workload class. Sources oracle_lib.sh
 # for the unit list, verdicts and guards, and shadows only the two arm
-# functions with remote variants -- the local arms in oracle_lib.sh stay
-# the authority for the all-local fallback (ast/allcycles.sh, untouched).
+# functions with remote variants -- the local arms stay the authority for
+# the all-local fallback (ast/allcycles.sh, untouched). Those live in
+# ast/plug_arm_lib.sh since 2026-08-25, which oracle_lib.sh sources, so
+# sourcing oracle_lib.sh still brings in everything shadowed here.
 #
 # Not a runnable script; sweep_prep.sh, sweep_canary.sh and sweep_long.sh
 # source it.
