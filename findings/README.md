@@ -936,7 +936,9 @@ coincide -- a property of this test, not of the transformation. A caller
 that passes anything else gets a wrong answer with no diagnostic at all.
 Zig refused only because after the substitution NO reference to the
 parameters survived, and zig makes an unused function parameter a hard
-error. Had one other use remained, this would have compiled and lied.
+error. **What has to be true for it to compile instead is now measured,
+and it is narrower than "had one other use remained"** -- see the row
+below.
 
 **It is specific to the loop path.** `dtls_msg_encode` in the same file
 takes the same two renamed parameters and reads them correctly
@@ -952,12 +954,43 @@ corpus contains the collision by accident -- exactly the property
 someone with no knowledge of this plug tests what our own probes do not
 suspect.
 
-**Next, in order:** minimize to a tier row (a top-level `x`, a self-tail
-definition with a parameter `x`, the two given different values -- the
-row must FAIL before the fix); then the fix in `ZigEmitter.codex`, which
-is to make the loop body resolve a renamed parameter to its `_arg_` name
-the way the non-loop path does; then a sweep, then outbound. It is ours
-and it is upstream, so it goes out with a `plugs-backlog.md` row.
+**The tier row is in and it is RED** (`prim-tailcall`, row
+`shadow-guard`, 2026-08-25, ladder `a8538b2`): bare metal 3, the zig arm
+5, on a loop whose parameter `stop-at` is 3 and whose top-level
+`stop-at` is 100. The emitted loop reads `stop_at()`.
+
+**Writing it settled what makes the defect silent rather than loud, and
+the answer is a second blind spot on top of the first.** The plug's
+occurrence check drives a discard: a parameter it believes unread is
+emitted as `_ = _arg_x;` and one it believes read is not. So the obvious
+minimization -- read the shadowing parameter anywhere in the loop body
+-- CANNOT produce a wrong answer. The check sees the read, emits no
+discard, the substitution leaves `_arg_x` unmentioned, and zig refuses
+the build. Measured, not reasoned: the three-line version of
+`dtls-fragment` refuses with the same `unused function parameter` error.
+
+The silent form needs a read the check cannot see, and `zig-occurs`
+(`ZigEmitter.codex:1291`) walks a branch's body and not its **guard**.
+A match guard inside one of the loop's own tail-call arguments is
+therefore both invisible to the check -- so the discard is emitted and
+the program builds -- and emitted by the loop path, reading the global.
+`zig-occurs` misses handle clauses the same way, and that is untested.
+
+The guard has to sit inside a tail-call argument, not at the top of the
+body: a guarded match in tail position is not recognised as a self tail
+call at all, so that shape never becomes a loop and answers correctly.
+
+**So the refusal was luck twice over** -- once that no use survived, and
+once that the collision was not behind a guard. A `dtls-fragment` whose
+`body` were read from a guard would have compiled and shipped a wrong
+answer.
+
+**Next, in order:** the fix in `ZigEmitter.codex`, which is to make the
+loop body resolve a renamed parameter to its `_arg_` name the way the
+non-loop path does; then a sweep and the census (`dtls-fragment` must go
+back to `match`); then outbound. It is ours and it is upstream, so it
+goes out with a `plugs-backlog.md` row. The tier row stays red until the
+fix lands, and does NOT go in `EXPECTED.txt`.
 
 ## 41. `riscv` and `java` break the same curried-application rule as finding 40, and riscv's correct fix is already in the tree, dead
 

@@ -91,32 +91,48 @@ the renamed parameter. The non-loop emission binds it correctly, so this
 is PR 81's path and nothing else. Absorbed upstream in Update 50's
 interim push (main 19131).
 
-**`dtls-fragment` refused, and that was luck.** Zig makes an unused
-function parameter a hard error, and the substitution left NO reference
-to either parameter, so the file would not compile. One surviving use and
-it compiles and returns a wrong answer with no diagnostic. Treat the
-compile error as the accident it is, not as the failure mode.
+**`dtls-fragment` refused, and that was luck twice over.** Zig makes an
+unused function parameter a hard error, and the substitution left NO
+reference to either parameter, so the file would not compile -- that is
+the first accident. The second is that neither collision sat behind a
+match guard: had one, the plug would have emitted a discard, the file
+would have built, and the wrong answer would have shipped with no
+diagnostic. Treat the compile error as the accident it is, not as the
+failure mode.
 
-In order, and the order is the point:
+**The tier row is in and RED** (`a8538b2`, 2026-08-25): `prim-tailcall`
+row `shadow-guard`, bare metal 3 against the zig arm's 5. Writing it
+found that the obvious minimization cannot fail this way at all -- the
+plug's occurrence check emits a `_ = _arg_x;` discard for a parameter it
+believes unread, so a read it CAN see means no discard, an unmentioned
+`_arg_x`, and a build refusal instead of a wrong answer. The silent form
+needs a read the check is blind to; a match guard inside a tail-call
+argument is one, because `zig-occurs` walks branch bodies and not
+guards. The register carries the mechanism and the measurement.
 
-- **A tier row FIRST, and it must FAIL before anything is fixed.** A
-  top-level `x`, a self-tail definition taking a parameter `x`, the two
-  given DIFFERENT values so the arms disagree on the answer rather than
-  on whether it builds. `prim-tailcall` is the file. A fix landed against
-  a row that never failed proves nothing, and this class has been green
-  and blind since the tier was written.
-- **Then the emitter fix**, in `ZigEmitter.codex`'s loop emission: the
-  loop body must resolve a renamed parameter to its `_arg_` name the way
-  the non-loop path already does.
+What is left, in order:
+
+- **The emitter fix**, in `ZigEmitter.codex`'s loop emission: the loop
+  body must resolve a renamed parameter to its `_arg_` name the way the
+  non-loop path already does. The rules that file expects of an editor
+  are in its own prose, at the top and beside each helper; read them
+  before touching it. `shadow-guard` going green is the gate.
 - **Then the chain**: natives, `tiers_run.py`, a sweep, and the census
   again -- `dtls-fragment` must go back to `match`, and nothing else may
   move.
 - **Then outbound**, with a `plugs-backlog.md` row. Ours, shipped, so the
   row says so plainly.
 
-**Do not fix it first and write the row after.** The whole reason this
-was invisible is that the tier set had no row for the shape, and a fix
-written before the row would leave the set exactly as blind as it was.
+**The row stays red until the fix lands, and it is NOT in
+`EXPECTED.txt`.** A ledger row would make it `noted`, and a defect of
+ours that is still shipping is not a divergence we accept. A red tier
+set is the correct state of the instrument right now.
+
+**`zig-occurs` misses handle clauses the same way it misses guards**, and
+nothing tests that. It is the same one-line class as the guard hole; if
+the fix below makes the loop path bind renames properly the hole stops
+mattering for THIS defect, but the occurrence check is also what drives
+every discard, so it is worth a look while the file is open.
 
 ## 2. Launching a detached job is a foot-gun with a live tripwire
 
