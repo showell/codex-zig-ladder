@@ -3,6 +3,11 @@
 # from README step 5, with the Update numbers derived instead of
 # hand-edited per rebank (process review S4).
 # Usage: bank_diff.sh [old new]   e.g. bank_diff.sh u47 u48
+#
+# Truths only. Banks carry a .truth.prov sidecar beside each truth since
+# 2026-08-25, and a sidecar records the seed it was measured under, so it
+# differs across banks by construction -- comparing them says nothing
+# about whether a rung MOVED, which is the only question this asks.
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 if [ $# -eq 2 ]; then OLD=$1; NEW=$2
@@ -13,7 +18,7 @@ else
 fi
 echo "diffing $OLD -> $NEW"
 moved=0
-for f in "$T/truth/$OLD/$OLD"-*; do
+for f in "$T/truth/$OLD/$OLD"-*.truth; do
     m=${f##*/$OLD-}
     if [ ! -f "$T/truth/$NEW/$NEW-$m" ]; then
         echo "  $m: MISSING from $NEW"; moved=1
