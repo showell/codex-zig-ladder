@@ -1050,7 +1050,7 @@ verbatim too -- the noisy bank is the honest bank).
 `CODEX_ROOT` names a working tree, not a commit: a `git checkout` there
 mid-sweep rebuilds the plug from whatever the tree now holds, and that cost a
 90-minute sweep once (2026-08-18). The fingerprint guard in `oracle_lib.sh`
-now refuses to run arms when `ZigEmitter.codex` or `ZigPlug.codex` moved
+now refuses to run arms when the plug's chapters or its bundle moved
 under a built plug, but the guard is a tripwire, not a workflow. PR work
 therefore never happens in this tree: branch in a disposable `git worktree`
 somewhere else (the session scratchpad), off `upstream/master`, push to the
@@ -1151,11 +1151,15 @@ diff.
 - **The tree must not move while the ladder reads it.** `CODEX_ROOT` names a
   working tree, and a checkout mid-sweep rebuilt the plug from the wrong
   emitter once and reproduced an already-fixed defect (2026-08-18, 90
-  minutes). Know what is actually guarded: the TCP plug's fingerprint covers
-  ONLY `ZigEmitter.codex` and `ZigPlug.codex` (`plug_provenance` in
-  `oracle_lib.sh`); the ring plug's guard is stronger -- `ringplug_build.sh`
+  minutes). Know what is actually guarded: the TCP plug's fingerprint is
+  two shas (`plug_fingerprint` in `oracle_lib.sh`, read by
+  `plug_provenance`) -- the two chapters an operator edits, and the
+  BUNDLE that was compiled, which is the half that also covers
+  `PlugTypes.codex` and `IRTextParser.codex`. The ring plug's guard is
+  still the stronger one, because it RE-BUNDLES: `ringplug_build.sh`
   records the bundle sha in `ast/ringplug.cdx.fp` and `plug_run_ring.py`
-  re-bundles and refuses a mismatch before booting. Banking refuses a moved
+  re-bundles and refuses a mismatch before booting, so it catches a
+  source edit that was never bundled and this one does not. Banking refuses a moved
   seed or moved harness content after the fact (the `truth_prov` sidecars),
   and the truth arm records the seed as it begins and refuses its own
   truths if `seed_identity.require_match` finds it moved by the split
