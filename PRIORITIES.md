@@ -311,6 +311,23 @@ Left:
   beside it in the tree. **OUTBOUND: a small prose-correction PR to the
   zig plug, constant untouched.** It was meant to ride PR 82 and did
   not, which is how a stale justification survives a fix.
+- **The replacement prose is WRITTEN and its claims are now CHECKED, and
+  it is still UNSENT.** Branch `zig-plug-stack-prose`, tip `87f55675`,
+  off `upstream/master`, in a worktree under this session's scratchpad.
+  Both mechanism claims were read out of the swept `ast/parse.zig` under
+  seed 6CF4A8E0 rather than argued: `scan_class_instance_defs` is a
+  `while (true)` with a `continue` at all four recursive sites and the
+  name occurs twice in the file, so the loop claim holds as written.
+  `parse_top_level` is a loop too, but two arms leave it -- `effect`
+  through `parse_top_level_effect`, `claim` through `parse_claim_arm` and
+  `parse_simple_claim` -- and each tail-calls `parse_top_level` back,
+  which self-tail elimination does not reach. The sentence that said
+  every top-level scan tail-calls ITSELF is corrected to name that
+  residue and bound it: eight effect declarations and no claims in the
+  2.5 MB back-end subject, three and none in the parser. **Sending is
+  outward-facing and unauthorised -- ask Steve.** It needs a `Ladder:`
+  trailer naming the tag from the ceremony section, and the worktree goes
+  when it does.
 
 ## 9. Diagnostics as a banked set
 
@@ -463,3 +480,30 @@ branch, tier bare columns, rebank on the droplet, bank over green arms,
 tag `uNN-14of14`; then rebase the branches, natives, tiers, census. u49
 took one evening end to end (DONE.md 2026-08-22) and the next one should
 take less, since the droplet does all of it now.
+
+**Update 50's interim push is mid-ceremony (seed `6CF4A8E0`).** Done: the
+pin, the tier bare columns, the rebank (14/14 green, 731 s), the bank
+(`truth/seed-6cf4a8e0/`, sidecars included), `bank_diff.sh`, the census
+read, and the README's table and timings. What `bank_diff.sh` says is
+worth keeping: **`parse.truth` moved and nothing else did.** It moved for
+a reason already known -- Update 50 replaced the four `try-*` top-level
+scans with `parse-top-item`, `scan-top-item` and `parse-top-def-item`
+over two new item types, one def fewer and 17 tokens more -- so the
+thirteen unmoved rungs are the story and the fourteenth is PR 82's shape
+arriving. The census needed no re-pin (CDX6020 still reads 43); its two
+source citations did, and they are cited by function now.
+
+Left:
+
+- **Tag.** `seed-6cf4a8e0-14of14` breaks the `uNN-14of14` convention on
+  purpose, because the bank it names is not an Update. **Steve has been
+  asked twice and has not answered; ask again before tagging** -- the
+  outbound PR's `Ladder:` trailer needs the name.
+- **Natives from the pin** (`native_build.sh`, 11 min), then
+  `./tiers_run.py` over the full set.
+- **The prose branch's due-diligence run, STAGED and postponed.** It cuts
+  a sandbox on `zig-plug-stack-prose`, sweeps, and `compare.sh` diffs
+  every emitted `.zig` against this sweep's. Steve ruled it overkill and
+  said postpone as long as we can; it is a good thing to start when he is
+  offline. The launcher lived in a previous session's scratchpad and
+  needs rewriting.
