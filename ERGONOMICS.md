@@ -100,17 +100,6 @@ what a process is EXECUTING, not a string in some shell's `-c`, and have
 the things that start guests take the lock. Found 2026-08-25 by a cold
 read of the queue.
 
-## Cache the built zigc
-
-`zigc_verify.sh` redoes its whole expensive prefix on every invocation --
-harness generation, the bundle, a `ring_compile.py` over a 13.9 MB IR,
-and the ring-plug build -- none of which depend on the subject it was
-asked to verify. So screening candidate subjects costs a full run each.
-The zigc item in `PRIORITIES.md` is stuck on "find a subject that needs
-none of the driver's extras", which is a search, and a search over an
-uncached prefix is the expensive way to do it. Caching the built zigc
-turns each candidate into `./zigc < candidate`, which is free.
-
 ## Wiring the python plug onto a transport that exists here
 
 Only if it is ever wanted. `codex/plugs/python/build-output` has never

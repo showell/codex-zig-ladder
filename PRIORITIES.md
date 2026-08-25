@@ -256,16 +256,18 @@ diagnostics. A banked set is comparable whatever produced the IR.
 
 ## 5. zigc has a runner now, and one inconclusive result
 
-**Objective: INTEGRITY. BOX, and this item said KEYBOARD until a cold
-read checked it.** `zigc_verify.sh:31` takes the compute lock and the
-script has FIVE QEMU legs -- a `ring_compile.py` over a 13.9 MB IR, the
-ring-plug build, the transport, the seed's side of the comparison, and
-booting the output. The "3 seconds" is `zig build-exe` alone and the
-"under a second" is `./zigc < subj` alone: two steps out of six. **And
-nothing caches the built zigc**, so screening three candidate subjects
-is three full runs of an expensive prefix that does not depend on the
-subject. Caching it is worth more than the next run and belongs in
-ERGONOMICS.md. `zigc` -- the whole compiler as a Linux
+**Objective: INTEGRITY. BOX for the first run of a session, KEYBOARD
+after it** -- the build is cached now, measured 2026-08-25: **first run
+7 minutes, second run 8.7 seconds.** The item said KEYBOARD until a cold
+read checked it and found `zigc_verify.sh:31` taking the compute lock
+with five QEMU legs behind it; the quoted "3 seconds" and "under a
+second" were `zig build-exe` and `./zigc < subj`, two steps out of six.
+The build half is now behind a fingerprint of the four things that
+decide the binary -- the bundled harness, the plug bundle, the seed and
+the zig -- so screening candidate subjects costs the seed leg only.
+`rm zigc` forces a rebuild. **That was the blocker on this item: the
+work left is a SEARCH, and a search over an uncached prefix is the
+expensive way to do one.** `zigc` -- the whole compiler as a Linux
 process -- was the only claim in this tree with no runner behind it, and
 Damian asked about it directly. `zigc_verify.sh` is that runner: it
 builds zigc and compiles one program with both zigc and the seed, which

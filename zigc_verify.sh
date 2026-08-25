@@ -25,6 +25,14 @@
 #     kernel image, which is what the Codex compiler is for.
 #
 #   ./zigc_verify.sh [subject.codex]     default: ast/repro.codex
+#
+# The BUILD of zigc does not depend on the subject, and it is the expensive
+# half: a seed compile of a 13.9 MB IR, the ring plug, and the transport.
+# Screening candidate subjects used to pay all of it per candidate, which is
+# why "find a subject that needs none of the driver's extras" -- a SEARCH --
+# had been stuck. So the binary is cached beside its fingerprint, the way
+# ast/ringplug.cdx already is: content, never mtime, and it says out loud
+# when it reuses. `rm zigc` forces a rebuild; there is no flag for it.
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 . "$T/ast/oracle_lib.sh"
@@ -73,6 +81,38 @@ open('zigc-ir-cce.blob', 'wb').write(b"IR-CCE decks=172\n" + src + b"\x04")
 print(f"blob written ({len(src)} bytes of source), decks=172")
 PY
 cd "$T"
+
+# The ring plug moves up here because it is the other half of what decides
+# the binary, and it is cheap when current -- its own build re-bundles and
+# compares a sha before spending any QEMU. Building it first means the
+# fingerprint below can name the plug that WOULD transpile this subject,
+# rather than the one that did, three runs ago.
+bash "$T/ast/ringplug_build.sh" > ast/ringplug.build.log 2>&1 \
+    || { echo "RING PLUG BUILD FAILED:"; tail -8 ast/ringplug.build.log; exit 1; }
+
+# What the built zigc depends on, and nothing else: the bundled harness, the
+# plug bundle that transpiles it, the seed that compiles it, and the zig that
+# links it. Four shas, so a change to any of them misses and every other run
+# hits. The subject is deliberately NOT in this list -- it arrives on stdin
+# at step 4 and cannot reach the binary, which is the whole point.
+want=$(python3 - <<'FP'
+import hashlib, pathlib, subprocess, sys
+sys.path.insert(0, '.')
+import seed_identity
+h = hashlib.sha256()
+for f in ('ast/zigc-subject.codex', 'ast/ringplug-source.codex'):
+    h.update(pathlib.Path(f).read_bytes())
+h.update(seed_identity.seed_sha256().encode())
+h.update(subprocess.run(['zig', 'version'], capture_output=True, text=True).stdout.strip().encode())
+print(h.hexdigest())
+FP
+)
+[ -n "$want" ] || { echo "FINGERPRINT FAILED"; exit 1; }
+
+if [ -x "$T/zigc" ] && [ "$(cat "$T/zigc.fp" 2>/dev/null)" = "$want" ]; then
+    echo "    zigc already built from this harness, plug, seed and zig"
+    echo "    ($(echo $want | head -c 12)) -- not rebuilding. rm zigc to force."
+else
 rm -f ast/zigc.ir ast/zigc.zig
 python3 -u ring_compile.py ast/zigc-ir-cce.blob ast/zigc.ir 2>&1 | tail -5
 [ -s ast/zigc.ir ] || { echo "COMPILE FAILED: no zigc.ir"; exit 1; }
@@ -84,8 +124,6 @@ python3 -u ring_compile.py ast/zigc-ir-cce.blob ast/zigc.ir 2>&1 | tail -5
 # picking one, which is the check doing its job. plug_run_ring takes the
 # IR and the output and re-bundles the ring plug itself, so it needs no
 # plug path.
-bash "$T/ast/ringplug_build.sh" > ast/ringplug.build.log 2>&1 \
-    || { echo "RING PLUG BUILD FAILED:"; tail -8 ast/ringplug.build.log; exit 1; }
 python3 -u plug_run_ring.py ast/zigc.ir ast/zigc.zig > ast/zigc.transport.log 2>&1 \
     || { echo "TRANSPORT FAILED (ast/zigc.transport.log):"; tail -6 ast/zigc.transport.log; exit 1; }
 [ -s ast/zigc.zig ] || { echo "TRANSPORT FAILED: no zigc.zig"; exit 1; }
@@ -116,11 +154,15 @@ for m in marks:
 sys.exit(1 if marks else 0)
 PY
 
-# 3. Build it.
-rm -f "$T/zigc"
+# 3. Build it. The fingerprint is written LAST and only here, so a build
+#    that died halfway leaves no stamp and the next run rebuilds rather
+#    than trusting whatever binary is on disk.
+rm -f "$T/zigc" "$T/zigc.fp"
 zbuild_start=$SECONDS
 zig build-exe ast/zigc.zig -femit-bin="$T/zigc" || { echo "ZIG BUILD FAILED"; exit 1; }
 echo "    zig build-exe: $((SECONDS - zbuild_start))s"
+printf '%s\n' "$want" > "$T/zigc.fp"
+fi   # end of the build half; everything below depends on the SUBJECT
 
 # 4. The two compiles of the same program.
 run_start=$SECONDS

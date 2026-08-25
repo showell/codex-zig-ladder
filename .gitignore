@@ -16,6 +16,12 @@
 *.cdx
 *.cdx.map
 *-subject.codex
+# The built zigc and the fingerprint that says what built it. Both are
+# artifacts of zigc_verify.sh and both regenerate from it; the .fp is what
+# lets a rerun skip the expensive half, and a stale one in git would be a
+# claim about a tree it was never built in.
+/zigc
+/zigc.fp
 __pycache__/
 recon/
 ringplug-source.codex
