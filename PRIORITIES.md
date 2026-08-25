@@ -377,6 +377,18 @@ someone opens a PR carrying it. Nothing notifies anyone.** The route is
 Formats differ -- the compiler backlog is a TABLE, the plugs backlog is
 bold prose entries.
 
+**Standing (Steve, 2026-08-25): MEASURE AGAINST OUR FORK'S STACK, not
+against bare `upstream/master`, and SAY SO IN THE PR.** The tree we believe
+in is upstream plus everything we have sent and they have not yet taken --
+the optimistic version of what we hope becomes the next Update. Testing
+against bare upstream measures a compiler we already know is missing our
+fixes, and it misreads their absence as a regression: on 2026-08-25 a corpus
+run against bare `0c4327d5` showed 77 well-behaved programs emitting zig
+that would not build, and the whole delta was PR 85's fix being absent. An
+hour went into suspecting our own rename before the sandbox's kept artifacts
+settled it. Stacking in the PR branch itself is optional -- naming the stack
+the numbers were measured on is not.
+
 **Standing: re-verify every line citation against the PR's base**, not
 against the tree the finding was made on. They usually agree; PR 78 is
 why it is a step rather than a courtesy.
