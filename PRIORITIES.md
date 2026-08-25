@@ -214,7 +214,25 @@ Both halves go out together.
   corpus hole, so this is still unoffered and still the cheapest thing
   in the outbound queue -- and it is the reason the family drifted.
 
-Send them as one branch. The corpus hole is the argument for the row.
+**The corpus half turned out to be blocked, and finding out why was
+worth more than the row.** Every input that reaches the unreachable
+branch needs a definition whose return type is a function, and **every
+such shape faults or silently prints a heap address on bare metal
+today** -- finding 39, measured 2026-08-25 with a new four-line
+reproducer (`findings/probe-closure-overapply.codex`). So the corpus is
+not missing that case because nobody thought of it; it is missing it
+because a program exercising it does not run. That is an argument for
+COMPILER-18's ruling, not a separate ask.
+
+**The decision this needs from Steve:** whether to offer
+`partial.codex` an input the depot's own compiler faults on. It would
+not break their suite -- `test-plugs.ps1` never compiles or runs what a
+plug emitted -- and it is exactly the input that would put the branch in
+front of anything that ever does. But it ships a program that does not
+work on the reference implementation, and saying so in the row is the
+minimum. The branch is prepared either way:
+`plugs-tco-arity-corpus` off `upstream/master`, backlog row 1.59,
+finding 36 hedged per the standing rule.
 
 ## 4. Diagnostics as a banked set
 

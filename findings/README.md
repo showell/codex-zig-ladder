@@ -1179,6 +1179,35 @@ crash and no diagnostic.
 in every program in the series, and is correct in all of them. Only
 definitions whose return type is a function are affected.
 
+**A THIRD entry point, found 2026-08-25 while trying to close the corpus
+hole in finding 36's family** (`findings/probe-closure-overapply.codex`,
+four lines, three definitions). The two programs above reach the defect
+through a two-step application. This one reaches it through a **FLAT
+OVER-APPLICATION of the named definition**: `pick 0 2 3`, where `pick`
+declares one parameter and returns a function. Bare metal FAULTS on that
+line -- not a wrong number, a register dump -- while the zig arm answers
+6, then 7, then 15 and runs to completion. The sibling
+`let p = pick 0 in show ((p 2) 3)` does the silent thing instead: **bare
+metal prints 6291624, `0x600028`, a heap address** where 6 belongs, and
+faults one line later. Same signature as `probe-closure-silent`'s
+6291488, reached from a different direction.
+
+`pick` here has two return paths and NO recursion -- deliberately the
+shape of tier 14's `control-pick`, which ANSWERS. So the difference is
+not the definition, it is how the result is applied.
+
+**This is why the corpus hole cannot simply be filled.**
+`codex/plugs/test-input/partial.codex` has one definition, `add3`,
+returning an Integer, so the Rulebook's over-application case at
+`docs/DevelopersRulebook.md:258` is unreachable from it -- the branch
+riscv, java, the python plug and (until PR 83) the zig plug all get
+wrong. Every shape that WOULD reach that branch needs a definition
+returning a function, and every such shape lands on this finding. **The
+corpus is missing the case because a program exercising it does not run
+on bare metal today.** That is a better answer than "nobody thought of
+it", and it is an argument for COMPILER-18's ruling rather than a
+separate ask.
+
 **Mechanism, read from source and NOT measured.** A partial application
 is `[code-ptr][capture...]` of `(1 + num-captures) * 8` bytes
 (`Emit/X86_64Compound.codex:715-733`). Its code pointer is a trampoline
