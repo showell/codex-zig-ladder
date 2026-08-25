@@ -60,6 +60,33 @@ Chapter: PrimTailCall
  be discarded rather than dropped, and dropping it would change which
  argument each remaining parameter receives.
 
+ `shadow-guard` is finding 42, and every part of its shape is forced. A
+ loop parameter whose name matches a top-level definition is renamed to
+ `_arg_<name>`, correctly, because zig forbids the shadow; the loop body
+ then resolves that name to the TOP-LEVEL DEFINITION rather than to the
+ renamed parameter, so the loop reads a global where the source reads its
+ own argument. The non-loop emission binds the rename and is right.
+
+ A row that reads the parameter anywhere the plug's occurrence check can
+ SEE does not get this far. The check drives a discard: a parameter it
+ believes unread is emitted as `_ = _arg_x;`, and one it believes read is
+ not. So a visible read means no discard, no surviving mention of
+ `_arg_x`, and zig rejecting an unused parameter -- a BUILD failure, not
+ a wrong answer. That is what `dtls-fragment` did, and it is why the
+ defect went four days unnoticed while looking like a plug refusal.
+
+ The read therefore has to sit where the check is blind, and a match
+ GUARD is such a place: `zig-occurs` walks a branch's body and not its
+ guard. Then the discard is emitted, the program builds clean, and the
+ answer is wrong with no diagnostic at all -- which is the failure mode
+ this row exists to hold.
+
+ The guard also has to sit inside a tail-call ARGUMENT rather than at the
+ top of the body. A guarded match in tail position is not recognised as a
+ self tail call, so that arrangement keeps its frames, takes the non-loop
+ path, and answers correctly; measured 2026-08-25, both shapes, one
+ native build apart.
+
  Expected on bare metal:
 
    arg-swap 15
@@ -67,6 +94,7 @@ Chapter: PrimTailCall
    mutual even
    unused-param 12
    control-nontail 55
+   shadow-guard 3
 
 Section: Shapes
 
@@ -111,6 +139,18 @@ Section: Shapes
    if n == 0 then 0
    else n + sum-nontail (n - 1)
 
+ A loop parameter that shadows a top-level definition, read from a match
+ guard inside one of the loop's own arguments. `stop-at` the parameter is
+ 3; `stop-at` the definition is 100, so an arm that reads the wrong one
+ counts every turn instead of the turns below 3.
+
+  stop-at : Integer = 100
+
+  shadow-loop : Integer, Integer, Integer -> Integer
+  shadow-loop (stop-at) (n) (acc) =
+   if n >= 5 then acc
+   else shadow-loop stop-at (n + 1) (acc + (when n is m when m < stop-at -> 1 is m -> 0))
+
 Section: Driver
 
   show-list : List Integer, Integer, Text -> Text
@@ -124,4 +164,5 @@ Section: Driver
     print-line-uni ("mutual " & (if (is-even 10) then "even" else "odd"))
     print-line-uni ("unused-param " & show (unused-loop 99 4 0))
     print-line-uni ("control-nontail " & show (sum-nontail 10))
+    print-line-uni ("shadow-guard " & show (shadow-loop 3 0 0))
   end
