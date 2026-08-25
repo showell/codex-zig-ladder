@@ -1,44 +1,41 @@
 Chapter: ProbeClosureOverapply
 
- Finding 39, entered through a FLAT OVER-APPLICATION rather than through
- a two-step under-application. Four lines, three definitions, and bare
- metal faults on the second one.
+ COMPILER-18's third entry point, and the smallest: three definitions,
+ five printed lines, reached through a FLAT OVER-APPLICATION of a named
+ definition rather than through the two-step under-application the
+ finding's other two programs use.
 
- `pick` returns a function and has two return paths and no recursion --
- deliberately the shape of tier 14's `control-pick`, which ANSWERS. The
- difference is only how the result is applied: tier 14 reaches it as
- `(pick 0) 2 3` inside a definition the pipeline inlines, and this
- applies the named definition flat at three arguments where it declares
- one.
+ Both of bare metal's failure modes appear in one run. Measured
+ 2026-08-25 against seed 6CF4A8E0:
 
- Measured 2026-08-25 against seed 6CF4A8E0:
+   control-flat: 6      both arms agree
+   stepwise: 6291512    bare metal prints a heap address (0x600038)
+                        where 6 belongs -- the SILENT form
+   named-over: 6        bare metal FAULTS here; nothing after runs
+   named-over-alt: 7    zig only
+   after: 15            zig only
 
-   full: 6              both arms agree
-   result-over: 6       bare metal FAULTS here; the zig arm answers 6
-   result-over2: 7      never reached on bare metal; zig answers 7
-   after: 15            never reached on bare metal; zig answers 15
+ `choose` is NOT recursive, which is the point. COMPILER-18's second
+ measurement needed mutual recursion and could not say why; this shows
+ recursion is not the variable. It does not show what IS: that row's own
+ control `f (n) = add3 5` is non-recursive with ONE return path and is
+ correct, while `choose` has TWO and is not. A single-return-path
+ `choose` is the next probe and has not been run.
 
- A sibling shape, `let p = pick 0 in show ((p 2) 3)`, does the SILENT
- thing instead: bare metal prints 6291624 -- 0x600028, a heap address --
- where 6 belongs, and faults on the line after. That is finding 39's own
- signature (it records 6291488 = 0x600020 in another program), reached
- from a different direction.
-
- This matters to `codex/plugs/test-input/partial.codex`, whose only
- definition returns an Integer, so the Rulebook's over-application case
- is unreachable from it. Every shape that WOULD reach it needs a
- definition returning a function, and every such shape lands here.
-
+ Sent as PR 86 (a copy is upstream's `codex/plugs/test-input/overapply.codex`)
+ with the COMPILER-18 addendum; PR 87 is the python TCO row.
 
   add3 : Integer, Integer, Integer -> Integer
   add3 (a) (b) (c) = a + b + c
 
-  pick : Integer -> (Integer, Integer -> Integer)
-  pick (n) = if n == 0 then add3 1 else add3 2
+  choose : Integer -> (Integer, Integer -> Integer)
+  choose (n) = if n == 0 then add3 1 else add3 2
 
   opening : [Console] Nothing = act
-   print-line-uni ("full: " & show (add3 1 2 3))
-   print-line-uni ("result-over: " & show (pick 0 2 3))
-   print-line-uni ("result-over2: " & show (pick 1 2 3))
+   print-line-uni ("control-flat: " & show (add3 1 2 3))
+   let c = choose 0
+   in print-line-uni ("stepwise: " & show ((c 2) 3))
+   print-line-uni ("named-over: " & show (choose 0 2 3))
+   print-line-uni ("named-over-alt: " & show (choose 1 2 3))
    print-line-uni ("after: " & show (add3 4 5 6))
   end

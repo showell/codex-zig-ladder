@@ -1179,8 +1179,8 @@ crash and no diagnostic.
 in every program in the series, and is correct in all of them. Only
 definitions whose return type is a function are affected.
 
-**A THIRD entry point, found 2026-08-25 while trying to close the corpus
-hole in finding 36's family** (`findings/probe-closure-overapply.codex`,
+**A THIRD entry point, SENT as PR 86, found 2026-08-25 while trying to
+close the corpus hole in finding 36's family** (`findings/probe-closure-overapply.codex`,
 four lines, three definitions). The two programs above reach the defect
 through a two-step application. This one reaches it through a **FLAT
 OVER-APPLICATION of the named definition**: `pick 0 2 3`, where `pick`
@@ -1192,9 +1192,15 @@ metal prints 6291624, `0x600028`, a heap address** where 6 belongs, and
 faults one line later. Same signature as `probe-closure-silent`'s
 6291488, reached from a different direction.
 
-`pick` here has two return paths and NO recursion -- deliberately the
+`choose` here has two return paths and NO recursion -- deliberately the
 shape of tier 14's `control-pick`, which ANSWERS. So the difference is
-not the definition, it is how the result is applied.
+not the definition, it is how the result is applied. **This NARROWS the
+finding's open question rather than settling it**, and a cold read of the
+outbound artifact caught the overclaim: recursion is not the variable,
+but the finding's own control `f (n) = add3 5` is non-recursive with ONE
+return path and is CORRECT, so the variable moves to something about
+multiple return paths. A single-return-path `choose` is the next probe
+and has not been run.
 
 **This is why the corpus hole cannot simply be filled.**
 `codex/plugs/test-input/partial.codex` has one definition, `add3`,
