@@ -942,7 +942,7 @@ cursors met -- alloc at 6295544 + 64 crosses (hp=... dptr=... deck_base=...
 bivy=... nest=0)". So the machinery can refuse; the reservation boundary
 just is not one of the things it refuses on.
 
-**Why it matters now.** JUSTIFICATIONS "The deck costs 145 MB per MB of
+**Why it matters now.** JUSTIFICATIONS "The deck costs ~153 MB per MB of
 source" measures the hosted compiler at 421 MB of its 512 MB deck on its own
 2.87 MB bundle, and `passes_to_x86` at 385 MB. Every Update adds chapters.
 The first Update that crosses the line will not report a deck problem -- it

@@ -351,7 +351,7 @@ files -- because a glob that matches nothing produces the same happy
 verdict as a glob that matches everything, and this one is run once and
 believed.
 
-## The deck costs 145 MB per MB of source, and it is all the front end (2026-08-25)
+## The deck costs ~153 MB per MB of source, and it is all the front end (2026-08-25)
 
 Measured by `./codexzig_scale.py` across every `ast/*-subject.codex`,
 reading the `CX-DECK used=` trace the emitted runtime prints on stdout.
@@ -380,8 +380,12 @@ reservation is 512 MB (`reserved=536870912`).
 All fourteen emit zig byte-identical to `codexir | zigemit`, which is the
 breadth half of the same run; the deck column is what it was for.
 
-Close to linear at ~145 MB of deck per MB of source, so the reservation
-runs out somewhere around **3.5 MB of source**. The compiler's own bundles
+Close to linear at **~153 MB of deck per MB of source** -- the figure
+`codexzig_scale.py` computes, averaging the subjects over 300 KB, where the
+fixed overhead has stopped dominating -- so the reservation runs out around
+**3.4 MB of source**. (An earlier hand-read of the same table said 145 MB
+and 3.5 MB; the runner's number is the one to quote, because it is the one
+that gets recomputed.) The compiler's own bundles
 are 2.5-2.9 MB today and every Update adds chapters.
 
 **The whole cost is the FRONT END, and combining the halves is free.** On
