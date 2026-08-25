@@ -178,61 +178,38 @@ against the tree, since several have been fixed in passing.
   census json stays; LICENSE is Steve's call; errors='replace'
   byte-compare rides Batch 3.
 
-## 3. Finding 36 and the corpus hole that hid its whole family
+## 3. What the over-application family still owes
 
-**Objective: OUTBOUND. KEYBOARD, and the run it wanted does not exist.**
-Both halves go out together.
+**Objective: OUTBOUND, and the queue is EMPTY as of 2026-08-25.** Both
+halves went out: **PR 86** (the corpus gap, a new
+`test-input/overapply.codex` plus the COMPILER-18 addendum) and **PR 87**
+(the python plug's TCO keyed on name and not arity, LATENT). PR 85
+carries finding 42. Nothing is prepared and unsent.
 
-- **Finding 36 is the head of the outbound queue** (the python plug's
-  TCO keys on name, not arity). It was held back deliberately to see
-  whether the Rulebook's over-application rule bound every plug that
-  keeps an arity map; call 21 (2026-08-24) says it does, so 36 no longer
-  has to argue the rule for itself and owes only its own reproducer.
-  Still MEDIUM confidence and **the reproducer has NOT been run. It
-  cannot be run here, and "the python plug is a script, not a build" was
-  wrong** (checked 2026-08-25): `codex/plugs/python/build.ps1` drives
-  `build/compile.ps1`, which is a seed compile under QEMU, and
-  `codex/plugs/python/build-output` has never existed in this tree. The
-  RUN leg is worse -- `build/plug-run.ps1:49-53` goes straight to
-  `tools/codex-vm.exe`, which is not built anywhere here and has no QEMU
-  fallback, though `vm-config.ps1:821` defines one it never calls. The
-  ladder's zig plug sidesteps all of this with its own `plug_run.py`;
-  the python plug has no such wiring.
+**What a cold read cost and bought, because it is the reusable part.**
+The two rows were one branch, and its headline claim -- that the corpus
+hole is why the python defect went unnoticed -- was FALSE. The python
+defect is reachable only inside a self-recursive definition's tail
+position; row 1.57 already lists python as compliant on the
+over-application path, correct by construction. One page, two rows,
+flat contradiction. **Cold-read every outbound artifact before it goes**;
+it also caught a reproducer that was full-arity and could not reproduce,
+an unverified negative about thirty emitters we have no toolchain for,
+and a citation off by two lines.
 
-  **So this is the finding-41 situation exactly, and the standing rule
-  below answers it: hedge the row, name who can settle it, and send.**
-  Do not build a python-plug transport to satisfy one reproducer -- that
-  is unscoped work behind a MEDIUM-confidence source reading. If the row
-  is ever to be run here, wiring the python plug onto `plug_run.py` is
-  its own item and belongs in ERGONOMICS.md.
-- **The one-line corpus fix that would have caught all four.**
-  `codex/plugs/test-input/partial.codex` covers over-application of a
-  LOCAL, but its only definition is `add3`, which does not return a
-  function -- so the branch every one of these plugs gets wrong is
-  unreachable from the corpus. `test-plugs.ps1` then never compiles what
-  it emitted. PR 80 landed and its ruling names the wiring but not the
-  corpus hole, so this is still unoffered and still the cheapest thing
-  in the outbound queue -- and it is the reason the family drifted.
+**The open questions these left, none of them ours to answer:**
 
-**The corpus half turned out to be blocked, and finding out why was
-worth more than the row.** Every input that reaches the unreachable
-branch needs a definition whose return type is a function, and **every
-such shape faults or silently prints a heap address on bare metal
-today** -- finding 39, measured 2026-08-25 with a new four-line
-reproducer (`findings/probe-closure-overapply.codex`). So the corpus is
-not missing that case because nobody thought of it; it is missing it
-because a program exercising it does not run. That is an argument for
-COMPILER-18's ruling, not a separate ask.
-
-**The decision this needs from Steve:** whether to offer
-`partial.codex` an input the depot's own compiler faults on. It would
-not break their suite -- `test-plugs.ps1` never compiles or runs what a
-plug emitted -- and it is exactly the input that would put the branch in
-front of anything that ever does. But it ships a program that does not
-work on the reference implementation, and saying so in the row is the
-minimum. The branch is prepared either way:
-`plugs-tco-arity-corpus` off `upstream/master`, backlog row 1.59,
-finding 36 hedged per the standing rule.
+- **COMPILER-18 is in the upstream rulings queue** and everything here
+  waits on it. PR 86's measurement narrows it: recursion is not the
+  variable, but a single-return-path control IS correct, so something
+  about multiple return paths is. **That probe has not been run and is
+  cheap** -- a `choose` with one return path, both arms. It is the one
+  piece of this family still worth our compute.
+- **PR 87's reachability.** Does a well-typed Codex program exist in
+  which a definition tail-calls itself at non-full arity? A definition's
+  body has the definition's return type and such a call has a function
+  type, so possibly not. It is a type-checker question, needs no python,
+  and settling it either promotes the row or closes it.
 
 ## 4. Diagnostics as a banked set
 
@@ -497,8 +474,9 @@ host has no JDK, and retracted the promise to run it -- and the ruling
 arrived anyway. Do not hold the finding back, and do not imply a
 follow-up we cannot make.
 
-**What is ready to send is "Finding 36 and the corpus hole that hid its
-whole family" above.** Nothing else is queued.
+**The queue is EMPTY as of 2026-08-25.** PRs 85, 86 and 87 went out that
+day, on top of the six that landed in Update 50's interim push. Nothing
+is prepared and unsent.
 
 ## Per-Update ceremony
 
