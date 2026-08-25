@@ -991,8 +991,18 @@ pulled the shared checkout mid-run" stop being a thing that can happen.
 How the Codex clone `CODEX_ROOT` points at is managed. This lived in nobody's
 head for a while and the head it lived in got confused, so, written down:
 
-**Two remotes, with different jobs.** `upstream` is `damiant3/NewRepository`
-and is read-only in practice: the mirror is downstream of the author's
+**Two remotes, with different jobs.** `upstream` is `damiant3/Cobblestone`
+-- renamed from `NewRepository` on 2026-08-25, with the interim push that
+absorbed our six PRs. GitHub redirects the old URL, so nothing broke and
+nothing announced itself; the remote here was repointed at the new name
+because a redirect is a courtesy, not a fact to depend on. **Our fork keeps
+its own name**, `showell/NewRepository`: a fork does not follow its
+upstream's rename, and the asymmetry is real rather than a mistake to fix.
+The local directory is still `~/showell_repos/NewRepository` and stays that
+way -- sandbox MANIFESTs record it by path, and renaming it mid-cycle would
+strand every one of them.
+
+`upstream` is read-only in practice: the mirror is downstream of the author's
 Perforce, so nothing merges there and PRs are landed by being re-applied on
 their side. `origin` is the `showell/NewRepository` fork, and it exists to
 hold pushed branches: PR branches, and the pin branch below. A local `master`
@@ -1042,7 +1052,7 @@ being on the fork means no clone is precious.
 **Re-cloning from scratch** is therefore cheap and occasionally worth doing,
 since a long-lived clone accumulates branches from work that has since
 landed. `git clone git@github.com:showell/NewRepository.git`, then
-`git remote add upstream git@github.com:damiant3/NewRepository.git`, then
+`git remote add upstream https://github.com/damiant3/Cobblestone.git`, then
 `git switch u<NN>-rebank` (the pin is on the fork). Git carries everything
 else: point `CODEX_ROOT` at the new clone, let `check_paths.py` prove the
 wiring in five seconds, and the first `cycle.sh` (or the sweep, which runs
