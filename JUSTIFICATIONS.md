@@ -350,3 +350,40 @@ The comparison counted what it compared -- thirteen files against thirteen
 files -- because a glob that matches nothing produces the same happy
 verdict as a glob that matches everything, and this one is run once and
 believed.
+
+## The deck costs 145 MB per MB of source, and it is all the front end (2026-08-25)
+
+Measured with `native/codexzig` across every `ast/*-subject.codex`, reading
+the `CX-DECK used=` trace the emitted runtime prints on stdout. The deck
+reservation is 512 MB (`reserved=536870912`).
+
+    source   deck peak   headroom
+    0.12 MB      7 MB       99%
+    0.42 MB     68 MB       87%
+    0.97 MB    144 MB       73%
+    1.16 MB    179 MB       67%
+    2.50 MB    356 MB       34%
+    2.62 MB    384 MB       29%
+    2.87 MB    415 MB       19%     <- codexzig's own bundle
+
+Close to linear at ~145 MB of deck per MB of source, so the reservation
+runs out somewhere around **3.5 MB of source**. The compiler's own bundles
+are 2.5-2.9 MB today and every Update adds chapters.
+
+**The whole cost is the FRONT END, and combining the halves is free.** On
+`codexir-subject.codex` (2.62 MB), run three ways:
+
+    codexir alone (front half)   384 MB
+    zigemit alone (back half)      0 MB
+    codexzig (both, one arena)   384 MB
+
+The emitter never touches the deck, so `codexzig`'s headroom is exactly
+`codexir`'s and [COMBINED_ZIG.md](COMBINED_ZIG.md)'s two-heap worry does not
+apply to this region at all. It also means the ceiling is not a property of
+the combined program: `codexir` in the two-process pipeline hits it at the
+same input size, and the ladder would meet it first through whichever rung
+bundles the most chapters.
+
+This is the deck (the phase allocator's region), NOT the 512 MB thread
+stack `stack_probe.py` measures for finding 37. Two constants that happen to
+share a number.
