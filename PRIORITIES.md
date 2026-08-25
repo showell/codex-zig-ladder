@@ -468,10 +468,10 @@ Left:
   `20260825T135832Z-u50-natives-tiers`, natives `d7e148e7b699` built from
   the pin, then `./tiers_run.py --zig` green: 15 green, 7 noted. It cost
   one instrument fix first -- see the tier item above.
-- **The prose branch's due-diligence run is now the gate on sending it.**
-  Steve called it on 2026-08-25: run the verify sweep FIRST. It cuts a
-  sandbox on `zig-plug-stack-prose`, sweeps, and diffs every emitted
-  `.zig` against the seed-6cf4a8e0 sweep's. He had earlier ruled it
-  overkill, and the prose grew a second corrected claim since, which is
-  what changed. The launcher lived in a previous session's scratchpad and
-  needs rewriting.
+- **The prose branch's due-diligence run: DONE and GREEN.** Sandbox
+  `20260825T142003Z-prose-verify`, 14/14 rungs green in 1627 s, and all
+  thirteen emitted `.zig` files byte-identical to the seed-6cf4a8e0
+  sweep's -- from a plug whose bundle is 22 lines larger and whose
+  fingerprint moved `1aba3c41196cb74e` -> `73dc2f1e8cd0ed81`
+  (JUSTIFICATIONS, "A prose block moves the plug and not its output").
+  **The gate Steve set is satisfied; the send itself is still his call.**
