@@ -1346,6 +1346,17 @@ code, F4 boots the emitted binary.
   not carry (`IRTextEmitter.codex:404-406` infers a record's implicit type
   parameters as it serialises), and a direct hand-off emits zig that will
   not compile for a type declared like `SortPartition`.
+- `codexzig_corpus.py` -- the breadth and correctness runner for `codexzig`:
+  every corpus program byte-compared against the pipeline, and the
+  well-behaved subset (clean + match) built, run, and checked against the
+  depot's `.expected`. The `.expected` half is the only check in this tree
+  whose oracle was written by someone with no knowledge of the plug.
+- `codexzig_scale.py` -- the deck. Every unit subject through `codexzig`
+  with its deck peak and headroom (JUSTIFICATIONS "The deck costs 145 MB per
+  MB of source"), then a squeeze that lowers the reservation and confirms
+  the failure is still finding 45's: negative headroom printed and ignored,
+  twice the reservation reached, a GP fault in `cx_list_at`, and no emitted
+  zig written.
 
 ## zigc: the compiler as an ordinary process
 

@@ -362,8 +362,23 @@ the intermediate IR is what most of the ladder's questions are asked about.
 codexzig is the artifact for other people, and it is also its own regression
 test -- `--check` byte-compares it against the pipeline.
 
-Still unscheduled and nothing depends on it: what remains is publicity, not
-engineering, and the pitch notes are in COMBINED_ZIG.md.
+**It is verified, and it earns its keep as an instrument.** 577/577 corpus
+programs byte-identical to the pipeline; 181 of them built, run and matching
+the depot's `.expected`; all 14 unit subjects identical from 0.12 MB to
+2.87 MB; and its own bundle a fixed point. Two runners keep those true --
+`codexzig_corpus.py` and `codexzig_scale.py`. It also produced **finding 45**
+(the deck reservation is advisory) in ten minutes and no QEMU, which is the
+argument for it as more than publicity.
+
+**What it does NOT replace: the bare-metal oracle.** Everything codexzig
+checks is the zig arm against itself or against `.expected`. The rungs
+compare the zig arm against BARE METAL, and a defect the plug and the seed
+share -- or one the emitter makes identically on both paths -- is invisible
+here and visible there. codexzig is the fastest way to learn that
+transpilation still works across the whole compiler; it is not evidence that
+the answer is right.
+
+The pitch notes are in COMBINED_ZIG.md.
 
 ---
 

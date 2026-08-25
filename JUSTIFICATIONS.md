@@ -353,8 +353,12 @@ believed.
 
 ## The deck costs 145 MB per MB of source, and it is all the front end (2026-08-25)
 
-Measured with `native/codexzig` across every `ast/*-subject.codex`, reading
-the `CX-DECK used=` trace the emitted runtime prints on stdout. The deck
+Measured by `./codexzig_scale.py` across every `ast/*-subject.codex`,
+reading the `CX-DECK used=` trace the emitted runtime prints on stdout.
+**That script is the runner behind this table and behind finding 45** -- it
+re-measures the row, then squeezes the reservation and checks the failure is
+still the one the finding describes. Neither number is one that was true
+once. The deck
 reservation is 512 MB (`reserved=536870912`).
 
     subject                  source   deck peak  headroom   vs duo

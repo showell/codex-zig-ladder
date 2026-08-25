@@ -63,17 +63,21 @@ def emit(tool_argv, src_bytes, dest):
 def main():
     compute_lock.take()
     census = json.loads((LADDER / 'corpus' / 'census.json').read_text())
-    names = sorted(n for n, v in census['programs'].items()
+    progs = census['programs']
+    every = sorted(progs)
+    names = sorted(n for n, v in progs.items()
                    if v.get('stage') == 'clean' and v.get('verdict') == 'match')
     OUT.mkdir(parents=True, exist_ok=True)
-    print(f'### codexzig against {len(names)} well-behaved corpus programs')
-    print(f'    (clean + match in corpus/census.json, banked {census["meta"]["date"]})')
+    print(f'### codexzig against the corpus, banked {census["meta"]["date"]}')
+    print(f'    breadth: {len(every)} programs, byte-compared against the pipeline')
+    print(f'    correctness: {len(names)} of them (clean + match) run against .expected')
 
+    wanted = set(names)
     tally = {'correct': 0, 'differ': 0, 'refused': 0, 'crashed': 0,
              'timeout': 0, 'transpile-failed': 0, 'unresolved': 0}
     same, moved, bad = 0, [], []
     started = time.time()
-    for i, name in enumerate(names, 1):
+    for i, name in enumerate(every, 1):
         # RESOLVE CITES FIRST. codexir resolves nothing, so a test whose
         # driver calls into a cited chapter arrives with that name undefined
         # and the plug's fallback fires -- which, as corpus_run's own comment
@@ -103,6 +107,12 @@ def main():
             else:
                 moved.append(name)
 
+        if name not in wanted:
+            # Breadth only. A program with a refusal marker, or no .expected,
+            # or one that needs real hardware, still has to TRANSPILE the same
+            # -- that is the question this half asks -- but there is nothing
+            # to run it against.
+            continue
         try:
             p = subprocess.run(corpus_run.BOUNDED +
                                ['timeout', '300', 'zig', 'run', str(one)],
@@ -127,12 +137,12 @@ def main():
             tally['differ'] += 1
             bad.append((name, 'differ',
                         f'want {want.strip()[:60]!r} got {got.strip()[:60]!r}'))
-        if i % 25 == 0:
-            print(f'  {i}/{len(names)}  {tally}', flush=True)
+        if i % 100 == 0:
+            print(f'  {i}/{len(every)}  same {same}  {tally}', flush=True)
 
     print(f'\n### {int(time.time() - started)}s')
     print('    ' + ', '.join(f'{k} {v}' for k, v in tally.items() if v))
-    print(f'    byte-identical to codexir | zigemit: {same}/{len(names)}'
+    print(f'    byte-identical to codexir | zigemit: {same}/{len(every)}'
           + (f'  MOVED: {" ".join(moved)}' if moved else ''))
     if bad:
         print('\n### programs to read, most interesting first')
