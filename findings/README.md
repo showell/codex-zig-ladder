@@ -1192,15 +1192,42 @@ metal prints 6291624, `0x600028`, a heap address** where 6 belongs, and
 faults one line later. Same signature as `probe-closure-silent`'s
 6291488, reached from a different direction.
 
-`choose` here has two return paths and NO recursion -- deliberately the
-shape of tier 14's `control-pick`, which ANSWERS. So the difference is
-not the definition, it is how the result is applied. **This NARROWS the
-finding's open question rather than settling it**, and a cold read of the
-outbound artifact caught the overclaim: recursion is not the variable,
-but the finding's own control `f (n) = add3 5` is non-recursive with ONE
-return path and is CORRECT, so the variable moves to something about
-multiple return paths. A single-return-path `choose` is the next probe
-and has not been run.
+**AND THE VARIABLE IS NOW ISOLATED, 2026-08-25: it is a second CALL
+SITE, and nothing else.** Five programs, one property changed at a time,
+bare metal each time:
+
+| definition | call sites | bare metal |
+|---|---|---|
+| `sel (n) = add3 1` | 1 | `6` correct |
+| `sel (n) = add3 n` | 1 | `12` correct |
+| `sel (n) = add3 n`, four statements | 1 | `12, 25` correct |
+| `choose (n) = if n == 0 then add3 1 else add3 2` | 1 | `6` correct |
+| `sel (n) = add3 n`, four statements | **2** | **FAULT** |
+
+`probe-overapply-two-callers.codex` and `probe-overapply-one-caller.codex`
+are the last two rows and they differ in ONE line: whether the third
+statement calls `sel` again or calls `add3`. That controls for statement
+count, which the finding itself flags as an unexplained variable.
+
+**So every earlier hypothesis about this was wrong, mine included.** Not
+the recursion; not the branch (two return paths with ONE call site is
+correct); not an argument-dependent capture. **With more than one call
+site, `inline-single-caller` cannot fire, so the partial-application
+object is really built and really entered -- and entering it is the
+defect.** Inlined, the closure is materialised at the call site and the
+trampoline is never reached, which is why every correct row above is
+correct.
+
+That also answers the finding's own "why does (2) need the mutual
+recursion at all": mutual recursion is simply one way to defeat the
+inliner, and a second call site is the cheapest. **The zig side already
+had this written down** -- tier 14's prose says `control-pick` "survived
+there only because the pipeline inlines pick and materialises the closure
+at the call site; even-fn is mutually recursive and nothing can inline
+it". This is the same statement for bare metal.
+
+The earlier `choose` file failed for this reason and not the one recorded
+for it: it called `choose` three times.
 
 **This is why the corpus hole cannot simply be filled.**
 `codex/plugs/test-input/partial.codex` has one definition, `add3`,

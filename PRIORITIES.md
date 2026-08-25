@@ -200,11 +200,18 @@ and a citation off by two lines.
 **The open questions these left, none of them ours to answer:**
 
 - **COMPILER-18 is in the upstream rulings queue** and everything here
-  waits on it. PR 86's measurement narrows it: recursion is not the
-  variable, but a single-return-path control IS correct, so something
-  about multiple return paths is. **That probe has not been run and is
-  cheap** -- a `choose` with one return path, both arms. It is the one
-  piece of this family still worth our compute.
+  waits on it. **DONE 2026-08-25: the precondition is isolated and it is
+  a second CALL SITE.** Five programs, one property changed at a time --
+  two return paths with one call site is CORRECT, and one return path
+  with two call sites FAULTS. With more than one call site
+  `inline-single-caller` cannot fire, so the partial-application object
+  is really built and really entered, which is the defect; inlined, the
+  closure is materialised at the call site and the trampoline is never
+  reached. Recursion, branches and argument-dependent captures are all
+  just ways of defeating the inliner. Register has the table; probes are
+  `probe-overapply-two-callers.codex` and its one-line-different control.
+  **Sent to PR 86 as a follow-up comment**, since it corrects what that
+  PR says.
 - **PR 87's reachability.** Does a well-typed Codex program exist in
   which a definition tail-calls itself at non-full arity? A definition's
   body has the definition's return type and such a call has a function

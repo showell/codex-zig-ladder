@@ -1,0 +1,38 @@
+Chapter: ProbeOverapplyTwoCallers
+
+ COMPILER-18's precondition, isolated to ONE variable: a second CALL SITE.
+
+ This and probe-overapply-one-caller.codex differ in exactly one thing --
+ that file's third statement calls add3, this one's calls `sel` again.
+ Same definitions, same statement count, same shapes. Measured 2026-08-25
+ against seed 6CF4A8E0:
+
+   one caller   control-flat: 6, first-call: 12, filler: 25, after: 15
+   two callers  control-flat: 6, then a REGISTER DUMP at first-call
+
+ `sel` is not recursive, has ONE return path, and its capture comes from
+ its argument. None of that is the variable. What changes is that with two
+ call sites `inline-single-caller` cannot fire, so the partial-application
+ object is really built and really entered -- and entering it is what
+ COMPILER-18 is about. Inlined, the closure is materialised at the call
+ site and the trampoline is never reached.
+
+ The zig plug's side of this was already written down: tier 14's prose
+ says `control-pick` "survived there only because the pipeline inlines
+ pick and materialises the closure at the call site; even-fn is mutually
+ recursive and nothing can inline it". This is the same statement for
+ bare metal, with the cheapest possible way to defeat the inliner.
+
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (a) (b) (c) = a + b + c
+
+  sel : Integer -> (Integer, Integer -> Integer)
+  sel (n) = add3 n
+
+  opening : [Console] Nothing = act
+   print-line-uni ("control-flat: " & show (add3 1 2 3))
+   print-line-uni ("first-call: " & show (sel 7 2 3))
+   print-line-uni ("second-call: " & show (sel 20 2 3))
+   print-line-uni ("after: " & show (add3 4 5 6))
+  end

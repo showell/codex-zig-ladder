@@ -1,0 +1,25 @@
+Chapter: ProbeOverapplyOneCaller
+
+ The control for probe-overapply-two-callers.codex, and it exists to kill
+ a confound rather than to show anything itself.
+
+ COMPILER-18 records, under NOT ESTABLISHED, that "appending a third
+ statement to an unrelated two-statement program stops its first statement
+ from printing" -- so statement COUNT had to be excluded before a second
+ call site could be blamed. This file has the same four statements as its
+ pair; the third calls add3 instead of `sel`. Bare metal answers
+ 6, 12, 25, 15 -- correct throughout, 2026-08-25, seed 6CF4A8E0.
+
+
+  add3 : Integer, Integer, Integer -> Integer
+  add3 (a) (b) (c) = a + b + c
+
+  sel : Integer -> (Integer, Integer -> Integer)
+  sel (n) = add3 n
+
+  opening : [Console] Nothing = act
+   print-line-uni ("control-flat: " & show (add3 1 2 3))
+   print-line-uni ("first-call: " & show (sel 7 2 3))
+   print-line-uni ("filler: " & show (add3 20 2 3))
+   print-line-uni ("after: " & show (add3 4 5 6))
+  end
