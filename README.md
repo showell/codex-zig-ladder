@@ -1311,7 +1311,16 @@ code, F4 boots the emitted binary.
   hosted program's. **The two-process pipeline is its oracle, not merely its
   predecessor** -- `./codexzig_build.sh --check <prog.codex>` runs both ways
   and byte-compares. 85 programs agree byte for byte (2026-08-25: every
-  `codex/plugs/test-input`, every warmup, every `prim-*` and `probe-*`).
+  `codex/plugs/test-input`, every warmup, every `prim-*` and `probe-*`) --
+  and so does its OWN bundle: `codexzig < ast/codexzig-subject.codex` emits
+  the 2,273,737 bytes the seed-plus-ring-plug path emits from that source,
+  and a binary built from that output emits them again. Agreement is
+  structural rather than lucky: the harness emits the IR text and parses it
+  back in memory, so this is the same code in the same order as
+  `codexir | zigemit`. It has to be -- the wire DERIVES what the AST does
+  not carry (`IRTextEmitter.codex:404-406` infers a record's implicit type
+  parameters as it serialises), and a direct hand-off emits zig that will
+  not compile for a type declared like `SortPartition`.
 
 ## zigc: the compiler as an ordinary process
 

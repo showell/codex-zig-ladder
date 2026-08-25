@@ -347,9 +347,15 @@ Left:
 **Built 2026-08-25 (Steve's call to take it up again): `codexzig_build.sh`,
 `native/codexzig`, Codex source in and zig out in one process.** Not the
 merge of two emitted zig files [COMBINED_ZIG.md](COMBINED_ZIG.md) studied --
-one Codex bundle, codexir's chapter set plus the emitter, joined by a single
-expression because `emit-zig-chapter` takes the compiler's own `IRChapter`.
-Byte-identical to `codexir | zigemit` on 85 programs.
+one Codex bundle, codexir's chapter set plus the emitter and the IR text
+parser, with the pipe between the two halves replaced by a `let`.
+Byte-identical to `codexir | zigemit` on 85 programs, and **a fixed point:
+given its own 2.8 MB bundle it emits the 2,273,737 bytes of zig that the
+seed-plus-ring-plug path emits from the same source, and a binary built from
+that output emits them again.** (The two BINARIES differ, because
+`zig build-exe` is not reproducible on zig 0.16.0 -- the same file at the
+same path twice already gives different bytes. The emitted SOURCE is the
+fixed point.)
 
 **We keep the two separate binaries**, for the reason that has not changed:
 the intermediate IR is what most of the ladder's questions are asked about.
@@ -425,7 +431,7 @@ host has no JDK, and retracted the promise to run it -- and the ruling
 arrived anyway. Do not hold the finding back, and do not imply a
 follow-up we cannot make.
 
-**The queue is EMPTY as of 2026-08-25, and FIVE PRs are open:**
+**The queue is EMPTY as of 2026-08-25, and SIX PRs are open:**
 
 - **84** the zig plug's stack-note correction (verified inert first,
   ladder tag `stack-prose-verified`)
@@ -441,6 +447,13 @@ follow-up we cannot make.
   backlog 1.61, tag `plug-run-no-vm-host`, and it carries an ASK (is
   Linux a supported host for RUNNING plugs, or only for building them?)
 
+- **89** `plugs/common/IRTextParser.codex` takes the `ir-` prefix its
+  counterpart `IRTextEmitter` already uses on 99 of 106 definitions. Nine
+  of its names collide with the compiler's own Lexer and Parser, so no
+  program can carry both parsers; 31 definitions renamed, 156 insertions
+  and 156 deletions, no semantics. Verified on the zig arm only and it
+  says so -- three C# call sites move with it and we have no toolchain to
+  run them. Tag `codexzig-fixed-point`.
 On top of the six that landed in Update 50's interim push. Nothing is
 prepared and unsent, and the one question any of them left is the item
 above.
