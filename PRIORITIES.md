@@ -21,10 +21,19 @@ numbers with them. Two citations in the findings register named a
 "PRIORITIES item 1" from a numbering three rewrites old, and were
 repointed on 2026-08-25.
 
-(Rewritten 2026-08-23, again 2026-08-24. The 08-23 rewrite cut 700 lines
-to 150 live ones; this one re-sorted by objective, put ERGONOMICS at the
-front, and dropped the parked notebook/Prism bookmark -- that work is the
-essay-repl-server's REPL now, and Steve tracks it himself.)
+**The ergonomic items live in [ERGONOMICS.md](ERGONOMICS.md) since
+2026-08-25.** This file is defects and outbound: finding them, proving
+them, getting them to Damian. That file is tooling: transport speed,
+real sandboxes, foot-guns removed. Splitting them stopped the one
+argument that every re-sort had to hold again -- an hour saved on the
+verification chain against a wrong answer already shipped are not
+comparable, and pretending they sit on one axis is what kept putting
+tooling in front of the register.
+
+(Rewritten 2026-08-23, again 2026-08-24, split 2026-08-25. The 08-23
+rewrite cut 700 lines to 150 live ones; the 08-24 one re-sorted by
+objective; this one moved ergonomics out and re-ordered what is left so
+the work that does not need the box comes first.)
 
 ## Objectives
 
@@ -38,14 +47,9 @@ is open; these are the words in use.
   clean pass is a mild disappointment.
 - **DUE_DILIGENCE.** Verifying our own changes break nothing. Green earns
   no celebration; only a red result is information.
-- **ERGONOMICS.** Making the work faster and safer: transport speed, real
-  sandboxes, foot-guns removed. **This is why ergonomic items sit at the
-  front of the queue** -- they are the only kind whose payoff multiplies
-  across everything below them, and an hour saved on the verification
-  chain is an hour returned every time it runs. The exception is a
-  correctness defect of OURS that is already shipped: item 1 is one, and
-  it leads because a wrong answer nobody can see does not wait for the
-  tooling to get faster.
+- **ERGONOMICS.** Making the work faster and safer. **Not in this file
+  any more** -- [ERGONOMICS.md](ERGONOMICS.md) is its queue. The word
+  stays in this list because items here cite it.
 - **INTEGRITY.** Making the instrument honest. A measurement that can lie
   is worse than no measurement, because the next reader believes it.
   HUNTING and DUE_DILIGENCE are worth exactly what this is worth.
@@ -58,6 +62,22 @@ sandbox (`./sandbox.sh <label>`, `. ../env`, detached with a log). Every
 compute entry point refuses on a host without `CODEX_LADDER_VENUE`
 (`bb39139`), which `~/.codex_ladder_env` exports. One compute job at a
 time.
+
+## What to pick up next
+
+**Ordered so the work that does not need the box comes first.** Every
+item says which it is:
+
+- **KEYBOARD** -- reading, editing, PR-writing, a `zig run` that takes
+  seconds. Runs beside a sweep without touching it; the box has two CPUs
+  and ERGONOMICS.md "two CPUs, so keyboard work runs beside a compute
+  job" is the standing statement of that.
+- **BOX** -- wants QEMU, a natives build, a sweep or a rebank, and
+  therefore the lock. One at a time, in a sandbox, detached, with a log.
+
+An item marked BOX is not blocked on anything else; it is blocked on the
+box being free. When one is running, the KEYBOARD items above it are the
+list.
 
 ## The native loop, which changes what is cheap
 
@@ -78,10 +98,10 @@ loop unless it says otherwise.
 
 ## 1. Finding 42: the self-tail loop reads a global where the source reads its parameter
 
-**Objective: INTEGRITY, then OUTBOUND. This sits ahead of the ergonomic
-items deliberately** -- they earn their place because their payoff
-multiplies across everything below them, and that argument loses to a
-correctness defect that is OURS, is SILENT, and is already upstream.
+**Objective: INTEGRITY, then OUTBOUND. BOX, and it is the one running.**
+It leads because it is a correctness defect that is OURS, is SILENT, and
+is already upstream; nothing in [ERGONOMICS.md](ERGONOMICS.md) outranks
+that.
 
 The register has the mechanism (finding 42). The short form: a definition
 whose parameter shadows a top-level definition gets that parameter
@@ -134,119 +154,112 @@ the fix below makes the loop path bind renames properly the hole stops
 mattering for THIS defect, but the occurrence check is also what drives
 every discard, so it is worth a look while the file is open.
 
-## 2. Launching a detached job is a foot-gun with a live tripwire
+## 2. The external review, batches 1 and 3
 
-**Objective: ERGONOMICS.** `ast/rebank_all.sh` relaunches itself detached
-so a dead terminal cannot kill an hour-long run. The detached child is
-reparented to init, so the shell that launched it is no longer an
-ancestor -- and `compute_lock.py`'s lockless-job detector then sees that
-shell's command line, which names the script, and refuses the run as a
-legacy job computing without the lock. The script already knows: it hands
-its pid over in `LADDER_LAUNCHER_PID` for exactly this, with a comment
-recording that the u49 rebank refused itself this way on 2026-08-22.
+**Objective: INTEGRITY. Batch 1 is KEYBOARD-ONLY** -- these are
+wrong-bank and wrong-PASS closers.
+`REVIEW-2026-08-19.md` (Marley, ~34 findings); Batch 2 is done
+(2026-08-22, `e91fdb3`). Each batch's first act is re-checking its list
+against the tree, since several have been fixed in passing.
 
-The excuse does not always land. The launcher copy `exit 0`s immediately,
-so by the time the child checks, that pid is gone from `ps` and the chain
-cannot be walked back to the shell that still matches. **2026-08-24: a
-rebank refused itself again this way and printed its refusal into a log
-nobody was tailing** -- from the terminal it looked launched, and the
-run simply did not exist for four minutes.
+- **Batch 1, keyboard-only:** `plug_run` truncation-reads-as-success,
+  QEMU orphan try/finally, rm-stale-artifacts-first family, checks that
+  report but do not refuse, small correctness (f4_boot, plugcycle,
+  seed_identity label, pcap coverage), doc seams. Commit per finding.
+- **Batch 3, structural, its own session, net first:** `tests/` for the
+  refusers, THEN driver consolidation into codex_vm and the
+  harness/bundler dedup; unify the two plug fingerprint guards on the
+  ring model.
+- Declined or deferred with reasons in the review response: tracked
+  census json stays; LICENSE is Steve's call; errors='replace'
+  byte-compare rides Batch 3.
 
-Three things to fix, and the first matters more:
+## 3. Finding 36 and the corpus hole that hid its whole family
 
-- **A refusal must reach the launcher, not only the log.** The parent's
-  early `flock -n` check exists for this and did not fire, because the
-  lock was genuinely free; what refused was the child's evidence check,
-  after detaching. Have the child report a refusal back to the terminal
-  (or have the parent run the evidence check too, while it is still an
-  ancestor of nothing and can speak).
-- **Walk the launcher's ancestry before it exits**, or record it: pass
-  the whole chain rather than a pid that is about to die.
-- **The detector reads the wrong thing, and it already knows.** `EVIDENCE`
-  is searched against the FULL argv of every process, so anything that
-  merely mentions a job's name looks like the job -- which is why the
-  check carries a `'grep' not in args` exception, a paper-over of the
-  class rather than a fix. It bit again on 2026-08-25 in a different
-  tool: a watcher waiting for the natives to finish with
-  `pgrep -f "native_build.sh|tiers_run.py"` matched its own command
-  line and waited for itself, so a job that had FINISHED read as still
-  running. What identifies a job is the program it is executing, not a
-  string in a shell's `-c`; match the script path (`comm`, or argv[0]
-  resolved) and the exception can go with it.
+**Objective: OUTBOUND. KEYBOARD, plus one light run.** Both halves of
+this go out together and neither needs the box.
 
-Until then: launch through a wrapper script whose own argv does not match
-`EVIDENCE` (`qemu-system|rebank_all|allcycles\.sh|corpus_run|native_build`),
-never leave a `sleep` in the launching shell, and do not name a job in
-the command line of anything that watches for it.
+- **Finding 36 is the head of the outbound queue** (the python plug's
+  TCO keys on name, not arity). It was held back deliberately to see
+  whether the Rulebook's over-application rule bound every plug that
+  keeps an arity map; call 21 (2026-08-24) says it does, so 36 no longer
+  has to argue the rule for itself and owes only its own reproducer.
+  Still MEDIUM confidence and **the reproducer has NOT been run** -- run
+  it (the python plug is a script, not a build), then write the
+  `plugs-backlog.md` row.
+- **The one-line corpus fix that would have caught all four.**
+  `codex/plugs/test-input/partial.codex` covers over-application of a
+  LOCAL, but its only definition is `add3`, which does not return a
+  function -- so the branch every one of these plugs gets wrong is
+  unreachable from the corpus. `test-plugs.ps1` then never compiles what
+  it emitted. PR 80 landed and its ruling names the wiring but not the
+  corpus hole, so this is still unoffered and still the cheapest thing
+  in the outbound queue -- and it is the reason the family drifted.
 
-Verified still live 2026-08-25 against `compute_lock.py`: `roots` is
-`[me, LADDER_LAUNCHER_PID]` and each is walked up through `parent`, so a
-launcher pid that has already exited contributes nothing to `skip` and
-the shell that still matches is never excused. Today's runs did not trip
-it because `native_build.sh` and `allcycles.sh` do not self-detach --
-their launching shell stays an ancestor. `rebank_all.sh` is the one that
-does, and it is the one that has refused itself twice.
+Send them as one branch. The corpus hole is the argument for the row.
 
-## 3. A truth's provenance watches the arm that cannot have produced it
+## 4. Diagnostics as a banked set
 
-**Objective: ERGONOMICS.** A truth is a bare-metal measurement. Its
-provenance should depend on exactly what produced it -- the seed, the
-subject, the harness that built the subject, the truth arm that ran it --
-and on nothing else. The zig arm cannot reach a bare-metal truth, so the
-zig arm must not appear in that truth's key. It does, because
-`truth_prov.set_hash` hashes `ast/oracle_lib.sh` whole and that one file
-holds both arms: `mode_flags` and `truth_arm` beside `zig_verdict`,
-`zig_arm` and `ring_arm`, with the shared plumbing (`take_compute_lock`,
-`rung_stamp`, `harness_for`, `bounded_run`) between them.
+**Objective: INTEGRITY. KEYBOARD to build, one BOX run to bank.** A
+pinned count (CDX6020 x43 in
+`check_diags.py`) says something changed; a banked set diffed like a
+truth file says WHAT, and retires the pins that move whenever the unit
+list changes rather than when the source does. 2026-08-25 is the case
+for it: the count had not moved, so the pin said nothing, while both
+source citations under it had rotted -- one by an Update, one from the
+day it was written.
 
-That is the objective. How to reach it is open -- segregating the two
-halves into separate sourced files is one answer and was the only one
-this item used to name; hashing the truth-arm functions rather than the
-file, or recording which functions a run used, are others. The right
-answer is whichever makes a truth's key say what the truth depends on.
+It also closes the hole the cheap sweep leaves. `allcycles.sh` declines
+to run the census at all when any `.ir` was rebuilt, which is honest and
+which means the sweep we now run MOST is the one that reports no
+diagnostics. A banked set is comparable whatever produced the IR.
 
-**Re-read 2026-08-25, and the cost is NARROWER than this item claimed.**
-It said a zig-arm edit "invalidates every recorded truth's provenance".
-That was true under the older, stricter gate. It is not true now:
+## 5. zigc has a runner now, and one inconclusive result
 
-- **Sweeps do not care.** `check_rung`, the per-use gate `zig_verdict`
-  calls, checks the SEED half of the sidecar ONLY, and says so in its own
-  docstring -- an emitter hunt edits harnesses deliberately and a verdict
-  against the recorded truth is still the verdict wanted. Harness drift
-  is REPORTED, not refused.
-- **Banking does.** `bank_truth.py` refuses any truth whose recorded
-  content hash no longer matches `set_hash` ("harness content moved since
-  it ran"). So the cost lands on one window -- between a rebank and its
-  bank -- which is what the old advice, "never between recording and
-  banking", was really protecting.
-- **The advice itself has gone stale the other way.** It said to do the
-  split "right after a bank lands". Since 2026-08-25 the bank CARRIES a
-  sidecar per truth, so the moment a bank lands is the moment there are
-  fourteen banked sidecars to invalidate. A restore would still work --
-  `restore_truths` re-checks with the seed-only gate -- but every restored
-  rung would read as drifted from then on, and the next bank taken over
-  those truths would refuse. Any execution has to say what happens to the
-  banked sidecars, and none of them can just be re-stamped without an
-  argument that the move changed no behaviour.
+**Objective: INTEGRITY. KEYBOARD** -- finding the subject is the work;
+the build is 3 seconds and the compile is under one. `zigc` -- the whole
+compiler as a Linux
+process -- was the only claim in this tree with no runner behind it, and
+Damian asked about it directly. `zigc_verify.sh` is that runner: it
+builds zigc and compiles one program with both zigc and the seed, which
+is the check `gen_zigc_harness.py`'s own docstring names and is stronger
+than a rung, since the seed is the oracle directly.
 
-**The live cost is not re-measurement, it is design pressure.**
-`ast/ensure_ir.sh` is a separate file rather than a function in
-`oracle_lib.sh` for exactly this reason -- adding to `oracle_lib.sh`
-would have invalidated every recorded truth. That rationale was written
-down in the fresh-sandbox item and left the queue with it, so it is
-recorded here now and nowhere else. `oracle_lib.sh` has not changed since
-2026-08-23, through two days of heavy emitter work, which reads as
-stability and may instead be the avoidance working.
+It builds clean and runs (17,994 lines, 0 plug refusals, 3 s to build,
+under a second to compile). **The byte comparison is inconclusive**: the
+README's subject `ast/repro-mid.codex` is gitignored and gone, and the
+substituted `ast/repro.codex` produces output ~2 KB larger than the
+seed's -- the direction expected from what zigc documents itself as
+dropping (proof pruning, dropped-def handling). Two drivers, not two
+compilers.
 
-**Verification, whatever the execution:** a pure move changes no
-behaviour, and the way to show that is a rebank in a sandbox whose
-fourteen truths come back byte-identical to `truth/seed-6cf4a8e0/`. About
-40 minutes detached, and it is the same shape as every other inert-change
-proof in JUSTIFICATIONS.
+Left: find or write a subject that needs none of the driver's extras, so
+the comparison means something. Until then the honest claim is "zigc
+builds and runs". Getting there three times cost three wrong assumptions
+of mine, each caught by a guard already in the tree -- no mode flags
+(CDX9002), the TCP arm on a 13.9 MB IR (the agreement retry refused), and
+a naive marker grep that counted a prelude guard
+(`findings/prelude-comptime-guards.txt` exists for exactly that).
 
-## 4. The refusal-gaps branch, rebased and re-verified
+## 6. Every unhandled construct must refuse BY NAME
 
-**Objective: HUNTING, reached through our own gap-filling** -- every
+**Objective: INTEGRITY, and it is the one that sets the queue. BOX.**
+Four
+findings now fail as raw zig errors rather than a
+`@compileError("zig plug: ...")` marker: `probe-tyvar-leak`,
+`probe-show-types`, finding 32's `IrTry`, and finding 40's
+`error: expected 1 argument(s)`. `zig-is-unmapped` and
+`corpus_run.py --transpile` read only markers, so all four score ZERO in
+the ranking that decides what gets worked on, however often they bite.
+
+That is the defect worth fixing: not any one of the four, but a ranking
+that cannot see them. The systemic answer -- every unhandled construct
+refuses by name -- is worth more than any individual gap, and the census
+in "The refusal-gaps branch" is where the count would show it.
+
+## 7. The refusal-gaps branch, rebased and re-verified
+
+**Objective: HUNTING, reached through our own gap-filling. BOX.** Every
 family implemented promotes a slab of census programs into the comparing
 stage where the depot's oracles can see them. Branch
 `zig-plug-refusal-gaps` (fork, 11 commits off the PR-76 tip) has never
@@ -272,24 +285,10 @@ non-exhaustive switch. Also queued: the JS plug's IrNumLit takes bits as
 a NUMBER and its parseFloat is correctly rounded where bare metal's
 `__text_to_double` is not -- probe before filing.
 
-## 5. Every unhandled construct must refuse BY NAME
+## 8. The tiers stay green, and each one earns its keep
 
-**Objective: INTEGRITY, and it is the one that sets the queue.** Four
-findings now fail as raw zig errors rather than a
-`@compileError("zig plug: ...")` marker: `probe-tyvar-leak`,
-`probe-show-types`, finding 32's `IrTry`, and finding 40's
-`error: expected 1 argument(s)`. `zig-is-unmapped` and
-`corpus_run.py --transpile` read only markers, so all four score ZERO in
-the ranking that decides what gets worked on, however often they bite.
-
-That is the defect worth fixing: not any one of the four, but a ranking
-that cannot see them. The systemic answer -- every unhandled construct
-refuses by name -- is worth more than any individual gap, and the census
-in "The refusal-gaps branch" is where the count would show it.
-
-## 6. The tiers stay green, and each one earns its keep
-
-**Objective: DUE_DILIGENCE that keeps turning into HUNTING.** The tiers
+**Objective: DUE_DILIGENCE that keeps turning into HUNTING. BOX** for
+any new row, since a bare column costs QEMU. The tiers
 and probes exist since 2026-08-21; `tiers_run.py` runs them as a set
 per Update with `findings/gold/EXPECTED.txt` as the ledger of admitted
 disagreements (`ex` noted, `!!` red, `??` stale -- both of the last two
@@ -333,9 +332,10 @@ finding on its FIRST run:
   anyone remembering to check. That is what a tier is for, and it could
   not do it while one arm refused to compile.
 
-## 7. The stack is measured now, and the emitter's prose about it is wrong
+## 9. The stack is measured now, and the emitter's prose about it is wrong
 
-**Objective: INTEGRITY, already half done.** `stack_probe.py` -- finding
+**Objective: INTEGRITY, already half done. BOX.** `stack_probe.py` --
+finding
 37's instrument -- bisects the emitted thread stack against real
 documents and censuses the failing backtrace, so "512 MB" is a number
 with a mechanism behind it rather than a constant nobody has questioned.
@@ -363,74 +363,6 @@ Left:
   frames on the 2.5 MB subject and three on the parser. The constant is
   untouched. Verified inert first (ladder tag `stack-prose-verified`,
   JUSTIFICATIONS "A prose block moves the plug and not its output").
-
-## 8. Diagnostics as a banked set
-
-**Objective: INTEGRITY.** A pinned count (CDX6020 x43 in
-`check_diags.py`) says something changed; a banked set diffed like a
-truth file says WHAT, and retires the pins that move whenever the unit
-list changes rather than when the source does. 2026-08-25 is the case
-for it: the count had not moved, so the pin said nothing, while both
-source citations under it had rotted -- one by an Update, one from the
-day it was written.
-
-It also closes the hole the cheap sweep leaves. `allcycles.sh` declines
-to run the census at all when any `.ir` was rebuilt, which is honest and
-which means the sweep we now run MOST is the one that reports no
-diagnostics. A banked set is comparable whatever produced the IR.
-
-## 9. The external review, batches 1 and 3
-
-**Objective: INTEGRITY** -- these are wrong-bank and wrong-PASS closers.
-`REVIEW-2026-08-19.md` (Marley, ~34 findings); Batch 2 is done
-(2026-08-22, `e91fdb3`). Each batch's first act is re-checking its list against the
-tree, since several have been fixed in passing.
-
-- **Batch 1, keyboard-only:** `plug_run` truncation-reads-as-success,
-  QEMU orphan try/finally, rm-stale-artifacts-first family, checks that
-  report but do not refuse, small correctness (f4_boot, plugcycle,
-  seed_identity label, pcap coverage), doc seams. Commit per finding.
-- **Batch 3, structural, its own session, net first:** `tests/` for the
-  refusers, THEN driver consolidation into codex_vm and the
-  harness/bundler dedup; unify the two plug fingerprint guards on the
-  ring model.
-- Declined or deferred with reasons in the review response: tracked
-  census json stays; LICENSE is Steve's call; errors='replace'
-  byte-compare rides Batch 3.
-
-## 10. Venue plumbing, what is left of it
-
-**Objective: ERGONOMICS.** Pushes go through the deploy keys
-(`github-ladder`, `github-nr`) since 2026-08-23. The straw scripts
-(`droplet_compile/transpile`, the two-venue sweep) are NOT retired: they
-are the keyboard-tempo tools, and both models share the box under the
-compute lock. Nothing else here is open: what used to sit in this item
-left the queue with the fresh-sandbox work on 2026-08-25.
-
-## 11. zigc has a runner now, and one inconclusive result
-
-**Objective: INTEGRITY.** `zigc` -- the whole compiler as a Linux
-process -- was the only claim in this tree with no runner behind it, and
-Damian asked about it directly. `zigc_verify.sh` is that runner: it
-builds zigc and compiles one program with both zigc and the seed, which
-is the check `gen_zigc_harness.py`'s own docstring names and is stronger
-than a rung, since the seed is the oracle directly.
-
-It builds clean and runs (17,994 lines, 0 plug refusals, 3 s to build,
-under a second to compile). **The byte comparison is inconclusive**: the
-README's subject `ast/repro-mid.codex` is gitignored and gone, and the
-substituted `ast/repro.codex` produces output ~2 KB larger than the
-seed's -- the direction expected from what zigc documents itself as
-dropping (proof pruning, dropped-def handling). Two drivers, not two
-compilers.
-
-Left: find or write a subject that needs none of the driver's extras, so
-the comparison means something. Until then the honest claim is "zigc
-builds and runs". Getting there three times cost three wrong assumptions
-of mine, each caught by a guard already in the tree -- no mode flags
-(CDX9002), the TCP arm on a 13.9 MB IR (the agreement retry refused), and
-a naive marker grep that counted a prelude guard
-(`findings/prelude-comptime-guards.txt` exists for exactly that).
 
 ## Not an item: one zig program, for the zig community
 
@@ -491,32 +423,15 @@ work, so the `u50` pin is length ZERO and the arms measure the depot
 with no local patch under them. That is the flow working as designed,
 and it is worth saying once while it is true.
 
-Ready or nearly so:
+**Standing, learned from finding 41 (RULED, call 21, 2026-08-24): when a
+finding needs a toolchain we do not have, hedge the row and name who can
+settle it.** We reported riscv and java at source level, said the ladder
+host has no JDK, and retracted the promise to run it -- and the ruling
+arrived anyway. Do not hold the finding back, and do not imply a
+follow-up we cannot make.
 
-- **Finding 41 is RULED and off our plate** (call 21, 2026-08-24). The
-  over-application rule binds every plug that keeps an arity map; riscv
-  and java get wired in reek's close-out lane. The hedge worked exactly
-  as intended -- we reported at source level, named who could verify with
-  a toolchain we do not have, and retracted the promise to run java, and
-  the ruling arrived anyway. **Keep the general rule: when a finding
-  needs a toolchain we do not have, hedge the row and say who can settle
-  it. Do not hold the finding back, and do not imply a follow-up.**
-
-- **Finding 36 is NOW THE HEAD OF THE QUEUE** (python plug's TCO keys on
-  name, not arity). It was deliberately held to see whether the rule
-  bound; call 21 says it does, so 36 no longer has to argue the rule for
-  itself and only owes its own reproducer. Still MEDIUM confidence,
-  reproducer NOT run -- run it, then a `plugs-backlog.md` row.
-
-- **The one-line corpus fix that would have caught all four.**
-  `codex/plugs/test-input/partial.codex` covers over-application of a
-  LOCAL, but its only definition is `add3`, which does not return a
-  function -- so the branch every one of these plugs gets wrong is
-  unreachable from the corpus. `test-plugs.ps1` then never compiles what
-  it emitted. PR 80 has landed and its ruling names the wiring but not the
-  corpus hole, so this is still unoffered and still the cheapest thing
-  in this queue -- and it is the reason the family drifted. Send it with
-  finding 36's row.
+**What is ready to send is "Finding 36 and the corpus hole that hid its
+whole family" above.** Nothing else is queued.
 
 ## Per-Update ceremony
 
