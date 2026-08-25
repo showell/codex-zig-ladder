@@ -357,14 +357,24 @@ Measured with `native/codexzig` across every `ast/*-subject.codex`, reading
 the `CX-DECK used=` trace the emitted runtime prints on stdout. The deck
 reservation is 512 MB (`reserved=536870912`).
 
-    source   deck peak   headroom
-    0.12 MB      7 MB       99%
-    0.42 MB     68 MB       87%
-    0.97 MB    144 MB       73%
-    1.16 MB    179 MB       67%
-    2.50 MB    356 MB       34%
-    2.62 MB    384 MB       29%
-    2.87 MB    415 MB       19%     <- codexzig's own bundle
+    subject                  source   deck peak  headroom   vs duo
+    lex                      0.12 MB      7 MB      99%      same
+    parse                    0.42 MB     68 MB      87%      same
+    desugar                  0.44 MB     80 MB      85%      same
+    lir_to_x86               0.48 MB     43 MB      92%      same
+    scope                    0.53 MB     89 MB      83%      same
+    check                    0.97 MB    144 MB      73%      same
+    ir_to_codex              1.05 MB    180 MB      67%      same
+    ir_to_codex_roundtrip    1.05 MB    180 MB      67%      same
+    lower                    1.11 MB    171 MB      68%      same
+    ir_to_wire               1.16 MB    179 MB      67%      same
+    ir_to_x86                2.50 MB    356 MB      34%      same
+    codexir                  2.62 MB    384 MB      29%      same
+    passes_to_x86            2.64 MB    385 MB      28%      same
+    codexzig                 2.87 MB    421 MB      21%      same   <- its own bundle
+
+All fourteen emit zig byte-identical to `codexir | zigemit`, which is the
+breadth half of the same run; the deck column is what it was for.
 
 Close to linear at ~145 MB of deck per MB of source, so the reservation
 runs out somewhere around **3.5 MB of source**. The compiler's own bundles
