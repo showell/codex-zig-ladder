@@ -345,9 +345,8 @@ Left:
 ## Not an item: one zig program, and it exists now
 
 **Built 2026-08-25 (Steve's call to take it up again): `codexzig_build.sh`,
-`native/codexzig`, Codex source in and zig out in one process.** Not the
-merge of two emitted zig files [COMBINED_ZIG.md](COMBINED_ZIG.md) studied --
-one Codex bundle, codexir's chapter set plus the emitter and the IR text
+`native/codexzig`, Codex source in and zig out in one process.** Not a
+merge of two emitted zig files -- one Codex bundle, codexir's chapter set plus the emitter and the IR text
 parser, with the pipe between the two halves replaced by a `let`.
 Byte-identical to `codexir | zigemit` on 85 programs, and **a fixed point:
 given its own 2.8 MB bundle it emits the 2,273,737 bytes of zig that the
@@ -378,7 +377,15 @@ here and visible there. codexzig is the fastest way to learn that
 transpilation still works across the whole compiler; it is not evidence that
 the answer is right.
 
-The pitch notes are in COMBINED_ZIG.md.
+**If it is ever published**, three things settled while the idea was being
+argued and are worth not re-deriving: lead with the strongest true claim,
+which is that the emitted compiler's output is byte-identical to the native
+x86-64 backend across all fourteen rungs -- "zig compiles another language"
+is the weakest thing that is true here; say plainly and first that it is
+machine-generated zig, because that audience will read one function and
+know, and owning it reads as confidence; and the compiler is Damian's while
+the ladder is only the witness, so anything published says which is which
+and he sees it first.
 
 ---
 

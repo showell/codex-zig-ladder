@@ -392,8 +392,8 @@ are 2.5-2.9 MB today and every Update adds chapters.
     codexzig (both, one arena)   384 MB
 
 The emitter never touches the deck, so `codexzig`'s headroom is exactly
-`codexir`'s and [COMBINED_ZIG.md](COMBINED_ZIG.md)'s two-heap worry does not
-apply to this region at all. It also means the ceiling is not a property of
+`codexir`'s and the two-heap worry that was raised against combining the
+halves does not apply to this region at all. It also means the ceiling is not a property of
 the combined program: `codexir` in the two-process pipeline hits it at the
 same input size, and the ladder would meet it first through whichever rung
 bundles the most chapters.

@@ -1325,9 +1325,11 @@ code, F4 boots the emitted binary.
   transpiled and built like anything else here.
 - `codexzig_build.sh` -- builds `codexzig`, which is both of those in ONE
   program: Codex source in on stdin, zig out on stderr, no intermediate IR
-  and no second process. Not a merge of the two emitted zig files (that is
-  what [COMBINED_ZIG.md](COMBINED_ZIG.md) studied, and why it never
-  happened); it is one Codex bundle, because the two halves already meet at
+  and no second process. Not a merge of the two emitted zig files
+  (that was studied and rejected: they share 68 identical `cx_*` prelude
+  symbols and 26 more colliding top-level names, so a textual merge is 94
+  duplicate symbols to rename inside generated code); it is one Codex
+  bundle, because the two halves already meet at
   a type -- `emit-zig-chapter : IRChapter, List ATypeDef -> Text`, and
   `IRChapter` is the COMPILER's own. So the bundle is codexir's chapter set
   plus one chapter, the emitter, and the harness hands the front end's `ir`

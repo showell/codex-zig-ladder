@@ -14,12 +14,14 @@
 # that never writes it would be worse for every one of them. This is the
 # artifact for people who want to see one program.
 #
-# Why it is one bundle and not two emitted zig files glued together (which is
-# what COMBINED_ZIG.md studied and why that never happened): the merge
-# happens BEFORE the emitter runs, in Codex, where the two halves already
-# meet at a type -- emit-zig-chapter takes the compiler's own IRChapter. So
-# there is one program with one main, one arena and one thread, nothing
-# generated gets patched, and 94 duplicate zig symbols never exist.
+# Why it is one bundle and not two emitted zig files glued together (which
+# was studied and rejected -- the two share 68 identical cx_* prelude symbols
+# and 26 more colliding top-level names, so a textual merge is 94 duplicates
+# to rename inside generated code): the merge happens BEFORE the emitter
+# runs, in Codex, where the two halves already meet at a type --
+# emit-zig-chapter takes the compiler's own IRChapter. So there is one
+# program with one main, one arena and one thread, nothing generated gets
+# patched, and those 94 duplicate symbols never exist.
 #
 # Output lands on stderr because print-text is cx_print is std.debug.print;
 # that is the same wart native_build.sh documents, and it is why the 2> is
