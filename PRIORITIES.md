@@ -71,20 +71,21 @@ loop unless it says otherwise.
 
 ---
 
-## 1. A fresh sandbox cannot sweep, and that costs half an hour every time
+## 1. A fresh sandbox can sweep now, and the wiring is proven from empty
 
-**Objective: ERGONOMICS.** `allcycles.sh` runs the zig and ring arms
-against truths already banked, but `zig_arm` refuses without a per-sandbox
-`ast/<rung>.ir`, and a fresh sandbox has none. So every sweep after an
-emitter change pays a full rebank first -- roughly 27 minutes of truth arm
+**Objective: ERGONOMICS. DONE except the census bullet.** The problem it
+was written for: `allcycles.sh` runs the zig and ring arms against truths
+already banked, but `zig_arm` refused without a per-sandbox
+`ast/<rung>.ir` and a fresh sandbox had none, so every sweep after an
+emitter change paid a full rebank first -- roughly 27 minutes of truth arm
 to produce inputs the bank could have provided -- before the 11 minutes
 that answer the question actually asked.
 
-The f35 chain lost a run to this on 2026-08-23, and the finding-40 fix
-paid the full 27 minutes for it on 2026-08-24 with an unchanged seed and
-an unchanged bare-metal arm -- nothing about the rebank was in question,
-it was there to make files. It is charged against every emitter change,
-which is the change we make most.
+The f35 chain lost a run to it on 2026-08-23, and the finding-40 fix paid
+the full 27 minutes on 2026-08-24 with an unchanged seed and an unchanged
+bare-metal arm -- nothing about the rebank was in question, it was there
+to make files. It was charged against every emitter change, which is the
+change we make most, which is why it sat at the front of this list.
 
 **WRITTEN, NOT RUN (`ed6abff`).** `ast/ensure_ir.sh` is the truth arm's
 first half -- bundle, IR-CCE blob, `ring_compile`, `stamp-ir` -- and
@@ -103,25 +104,13 @@ nor its sidecar, so the sweep still cannot start. Measured in sandbox
 truths sitting in the bank, and `truth_prov.py check lex` answering
 `STALE TRUTH for lex: no provenance sidecar (rerun the truth arm)`.
 
-So the item is blocked on a decision about provenance, not on code:
-
-- **The truths the sweep wants ARE in the bank**, and the bank is the
-  ladder's oracle across Updates -- comparing today's plug against it is
-  the premise, not a shortcut. What stops a restore is that the sidecar
-  cannot be reconstructed: it records the seed AND the harness-content
-  hash the truth was measured under, and **`truth/uNN/SEED` records only
-  the seed** (sha, bytes, Update number).
-- **The clean fix is to make the bank carry what it was measured under.**
-  `bank_truth.py` already reads each sidecar to decide a truth is
-  bankable; writing that harness hash into the bank costs nothing at bank
-  time and makes a restored truth fully checkable afterwards. Existing
-  banks lack it; u49 could be re-stamped from the sandbox that produced
-  it, which still exists.
-- **The alternative is to restore on seed alone** and mark the sweep as
-  bank-restored, which is weaker and would have to say so in the summary
-  the way the census note already does. **Steve's call** -- it loosens a
-  gate that exists because a truth from another seed diffs just as
-  confidently as a fresh one.
+**The provenance decision was taken, and it was the clean one.** The bank
+now carries what each truth was measured under: `bank_truth.py` copies
+every `.truth.prov` sidecar in beside its truth, so a restored truth is
+fully checkable afterwards and `truth/uNN/SEED` is no longer the only
+provenance in the bank. The weaker alternative -- restore on seed alone
+and label the sweep bank-restored -- was not needed, so the gate that
+refuses a truth from another seed is intact rather than loosened.
 
 **RUN, AND THE NUMBER IS SMALLER THAN THE ESTIMATE (2026-08-24).** Sandbox
 `20260824T225947Z-ensure-ir-test`, from nothing: **14/14 rungs green in
@@ -144,11 +133,17 @@ as a saving, which is the shape of claim this queue is supposed to catch.
 
 Left:
 
-- **The restore path has not been exercised from empty.** In the run
-  above the truths were already on disk from a manual `restore_truths.py`,
-  so `allcycles.sh` took the "keeping" branch and its integrated restore
-  never fired. `restore_truths.py` itself is proven (14 truths and
-  sidecars, all passing `check_rung`); the WIRING is not.
+- ~~**The restore path has not been exercised from empty.**~~ **DONE
+  2026-08-25** (`~/runs/20260825T001111Z-restore-from-empty`). The run
+  existed to test the WIRING rather than the plug, and the wiring fired:
+  from a tree with no artifacts at all, `allcycles.sh` took the restore
+  branch ("restored 14 truths and their sidecars into ast/", all 14
+  passing `check_rung` against that tree), `ensure_ir.sh` rebuilt all
+  twelve `.ir` files, and the sweep came back **14/14 green in 1525 s** --
+  within 2% of the 1499 s measured when the truths were already on disk,
+  so the integrated path costs what the manual one did. Its honesty
+  footers all fired too: census declined to compare, and the summary said
+  the truths were bank-restored rather than re-measured.
 - **The census still declines to compare** when any IR was rebuilt, which
   is honest and leaves a cheap sweep with no census at all. The
   banked-diagnostics item below is the real answer.
