@@ -40,30 +40,28 @@ real command lines, including both that bit us, and no processes
 touched. Nothing calls it automatically; `PRIORITIES.md`'s Batch 3
 `tests/` session is where it should land when that session happens.
 
-What is left is the half that cannot be closed from this side. **The
-codex tree's own plug scripts take no ladder lock at all.**
-`codex/plugs/*/run.ps1` asks `build/plug-run.ps1` for a 3072 MB guest,
-which is the ladder's whole guest budget on this box, and
-`compute_lock.py`'s header records what two 3 GB guests do here: "thrash
-at 2% CPU each instead of failing (2026-08-20)". The asymmetry is
-exactly that a job is protected only when it ASKS -- a ladder job
-starting beside such a guest refuses, because a `qemu-system` is a job
-under any rule, while a plug script starting beside a live sweep is
-refused by nothing. Fixing it means teaching an upstream script about a
-lock that is ours, so until someone decides that is worth doing, the
-mitigation is discipline: nothing in the codex tree gets run by hand
-while a sweep is up.
+What is left is not what this item claimed, and the correction is
+measured (2026-08-25; the walk-through is the essay
+`what-run-ps1-does-on-this-box`). **`codex/plugs/*/run.ps1` starts
+nothing on this box.** It calls `build/compile.ps1` without `-Kernel`,
+which then wants `build-output/bare-metal/Codex.cdx` from a `build.ps1`
+this checkout has never run, and exits in one second. **`compile.ps1`
+itself is the live one**: hand it `-Kernel seed/Codex.cdx` and it boots
+`qemu-system-x86_64 ... -m 3072` in four seconds and asks no lock. Our
+check sees that guest and refuses the ladder job beside it -- a
+`qemu-system` is a job under any rule -- and nothing refuses in the
+other direction, which is the asymmetry stated exactly.
 
-## Wiring the python plug onto a transport that exists here
+Closing it from here is not worth doing: it means teaching an upstream
+script about a lock that is ours, and `build/plug-run.ps1` is generated
+from `codex/build/plugrunScript.codex` besides, so it cannot be
+hand-edited at all. **The residue is one line of discipline: nothing in
+the codex tree gets run by hand while a sweep is up.**
 
-Only if it is ever wanted. `codex/plugs/python/build-output` has never
-existed in this tree, and the run leg (`build/plug-run.ps1:49-53`) goes
-straight to `tools/codex-vm.exe`, which is not built here and has no
-QEMU fallback -- though `vm-config.ps1:821` defines one it never calls.
-The ladder's zig plug sidesteps this with its own `plug_run.py`. Pointing
-the python plug at the same transport is the work, and nothing needs it
-today: finding 36 goes out hedged instead, per the standing rule in
-`PRIORITIES.md`.
+The other half of what this item used to carry -- that no plug can be
+run here, because `plug-run.ps1` has no VM host on Linux -- turned out to
+be a defect of theirs rather than a chore of ours. It is in
+`PRIORITIES.md`'s outbound queue.
 
 ## Standing: the straw scripts are NOT retired
 
