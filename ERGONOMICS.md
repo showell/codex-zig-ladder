@@ -76,6 +76,52 @@ it because `native_build.sh` and `allcycles.sh` do not self-detach --
 their launching shell stays an ancestor. `rebank_all.sh` is the one that
 does, and it is the one that has refused itself twice.
 
+## The compute lock protects the job that asks, not the box
+
+`compute_lock.py` refuses a job when it can SEE another one computing.
+The protection is one-directional, and two live paths walk around it:
+
+- **`tiers_run.py` and `tier_run.py` call `require_venue()` and never
+  `take()`** (`tiers_run.py:170`, `tier_run.py:231`). A `--bare` column
+  is a QEMU guest, so it can start beside a live sweep, and then that
+  guest trips the lockless-job detector and refuses the NEXT ladder job.
+  The zig-only mode is genuinely lock-free and lock-safe -- 45 seconds,
+  no guest -- and that is worth keeping; it is the bare mode that wants
+  the lock.
+- **The codex tree's own plug scripts take no ladder lock at all.**
+  `codex/plugs/*/run.ps1` asks `build/plug-run.ps1` for a 3072 MB guest,
+  which is the ladder's whole guest budget on this box.
+  `compute_lock.py:5-6` records what two 3 GB guests do here: "thrash at
+  2% CPU each instead of failing (2026-08-20)".
+
+Both are the same class -- a guest started by something that never asked
+-- and the fix is the same as the one the detached-job item names: match
+what a process is EXECUTING, not a string in some shell's `-c`, and have
+the things that start guests take the lock. Found 2026-08-25 by a cold
+read of the queue.
+
+## Cache the built zigc
+
+`zigc_verify.sh` redoes its whole expensive prefix on every invocation --
+harness generation, the bundle, a `ring_compile.py` over a 13.9 MB IR,
+and the ring-plug build -- none of which depend on the subject it was
+asked to verify. So screening candidate subjects costs a full run each.
+The zigc item in `PRIORITIES.md` is stuck on "find a subject that needs
+none of the driver's extras", which is a search, and a search over an
+uncached prefix is the expensive way to do it. Caching the built zigc
+turns each candidate into `./zigc < candidate`, which is free.
+
+## Wiring the python plug onto a transport that exists here
+
+Only if it is ever wanted. `codex/plugs/python/build-output` has never
+existed in this tree, and the run leg (`build/plug-run.ps1:49-53`) goes
+straight to `tools/codex-vm.exe`, which is not built here and has no
+QEMU fallback -- though `vm-config.ps1:821` defines one it never calls.
+The ladder's zig plug sidesteps this with its own `plug_run.py`. Pointing
+the python plug at the same transport is the work, and nothing needs it
+today: finding 36 goes out hedged instead, per the standing rule in
+`PRIORITIES.md`.
+
 ## Standing: the straw scripts are NOT retired
 
 The keyboard-tempo tools -- `droplet_compile.sh`, `droplet_transpile.sh`

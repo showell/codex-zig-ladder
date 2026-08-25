@@ -75,6 +75,14 @@ item says which it is:
 - **BOX** -- wants QEMU, a natives build, a sweep or a rebank, and
   therefore the lock. One at a time, in a sandbox, detached, with a log.
 
+**Every tag names the ENTRY POINT it means.** A cold read of this queue on
+2026-08-25 found three cost claims wrong, and all three came from an item
+describing a step in prose while the script that performs it opens with
+`take_compute_lock` -- "one light run" for a plug with no runner on this
+host, "3 seconds" for a script with five QEMU legs. One script name per
+bullet makes the claim checkable with `grep take_compute_lock` instead of
+by reading five files.
+
 An item marked BOX is not blocked on anything else; it is blocked on the
 box being free. When one is running, the KEYBOARD items above it are the
 list.
@@ -162,10 +170,27 @@ wrong-bank and wrong-PASS closers.
 (2026-08-22, `e91fdb3`). Each batch's first act is re-checking its list
 against the tree, since several have been fixed in passing.
 
-- **Batch 1, keyboard-only:** `plug_run` truncation-reads-as-success,
-  QEMU orphan try/finally, rm-stale-artifacts-first family, checks that
-  report but do not refuse, small correctness (f4_boot, plugcycle,
-  seed_identity label, pcap coverage), doc seams. Commit per finding.
+- **Batch 1 is down to TWO edits.** The list was re-checked against the
+  tree on 2026-08-25 and most of it had been fixed in passing --
+  `plug_run.py:191-201` refuses a truncated read, `codex_vm.py:74-82`
+  kills the guest on any exception, the rm-stale-artifacts family landed
+  in `oracle_lib.sh:270` / `ring_compile.py:317-322` / `cycle.sh`, the
+  reporting-without-refusing checks now refuse (`cycle.sh:69,79,82`,
+  `check_diags.py:157-178`), `plugcycle.sh` uses `arm_for`,
+  `seed_identity.py:44-60` no longer labels an interim seed, the pcap
+  parity retries on a partial capture, and the doc seams are closed.
+  What is left:
+  - **`ast/f4_boot.py:33-41` is dead and it was PROVEN, not read.**
+    `parse_sections` `int()`s every header line until `---`, and a real
+    banked truth carries a bare `.` from `print-diags` at line 6:
+    `ValueError: invalid literal for int() with base 10: ''` against
+    `truth/seed-6cf4a8e0/seed-6cf4a8e0-passes_to_x86_on_mid.truth`. It
+    is a documented consumer (README three times over).
+  - **`cycle.sh:61-62` fingerprints the two SOURCE files, not the
+    bundle it actually compiled.** The rm-first half of that review
+    finding landed; this half did not -- and it is the same thing Batch
+    3 files as "unify the two plug fingerprint guards", so one finding
+    is split across two batches with half of it orphaned.
 - **Batch 3, structural, its own session, net first:** `tests/` for the
   refusers, THEN driver consolidation into codex_vm and the
   harness/bundler dedup; unify the two plug fingerprint guards on the
@@ -176,17 +201,31 @@ against the tree, since several have been fixed in passing.
 
 ## 3. Finding 36 and the corpus hole that hid its whole family
 
-**Objective: OUTBOUND. KEYBOARD, plus one light run.** Both halves of
-this go out together and neither needs the box.
+**Objective: OUTBOUND. KEYBOARD, and the run it wanted does not exist.**
+Both halves go out together.
 
 - **Finding 36 is the head of the outbound queue** (the python plug's
   TCO keys on name, not arity). It was held back deliberately to see
   whether the Rulebook's over-application rule bound every plug that
   keeps an arity map; call 21 (2026-08-24) says it does, so 36 no longer
   has to argue the rule for itself and owes only its own reproducer.
-  Still MEDIUM confidence and **the reproducer has NOT been run** -- run
-  it (the python plug is a script, not a build), then write the
-  `plugs-backlog.md` row.
+  Still MEDIUM confidence and **the reproducer has NOT been run. It
+  cannot be run here, and "the python plug is a script, not a build" was
+  wrong** (checked 2026-08-25): `codex/plugs/python/build.ps1` drives
+  `build/compile.ps1`, which is a seed compile under QEMU, and
+  `codex/plugs/python/build-output` has never existed in this tree. The
+  RUN leg is worse -- `build/plug-run.ps1:49-53` goes straight to
+  `tools/codex-vm.exe`, which is not built anywhere here and has no QEMU
+  fallback, though `vm-config.ps1:821` defines one it never calls. The
+  ladder's zig plug sidesteps all of this with its own `plug_run.py`;
+  the python plug has no such wiring.
+
+  **So this is the finding-41 situation exactly, and the standing rule
+  below answers it: hedge the row, name who can settle it, and send.**
+  Do not build a python-plug transport to satisfy one reproducer -- that
+  is unscoped work behind a MEDIUM-confidence source reading. If the row
+  is ever to be run here, wiring the python plug onto `plug_run.py` is
+  its own item and belongs in ERGONOMICS.md.
 - **The one-line corpus fix that would have caught all four.**
   `codex/plugs/test-input/partial.codex` covers over-application of a
   LOCAL, but its only definition is `add3`, which does not return a
@@ -200,8 +239,30 @@ Send them as one branch. The corpus hole is the argument for the row.
 
 ## 4. Diagnostics as a banked set
 
-**Objective: INTEGRITY. KEYBOARD to build, one BOX run to bank.** A
-pinned count (CDX6020 x43 in
+**Objective: INTEGRITY. KEYBOARD to build, then one `ast/rebank_all.sh`
+to bank -- a sweep will NOT do.** `<unit>-subject.cdx.diags` is written
+only by the truth arm's bare-metal compile (`oracle_lib.sh:231-235`);
+`ensure_ir.sh` says in its own prose that it writes none, and
+`bank_truth.py` copies only `.truth` and `.truth.prov`, so nothing on
+disk carries a diags population today. The rebank is the only producer.
+
+**Write the banker as a READER of a run's outputs, not a step inside
+it** -- consuming `ast/*-subject.cdx.diags` and `ast/*.ir.diags` after
+the fact. Then it can be written and debugged while a run is in flight
+and a bug in it costs no compute. **And bank the harness set hash beside
+the seed sha** (`truth_prov.set_hash`, the way `bank_truth.py` does for
+truths): a diags bank without provenance has the hole the truth bank
+closed on 2026-08-24, and this item exists because a number without
+provenance says nothing.
+
+**It rides a rebank we were running anyway; it must not ride one that
+carries a bundler edit.** The population is a function of the bundled
+subject text, so landing Batch 3's harness/bundler dedup in the same run
+makes a moved count unattributable between the Update, the emitter and
+the dedup -- which is the failure `check_diags.py:70-75` already records
+for CDX6020. One bundler change, one sandbox, one diff, per `e91fdb3`.
+
+A pinned count (CDX6020 x43 in
 `check_diags.py`) says something changed; a banked set diffed like a
 truth file says WHAT, and retires the pins that move whenever the unit
 list changes rather than when the source does. 2026-08-25 is the case
@@ -216,9 +277,16 @@ diagnostics. A banked set is comparable whatever produced the IR.
 
 ## 5. zigc has a runner now, and one inconclusive result
 
-**Objective: INTEGRITY. KEYBOARD** -- finding the subject is the work;
-the build is 3 seconds and the compile is under one. `zigc` -- the whole
-compiler as a Linux
+**Objective: INTEGRITY. BOX, and this item said KEYBOARD until a cold
+read checked it.** `zigc_verify.sh:31` takes the compute lock and the
+script has FIVE QEMU legs -- a `ring_compile.py` over a 13.9 MB IR, the
+ring-plug build, the transport, the seed's side of the comparison, and
+booting the output. The "3 seconds" is `zig build-exe` alone and the
+"under a second" is `./zigc < subj` alone: two steps out of six. **And
+nothing caches the built zigc**, so screening three candidate subjects
+is three full runs of an expensive prefix that does not depend on the
+subject. Caching it is worth more than the next run and belongs in
+ERGONOMICS.md. `zigc` -- the whole compiler as a Linux
 process -- was the only claim in this tree with no runner behind it, and
 Damian asked about it directly. `zigc_verify.sh` is that runner: it
 builds zigc and compiles one program with both zigc and the seed, which
