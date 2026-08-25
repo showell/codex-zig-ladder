@@ -243,39 +243,18 @@ Left:
   known and what every input needs is not. The 512 MB must not be
   lowered before that sweep -- which is why the item below corrects the
   PROSE and leaves the constant alone.
-- **`zig-main`'s prose is still wrong, and Update 50 made it wronger.**
-  It survived absorption verbatim at `ZigEmitter.codex:3221-3228`. It
-  blames the lexer's scan-token/skip-prose-line pair, which measures FLAT
-  (100,000 consecutive prose lines in a 256 KB stack; finding 37 measured
-  the parser's `scan-top-level` as the real driver). It then says the
-  limiting case "is MUTUAL recursion ... and no amount of
-  self-tail-call elimination flattens that. Emitting loops for
-  self-recursion would be a real feature and would still not remove the
-  need for this." Both halves shipped in the same push it now sits in:
-  PR 81 emits loops for self-recursion, and PR 82 turned that very scan
-  from mutual into SELF recursion so that TCO does flatten it. A
-  justification that is wrong is worse than none, since the next reader
-  trusts it -- and this one now argues against two changes standing
-  beside it in the tree. **OUTBOUND: a small prose-correction PR to the
-  zig plug, constant untouched.** It was meant to ride PR 82 and did
-  not, which is how a stale justification survives a fix.
-- **The replacement prose is WRITTEN and its claims are now CHECKED, and
-  it is still UNSENT.** Branch `zig-plug-stack-prose`, tip `87f55675`,
-  off `upstream/master`, in a worktree under this session's scratchpad.
-  Both mechanism claims were read out of the swept `ast/parse.zig` under
-  seed 6CF4A8E0 rather than argued: `scan_class_instance_defs` is a
-  `while (true)` with a `continue` at all four recursive sites and the
-  name occurs twice in the file, so the loop claim holds as written.
-  `parse_top_level` is a loop too, but two arms leave it -- `effect`
-  through `parse_top_level_effect`, `claim` through `parse_claim_arm` and
-  `parse_simple_claim` -- and each tail-calls `parse_top_level` back,
-  which self-tail elimination does not reach. The sentence that said
-  every top-level scan tail-calls ITSELF is corrected to name that
-  residue and bound it: eight effect declarations and no claims in the
-  2.5 MB back-end subject, three and none in the parser. **Sending is
-  outward-facing and unauthorised -- ask Steve.** It needs a `Ladder:`
-  trailer naming the tag from the ceremony section, and the worktree goes
-  when it does.
+- **`zig-main`'s prose was wrong, and the correction is SENT as PR 84**
+  (2026-08-25). It blamed the lexer's scan-token/skip-prose-line pair,
+  which measures FLAT, and then argued that self-tail-call elimination
+  could never remove the need for the stack -- while PR 81, which emits
+  those loops, and PR 82, which turned the parser's top-level scans into
+  self recursion, stood beside it in the same push. Both claims in the
+  replacement were read out of the swept `ast/parse.zig` rather than
+  argued, and the residue that survives is counted: two arms of
+  `parse-top-level` still leave through a mutual cycle, worth eight
+  frames on the 2.5 MB subject and three on the parser. The constant is
+  untouched. Verified inert first (ladder tag `stack-prose-verified`,
+  JUSTIFICATIONS "A prose block moves the plug and not its output").
 
 ## 7. Diagnostics as a banked set
 
@@ -379,7 +358,10 @@ closed rather than left open and wrong.
 (github `111c0fea`, main 19116/19117/19125/19131/19133/19140; the
 account is `docs/PM/Active/GitHubUpdates/GitHubUpdate50.md`). Every one
 was closed upstream with credit and a checkable commit, and the queue
-is EMPTY for the first time since it was written. What landed:
+emptied for the first time since it was written. **One is out again:
+PR 84**, the zig plug's stack-note correction, sent 2026-08-25 and
+verified inert first (ladder tag `stack-prose-verified`) -- the stack
+item above has the substance. What landed:
 
 - **PR 77** (19125) the zig one-heap, with the emit deck's flat term
   24 to 28 MB riding it; **PR 81** (19131) self tail calls become
