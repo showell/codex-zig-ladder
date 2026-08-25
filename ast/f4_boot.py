@@ -32,13 +32,30 @@ RUNGS = [
 
 def parse_sections(path):
     """Pull the byte sections out of an ir_to_x86 dump. Fails loud: a section that
-    does not match its declared length is a corrupt dump, not a short one."""
+    does not match its declared length is a corrupt dump, not a short one.
+
+    The header is `key value` lines, with two shapes that are not that. The
+    harness prints `emit-diags N`, then N `  diag ...` lines, then a `.`
+    (IrToX86Harness.codex:64-70) -- and this walked straight into the `.`
+    with int(''), so every consumer of this file had been dead since the diag
+    walker landed, silently, because nothing in the sweep calls it. The
+    second shape is CODEGEN-HALTED: a bag with errors gates the byte sections
+    off entirely (:116), so there is nothing to carve and saying so beats an
+    IndexError twenty lines later."""
     lines = path.read_text(errors="replace").splitlines()
     lens, sections, i = {}, {}, 0
     while not lines[i].startswith("---"):
+        if lines[i].startswith("CODEGEN-HALTED"):
+            raise SystemExit(f"{path.name}: {lines[i]} -- no sections to boot")
         key, _, val = lines[i].partition(" ")
         lens[key] = int(val)
         i += 1
+        if key == "emit-diags":
+            i += lens[key]
+            if lines[i] != ".":
+                raise SystemExit(f"{path.name}: {lens[key]} diags declared, "
+                                 f"list ends at {lines[i]!r} instead of '.'")
+            i += 1
     while i < len(lines):
         name = lines[i].strip("- ")
         i += 1
@@ -77,6 +94,24 @@ def boot_side(rung, side, expected):
 
 
 if __name__ == "__main__":
+    # The parse half is the half that rotted, and it rotted invisibly because
+    # the only way to exercise it was to boot three CDXs under QEMU. `--parse`
+    # carves the banked truths and checks the declared lengths without a VM,
+    # so the next dump-format change fails in a second instead of in a session
+    # nobody runs. It reads the BANK, not ast/, so it works in a fresh tree.
+    if "--parse" in sys.argv:
+        import seed_identity
+        bank = LADDER / "truth" / seed_identity.stamp()["slug"]
+        for rung, _ in RUNGS:
+            src = bank / f'{seed_identity.stamp()["slug"]}-{rung}.truth'
+            if not src.is_file():
+                raise SystemExit(f"no banked truth at {src}")
+            s = parse_sections(src)
+            print(f"{src.name}: " + " + ".join(
+                f"{len(s[k])} {k}" for k in ("header", "content", "tail")))
+        print(f"PARSE OK: {len(RUNGS)} banked dumps carve cleanly")
+        raise SystemExit(0)
+
     results = []
     for rung, expected in RUNGS:
         for side in ("truth", "zigout"):

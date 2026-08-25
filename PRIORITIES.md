@@ -180,12 +180,16 @@ against the tree, since several have been fixed in passing.
   `seed_identity.py:44-60` no longer labels an interim seed, the pcap
   parity retries on a partial capture, and the doc seams are closed.
   What is left:
-  - **`ast/f4_boot.py:33-41` is dead and it was PROVEN, not read.**
-    `parse_sections` `int()`s every header line until `---`, and a real
-    banked truth carries a bare `.` from `print-diags` at line 6:
-    `ValueError: invalid literal for int() with base 10: ''` against
-    `truth/seed-6cf4a8e0/seed-6cf4a8e0-passes_to_x86_on_mid.truth`. It
-    is a documented consumer (README three times over).
+  - **`f4_boot.py`'s parse: DONE 2026-08-25.** It was dead and it was
+    proven so rather than read -- `parse_sections` `int()`ed every
+    header line until `---` and a real banked truth carries a bare `.`
+    from `print-diags`. It now consumes the `emit-diags N` block by its
+    declared count and refuses a CODEGEN-HALTED dump by name instead of
+    walking off the end. **The reason it rotted invisibly is that the
+    only way to exercise it was to boot three CDXs under QEMU**, so it
+    grew a `--parse` mode that carves the banked truths with no VM and
+    checks the declared lengths: one second, and the next dump-format
+    change fails then instead of in a session nobody runs.
   - **`cycle.sh:61-62` fingerprints the two SOURCE files, not the
     bundle it actually compiled.** The rm-first half of that review
     finding landed; this half did not -- and it is the same thing Batch
