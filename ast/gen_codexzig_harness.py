@@ -36,8 +36,56 @@ from emit_harness import frontend_source, HOSTED_DECK_BYTES
 
 HERE = pathlib.Path(__file__).parent
 
+TYPE_DEFS = """Section: Type Defs
+
+ The one thing the direct hand-off needs, and it was found by the fixed
+ point: codexzig transpiling its own bundle emitted `const SortPartitionS =
+ struct` whose fields still said `a`, which is zig that does not compile.
+
+ The IR text emitter DERIVES a record's implicit type parameters as it
+ serialises. IRTextEmitter.codex:404-406 computes `inferred` with
+ ir-collect-rec-field-tparams and ir-emit-tparams-text:386 takes the
+ explicit list if there is one and the inferred list otherwise; the plug
+ parses them back, so every emitter downstream of the text wire sees them.
+ foreword/core/Sort.codex declares `SortPartition = record { list : List a,
+ pivot : Integer }` -- no parameter list at all, `a` free in the fields --
+ so the front end's own ATypeDef carries tparams = [] and only the wire
+ ever knew better.
+
+ So the text round trip is NOT an identity: it ADDS information. This
+ applies the same derivation once, on the way in, which is the whole of
+ what the wire was doing for us. It is a COPY of a rule that lives in the
+ text emitter, and that is worth saying out loud -- the AST does not carry
+ what the serialiser knows, so any consumer of the AST that is not the text
+ emitter sees an incomplete type.
+
+  czg-names : List Text, Integer, List Name -> List Name
+  czg-names (xs) (i) (acc) =
+   if i >= list-length xs then acc
+   else czg-names xs (i + 1) (list-push acc (make-name (list-at xs i)))
+
+  czg-fix-typedef : ATypeDef -> ATypeDef
+  czg-fix-typedef (td) =
+   when td
+    is ARecordTypeDef (name) (tparams) (fields) (is-mut) (s) ->
+     if list-length tparams > 0 then td
+     else let inferred = ir-collect-rec-field-tparams fields 0 (list-length fields) []
+     in ARecordTypeDef name (czg-names inferred 0 []) fields is-mut s
+    is AVariantTypeDef (name) (tparams) (ctors) (s) ->
+     if list-length tparams > 0 then td
+     else let inferred = ir-collect-var-ctor-tparams ctors 0 (list-length ctors) []
+     in AVariantTypeDef name (czg-names inferred 0 []) ctors s
+    is otherwise -> td
+
+  czg-fix-typedefs : List ATypeDef, Integer, List ATypeDef -> List ATypeDef
+  czg-fix-typedefs (xs) (i) (acc) =
+   if i >= list-length xs then acc
+   else czg-fix-typedefs xs (i + 1) (list-push acc (czg-fix-typedef (list-at xs i)))
+"""
+
 out = f'''Chapter: CodexZigHarness
 
+{TYPE_DEFS}
 Section: Roots
 
  opening.codex:1316, copied because that chapter cannot ride along.
@@ -50,7 +98,7 @@ Section: Driver
   opening : [Console, FileSystem] Nothing = act
     src <- read-file-uni "/dev/stdin"
     {frontend_source("src", True, deck_bytes=HOSTED_DECK_BYTES, resolve=False)}
-    in print-text (emit-zig-chapter (ir-prune-unreachable-roots ir czg-emit-roots) (ch.type-defs))
+    in print-text (emit-zig-chapter (ir-prune-unreachable-roots ir czg-emit-roots) (czg-fix-typedefs (ch.type-defs) 0 []))
   end
 '''
 
