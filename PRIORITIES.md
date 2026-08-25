@@ -30,6 +30,17 @@ verification chain against a wrong answer already shipped are not
 comparable, and pretending they sit on one axis is what kept putting
 tooling in front of the register.
 
+**The external review is gone, file and item, 2026-08-25** (Steve's
+call: stale, and mostly clutter by now). `REVIEW-2026-08-19.md` is in
+git if anyone wants it. Batch 2 landed on 2026-08-22 (`e91fdb3`) and
+Batch 1 was mined down to nothing over the following days; the last live
+finding in it -- the plug fingerprint covering the two chapters instead
+of the bundle -- was fixed on the way out, and it was worse than the
+review knew: `plug-build-lib.ps1:220-221` bundles PlugTypes and
+IRTextParser too, so 6,100 of the plug's 9,537 lines were outside the
+guard. What died unfiled with it: a `tests/` directory for the refusers,
+and consolidating the three copy-paste QEMU drivers into `codex_vm`.
+
 (Rewritten 2026-08-23, again 2026-08-24, split 2026-08-25. The 08-23
 rewrite cut 700 lines to 150 live ones; the 08-24 one re-sorted by
 objective; this one moved ergonomics out and re-ordered what is left so
@@ -104,38 +115,7 @@ loop unless it says otherwise.
 
 ---
 
-## 1. The external review, batches 1 and 3
-
-**Objective: INTEGRITY. Batch 1 is KEYBOARD-ONLY** -- these are
-wrong-bank and wrong-PASS closers.
-`REVIEW-2026-08-19.md` (Marley, ~34 findings); Batch 2 is done
-(2026-08-22, `e91fdb3`). Each batch's first act is re-checking its list
-against the tree, since several have been fixed in passing.
-
-- **Batch 1 is down to ONE edit.** The list was re-checked against the
-  tree on 2026-08-25 and most of it had been fixed in passing --
-  `plug_run.py:191-201` refuses a truncated read, `codex_vm.py:74-82`
-  kills the guest on any exception, the rm-stale-artifacts family landed
-  in `oracle_lib.sh:270` / `ring_compile.py:317-322` / `cycle.sh`, the
-  reporting-without-refusing checks now refuse (`cycle.sh:69,79,82`,
-  `check_diags.py:157-178`), `plugcycle.sh` uses `arm_for`,
-  `seed_identity.py:44-60` no longer labels an interim seed, the pcap
-  parity retries on a partial capture, and the doc seams are closed.
-  What is left:
-  - **`cycle.sh:61-62` fingerprints the two SOURCE files, not the
-    bundle it actually compiled.** The rm-first half of that review
-    finding landed; this half did not -- and it is the same thing Batch
-    3 files as "unify the two plug fingerprint guards", so one finding
-    is split across two batches with half of it orphaned.
-- **Batch 3, structural, its own session, net first:** `tests/` for the
-  refusers, THEN driver consolidation into codex_vm and the
-  harness/bundler dedup; unify the two plug fingerprint guards on the
-  ring model.
-- Declined or deferred with reasons in the review response: tracked
-  census json stays; LICENSE is Steve's call; errors='replace'
-  byte-compare rides Batch 3.
-
-## 2. One question left behind PR 87, and it needs no plug
+## 1. One question left behind PR 87, and it needs no plug
 
 **Objective: OUTBOUND, already sent; this is the loose end.** Does a
 well-typed Codex program exist in which a definition **tail-calls itself
@@ -165,7 +145,7 @@ same read caught a reproducer that was full-arity and could not
 reproduce, an unverified negative about thirty emitters we have no
 toolchain for, and a citation off by two lines.
 
-## 3. Diagnostics as a banked set
+## 2. Diagnostics as a banked set
 
 **Objective: INTEGRITY. KEYBOARD to build, then one `ast/rebank_all.sh`
 to bank -- a sweep will NOT do.** `<unit>-subject.cdx.diags` is written
@@ -185,9 +165,9 @@ provenance says nothing.
 
 **It rides a rebank we were running anyway; it must not ride one that
 carries a bundler edit.** The population is a function of the bundled
-subject text, so landing Batch 3's harness/bundler dedup in the same run
+subject text, so landing any harness or bundler change in the same run
 makes a moved count unattributable between the Update, the emitter and
-the dedup -- which is the failure `check_diags.py:70-75` already records
+that change -- which is the failure `check_diags.py:70-75` already records
 for CDX6020. One bundler change, one sandbox, one diff, per `e91fdb3`.
 
 A pinned count (CDX6020 x43 in
@@ -203,7 +183,7 @@ to run the census at all when any `.ir` was rebuilt, which is honest and
 which means the sweep we now run MOST is the one that reports no
 diagnostics. A banked set is comparable whatever produced the IR.
 
-## 4. zigc has a runner now, and one inconclusive result
+## 3. zigc has a runner now, and one inconclusive result
 
 **Objective: INTEGRITY. BOX for the first run of a session, KEYBOARD
 after it** -- the build is cached now, measured 2026-08-25: **first run
@@ -239,7 +219,7 @@ of mine, each caught by a guard already in the tree -- no mode flags
 a naive marker grep that counted a prelude guard
 (`findings/prelude-comptime-guards.txt` exists for exactly that).
 
-## 5. Every unhandled construct must refuse BY NAME
+## 4. Every unhandled construct must refuse BY NAME
 
 **Objective: INTEGRITY, and it is the one that sets the queue. BOX.**
 Four
@@ -255,7 +235,7 @@ that cannot see them. The systemic answer -- every unhandled construct
 refuses by name -- is worth more than any individual gap, and the census
 in "The refusal-gaps branch" is where the count would show it.
 
-## 6. The refusal-gaps branch, rebased and re-verified
+## 5. The refusal-gaps branch, rebased and re-verified
 
 **Objective: HUNTING, reached through our own gap-filling. BOX.** Every
 family implemented promotes a slab of census programs into the comparing
@@ -283,7 +263,7 @@ non-exhaustive switch. Also queued: the JS plug's IrNumLit takes bits as
 a NUMBER and its parseFloat is correctly rounded where bare metal's
 `__text_to_double` is not -- probe before filing.
 
-## 7. The tiers stay green, and each one earns its keep
+## 6. The tiers stay green, and each one earns its keep
 
 **Objective: DUE_DILIGENCE that keeps turning into HUNTING. BOX** for
 any new row, since a bare column costs QEMU. The tiers
@@ -330,7 +310,7 @@ finding on its FIRST run:
   anyone remembering to check. That is what a tier is for, and it could
   not do it while one arm refused to compile.
 
-## 8. The stack is measured now, and the emitter's prose about it is wrong
+## 7. The stack is measured now, and the emitter's prose about it is wrong
 
 **Objective: INTEGRITY, already half done. BOX.** `stack_probe.py` --
 finding

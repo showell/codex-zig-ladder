@@ -37,8 +37,9 @@ greps for one are not jobs. `tier_run.py --bare` and `tiers_run.py
 
 **The rule has a runner: `./compute_lock.py --selftest`** -- thirteen
 real command lines, including both that bit us, and no processes
-touched. Nothing calls it automatically; `PRIORITIES.md`'s Batch 3
-`tests/` session is where it should land when that session happens.
+touched. Nothing calls it automatically -- there is no test runner in
+this tree to hang it on, and one file's worth of cases did not seem
+worth inventing one for.
 
 What is left is not what this item claimed, and the correction is
 measured (2026-08-25; the walk-through is the essay

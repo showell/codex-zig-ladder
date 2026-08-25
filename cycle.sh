@@ -58,8 +58,8 @@ printf '%s\n' "$cout" | grep -vE "^(WD|HEAP|STACK):" | tail -25
 # to a branch without the __deck-set fix, the plug was rebuilt without it, and
 # `lower` failed with an error we had already fixed. Nothing said the ground had
 # moved. Now the arms check this and say so.
-cat "$REPO/codex/plugs/zig/ZigEmitter.codex" "$REPO/codex/plugs/zig/ZigPlug.codex" \
-    | sha256sum | cut -d' ' -f1 > "$(dirname "$PLUG_CDX")/zig-plug.fingerprint"
+. "$T/ast/oracle_lib.sh"
+plug_fingerprint > "$(dirname "$PLUG_CDX")/zig-plug.fingerprint" || exit 1
 echo "plug fingerprint: $(cut -c1-16 "$(dirname "$PLUG_CDX")/zig-plug.fingerprint")"
 
 # Each warmup diffs against its banked bare-metal truth (see

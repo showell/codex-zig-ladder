@@ -331,20 +331,47 @@ roundtrip_fixed_point() {
 # The plug binary is only evidence about the ZigEmitter it was built from, and
 # CODEX_ROOT names a working tree that can move underneath a running sweep. This
 # refuses rather than reporting on a plug whose source has since changed.
+# The plug's fingerprint, written by cycle.sh and sweep_prep.sh and read
+# by plug_provenance -- one spelling, because it was three and they had
+# to agree by hand.
+#
+# TWO shas, because they answer different questions. The chapters are what
+# an operator edits; the BUNDLE is what was actually compiled, and the two
+# chapters are only a third of it -- `plug-build-lib.ps1:220-221` bundles
+# PlugTypes.codex and IRTextParser.codex too, so 6,100 of the plug's 9,537
+# lines sat outside this guard until 2026-08-25 and a common chapter could
+# move under a running sweep with nothing said. That is the same incident
+# the guard was built for, one chapter set over.
+plug_fingerprint() {                       # -> "<chapters-sha> <bundle-sha>"
+    local d="$REPO/codex/plugs/zig" c b
+    c=$(cat "$d/ZigEmitter.codex" "$d/ZigPlug.codex" | sha256sum | cut -d' ' -f1)
+    b=$(sha256sum "$d/build-output/plug-source.codex" 2>/dev/null | cut -d' ' -f1)
+    [ -n "$b" ] || { echo "NO PLUG BUNDLE at $d/build-output/plug-source.codex" >&2; return 1; }
+    echo "$c $b"
+}
+
 plug_provenance() {
     local fp="$REPO/codex/plugs/zig/build-output/zig-plug.fingerprint"
     [ -f "$fp" ] || { echo "NO PLUG FINGERPRINT -- run cycle.sh"; return 1; }
-    local now
-    now=$(cat "$REPO/codex/plugs/zig/ZigEmitter.codex" "$REPO/codex/plugs/zig/ZigPlug.codex" \
-          | sha256sum | cut -d' ' -f1)
-    local was
+    local was now
     was=$(cat "$fp")
-    if [ "$now" != "$was" ]; then
-        echo "PLUG SOURCE MOVED since the plug was built:"
-        echo "  built from ${was:0:16}, tree now holds ${now:0:16}"
-        echo "  the checkout at $REPO changed under this run; rebuild with cycle.sh"
+    now=$(plug_fingerprint) || return 1
+    [ "$now" = "$was" ] && return 0
+    # A stamp from before the bundle sha is one field, and cannot be
+    # compared against two. Say that by name rather than reporting it as
+    # a moved checkout.
+    if [ "$(echo "$was" | wc -w)" != 2 ]; then
+        echo "PLUG FINGERPRINT PREDATES THE BUNDLE STAMP -- rebuild with cycle.sh"
         return 1
     fi
+    local was_c=${was%% *} was_b=${was##* } now_c=${now%% *} now_b=${now##* }
+    echo "PLUG SOURCE MOVED since the plug was built:"
+    [ "$now_c" != "$was_c" ] && \
+        echo "  chapters: built from ${was_c:0:16}, tree now holds ${now_c:0:16}"
+    [ "$now_b" != "$was_b" ] && \
+        echo "  bundle:   built from ${was_b:0:16}, tree now holds ${now_b:0:16}"
+    echo "  the checkout at $REPO changed under this run; rebuild with cycle.sh"
+    return 1
 }
 
 # The ring arm's plug is ast/ringplug.cdx, not the TCP plug, so its

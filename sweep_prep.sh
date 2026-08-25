@@ -8,9 +8,9 @@
 #
 # The bundling entrypoints and fingerprint semantics are the same ones
 # cycle.sh and ast/ringplug_build.sh use (Build-TranspilerPlug with the
-# compile step stubbed; sha of the bundled source for the ring fp, sha of
-# the two plug sources for the TCP fingerprint) -- only the compile venue
-# moved. Those two scripts remain the all-local authority.
+# compile step stubbed; sha of the bundled source for the ring fp, and
+# oracle_lib's plug_fingerprint for the TCP one) -- only the compile
+# venue moved. Those two scripts remain the all-local authority.
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(python3 "$T/ladder_root.py" codex)"
@@ -59,8 +59,7 @@ PY
 rm -f "$PLUG_CDX"
 "$T/droplet_compile.sh" "$T/.prep-plug.blob" "$PLUG_CDX"
 [ -s "$PLUG_CDX" ] || { echo "PLUG COMPILE FAILED"; exit 1; }
-cat "$PLUG_DIR/ZigEmitter.codex" "$PLUG_DIR/ZigPlug.codex" \
-    | sha256sum | cut -d' ' -f1 > "$PLUG_DIR/build-output/zig-plug.fingerprint"
+plug_fingerprint > "$PLUG_DIR/build-output/zig-plug.fingerprint" || exit 1
 rm -f "$T/.prep-plug.blob"
 
 # --- the ring plug (ast/ringplug.cdx) ---
