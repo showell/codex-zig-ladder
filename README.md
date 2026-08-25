@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Seed | `A01C1547E92EB0D0` (2,877,350 bytes) |
-| Update | 49 (release commit `bdf0049b`, pin verbatim) |
+| Seed | `6CF4A8E0D5E6D6F2` (2,876,035 bytes) |
+| Update | 50's **interim** push (`0c4327d5`, pin verbatim). No release note names this seed, so the bank is `seed-6cf4a8e0`, not `u50` |
 | Rungs | **14 of 14 green** |
-| Banked | `truth/u49/`; the newest three banks are kept (`bank_truth.py --keep`), older ones live in git history |
+| Banked | `truth/seed-6cf4a8e0/`; the newest three `uNN` banks are kept (`bank_truth.py --keep`), older ones live in git history. A `seed-` bank is outside that rotation and ages out only by hand |
 
 This table is the point of the whole arrangement, so it is the first thing on
 the page and it is allowed to be unflattering. A ladder that cannot say which
@@ -17,6 +17,13 @@ Mid-rebank, the checkout's pin branch runs one Update ahead of this table --
 `seed_identity.py` names the new Update while `truth/` still holds only the
 old banks. That is the normal in-between state, not drift: the table moves
 only when `bank_truth.py` lands the complete new set.
+
+An Update's work reaches the mirror before its release note does, and the row
+above is what that looks like: `seed_identity.py` finds no release note naming
+`6CF4A8E0`, refuses to call the bank `u50`, and labels it by the seed instead.
+The refusal is the design. Update 50's release will carry its own seed and get
+its own rebank; this bank answers what the interim push does, which is a
+different question and worth asking early.
 
 The table above is maintained by hand; what cannot drift is the BANK's label,
 because `seed_identity.py` derives it from the seed's own hash by finding the
@@ -891,21 +898,29 @@ Then the smaller pieces:
   host. Read their headers; "The venue" below says where they stand.
 
 Costs -- this section is the one home for timing figures; re-measure and
-update them here at every rebank. Measured clean 2026-08-22 (u49, this
-8 GB box, `CODEX_MEM_MB=3072` TCG, per-rung `rung_stamp` timestamps in
-the log):
+update them here at every rebank. Measured clean 2026-08-25 (seed
+`6CF4A8E0`, this 8 GB box, `CODEX_MEM_MB=3072` TCG, per-rung
+`rung_stamp` timestamps in the log):
 
-- **`rebank_all.sh` end to end is 59 minutes** -- 31 for the twelve
-  truth arms, 1.5 for the plug builds, 27 for the trailing sweep. The
-  ten cheap units record in 15 s to 2.5 minutes each; `ir_to_x86` and
-  `passes_to_x86` are 7m17s and 8m02s on the truth side and dominate everything.
-- **The sweep** runs all fourteen rungs in 27 minutes (scope 19s, check
-  44s, lower 50s, ir_to_codex 54s, roundtrip 53s, lir_to_x86 5s, ir_to_wire
-  51s, ir_to_x86 10m09s, passes_to_x86 11.5m -- the zig arm of the two big
-  units is the slow half, not
-  the truth arm). `sweep_canary.sh` (lex+parse+desugar) is about 90
-  seconds; adding scope would push it past 2.5 minutes for little
-  coverage.
+- **`rebank_all.sh` end to end is 39 minutes** (2324 s) -- 26.5 for the
+  twelve truth arms (1593 s), 1 for the plug build, 11 for the trailing
+  sweep. The ten cheap units record in 14 s to 2.5 minutes each;
+  `ir_to_x86` and `passes_to_x86` are 5m12s and 5m51s on the truth side
+  and still dominate, though by less than they used to.
+- **The sweep** runs all fourteen rungs in 12 minutes (731 s, of which 61 s
+  is the plug rebuild before the first rung): lex 4s, parse 13s, desugar
+  15s, scope 19s, check 43s, lower 51s, ir_to_codex 110s, roundtrip 55s,
+  lir_to_x86 4s, ir_to_wire 103s, ir_to_x86 2m00s, passes_to_x86 2m13s.
+  `sweep_canary.sh` (lex+parse+desugar) is about 90 seconds; adding scope
+  would push it past 2.5 minutes for little coverage.
+- **The sweep used to be the expensive half and is not any more.** It was
+  1716 s on 2026-08-23 and 657 s on 2026-08-24 with the SEED UNCHANGED, so
+  the 2.6x is the ladder's own work, not the Update's -- the emitter grew
+  the self-tail-call transformation in that window (PR 81) and the zig arm
+  of the two big units was the slow half. Attributed by window and by
+  mechanism; nobody has ablated it, so read it as the likely cause rather
+  than a measured one. The two numbers above straddle a seed change as
+  well, which is why the 657 s and the 731 s are not the same number.
 - **The census re-pin** (`native_build.sh`, then `corpus_run.py --changed
   --bank`): the natives are 11 minutes, and the census itself is 10
   minutes for the whole corpus -- transpile of 593 programs plus
