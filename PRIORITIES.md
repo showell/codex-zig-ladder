@@ -495,15 +495,16 @@ source citations did, and they are cited by function now.
 
 Left:
 
-- **Tag.** `seed-6cf4a8e0-14of14` breaks the `uNN-14of14` convention on
-  purpose, because the bank it names is not an Update. **Steve has been
-  asked twice and has not answered; ask again before tagging** -- the
-  outbound PR's `Ladder:` trailer needs the name.
-- **Natives from the pin** (`native_build.sh`, 11 min), then
-  `./tiers_run.py` over the full set.
-- **The prose branch's due-diligence run, STAGED and postponed.** It cuts
-  a sandbox on `zig-plug-stack-prose`, sweeps, and `compare.sh` diffs
-  every emitted `.zig` against this sweep's. Steve ruled it overkill and
-  said postpone as long as we can; it is a good thing to start when he is
-  offline. The launcher lived in a previous session's scratchpad and
+- **Tag: DONE.** `seed-6cf4a8e0-14of14` on `9a1e424`, pushed. Steve chose
+  the name on 2026-08-25; it breaks the `uNN-14of14` shape on purpose,
+  because what it names is a bank and not an Update.
+- **Natives from the pin**, then `./tiers_run.py --zig` -- the bare
+  columns are already banked under `findings/gold/seed-6cf4a8e0/`, so the
+  zig columns are the only ones owed and no QEMU is needed for them.
+- **The prose branch's due-diligence run is now the gate on sending it.**
+  Steve called it on 2026-08-25: run the verify sweep FIRST. It cuts a
+  sandbox on `zig-plug-stack-prose`, sweeps, and diffs every emitted
+  `.zig` against the seed-6cf4a8e0 sweep's. He had earlier ruled it
+  overkill, and the prose grew a second corrected claim since, which is
+  what changed. The launcher lived in a previous session's scratchpad and
   needs rewriting.
