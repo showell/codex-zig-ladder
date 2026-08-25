@@ -258,8 +258,23 @@ property is observable from inside a program so bare metal is the oracle,
 zig-only otherwise and labelled so; never print an address; keep a
 control column.
 
-The set is 22 tiers and GREEN. Two of them are the argument for the
-practice, because each produced a finding on its FIRST run:
+The set is 22 tiers and GREEN -- re-measured 2026-08-25 against seed
+6CF4A8E0 through natives built from the interim pin: **15 green, 7 noted,
+0 unexpected, 0 stale**, in about 45 seconds with no QEMU in the path.
+
+**The set runner's own `--zig` mode was broken from the commit that
+introduced it until that run.** `--zig` means "the zig arm ALONE" to
+`tier_run.py`, which prints one column and compares it to nothing;
+`tiers_run.py` passed the flag down and then parsed for a summary line
+that no longer existed, so every tier fell through to the last branch and
+came back RED. The first run of it read as Update 50 breaking all 21
+primitives. Nothing had ever run the mode, which is the lesson: a mode
+nobody runs is a mode nobody knows is broken, and this one could only
+report failure. It is a two-column run with the bare column pinned to
+gold now, refusing by name up front if any column is missing or stale.
+
+Two tiers are the argument for the practice, because each produced a
+finding on its FIRST run:
 
 - **Tier 13 (`prim-tailcall`)**, five rows byte-identical on both arms.
   Its sixth row broke both arms and minimizing it produced finding 38, a
@@ -498,9 +513,10 @@ Left:
 - **Tag: DONE.** `seed-6cf4a8e0-14of14` on `9a1e424`, pushed. Steve chose
   the name on 2026-08-25; it breaks the `uNN-14of14` shape on purpose,
   because what it names is a bank and not an Update.
-- **Natives from the pin**, then `./tiers_run.py --zig` -- the bare
-  columns are already banked under `findings/gold/seed-6cf4a8e0/`, so the
-  zig columns are the only ones owed and no QEMU is needed for them.
+- **Natives and tiers: DONE.** Sandbox
+  `20260825T135832Z-u50-natives-tiers`, natives `d7e148e7b699` built from
+  the pin, then `./tiers_run.py --zig` green: 15 green, 7 noted. It cost
+  one instrument fix first -- see the tier item above.
 - **The prose branch's due-diligence run is now the gate on sending it.**
   Steve called it on 2026-08-25: run the verify sweep FIRST. It cuts a
   sandbox on `zig-plug-stack-prose`, sweeps, and diffs every emitted
