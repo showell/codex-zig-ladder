@@ -393,75 +393,58 @@ tree and its findings were mostly "I cannot verify this"; the second
 opened every cited line and found two false claims, which is why 78 was
 closed rather than left open and wrong.
 
-Open, none landed:
+**ALL SIX LANDED 2026-08-25**, absorbed by Update 50's interim push
+(github `111c0fea`, main 19116/19117/19125/19131/19133/19140; the
+account is `docs/PM/Active/GitHubUpdates/GitHubUpdate50.md`). Every one
+was closed upstream with credit and a checkable commit, and the queue
+is EMPTY for the first time since it was written. What landed:
 
-- **PR 77** -- the heap unification, sent 2026-08-23 on `8cb8a0e4`
-  (21 commits on the u49 pin); verified at ladder tag `pr77-verified`.
-  Everything below that is stacked waits on this one.
-- **PR 79** -- finding 39, the closure-representation defect, one
-  `compiler-backlog.md` row (COMPILER-18) off `upstream/master`
-  5b8091e2, tag `closure-arity`. Doc-only: THEIRS, and we have no fix.
-  Asks ONE ruling -- whether the closure gains a remaining-arity word,
-  or under-application is refused where emitted -- and deliberately does
-  not add a pinning fixture, because accepting a red arm is Damian's
-  call. **Tier 14 is now the fixture, on our side of the fence.**
-- **PR 80** -- finding 41, the curried-application rule, one
-  `plugs-backlog.md` row (1.57) off 5b8091e2, tag `curried-apply`.
-  Doc-only: THEIRS. Asks ONE ruling -- whether over-application is
-  required of every plug that keeps an arity map, or whether some are
-  exempt and `DevelopersRulebook.md:258` should say which. The row
-  states in its own text that riscv's and java's runtime consequence is
-  INFERRED from the dispatch code, because the plug harness is
-  PowerShell and this host has none.
-- **PR 81** -- finding 33's fix, the zig plug's tail-call loop.
-  **Stacked on PR 77**: cut from `zig-plug-heap-unification`, so its
-  first 21 commits are 77's and only the last four are this PR's; the
-  true three-dot diff is two files. Stacked deliberately rather than
-  rebased, because the 14/14 sweep verified THAT tree and a rebase would
-  have made the branch a tree nothing had measured. Tag `tail-calls`.
-- **PR 83** -- finding 40's fix, ours: the zig plug's half of the
-  curried-application rule. One commit, one file, +92/-2, stacked on
-  PR 77 and a SIBLING of PR 81 rather than stacked on it, so either can
-  land first. Tag `curried-apply-fix`. Verified before sending: tier set
-  green at 22, sweep 14/14 green, census unmoved, bank a zero-byte diff
-  against `truth/u49`. It also puts tier 14 back in the set as the live
-  COMPILER-18 detector, which is the argument PR 79 could not make for
-  itself.
-- **PR 82** -- finding 37, the parser's mutual-tail top-level scans, two
-  commits off 5b8091e2: the `Syntax/Parser.codex` restructure and its
-  `COMPILER-19` row. Tag `parser-self-tail`. Measured on our tail-call
-  branch (the pin's plug has no self-TCO, so the change would have
-  flattened nothing there), but the commit carries the parser change
-  ALONE, and that rebase is VERIFIED rather than assumed: `Parser.codex`
-  at 5b8091e2 is byte-identical to the base it was measured against, and
-  the file the commit produces is byte-identical to the verified one.
+- **PR 77** (19125) the zig one-heap, with the emit deck's flat term
+  24 to 28 MB riding it; **PR 81** (19131) self tail calls become
+  loops; **PR 83** (19133) over-application applies the rest. The
+  released `ZigEmitter.codex` is byte-identical to the clean merge of
+  81 and 83 on 77 -- verified here, not taken on trust.
+- **PR 82** (19140) the parser's mutual-tail top-level scans, with its
+  COMPILER-19 row. One duplicated prose block was trimmed on absorb and
+  said so in the closeout; the trim is real and is the parse-side twin
+  of the scan-side rationale, so the mechanism survives and the
+  3,385-frame parse measurement does not.
+- **PR 79** (19116) COMPILER-18 and **PR 80** (19117) plugs 1.57, both
+  doc-only rows. 1.57 drew its ruling (call 21, RULED BINDING);
+  COMPILER-18 is item 1 in the rulings queue and still open.
+
+**The verbatim rule cost nothing this time.** Step 4's working rule is
+sweep the release's emitter as shipped; the shipped emitter now IS our
+work, so the `u50` pin is length ZERO and the arms measure the depot
+with no local patch under them. That is the flow working as designed,
+and it is worth saying once while it is true.
 
 Ready or nearly so:
 
-- **Finding 41's java/riscv half is HEDGED AND HANDED OFF, not queued**
-  (Steve, 2026-08-24). We are not running the java plug. The ladder host
-  has no JDK, installing one is not our call given the depot's standing
-  rule on new build environments, and Damian's bots are where a
-  toolchain-bearing verification belongs. The row on PR 80 now says that
-  in its own text -- source-level report, verification on the depot side,
-  and the concrete experiment named rather than left as "someone should
-  check". A comment on the PR retracts the earlier promise to run it, so
-  nobody is waiting on us for something that was never going to arrive.
-  **The general rule this is an instance of: when a finding needs a
-  toolchain we do not have, hedge the row and say who can settle it. Do
-  not hold the finding back, and do not imply a follow-up.**
-- **Finding 36** (python plug's TCO keys on name, not arity) -- MEDIUM
-  confidence, reproducer NOT run, wants a `plugs-backlog.md` row once it
-  is. It is the same rule as findings 40 and 41 broken at a fourth site,
-  so **if PR 80 draws a ruling, 36 and 40 both follow from it** rather
-  than needing their own arguments. Cheapest order is to wait for 80.
+- **Finding 41 is RULED and off our plate** (call 21, 2026-08-24). The
+  over-application rule binds every plug that keeps an arity map; riscv
+  and java get wired in reek's close-out lane. The hedge worked exactly
+  as intended -- we reported at source level, named who could verify with
+  a toolchain we do not have, and retracted the promise to run java, and
+  the ruling arrived anyway. **Keep the general rule: when a finding
+  needs a toolchain we do not have, hedge the row and say who can settle
+  it. Do not hold the finding back, and do not imply a follow-up.**
+
+- **Finding 36 is NOW THE HEAD OF THE QUEUE** (python plug's TCO keys on
+  name, not arity). It was deliberately held to see whether the rule
+  bound; call 21 says it does, so 36 no longer has to argue the rule for
+  itself and only owes its own reproducer. Still MEDIUM confidence,
+  reproducer NOT run -- run it, then a `plugs-backlog.md` row.
+
 - **The one-line corpus fix that would have caught all four.**
   `codex/plugs/test-input/partial.codex` covers over-application of a
   LOCAL, but its only definition is `add3`, which does not return a
   function -- so the branch every one of these plugs gets wrong is
   unreachable from the corpus. `test-plugs.ps1` then never compiles what
-  it emitted. Worth offering upstream alongside PR 80: it is the
-  cheapest thing in this queue and it is the reason the family drifted.
+  it emitted. PR 80 has landed and its ruling names the wiring but not the
+  corpus hole, so this is still unoffered and still the cheapest thing
+  in this queue -- and it is the reason the family drifted. Send it with
+  finding 36's row.
 
 ## Per-Update ceremony
 

@@ -795,78 +795,6 @@ fallback or failure block it cannot emit, so the gap becomes countable. What
 `fail` should compile to depends on how a plug is meant to model the flag, and
 that is a question for Damian rather than a decision to take here.
 
-## 33. No tail calls: recursion depth on this arm is bounded by the thread stack, bare metal's is not
-
-**Found 2026-08-22 on the native chain (finding 24's closing experiment).
-Ours. FIXED 2026-08-24 on `zig-plug-tail-calls` -- `6cd40143` the
-transformation, `07495229` two zig-shape corrections, `912daac7` the
-invariant-parameter rule, `64d7db8e` the act-block arm. **SENT as PR 81
-on 2026-08-24**, stacked on PR 77, ladder tag `tail-calls`. The branch
-layout was repaired and both branches are pushed and level with origin;
-the pre-surgery tips are kept at `refs/backup/pre-surgery-tail-calls`
-and `refs/backup/pre-surgery-parser`.**
-
-**The defect.** Bare metal has tracked tail position since Update 30
-(`st-set-tail-pos`) and a self tail call there is a jump; the plug turned
-every one into a call. Every `*-loop (xs) (i) (acc)` in the compiler has
-that shape, so depth on this arm grew one frame per element where bare
-metal's is flat. `native/zigemit` on the 13.2 MB `ir_to_x86.ir` died in
-`tokenize_collect`, one frame per token over 3,282,147 tokens: 512 MB
-died, 2 GiB died, 3.5 GiB reached only the end of tokenizing. The same
-Update 30 commit gave the python plug its TCO; the zig plug was missed.
-
-**The fix.** A definition whose tail positions call itself at full arity
-emits as `while (true)` with its parameters as loop variables. The spine
-walks if, let and unguarded match; any other tail position emits
-`return <expr>;` unchanged, so an unhandled shape loses the loop and
-never the meaning.
-
-**The measurement that closes it** (sandbox
-`20260824T115824Z-f33-tailcalls`, natives from the branch, 4 GiB region
-from PR 77 beneath it): `zigemit` on that same IR completes rc 0 in 27 s
-**at the stock 512 MB stack**, emitting 3,021,734 bytes of zig.
-`tokenize_collect` is among the 887 definitions of 3,633 that emit as
-loops at `6cd40143`.
-
-That the program is also RIGHT is the half a stack fix could have faked:
-the zig compiles (2.5 s), runs in 0.37 s, and both its rungs are
-**byte-identical to `truth/u49`** -- a full ir_to_x86 unit through the
-native loop with no QEMU in the arm. `findings/probe-tail-loop.codex`
-covers the spine shapes, `findings/prim-tailcall.codex` (tier 13) the
-semantics.
-
-**Two sub-findings the fix produced, both worth keeping:**
-
-- **The next arguments must go through temporaries.** They read the
-  parameters the loop is about to overwrite, so assigning left to right
-  builds the second argument from the first one's new value. It does not
-  crash -- it returns a plausible number. Tier 13's `arg-swap` row is
-  the guard.
-- **Declining every function-typed parameter was too broad, and cost
-  10,000 frames.** Zig will not hold a bare function type in a var, so
-  the first cut refused any definition having one. `sort-partition` --
-  the compiler's own partition loop, self tail-recursive in both
-  branches -- has a comparator among its six parameters and was left
-  recursing 10,000 deep, which `stack_probe.py` surfaced only because it
-  censuses frames rather than reporting pass/fail. A parameter every
-  self call passes back unchanged never varies, so it stays the
-  function's own (const) parameter: `cmp`, `hi` and `pv` need no
-  variable and only `xs`, `j`, `i` move. A function-typed parameter is
-  then a problem only when it actually changes. VERIFIED: `sort_partition` is
-  gone from the trace and the stack requirement fell from 32 MB to 4 MB
-  (finding 37's table). Stating the discard rule took three attempts --
-  zig rejects an unused parameter AND a pointless discard of a used one,
-  and the loop deletes exactly one class of occurrence: the parameter
-  standing as its own argument in a tail self call.
-
-**What this does NOT close.** The 512 MB stack in every emitted `main`
-stays, and finding 37 is why: other recursions hold it up, none of them
-the one `zig-main`'s prose blames. That prose says the case reaching the
-limit is the lexer's `scan-token -> skip-prose-line` cycle; measured,
-that cycle is flat (100,000 consecutive prose lines run in 256 KB). Read
-finding 37 for what actually drives the number, and do not repeat the
-lexer claim -- it was the reason nobody looked for a year.
-
 ## 34. The hosted harnesses never reclaim, so a 13 MB IR exhausts zigemit's 1.5 GiB arena
 
 **Found 2026-08-22, same experiment, same arm. Ours. OPEN, harness-shaped.**
@@ -968,179 +896,31 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
-## 37. The 512 MB stack is protecting the parser's header scan, not the lexer's prose cycle -- and that scan is mutual TAIL recursion
-
-**Found 2026-08-24 by measuring what the workaround actually holds up,
-after finding 33 removed the self-recursion it was blamed on. Ours to
-report; the cycle is THEIRS. OPEN. SENT as PR 82 (COMPILER-19) --
-the `Syntax/Parser.codex` restructure plus its row, off `upstream/master`
-5b8091e2, ladder tag `parser-self-tail`. The commit carries the parser
-change ALONE, with none of our emitter work under it: `Parser.codex` at
-5b8091e2 is byte-identical to the base the change was measured against,
-and the file the commit produces is byte-identical to the verified
-one.**
-
-`zig-main` emits every program onto a 512 MB thread and its prose names
-the reason:
-
-    the case that reaches the limit is MUTUAL recursion, the lexer's
-    scan-token -> skip-prose-line -> scan-token cycle, and no amount of
-    self-tail-call elimination flattens that
-
-**The named cycle does not reach any limit.** `scan-to-eol-end` stops AT
-the newline without consuming it, so the third call in the cycle sees a
-newline, returns a `Newline` token, and unwinds: three frames per prose
-line, constant, never chaining to the next line. Measured on native
-`codexir` built from the finding-33 branch, one constant changed in the
-emitted source (the JUSTIFICATIONS slack methodology):
-
-    prose lines   stack    verdict
-        100       256 KB   rc 0
-    100,000       256 KB   rc 0        <- identical; no accumulation
-    100,000        64 KB   abort
-        100        64 KB   abort       <- control: 64 KB is too small for anything
-
-**What does reach the limit** is in the parser, and the same binaries
-name it. On the real 2,503,544-byte compiler subject (4,511 top-level
-definitions), the 8 MB run's backtrace is 7,096 frames of:
-
-    2,393 x scan_top_level
-    2,393 x try_scan_type_def
-    2,287 x try_scan_def_header
-
-`Parser.codex` "Header Scanning (streaming)": `scan-top-level` ends
-`else try-scan-type-def ... st`; `try-scan-type-def` ends
-`scan-top-level ...` on Just and `try-scan-def-header ...` on None;
-`try-scan-def-header` ends `scan-top-level ...` on Just. One full turn of
-the three-cycle per top-level definition, and **every edge is a tail
-call** -- no frame in the cycle is live when the next is entered.
-
-The cliff on that subject, from `stack_probe.py` (banked
-`findings/gold/u49/stack.txt`):
-
-    stack    verdict
-    24 MB    abort
-    32 MB    rc 0
-
-**There are at least TWO such cycles, not one, and the probe found the
-second on its first run.** The 8 MB trace above is the streaming header
-scan. The trace at the 24 MB cliff names different functions:
-
-    try_top_level_type_def x3386
-    parse_top_level        x3385
-    try_top_level_def      x3185
-
--- `parse-top-level` / `try-top-level-type-def` / `try-top-level-def`,
-the real parse, with the same three-function mutual-tail shape and the
-same one-turn-per-definition cost. So the scan cycle is what dies first
-at 8 MB, and once there is room for it the parse cycle dies at 24 MB.
-Flattening either alone moves the number by one cycle's worth and leaves
-the other; a fix that claims to retire the 512 MB has to do both, and
-the probe's `cycle` column is what says whether it did.
-
-So the workaround is load-bearing -- about 28 MB for the largest real
-document, roughly 7 KB per definition -- and 512 MB is about 18x that,
-which is the headroom nobody had measured. It also bounds the compiler:
-a document of ~75,000 definitions overflows even 512 MB, and the failure
-is a segfault rather than a diagnostic.
-
-**The fix is a source change with no new emitter machinery anywhere in
-the fleet.** Nobody flattens mutual tail calls: bare metal's TCO is
-self-only (`X86_64.codex:75`, `is-self-call (expr) (func-name)`), and so
-is the python plug's and so is the zig plug's new one. But this cycle
-does not need mutual TCO -- it needs to stop being mutual. The two
-`try-*` functions are continuations that always return to
-`scan-top-level`; have them RETURN their decision instead of calling
-back:
-
-    try-scan-type-def   : ... -> ScanStep   (found td + state | not a type def)
-    try-scan-def-header : ... -> ScanStep   (found hdr + state | not a header)
-
-and `scan-top-level` dispatches on that and tail-calls ITSELF. A self
-tail call is what every TCO in the fleet already flattens, so the scan
-becomes O(1) stack on bare metal, on zig, on python and on C# at once,
-and the 512 MB spawn stops being load-bearing for the case that actually
-drives it.
-
-Not yet done: the same measurement on `zigemit` and on the other
-natives, and a check of whether a THIRD cycle appears once these two are
-flat. The 512 MB should not be lowered until that sweep exists -- this
-entry establishes what one input needs, not what every input needs.
-
-**MEASURED 2026-08-24, and the fix works: 32 MB -> 4 MB.** Both cycles
-restructured so the `try-*` functions return their item and the loop
-tail-calls itself (`parser-scan-self-recursive`, `50a81942`, was
-`33f72baa` before the branch layout surgery), in sandbox
-`20260824T132742Z-f37-parser`:
-
-    emitter     min    cliff  cycle on the failing trace
-    6f18a4b9    32 MB  24 MB  try_top_level_type_def x3386, parse_top_level x3385
-    43ea7875    32 MB  24 MB  sort_partition x10000
-    bb2e6b38     4 MB   2 MB  desugar_expr_at x297
-
-Read the middle row before the last. The parser cycles were gone at
-`43ea7875` and the number had not moved, because a THIRD recursion sat
-underneath: `sort-partition`, left recursing by our own emitter
-declining any definition with a function-typed parameter (finding 33's
-second sub-finding). Only with that fixed does the parser change show
-its own effect, and a pass/fail arm would have reported the parser
-change as worthless.
-
-**What is left is a different class.** `desugar_expr_at` recurses over
-the SHAPE of one expression, so its depth is the nesting depth of the
-deepest expression in the document -- 297 frames -- not the number of
-definitions. The per-definition growth that made document size the
-stack's driver is gone.
-
-**Correctness, which a stack number cannot speak to:** the restructured
-parser compiled the 2.5 MB back-end unit to a 13,206,964-byte IR,
-through zigemit and `zig build-exe` to a running binary, and both its
-rungs are byte-identical to `truth/u49`. Parse, check, lower and emit
-agree with the bank end to end.
-
-**What remains is bounded, and that is the answer to "can the 512 MB
-come down".** `desugar-expr-at` carries explicit fuel:
-
-    desugar-expr-at (node) (depth) =
-     if depth >= max-recursion-depth then AErrorExpr "desugar fuel exhausted"
-
-`max-recursion-depth` is 1024 (`Core/BuildSettings.codex:201`) and ten
-chapters walk their trees under it -- desugarer, name resolver, type
-inference, unifier, lowering, occurrence, IRCheck, LIR, CodexEmitter.
-So the 297 frames measured are not luck: this whole class is capped at
-1024 frames by the compiler's own constant, whatever the input. The
-stack requirement is now a function of a source constant rather than of
-document size, which it was not before the parser change.
-
-**One residual is NOT fuel-bounded, and it is quicksort.** `qsort-by`
-recurses on the left partition with the result in hand -- not a tail
-call, so nothing flattens it -- and its depth is O(log n) on balanced
-data and O(n) on adversarial. `sort-med3` makes the degenerate case
-unlikely rather than impossible. Worth knowing that the tail-call change
-already halved its class for free: the SECOND recursion
-(`qsort-by xs3 cmp (pr.pivot + 1) hi`) is a self tail call at full
-arity sitting in a let chain, so it now loops, which is the textbook
-recurse-on-one-side-iterate-on-the-other shape obtained without asking.
-
-**Confidence: HIGH on the measurements and on the restructure; MEDIUM on
-what remains.** The cycles are named by the programs' own backtraces,
-not inferred, and the restructure is verified against the bank. NOT
-established: that 4 MB is the floor for every input (two documents
-measured, and only through `codexir` -- `zigemit` and the other natives
-have their own recursion), and where quicksort's unbounded left-hand
-recursion actually lands on real data. The 512 MB stack should not be
-lowered on this evidence alone, but the shape of the argument for
-lowering it now exists: one capped class at 1024 frames, one data
-dependent class in the sort, and no per-definition growth.
-
-
 ## 41. `riscv` and `java` break the same curried-application rule as finding 40, and riscv's correct fix is already in the tree, dead
 
 **Found 2026-08-24 by an independent read of the plug family while
 settling finding 40's open question. THEIRS -- `codex/plugs/riscv` and
-`codex/plugs/java`, no ladder arm in the path. OPEN. SENT as PR 80
-(plugs-backlog 1.57), doc-only, off `upstream/master` 5b8091e2, ladder
-tag `curried-apply`.**
+`codex/plugs/java`, no ladder arm in the path. OPEN, and the QUESTION IT
+ASKED IS ANSWERED. SENT as PR 80 (plugs-backlog 1.57), doc-only, off
+`upstream/master` 5b8091e2, ladder tag `curried-apply`; the row was
+absorbed 2026-08-25 by Update 50's interim push at main 19117.**
+
+**RULED BINDING (Damian, rulings queue call 21, 2026-08-24):** the
+Rulebook's over-application rule at `DevelopersRulebook.md:258` binds
+every plug that keeps an arity map, with no exemption -- the reasoning
+recorded upstream being that an exemption "would leave riscv shipping a
+correct fix nothing calls and java consulting no arity at all". The
+wiring is assigned: riscv calls `rv-emit-closure-over-apply` from its
+dispatch, java gains the arity check, both in reek's plugs close-out
+lane, with the observed-miscompile verification the 1.57 row asks for.
+So the finding stays live only until that wiring lands; nothing here is
+waiting on us, and the one thing we said we would not do -- run the java
+arm on a host with no JDK -- is retracted on the PR rather than pending.
+
+**What the ruling also decides:** it is the same rule at a fourth site in
+finding 36 (the python plug), which was held back precisely to see
+whether the rule bound. It does, so 36 no longer has to argue the rule
+for itself -- see the outbound queue in `PRIORITIES.md`.
 
 `docs/DevelopersRulebook.md:256-260` requires three cases of a plug that
 knows the callee's arity: flat at that arity, under-applied with one
@@ -1228,178 +1008,18 @@ Related: finding 36 (the python plug's TCO matches a self-call by name,
 so over-application in tail position loops instead of applying) is the
 same rule broken in a fourth place, at a different stage.
 
-## 40. The zig plug calls a curried definition flat, so an under-applied chain it cannot inline will not compile
-
-**Found 2026-08-24 on tier 14's first run against both arms. OURS -- the
-zig plug (ZigEmitter), not upstream. FIXED 2026-08-24 on
-`zig-plug-curried-apply` (`835639b7`, off PR 77's `8cb8a0e4`), both sites
-in one commit. **SENT as PR 83**, stacked on PR 77 and a sibling of
-PR 81 rather than stacked on it; ladder tag `curried-apply-fix`.**
-
-VERIFIED end to end in sandbox `20260824T220516Z-f40-fix2` (natives from
-`835639b7`): the plug emits
-`b5: { const _o5 = even_fn(4); break :b5 _o5.call(_o5.ctx, 20, 22); }`,
-tier 14 compiles and prints 47/47/47, the tier SET is GREEN at 22 tiers
-with `prim-closure` back in it (0 unexpected, 1 expected, 0
-expected-but-agreeing), the **SWEEP is 14/14 GREEN** (657 s), the
-diagnostics census is unmoved at CDX6020 x43, and the bank taken from
-that sandbox is a **ZERO-BYTE diff against the committed `truth/u49`**
--- so the emitter change did not reach bare metal, which is what a
-plug-only change must be able to say.
-
-`((even-fn 4) 20) 22`, where `even-fn : Integer -> (Integer, Integer ->
-Integer)`, is emitted as a saturated three-argument call to a definition
-the plug itself emitted as one-ary returning a closure:
-
-    fn even_fn(n: i64) CxFn2(i64, i64, i64) { ... }
-    even_fn(4, 20, 22)
-    error: expected 1 argument(s), found 3
-
-**The discriminator is inlinability.** `even-fn` is MUTUALLY recursive,
-so nothing can inline it, the flat call survives to the emitter, and zig
-rejects it. The emitted `opening` does contain a correct closure call --
-`_f5.call(_f5.ctx, 20, 22)` -- so the plug knows how to call a closure;
-it just does not know it is holding one when the definition stayed a
-definition.
-
-**The two "controls" this finding first claimed are weaker than it said,
-corrected 2026-08-24.** `grep '^fn ' prim-closure.zig` returns only
-`add3`, `even_fn`, `odd_fn` and `opening`: **`pick` is not emitted as a
-function at all**, so "pick compiles" was never a statement about
-emitting a closure-returning DEFINITION -- the inliner erased it and the
-surviving `_f5.call` is the inlined body's call site, reached through
-`emit-zig-apply`'s `is otherwise ->` branch because its root is an
-`IrIf`, not an `IrName`. Worse for the other one: `probe-closure-solo`'s
-whole `opening` body folds to `((5 +% 20) +% 22)` and `make_adder` is not
-emitted either, so it exercises constant folding and nothing about
-closures. It is not a control. Checked on BOTH trees, because this
-finding has been measured on the wrong one before: identical in
-`20260824T184156Z-tier14b` (the bare u49 pin) and in
-`20260824T185614Z-tier14-pr77` (`8cb8a0e4`, which is the tree the tier
-set's zig arm belongs to). The `CDX4030` pipeline line is also a
-global default printed for essentially every unit, not a per-file
-observation about `prim-closure`. The conclusion survives all three
-corrections -- the emitted artifact shows it directly -- but the
-evidence it was resting on did not.
-
-**This is finding 39's shape on our side of the fence.** There the call
-site assumed an arity the closure could not honour at run time; here the
-call site assumes an arity the definition was not emitted with, and zig
-catches it at compile time. Upstream corrupts silently, we refuse
-loudly, and the disagreement is the same disagreement.
-
-**It fails as a raw zig error, not a `@compileError("zig plug: ...")`
-marker**, so `zig-is-unmapped` and `corpus_run.py --transpile` score it
-zero. PRIORITIES item 5's open question names three findings in that
-class; this is the fourth.
-
-**Reproducers:** `findings/prim-closure.codex` (tier 14, which is
-EXCLUDED from the set while this stands), `probe-closure-silent`,
-`probe-closure-rec-cmp`. Control: `probe-closure-solo`.
-
-**Confidence: HIGH, and the tree is named because it has to be.** First
-measured against natives built from the bare u49 pin `bdf0049b`, which
-was the WRONG tree: the tier set's zig expectations come from PR 77's
-tip `8cb8a0e4`, and `ast/zigemit-source.codex` -- the committed
-provenance snapshot -- says so, since a build on the pin rewrites its
-`cx_heap_mem`/`cx_heap_reserve`/`cx_heap_vtable` to `cx_arena_state`
-while a build on `8cb8a0e4` leaves it byte-identical. Re-measured there:
-the same error at the same declaration, only the line number moved
-(534 to 800, PR 77's prelude being longer), with `probe-closure-solo`
-still answering `solo 47`. So the defect is present on BOTH trees and is
-not an artifact of either. The error is a compile-time refusal with the
-emitted text in hand, and the inlined control passes in the same
-chapter.
-
-The seed is byte-identical across the two trees
-(`a01c1547e92eb0d0`), so tier 14's banked bare column never depended on
-which was chosen.
-
-**SETTLED 2026-08-24: the call site is the wrong half, and this is a
-documented rule the plug does not follow.** `docs/DevelopersRulebook.md`
-lines 256-260 state it, in the section headed "What the wire carries,
-for anyone writing a plug" (`:243`). The rule is UNQUALIFIED -- it binds
-"a plug", with no list narrowing it, so it reaches every plug that keeps
-an arity map. (The plug list at `:254` is the neighbouring LAMBDA
-bullet's and does not scope this one; the application bullet names the
-TS/JS family only as plugs that already carry the model.)
-
-> Application is curried on the wire ... a plug must emit `f(a)(b)`,
-> never `f(a, b)`, unless it KNOWS the callee's arity: a def it emitted
-> n-ary is called flat at that arity, under-applied with one arrow per
-> missing parameter, **over-applied by applying the rest one at a
-> time.**
-
-Three cases; the plug implements two. `emit-zig-apply`
-(`ZigEmitter.codex:2067-2071`) looks the arity up, branches correctly on
-`args < ar`, and then lets `args > ar` fall into the saturated-call
-branch, which emits every argument in the chain -- the loop bound in
-`emit-zig-call-args` is `list-length args`, never `ar`. `ar` is computed
-and discarded. The over-supplied arguments are not even type-checked:
-`zig-callee-param-type` returns `VoidTy` past the parameter list
-(`:656`).
-
-The definition-flattening alternative is contradicted, not merely
-unchosen. The compiler's own x86-64 backend builds its arity map from
-`list-length (d.params)` (`X86_64Compound.codex:38`) exactly as
-ZigEmitter does at `:537`, and splits on `args > user-arity` into
-`emit-over-apply` (`:154`, implemented `:245-274`). A Codex `FunTy` is a
-curried arrow, so `Integer -> (Integer, Integer -> Integer)` and
-`Integer, Integer, Integer -> Integer` are the SAME type and
-`list-length (d.params)` is the only signal separating them -- flattening
-the definition discards it, and would need an eta-expansion `emit-zig-def`
-does not have (`:2625` emits the body verbatim).
-
-**The second site is OBSERVED now, not predicted (2026-08-24).**
-`findings/probe-closure-value.codex` passes `even-fn` to a helper as a
-bare VALUE. The helper has to survive the inliner for the shape to
-appear at all -- with one call site it is inlined and the defect shows
-up as the ordinary flat call instead -- so the probe calls it twice.
-`emit-zig-name` then eta-wraps the definition using the TYPE-spine count:
-
-    fn call(_ctx5: *anyopaque, p0: i64, p1: i64, p2: i64) i64 {
-        _ = _ctx5; return even_fn(p0, p1, p2); }
-    ... packaged as CxFn3(i64, i64, i64, i64)
-
-The wrapper's own signature is self-consistent, so `zigemit` returns rc 0
-and the defect survives to the zig compiler, which refuses it at BOTH
-call sites: `p2.zig:804:190: error: expected 1 argument(s), found 3`,
-`note: function declared here` at `even_fn`. So the two sites fail the
-same way for the same reason and neither is reachable from the other's
-reproducer.
-
-**One caution for the fix: the rulebook's "one at a time" is wrong for
-zig specifically.** `zig-closure-invoke` (`:2284-2286`) applies all
-remaining arguments at once, which is what the working `_f5.call(_f5.ctx,
-20, 22)` does. The right shape is to chunk by each closure's arity.
-`emit-ts-apply-split` (`TypeScriptEmitter.codex:208-214`) is the
-structural template; `zig-closure-invoke` is the correct tail. And
-rerouting `args > ar` into `emit-zig-expr-curried` (`:2461-2468`) does
-NOT fix it: that path reaches `emit-zig-name:1053-1057`, which eta-wraps
-using `zig-fn-param-count` -- the TYPE-spine arrow count, 3 for
-`even-fn`, not the emitted 1 -- and lands back on a flat
-`even_fn(p0, p1, p2)`. **The emitter carries two disagreeing notions of a
-definition's arity** and knows it: `zig-untrusted-return-note`
-(`:2513-2518`) prints `"type-val has N arrows for M params"`, and
-`zig-def-return-trusted` (`:2520-2522`) tests `>=` rather than `==`,
-tolerating the very mismatch that breaks the call path. Both sites move
-together or neither does.
-
-**Why nothing caught it:** `codex/plugs/test-input/partial.codex`
-exercises under-application, saturation, and over-application of a
-LOCAL, but never over-application of a named top-level definition --
-the only shape that reaches `ZigEmitter.codex:2070`. And
-`codex/plugs/test-plugs.ps1` judges exit code, non-empty output and text
-markers (`:93-97`, `:163-177`); it never compiles the emitted target.
-
-Tier 13's prose says the zig arm "would not compile the closure return
-type" -- that is out of date; the return type emits fine.
-
 ## 39. A partial-application closure carries no remaining-arity, so under-application corrupts silently
 
 **Found 2026-08-24 by measuring finding 38 until its framing collapsed.
 THEIRS -- the native x86-64 backend, no plug in the path. OPEN. SENT as
-PR 79 (COMPILER-18); ladder tag `closure-arity`. Supersedes finding 38.**
+PR 79 (COMPILER-18); ladder tag `closure-arity`. Supersedes finding 38.
+The row was absorbed 2026-08-25 by Update 50's interim push at main
+19116, and it is item 1 in the upstream rulings queue -- still a
+question, not yet a decision: give the closure a remaining-arity word so
+the trampoline can re-close, or refuse under-application at the emit
+site. The recorded default reading is "implement the declared model",
+but the object layout and the spec are both Damian's to move. Tier 14 is
+our fixture for it and stays in the set.**
 
 **The two programs that carry it.** `let h = add3 10 in show ((h 20) 12)`
 prints 42 -- the shape of upstream's own fixture at
