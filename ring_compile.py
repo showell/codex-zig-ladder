@@ -14,7 +14,6 @@ import os
 import pathlib
 import re
 import socket
-import subprocess
 import sys
 import time
 
@@ -22,23 +21,16 @@ import codex_vm
 from ladder_root import CODEX
 
 REPO = str(CODEX)
-# Same accel contract as codex_vm: tcg unless CODEX_ACCEL says otherwise,
-# and the kernel-irqchip=off workaround only off-KVM (under KVM the
-# userspace APIC path is deprecated and the guest dies pre-READY).
+# The accel contract and the kernel-irqchip=off workaround live in
+# codex_vm.launch now, with the guest, so this file cannot disagree with
+# it about CODEX_ACCEL again -- it did, hard-coding tcg while codex_vm
+# read the environment.
 # CODEX_MEM_MB sizes the guest for smaller hosts (the droplet has 2 GB).
-ACCEL = os.environ.get("CODEX_ACCEL", "tcg")
 MEM_MB = int(os.environ.get("CODEX_MEM_MB", "3072"))
 RING_ADDR = 0x500000
 RING_SIZE = 0x100000          # 1 MB, must match seed's serial-ring-buf-size
 WPOS_ADDR = 28704             # 0x7020
 RPOS_ADDR = 28712             # 0x7028
-
-def free_port():
-    s = socket.socket()
-    s.bind(("127.0.0.1", 0))
-    p = s.getsockname()[1]
-    s.close()
-    return p
 
 class Gdb:
     def __init__(self, port):
@@ -139,31 +131,19 @@ def compile_ring(blob_path, out_path, mem_mb=MEM_MB, timeout=1800, seed=None):
         stage_path = blob_path + ".stage1"
         with open(stage_path, "wb") as f:
             f.write(blob[:RING_SIZE])
-    dp, cp, gp = free_port(), free_port(), free_port()
-    machine = ["-machine", "kernel-irqchip=off"] if ACCEL != "kvm" else []
-    proc = subprocess.Popen([
-        "qemu-system-x86_64", "-accel", ACCEL, *machine, "-cpu", "max",
-        "-kernel", seed or f"{REPO}/seed/Codex.cdx",
-        "-device", f"loader,file={stage_path},addr={hex(RING_ADDR)},force-raw=on",
-        "-chardev", f"socket,id=ch0,host=127.0.0.1,port={dp},server=on,wait=on,nodelay=on",
-        "-chardev", f"socket,id=ch1,host=127.0.0.1,port={cp},server=on,wait=on,nodelay=on",
-        "-serial", "chardev:ch0", "-serial", "chardev:ch1",
-        "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
-        "-device", f"loader,addr=0xfe8,data={hex(mem_mb << 20)},data-len=4",
-        "-gdb", f"tcp:127.0.0.1:{gp}",
-        "-display", "none", "-no-reboot", "-m", str(mem_mb),
-    ], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    # The ring's two additions to the standard command line: the staged
+    # first megabyte preloaded at RING_ADDR, and a gdbstub to drive the
+    # ring cursors with the VM stopped. Everything else -- accel, the two
+    # chardevs, the 0xFE8 RAM cell, isa-debug-exit -- is codex_vm.launch's,
+    # which is the point: this file kept its own copy of all of it and the
+    # copy drifted twice.
+    gp = codex_vm.free_port()
+    proc, data, ctrl = codex_vm.launch(
+        seed or f"{REPO}/seed/Codex.cdx", mem_mb, extra_args=[
+            "-device", f"loader,file={stage_path},addr={hex(RING_ADDR)},force-raw=on",
+            "-gdb", f"tcp:127.0.0.1:{gp}",
+        ])
     try:
-        def connect(port):
-            for _ in range(120):
-                if proc.poll() is not None:
-                    raise RuntimeError("qemu died: " + proc.stderr.read().decode()[-400:])
-                try:
-                    return socket.create_connection(("127.0.0.1", port), timeout=1)
-                except OSError:
-                    time.sleep(0.25)
-            raise RuntimeError(f"no connect {port}")
-        data, ctrl = connect(dp), connect(cp)
         t0 = time.time()
         # codex_vm.wait_ready, not a local loop: the local copy lacked the
         # EOF check, so once QEMU died the ctrl socket returned b"" instantly

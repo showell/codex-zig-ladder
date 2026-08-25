@@ -19,21 +19,31 @@ ACCEL = __import__("os").environ.get("CODEX_ACCEL", "tcg")
 MEM_MB = int(__import__("os").environ.get("CODEX_MEM_MB", "3072"))
 BASE_PORT = 56400
 
-def _free_port():
+def free_port():
     s = socket.socket()
     s.bind(("127.0.0.1", 0))
     p = s.getsockname()[1]
     s.close()
     return p
 
-def launch(kernel, mem_mb=None, nic=False):
+def launch(kernel, mem_mb=None, nic=False, extra_args=()):
+    """Boot a Codex kernel under QEMU and return (proc, data, ctrl).
+
+    The ONE place this repository starts a guest. ring_compile.py kept a
+    second copy of this command line until 2026-08-25 and the two had
+    already drifted -- the copy never gained the kill-on-failed-connect
+    below, so a half-connected ring compile orphaned a 3 GB guest, and it
+    had to be taught wait_ready's EOF check separately after a 100% spin
+    went unnoticed. extra_args is what the copy actually needed: a
+    preloaded ring at a fixed address and a gdbstub port.
+    """
     if mem_mb is None:
         mem_mb = MEM_MB
     # nic: only for plug kernels that drive the NE2K (the seed has no NIC
     # driver). Ports are dynamic: fixed ports collide with leftover VMs
     # and TIME_WAIT across rapid relaunches — bit us three times on
     # 2026-08-14.
-    data_port, ctrl_port = _free_port(), _free_port()
+    data_port, ctrl_port = free_port(), free_port()
     ram_bytes = mem_mb * 1024 * 1024
     # kernel-irqchip=off is what the author's WHPX fallback needs; under KVM
     # the userspace APIC path is deprecated and the guest dies pre-READY.
@@ -58,6 +68,7 @@ def launch(kernel, mem_mb=None, nic=False):
         "-device", f"loader,addr=0xfe8,data={hex(ram_bytes)},data-len=4",
         "-cpu", "max",
         "-display", "none", "-no-reboot", "-m", str(mem_mb),
+        *extra_args,
     ], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
 
     def connect(port):
