@@ -73,7 +73,49 @@ loop unless it says otherwise.
 
 ---
 
-## 1. Launching a detached job is a foot-gun with a live tripwire
+## 1. Finding 42: the self-tail loop reads a global where the source reads its parameter
+
+**Objective: INTEGRITY, then OUTBOUND. This sits ahead of the ergonomic
+items deliberately** -- they earn their place because their payoff
+multiplies across everything below them, and that argument loses to a
+correctness defect that is OURS, is SILENT, and is already upstream.
+
+The register has the mechanism (finding 42). The short form: a definition
+whose parameter shadows a top-level definition gets that parameter
+renamed to `_arg_<name>`, correctly, and then the SELF-TAIL-LOOP emission
+resolves the name in its body to the top-level definition instead of to
+the renamed parameter. The non-loop emission binds it correctly, so this
+is PR 81's path and nothing else. Absorbed upstream in Update 50's
+interim push (main 19131).
+
+**`dtls-fragment` refused, and that was luck.** Zig makes an unused
+function parameter a hard error, and the substitution left NO reference
+to either parameter, so the file would not compile. One surviving use and
+it compiles and returns a wrong answer with no diagnostic. Treat the
+compile error as the accident it is, not as the failure mode.
+
+In order, and the order is the point:
+
+- **A tier row FIRST, and it must FAIL before anything is fixed.** A
+  top-level `x`, a self-tail definition taking a parameter `x`, the two
+  given DIFFERENT values so the arms disagree on the answer rather than
+  on whether it builds. `prim-tailcall` is the file. A fix landed against
+  a row that never failed proves nothing, and this class has been green
+  and blind since the tier was written.
+- **Then the emitter fix**, in `ZigEmitter.codex`'s loop emission: the
+  loop body must resolve a renamed parameter to its `_arg_` name the way
+  the non-loop path already does.
+- **Then the chain**: natives, `tiers_run.py`, a sweep, and the census
+  again -- `dtls-fragment` must go back to `match`, and nothing else may
+  move.
+- **Then outbound**, with a `plugs-backlog.md` row. Ours, shipped, so the
+  row says so plainly.
+
+**Do not fix it first and write the row after.** The whole reason this
+was invisible is that the tier set had no row for the shape, and a fix
+written before the row would leave the set exactly as blind as it was.
+
+## 2. Launching a detached job is a foot-gun with a live tripwire
 
 **Objective: ERGONOMICS.** `ast/rebank_all.sh` relaunches itself detached
 so a dead terminal cannot kill an hour-long run. The detached child is
@@ -126,7 +168,7 @@ it because `native_build.sh` and `allcycles.sh` do not self-detach --
 their launching shell stays an ancestor. `rebank_all.sh` is the one that
 does, and it is the one that has refused itself twice.
 
-## 2. A truth's provenance watches the arm that cannot have produced it
+## 3. A truth's provenance watches the arm that cannot have produced it
 
 **Objective: ERGONOMICS.** A truth is a bare-metal measurement. Its
 provenance should depend on exactly what produced it -- the seed, the
@@ -183,7 +225,7 @@ fourteen truths come back byte-identical to `truth/seed-6cf4a8e0/`. About
 40 minutes detached, and it is the same shape as every other inert-change
 proof in JUSTIFICATIONS.
 
-## 3. The refusal-gaps branch, rebased and re-verified
+## 4. The refusal-gaps branch, rebased and re-verified
 
 **Objective: HUNTING, reached through our own gap-filling** -- every
 family implemented promotes a slab of census programs into the comparing
@@ -211,7 +253,7 @@ non-exhaustive switch. Also queued: the JS plug's IrNumLit takes bits as
 a NUMBER and its parseFloat is correctly rounded where bare metal's
 `__text_to_double` is not -- probe before filing.
 
-## 4. Every unhandled construct must refuse BY NAME
+## 5. Every unhandled construct must refuse BY NAME
 
 **Objective: INTEGRITY, and it is the one that sets the queue.** Four
 findings now fail as raw zig errors rather than a
@@ -226,7 +268,7 @@ that cannot see them. The systemic answer -- every unhandled construct
 refuses by name -- is worth more than any individual gap, and the census
 in "The refusal-gaps branch" is where the count would show it.
 
-## 5. The tiers stay green, and each one earns its keep
+## 6. The tiers stay green, and each one earns its keep
 
 **Objective: DUE_DILIGENCE that keeps turning into HUNTING.** The tiers
 and probes exist since 2026-08-21; `tiers_run.py` runs them as a set
@@ -272,7 +314,7 @@ finding on its FIRST run:
   anyone remembering to check. That is what a tier is for, and it could
   not do it while one arm refused to compile.
 
-## 6. The stack is measured now, and the emitter's prose about it is wrong
+## 7. The stack is measured now, and the emitter's prose about it is wrong
 
 **Objective: INTEGRITY, already half done.** `stack_probe.py` -- finding
 37's instrument -- bisects the emitted thread stack against real
@@ -303,7 +345,7 @@ Left:
   untouched. Verified inert first (ladder tag `stack-prose-verified`,
   JUSTIFICATIONS "A prose block moves the plug and not its output").
 
-## 7. Diagnostics as a banked set
+## 8. Diagnostics as a banked set
 
 **Objective: INTEGRITY.** A pinned count (CDX6020 x43 in
 `check_diags.py`) says something changed; a banked set diffed like a
@@ -318,7 +360,7 @@ to run the census at all when any `.ir` was rebuilt, which is honest and
 which means the sweep we now run MOST is the one that reports no
 diagnostics. A banked set is comparable whatever produced the IR.
 
-## 8. The external review, batches 1 and 3
+## 9. The external review, batches 1 and 3
 
 **Objective: INTEGRITY** -- these are wrong-bank and wrong-PASS closers.
 `REVIEW-2026-08-19.md` (Marley, ~34 findings); Batch 2 is done
@@ -337,7 +379,7 @@ tree, since several have been fixed in passing.
   census json stays; LICENSE is Steve's call; errors='replace'
   byte-compare rides Batch 3.
 
-## 9. Venue plumbing, what is left of it
+## 10. Venue plumbing, what is left of it
 
 **Objective: ERGONOMICS.** Pushes go through the deploy keys
 (`github-ladder`, `github-nr`) since 2026-08-23. The straw scripts
@@ -346,7 +388,7 @@ are the keyboard-tempo tools, and both models share the box under the
 compute lock. Nothing else here is open: what used to sit in this item
 left the queue with the fresh-sandbox work on 2026-08-25.
 
-## 10. zigc has a runner now, and one inconclusive result
+## 11. zigc has a runner now, and one inconclusive result
 
 **Objective: INTEGRITY.** `zigc` -- the whole compiler as a Linux
 process -- was the only claim in this tree with no runner behind it, and
