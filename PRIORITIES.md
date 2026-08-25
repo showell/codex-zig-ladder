@@ -183,7 +183,45 @@ to run the census at all when any `.ir` was rebuilt, which is honest and
 which means the sweep we now run MOST is the one that reports no
 diagnostics. A banked set is comparable whatever produced the IR.
 
-## 3. zigc has a runner now, and one inconclusive result
+## 3. Port Roc's closure/recursion snippets into the corpus
+
+**Objective: HUNTING. KEYBOARD to port, BOX to bank.** (Steve, 2026-08-25.)
+
+    https://github.com/roc-lang/roc/blob/main/src/eval/test/eval_closure_recursion_tests.zig
+
+A zig runner holding many small Roc snippets, each with its expected
+output. Port the snippets to Codex, give each a `.expected`, and put them in
+the corpus.
+
+**Why this file and not any other test suite.** It is closures and
+recursion, which is where our findings cluster and keep clustering:
+finding 38 (a self tail call in a definition returning a FUNCTION jumps to a
+poison address), 39 (a partial-application closure carries no
+remaining-arity), 40 (curried application), 42 (a self-tail loop reading a
+top-level definition where the source reads its own parameter). Four
+findings, one feature area, and our own tier rows for it were written by the
+same people who wrote the emitter -- so they encode our assumptions about
+what is worth testing. **This corpus was written by another language's team
+who never heard of Codex, for the same feature area.** That is the property
+we cannot manufacture, and it is the same argument that makes the depot's
+`.expected` files worth more than our own comparisons.
+
+**Each port is a judgement call, and the file should say which.** Roc is not
+Codex: its closures, its effect story, its numeric defaults and its
+evaluation order all differ. A snippet whose expected output depends on Roc
+semantics we do not share is not a test of our emitter -- it is a
+mistranslation waiting to be filed as a finding. Port what is portable, drop
+what is not, and record next to each what was changed and why. A snippet
+ported wrongly costs more than one not ported at all.
+
+**The oracle question, before any of it is banked.** Our corpus verdicts
+come from the depot's hand-verified `.expected`. These snippets arrive with
+ROC's expected output, which is evidence about Roc. What makes a ported
+snippet trustworthy here is bare metal agreeing with the zig arm on it, so
+the port lands as corpus material first and only earns an `.expected` of its
+own once the two arms have been read.
+
+## 4. zigc has a runner now, and one inconclusive result
 
 **Objective: INTEGRITY. BOX for the first run of a session, KEYBOARD
 after it** -- the build is cached now, measured 2026-08-25: **first run
@@ -219,7 +257,7 @@ of mine, each caught by a guard already in the tree -- no mode flags
 a naive marker grep that counted a prelude guard
 (`findings/prelude-comptime-guards.txt` exists for exactly that).
 
-## 4. Every unhandled construct must refuse BY NAME
+## 5. Every unhandled construct must refuse BY NAME
 
 **Objective: INTEGRITY, and it is the one that sets the queue. BOX.**
 Four
@@ -235,7 +273,7 @@ that cannot see them. The systemic answer -- every unhandled construct
 refuses by name -- is worth more than any individual gap, and the census
 in "The refusal-gaps branch" is where the count would show it.
 
-## 5. The refusal-gaps branch, rebased and re-verified
+## 6. The refusal-gaps branch, rebased and re-verified
 
 **Objective: HUNTING, reached through our own gap-filling. BOX.** Every
 family implemented promotes a slab of census programs into the comparing
@@ -263,7 +301,7 @@ non-exhaustive switch. Also queued: the JS plug's IrNumLit takes bits as
 a NUMBER and its parseFloat is correctly rounded where bare metal's
 `__text_to_double` is not -- probe before filing.
 
-## 6. The tiers stay green, and each one earns its keep
+## 7. The tiers stay green, and each one earns its keep
 
 **Objective: DUE_DILIGENCE that keeps turning into HUNTING. BOX** for
 any new row, since a bare column costs QEMU. The tiers
@@ -310,7 +348,7 @@ finding on its FIRST run:
   anyone remembering to check. That is what a tier is for, and it could
   not do it while one arm refused to compile.
 
-## 7. The stack is measured now, and the emitter's prose about it is wrong
+## 8. The stack is measured now, and the emitter's prose about it is wrong
 
 **Objective: INTEGRITY, already half done. BOX.** `stack_probe.py` --
 finding
