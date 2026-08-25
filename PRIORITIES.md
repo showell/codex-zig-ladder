@@ -126,15 +126,62 @@ it because `native_build.sh` and `allcycles.sh` do not self-detach --
 their launching shell stays an ancestor. `rebank_all.sh` is the one that
 does, and it is the one that has refused itself twice.
 
-## 2. Provenance watches one file too many
+## 2. A truth's provenance watches the arm that cannot have produced it
 
-**Objective: ERGONOMICS.** The truth sidecars hash `oracle_lib.sh` whole,
-so a guard-or-comment edit to the zig-arm half invalidates every recorded
-truth's provenance -- it cost a full truth-arm re-measurement on
-2026-08-20. Segregate by volatility: the truth-arm machinery (mode_flags,
-truth_arm, split plumbing) into its own sourced file the sidecar watches;
-the zig-arm half free to move. Do it right after a bank lands, never
-between recording and banking.
+**Objective: ERGONOMICS.** A truth is a bare-metal measurement. Its
+provenance should depend on exactly what produced it -- the seed, the
+subject, the harness that built the subject, the truth arm that ran it --
+and on nothing else. The zig arm cannot reach a bare-metal truth, so the
+zig arm must not appear in that truth's key. It does, because
+`truth_prov.set_hash` hashes `ast/oracle_lib.sh` whole and that one file
+holds both arms: `mode_flags` and `truth_arm` beside `zig_verdict`,
+`zig_arm` and `ring_arm`, with the shared plumbing (`take_compute_lock`,
+`rung_stamp`, `harness_for`, `bounded_run`) between them.
+
+That is the objective. How to reach it is open -- segregating the two
+halves into separate sourced files is one answer and was the only one
+this item used to name; hashing the truth-arm functions rather than the
+file, or recording which functions a run used, are others. The right
+answer is whichever makes a truth's key say what the truth depends on.
+
+**Re-read 2026-08-25, and the cost is NARROWER than this item claimed.**
+It said a zig-arm edit "invalidates every recorded truth's provenance".
+That was true under the older, stricter gate. It is not true now:
+
+- **Sweeps do not care.** `check_rung`, the per-use gate `zig_verdict`
+  calls, checks the SEED half of the sidecar ONLY, and says so in its own
+  docstring -- an emitter hunt edits harnesses deliberately and a verdict
+  against the recorded truth is still the verdict wanted. Harness drift
+  is REPORTED, not refused.
+- **Banking does.** `bank_truth.py` refuses any truth whose recorded
+  content hash no longer matches `set_hash` ("harness content moved since
+  it ran"). So the cost lands on one window -- between a rebank and its
+  bank -- which is what the old advice, "never between recording and
+  banking", was really protecting.
+- **The advice itself has gone stale the other way.** It said to do the
+  split "right after a bank lands". Since 2026-08-25 the bank CARRIES a
+  sidecar per truth, so the moment a bank lands is the moment there are
+  fourteen banked sidecars to invalidate. A restore would still work --
+  `restore_truths` re-checks with the seed-only gate -- but every restored
+  rung would read as drifted from then on, and the next bank taken over
+  those truths would refuse. Any execution has to say what happens to the
+  banked sidecars, and none of them can just be re-stamped without an
+  argument that the move changed no behaviour.
+
+**The live cost is not re-measurement, it is design pressure.**
+`ast/ensure_ir.sh` is a separate file rather than a function in
+`oracle_lib.sh` for exactly this reason -- adding to `oracle_lib.sh`
+would have invalidated every recorded truth. That rationale was written
+down in the fresh-sandbox item and left the queue with it, so it is
+recorded here now and nowhere else. `oracle_lib.sh` has not changed since
+2026-08-23, through two days of heavy emitter work, which reads as
+stability and may instead be the avoidance working.
+
+**Verification, whatever the execution:** a pure move changes no
+behaviour, and the way to show that is a rebank in a sandbox whose
+fourteen truths come back byte-identical to `truth/seed-6cf4a8e0/`. About
+40 minutes detached, and it is the same shape as every other inert-change
+proof in JUSTIFICATIONS.
 
 ## 3. The refusal-gaps branch, rebased and re-verified
 
