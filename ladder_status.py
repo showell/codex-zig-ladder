@@ -15,7 +15,7 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # ladder-root-bootstrap
 import compute_lock
 import seed_identity
-from ladder_root import LADDER
+from ladder_root import CODEX, LADDER
 
 
 def ladder_rungs():
@@ -85,6 +85,14 @@ def main():
                  if held else ""))
     for pid, args in jobs:
         print(f"compute  {pid} {args[:60]}")
+
+    # The checkout carries our unmerged PRs as UNCOMMITTED patches, on
+    # purpose (README "The checkout"): we measure against our fork's stack,
+    # not bare upstream. Nothing protects a patch, so a session that has
+    # lost its state must be told they are there before it trusts a
+    # measurement or moves the pin.
+    patched = sh(f"git -C {CODEX} status --porcelain | awk '{{print $2}}'")
+    print(f"patches  {' '.join(patched.split()) if patched else 'none (checkout is clean upstream)'}")
 
     logs = sorted((LADDER / 'logs').glob('*.log'), key=lambda p: p.stat().st_mtime)
     if logs:
