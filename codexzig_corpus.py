@@ -65,11 +65,24 @@ def main():
     print(f'    (clean + match in corpus/census.json, banked {census["meta"]["date"]})')
 
     tally = {'correct': 0, 'differ': 0, 'refused': 0, 'crashed': 0,
-             'timeout': 0, 'transpile-failed': 0}
+             'timeout': 0, 'transpile-failed': 0, 'unresolved': 0}
     same, moved, bad = 0, [], []
     started = time.time()
     for i, name in enumerate(names, 1):
-        src = (corpus_run.TESTS / f'{name}.codex').read_bytes()
+        # RESOLVE CITES FIRST. codexir resolves nothing, so a test whose
+        # driver calls into a cited chapter arrives with that name undefined
+        # and the plug's fallback fires -- which, as corpus_run's own comment
+        # warns, "looks exactly like an emitter gap and is not one". Feeding
+        # the raw file instead of the resolved unit cost an hour here: 77 of
+        # these programs came back refused, with types their cited chapters
+        # declare reported as undeclared identifiers.
+        unit, missing = corpus_run.resolve(corpus_run.TESTS / f'{name}.codex')
+        if missing:
+            tally['transpile-failed'] += 1
+            bad.append((name, 'unresolved',
+                        '; '.join(f'{q} chapter {n}' for _, q, n in missing[:3])))
+            continue
+        src = unit.encode()
         one = OUT / f'{name}.zig'
         duo_ir, duo = OUT / f'{name}.ir', OUT / f'{name}.duo.zig'
 

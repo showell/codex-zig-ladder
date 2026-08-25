@@ -382,12 +382,21 @@ against bare `upstream/master`, and SAY SO IN THE PR.** The tree we believe
 in is upstream plus everything we have sent and they have not yet taken --
 the optimistic version of what we hope becomes the next Update. Testing
 against bare upstream measures a compiler we already know is missing our
-fixes, and it misreads their absence as a regression: on 2026-08-25 a corpus
-run against bare `0c4327d5` showed 77 well-behaved programs emitting zig
-that would not build, and the whole delta was PR 85's fix being absent. An
-hour went into suspecting our own rename before the sandbox's kept artifacts
-settled it. Stacking in the PR branch itself is optional -- naming the stack
-the numbers were measured on is not.
+own fixes, so a number taken there is not a number about the thing we are
+building. Stacking in the PR branch itself is optional; naming the stack the
+numbers were measured on is not.
+
+**Standing, learned the hard way the same day: REUSE THE WHOLE RUNNER, not
+half of it.** `codexzig_corpus.py` fed `codexir` the raw `.codex` file where
+`corpus_run.py` feeds it a CITE-RESOLVED unit. 77 of 181 well-behaved
+programs came back "refused", naming types their cited chapters declare as
+undeclared identifiers -- and `corpus_run`'s own comment on the line I did
+not copy says exactly what it would look like: "codexir resolves nothing, so
+without this the call arrives as an undefined name and the plug's fallback
+fires, which looks exactly like an emitter gap and is not one." An hour went
+into suspecting the emitter, then our own rename, then an unmerged fix,
+before the sandbox's kept artifacts showed the IR itself was missing its
+`(ctors ...)` line.
 
 **Standing: re-verify every line citation against the PR's base**, not
 against the tree the finding was made on. They usually agree; PR 78 is
