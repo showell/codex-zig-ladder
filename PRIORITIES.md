@@ -5,19 +5,21 @@ essay disagrees with this file, this file wins. The README's "Processing a
 new Update" is the ceremony's step list; on a conflict about ORDER, that
 list is the spine and this file adds items and says where they slot.
 
-This is the queue, not the diary. **Done items leave the list** -- DONE.md
-holds one line and a pointer each, measurements go to JUSTIFICATIONS.md,
-findings to the register. An item here carries only what is still true and
-still to do.
+This is the queue, not the diary. **Done items leave the list and are not
+filed anywhere** -- measurements go to JUSTIFICATIONS.md, findings to the
+register, and everything else is in git. An item here carries only what is
+still true and still to do. There was a DONE.md until 2026-08-25; it was
+deleted rather than pruned, because a list of finished work is a thing
+nobody reads and everybody has to maintain.
 
 **Cite an item by its TITLE, never by its number.** Numbers are positional
 and every rewrite reshuffles them. This file has already accumulated two
 references to items that no longer exist -- the refusal-gaps item said
 "rebase onto item 2's tip" and the stack item credited "item 3.5's
 instrument", both of which left the queue on 2026-08-24 and took their
-numbers with them. DONE.md's older entries name numbers from the
-numbering in force when they were written; read them as history, not as
-pointers into this file.
+numbers with them. Two citations in the findings register named a
+"PRIORITIES item 1" from a numbering three rewrites old, and were
+repointed on 2026-08-25.
 
 (Rewritten 2026-08-23, again 2026-08-24. The 08-23 rewrite cut 700 lines
 to 150 live ones; this one re-sorted by objective, put ERGONOMICS at the
@@ -134,19 +136,7 @@ truth_arm, split plumbing) into its own sourced file the sidecar watches;
 the zig-arm half free to move. Do it right after a bank lands, never
 between recording and banking.
 
-## 3. Execute the rung renames (proposed, not started)
-
-**Objective: ERGONOMICS.** `RENAME-PROPOSAL.md` has the mapping and
-migration plan (temporary file; the executing commit deletes it). No
-re-bank needed -- no rung name appears inside a banked truth -- so 42
-files move by `git mv` unchanged. The hazard is a foot-gun of the worst
-kind: `ast/` outputs are gitignored, and three sites spell old names as
-literals (`ast/f3_run.zig:222`, `ast/f4_boot.py:26-29`,
-`overnight_verify.sh:99-100`); a missed one reads yesterday's dump and
-passes GREEN. Clean the orphans before the first sweep. Waits until the
-findings that cite current names stop being re-read.
-
-## 4. The refusal-gaps branch, rebased and re-verified
+## 3. The refusal-gaps branch, rebased and re-verified
 
 **Objective: HUNTING, reached through our own gap-filling** -- every
 family implemented promotes a slab of census programs into the comparing
@@ -174,7 +164,7 @@ non-exhaustive switch. Also queued: the JS plug's IrNumLit takes bits as
 a NUMBER and its parseFloat is correctly rounded where bare metal's
 `__text_to_double` is not -- probe before filing.
 
-## 5. Every unhandled construct must refuse BY NAME
+## 4. Every unhandled construct must refuse BY NAME
 
 **Objective: INTEGRITY, and it is the one that sets the queue.** Four
 findings now fail as raw zig errors rather than a
@@ -189,10 +179,10 @@ that cannot see them. The systemic answer -- every unhandled construct
 refuses by name -- is worth more than any individual gap, and the census
 in "The refusal-gaps branch" is where the count would show it.
 
-## 6. The tiers stay green, and each one earns its keep
+## 5. The tiers stay green, and each one earns its keep
 
 **Objective: DUE_DILIGENCE that keeps turning into HUNTING.** The tiers
-and probes exist (DONE.md 2026-08-21); `tiers_run.py` runs them as a set
+and probes exist since 2026-08-21; `tiers_run.py` runs them as a set
 per Update with `findings/gold/EXPECTED.txt` as the ledger of admitted
 disagreements (`ex` noted, `!!` red, `??` stale -- both of the last two
 want a human). Standing rules: run after any emitter change; add a row
@@ -235,7 +225,7 @@ finding on its FIRST run:
   anyone remembering to check. That is what a tier is for, and it could
   not do it while one arm refused to compile.
 
-## 7. The stack is measured now, and the emitter's prose about it is wrong
+## 6. The stack is measured now, and the emitter's prose about it is wrong
 
 **Objective: INTEGRITY, already half done.** `stack_probe.py` -- finding
 37's instrument -- bisects the emitted thread stack against real
@@ -287,7 +277,7 @@ Left:
   trailer naming the tag from the ceremony section, and the worktree goes
   when it does.
 
-## 8. Diagnostics as a banked set
+## 7. Diagnostics as a banked set
 
 **Objective: INTEGRITY.** A pinned count (CDX6020 x43 in
 `check_diags.py`) says something changed; a banked set diffed like a
@@ -302,11 +292,11 @@ to run the census at all when any `.ir` was rebuilt, which is honest and
 which means the sweep we now run MOST is the one that reports no
 diagnostics. A banked set is comparable whatever produced the IR.
 
-## 9. The external review, batches 1 and 3
+## 8. The external review, batches 1 and 3
 
 **Objective: INTEGRITY** -- these are wrong-bank and wrong-PASS closers.
-`REVIEW-2026-08-19.md` (Marley, ~34 findings); Batch 2 is done (DONE.md
-2026-08-22). Each batch's first act is re-checking its list against the
+`REVIEW-2026-08-19.md` (Marley, ~34 findings); Batch 2 is done
+(2026-08-22, `e91fdb3`). Each batch's first act is re-checking its list against the
 tree, since several have been fixed in passing.
 
 - **Batch 1, keyboard-only:** `plug_run` truncation-reads-as-success,
@@ -321,16 +311,16 @@ tree, since several have been fixed in passing.
   census json stays; LICENSE is Steve's call; errors='replace'
   byte-compare rides Batch 3.
 
-## 10. Venue plumbing, what is left of it
+## 9. Venue plumbing, what is left of it
 
 **Objective: ERGONOMICS.** Pushes go through the deploy keys
 (`github-ladder`, `github-nr`) since 2026-08-23. The straw scripts
 (`droplet_compile/transpile`, the two-venue sweep) are NOT retired: they
 are the keyboard-tempo tools, and both models share the box under the
-compute lock. Nothing else here is open; the sandbox and `.ir` items
-above carry what used to sit in this one.
+compute lock. Nothing else here is open: what used to sit in this item
+left the queue with the fresh-sandbox work on 2026-08-25.
 
-## 11. zigc has a runner now, and one inconclusive result
+## 10. zigc has a runner now, and one inconclusive result
 
 **Objective: INTEGRITY.** `zigc` -- the whole compiler as a Linux
 process -- was the only claim in this tree with no runner behind it, and
@@ -444,8 +434,8 @@ README "Processing a new Update" is the spine: read the release, pin a
 branch, tier bare columns, rebank on the droplet, bank over green arms,
 `bank_diff.sh`, re-pin POLICY from the census, README timings and table,
 tag `uNN-14of14`; then rebase the branches, natives, tiers, census. u49
-took one evening end to end (DONE.md 2026-08-22) and the next one should
-take less, since the droplet does all of it now.
+took one evening end to end and Update 50's interim absorb took two
+sittings of a single day, most of it unattended.
 
 **Update 50's interim push is mid-ceremony (seed `6CF4A8E0`).** Done: the
 pin, the tier bare columns, the rebank (14/14 green, 731 s), the bank
