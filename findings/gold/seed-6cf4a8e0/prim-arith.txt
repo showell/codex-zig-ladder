@@ -1,0 +1,58 @@
+# key e909619e69746202
+-- the instrument: integer-to-text, asserted before it is believed --
+round trip 0               : yes
+round trip 1               : yes
+round trip -1              : yes
+round trip 7               : yes
+round trip -7              : yes
+round trip 1000000         : yes
+round trip -1000000        : yes
+round trip 4611686018427387904: yes
+digits of 0 is 1           : yes
+digits of 7 is 1           : yes
+digits of -7 is 2          : yes
+digits of 1000000 is 7     : yes
+digits of -1000000 is 8    : yes
+minus sign is one character: yes
+zero has no sign           : yes
+-- int-mod: Euclidean on both arms, or half the inputs disagree --
+7 mod 3                    : 1
+-7 mod 3                   : 2
+7 mod -3                   : 1
+-7 mod -3                  : 2
+0 mod 5                    : 0
+-1 mod 8                   : 7
+never negative             : yes
+agrees on positives        : yes
+-- max and min --
+max 3 9                    : 9
+max -3 -9                  : -3
+min 3 9                    : 3
+min -3 -9                  : -9
+max of equals              : yes
+min across zero            : yes
+-- abs, away from the edge (the edge is in probe-arith-edges) --
+abs 5                      : 5
+abs -5                     : 5
+abs 0                      : 0
+-- bits: i64, so negatives are a sign-extension question --
+and 12 10                  : 8
+or 12 10                   : 14
+xor 12 10                  : 6
+and n -1 is n              : yes
+or n 0 is n                : yes
+xor n n is 0               : yes
+xor n 0 is n               : yes
+and of two negatives       : -12
+or of two negatives        : -10
+xor of two negatives       : 2
+and -1 -1                  : -1
+xor -1 -1                  : 0
+or -1 0                    : -1
+low byte of a negative     : 255
+masking clears the sign    : yes
+-- the identities that must hold whatever the representation --
+de Morgan via xor -1       : yes
+and is commutative         : yes
+or distributes over and    : yes
+shift then mask round trips: yes

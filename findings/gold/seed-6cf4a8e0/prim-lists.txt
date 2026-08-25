@@ -1,0 +1,37 @@
+# key bca8c3ed9f732c6b
+frontier observes allocation: yes
+meter reads a 1024 reserve  : yes
+-- literal: expect 16 + 8n --
+literal 1     24
+literal 2     32
+literal 3     40
+literal 4     48
+literal 8     80
+-- with-capacity: expect 16 + 8c --
+capacity 0    16
+capacity 1    24
+capacity 16   144
+capacity 256  2064
+-- element width: a List Text should cost a List Integer --
+List Integer 4 48
+List Text 4   48
+-- concat: operands, then k*8 for the pointer array, then 16 + 8t --
+cat 1 & 1     96
+cat 4 & 4     192
+cat 8 & 8     320
+-- chain: flattened on bare metal, so 2 and 4 differ by one operand --
+chain a&b     96
+chain a&b&c   136
+chain a&b&c&d 176
+-- cons: expect 16 + max(2*(n+1),4)*8 onto a list of n --
+cons onto 1   72
+cons onto 4   144
+cons loop 16  2712
+-- push: in place when the block is on top, so expect 16 + 8n --
+push loop 4   80
+push loop 16  272
+push loop 64  1040
+-- accumulate by concat: quadratic on both arms, the control --
+cat loop 16   2136
+cat loop 32   6296
+cat loop 64   20760

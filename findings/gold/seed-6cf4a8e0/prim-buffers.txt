@@ -1,0 +1,22 @@
+# key 289b4bcb24dc74b9
+-- reservation --
+two buffers are distinct   : yes
+second sits after the first: yes
+-- byte round trip --
+byte at 0 reads back       : yes
+byte at 1 reads back       : yes
+last byte reads back       : yes
+neighbours undisturbed     : yes
+write-byte answers next off: yes
+-- write-bytes and qword, little-endian --
+write-bytes answers end    : yes
+first byte is the low byte : yes
+qword is little-endian     : yes
+read-bytes round trips     : yes
+second qword round trips   : yes
+-- a fresh reservation reads as zero --
+fresh span is zeroed       : yes
+-- finding 24: what does a write PAST a buffer do? --
+neighbour was seeded 255   : yes
+write past end LANDS on it : yes
+  (yes = out-of-buffer writes are unchecked on this arm)

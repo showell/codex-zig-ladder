@@ -1,0 +1,23 @@
+# key 5e43a356714b1313
+-- an address is stable, or the notion means nothing --
+same object, twice asked   : yes
+same through a record field: yes
+-- distinct objects, distinct addresses --
+equal contents, two objects: yes
+  (yes = same value did not make them the same object)
+-- finding 10 through the address instead of the value --
+alias has the same address : yes
+record-set returned the SAME: yes
+the address survived it    : yes
+and the value did change   : yes
+  (all yes = one object, mutated, not copied)
+-- a second record type, so this is not one shape's accident --
+alias of a Pair is the same: yes
+-- lists: does growing move the object? --
+alias shares the address   : yes
+set-at does not move it    : yes
+push returns the same list : yes
+and the original agrees    : yes
+  (yes = growing did not make a new object)
+-- a copy is a different object, which is the control --
+`&` produced a new object  : yes
