@@ -52,7 +52,55 @@ A finding with no such line is a finding nobody tried to break.
 
 *Not findings. Each carries what would refute it and what that costs.*
 
-### H1. FALSIFIED 2026-08-26 17:52 -- Update 50 made the largest ladder unit uncompilable to IR-CCE in a 3 GB guest
+### H2. A let-bound lambda reaches the plug with `ErrorTy` for its parameter and its return, and nothing diagnoses it
+
+Raised 2026-08-26 18:30 by `codex/test/roc-closure-captures-list.codex`, the
+third Roc port. It refuses with `zig plug: no zig type for this codex type`
+inside the closure's `CxFn1(<param>, <ret>)`, and separately with `no
+address-of for this type`. **Not finding 47's class** -- measured on natives
+built before AND after that fix, identically.
+
+**What the wire carries.** Three variants, read out of the IR:
+
+    let f = \i -> xs   (captured list)  (param "i" error) (fn error error)
+    let f = \i -> 5    (integer body)   (param "i" error) (fn error error)
+    let f = \i -> i    (param USED)     (param "i" error) (fn error error)
+
+The third is the sharp one: its BODY is `(name "i" int-default)` while its
+signature says `error`, in the same definition. No `CODEGEN-HALTED`, no
+diagnostic -- an `ErrorTy` in a program the compiler reports as clean. The
+use site is fine: `(name "f" (fn int-default (list int-default)))`, so the
+information exists somewhere.
+
+**Why it is not the unused parameter, which was the first guess.** Variant C
+uses its parameter and behaves identically. **Why it is not every lambda:**
+`roc-returned-closure`'s `\x -> 9` also ignores its parameter and is clean,
+because `wrap : (Integer -> Integer) -> Wrapped` constrains it. The trigger
+looks like a let-bound lambda with nothing constraining it.
+
+**What tilts it upstream.** No plug mentions `ErrorTy` -- not the zig
+emitter, not the C# one -- while `IRTextParser.codex:276` parses `"error"`
+into it, so the wire carries it and the parser accepts it. Compare the
+type-variable case, where `CSharpEmitter.codex:534-541` documents the
+situation and prescribes `dynamic`. Nothing here says a plug should expect
+this.
+
+    Falsified by:  BARE METAL refusing variant C. If the seed refuses it,
+                   the program is ill-typed and the port is the defect, not
+                   the wire. Also falsified by the compile carrying a
+                   diagnostic we are discarding -- an ErrorTy that WAS
+                   reported is a halt the plug should honour, not a gap.
+                   Also falsified by the seed driver's own IR-CCE wire
+                   NOT carrying `error` here, which would make it ours.
+    Cost to test:  three guests, roughly ten minutes, all three answerable
+                   in one sandbox run. NOT YET RUN -- the box is sweeping
+                   finding 47.
+
+**If it survives**, the corpus already carries the class: 5 programs hit `no
+zig type for this codex type` and 1 hits `no zig type for this applied
+type`, against a post-47 histogram of 95 distinct gaps.
+
+### H1. FALSIFIED### H1. FALSIFIED 2026-08-26 17:52 -- Update 50 made the largest ladder unit uncompilable to IR-CCE in a 3 GB guest
 
 Raised 2026-08-26 17:42, when `ast/rebank_all.sh` died at 11/12 on
 `passes_to_x86` -- 2.65 MB of source, the largest unit. Its CDX compile
