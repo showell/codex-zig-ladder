@@ -111,107 +111,32 @@ the whole point of writing them down:
     2  finding 46's PR   fix done and verified, not sent          -> item 2
     3  the Roc ports     2 of ~12 done, the runner exists         -> item 3
 
-**THE REBANK RAN AND DIED AT 11/12, 2026-08-26 17:42.**
+**THE REBANK STALLED ONCE, RESUMED, AND IS SWEEPING.**
 `~/runs/20260826T171739Z-u50-rebank-tvar`, on `zig-plug-tvar-not-an-answer`
-as decided. Eleven truth arms recorded into `ast/*.truth`; **`truth/u50` was
-never banked**, because `rebank_all.sh` banks after all twelve and then
-sweeps, so `allcycles.sh` did not run either. The sweep, `allcycles`, and the
-roundtrip generator are all still owed -- they were always the same missing
-bank.
+as decided. `rebank_all.sh` died at 11/12 on `passes_to_x86` -- the largest
+unit, 2.65 MB -- with `guest stopped consuming at rpos 2097152 of 2652454`
+on the IR-CCE compile, the CDX compile of the same source having just
+succeeded.
 
-**What died.** `passes_to_x86`, the largest unit at 2.65 MB of source. Its
-CDX compile SUCCEEDED (2,304,302 bytes); the IR-CCE compile of the same
-source then stalled -- `RuntimeError: guest stopped consuming at rpos
-2097152 of 2652454`. The host wrote the whole blob in two refills; the guest
-read 79% of it and went quiet.
+**It was transport, not the release, and the register carries the reasoning
+as H1 (FALSIFIED).** The retry of that one unit completed: 14,029,026 bytes
+of IR in 219 s. A stall that does not reproduce cannot be explained by a
+tree. Filed as a hypothesis rather than a finding precisely because the fact
+that did not fit -- the guest stops READING, before a lift would run -- was
+visible from the start.
 
-**Why it is not obviously a flake.** The same unit, same step, same host and
-same 3 GB guest produced **13,883,457 bytes of IR in 195 s** on 2026-08-25
-against the interim `0c4327d5`
-(`~/runs/20260825T122248Z-u50-rebank`). The only thing that moved between
-those runs is the codex tree going interim -> release, and **IR-CCE is
-exactly the path Update 50 added the lambda lift to**. Our plug fix is not
-in this path at all: the SEED performs this compile.
+**A number that fell out of it and is worth keeping:** the IR is +145,569
+bytes over the interim's 13,883,457, about **1%**, which is Update 50's lift
+adding definitions to the largest unit. It compiles fine. The lift's cost on
+this path is measured now and it is small.
 
-**Why it is not obviously the lift either, and this is the honest part.**
-The stall is during INPUT CONSUMPTION, before a lift would run. That does
-not fit a lift-memory story, and no mechanism has been established.
+**Now sweeping.** All twelve truths are recorded, so `ast/allcycles.sh` was
+run directly rather than re-recording eleven good units to reach
+`rebank_all`'s second half. **`truth/u50` is still NOT banked** --
+`bank_truth.py` is the step after a green sweep, and until it runs the sweep,
+`allcycles` in a fresh sandbox, and the roundtrip harness generator all stay
+blocked. They remain the same missing bank.
 
-**In flight:** a retry of that one unit (`truth_arm passes_to_x86` in the
-same sandbox, the other eleven truths already on disk) to answer
-reproducible-or-transient before anything is filed. Deterministic at the
-same `rpos` means a real defect and a mechanism to find; a clean pass means
-transport flakiness and a resume from unit twelve.
-
-
-**Update 50's absorb is otherwise CLOSED as of 16:32.** The harness lift is
-in and verified, the bare gold for u50 is banked and committed, the tier set
-and both corpora are at their known baselines. What is NOT done is the
-rebank, and it is blocked on a decision rather than on the box -- see item 2.
-
-### Loose ends, so they stop living in somebody's head
-
-- **The depot is MOSTLY backed up again, 2026-08-26, and the count was
-  wrong when it was first written here.** Three branches were named and
-  pushed -- `u50-rebank` (`8cc80685`, the pin),
-  `zig-plug-tvar-not-an-answer` (`a961dcb6`, the finding-46 fix) and
-  `roc-corpus-ports` (`f151d3ea`, the ports) -- and all three now track
-  their own `origin/` counterpart. **A FOURTH was missed: `u50-stack`
-  (`7aad6301`), still on no remote.** It is "our open PRs, applied: the
-  stack we measure against", cut from the INTERIM `0c4327d5` and superseded
-  when the release absorbed all eight PRs, so it is history rather than
-  working state -- but it is the only copy of a commit that took real work,
-  and deleting an unbacked unique commit is the irreversible direction.
-  **Push it before deciding whether to retire it:**
-  `git -C ~/showell_repos/NewRepository push origin u50-stack`.
-
-- **One upstream said the wrong thing and it was a live foot-gun.**
-  `seed-6cf4a8e0-rebank` -- the INTERIM, `0c4327d5` -- had its upstream set
-  to `origin/u50-rebank`, which the push moved to the RELEASE `8cc80685`. A
-  `git push` from that branch would have tried to rewind the pin, and a
-  `git pull` would have dragged the release onto the interim.
-  `origin/seed-6cf4a8e0-rebank` existed the whole time and was unused. Both
-  repointed. **The general shape is worth remembering: a branch renamed
-  locally keeps the upstream it was created with, and nothing warns you.**
-- **`roc-corpus-ports` was cut off the FIX branch, not the pin**, so it
-  carries `a961dcb6` underneath. Deliberate -- Steve's "off the latest and
-  greatest for now" -- and SMALLER than it first reads: the port commits
-  touch `codex/test/` only, four files, pure additions. `git diff
-  u50-rebank..roc-corpus-ports` shows the 191-line `ZigEmitter.codex` fix
-  because of the BASE, not because any port commit contains it, so
-  cherry-picking the ports onto the pin is mechanical whenever they go out.
-  Nothing to do now; keep the commits test-only and it stays that way.
-- **`corpus/census.json` is BANKED against Update 50, 2026-08-26** (596
-  programs, natives `939d57187a37` = the pin plus finding 46's fix, ~28 min).
-  Six verdicts moved and all six are accounted for in the commit; the one
-  that was NOT predicted is `typeclass-smoke` going `refused -> markers`,
-  which is finding 46's fix working -- it now names `unresolved type variable
-  T44 of describe` where it used to emit a bogus type for zig to reject.
-  **The measurement that came out of it is in JUSTIFICATIONS and matters more
-  than the bank: only 91 of the 135 distinct "emitter gaps" are gaps.** Forty
-  are the finding-46/47 type-variable class, keyed by FUNCTION NAME, covering
-  51 program-hits between them where one real gap reaches 123 alone. The
-  135/133/135 numbers quoted across 2026-08-26 are mostly that keying.
-  **Rank by program-hits, not distinct count.**
-- **`native/` in the main checkout was replaced 2026-08-26 16:44** with the
-  binaries from `~/runs/20260826T160728Z-u50-harness-lift/ladder/native`
-  (post-T38-fix, post-lift); the tree's own were stale by a morning. **The
-  identity was already machine-checkable and matches**: `natives_stamp()` is
-  `939d57187a37` in the main tree, in the sandbox it came from, and in that
-  sandbox's tier log. What was missing is the PROVENANCE behind the stamp,
-  now written to `native/PROVENANCE`, with the durable fix filed in
-  ERGONOMICS.md ("native_build.sh should stamp what it built").
-- **NOT a loose end, checked 2026-08-26: sandbox accumulation.** 23 of them
-  in `~/runs`, 11 GB, on a disk that is 21% full with 123 GB free.
-  `sandbox.sh --prune` exists and keeps the newest 10; there is no reason to
-  run it yet, and the logs of a finished chain are worth more than the space
-  they cost. Recorded so the next person does not re-derive it.
-- **`roc_ports_run.py` is RED and should stay red.** `roc-iter-map` refuses,
-  and the refusal is finding 47. There is no admission ledger like
-  `gold/EXPECTED.txt` and one should not be added until a second port needs
-  it -- a green suite that has been taught to expect a defect is exactly what
-  "a green suite is a statement about the questions the instrument can ask"
-  warns about.
 
 ## The native loop, which changes what is cheap
 
