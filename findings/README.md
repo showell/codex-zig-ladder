@@ -936,6 +936,20 @@ variable inside `Step a`, `Iter a`, `Opt a`, a tuple, or any user record or
 sum is unrecoverable, in parameter position and return position alike. The
 position it is reached from was never the issue.
 
+**The smallest reproducer has no lambda in it at all**, which is what says
+this finding is not about lifting. `codex/test/tvar-in-declared-type.codex`:
+
+    Pair (a) = record { fst : a, snd : a }
+    pair-swap : Pair a -> Pair a
+    pair-swap (p) = Pair { fst = p.snd, snd = p.fst }
+
+Measured against the pre-fix natives: **0 `__lam` defs in the IR** and
+`unresolved type variable T42 of pair-swap` in the emitted zig. The variable
+occurs only inside `Pair a`, in the parameter and in the return, so the
+parameter loop and the return fallback hit the missing arm in turn. Bare
+metal answers 73. Lifting was the path that exposed this, not the cause, and
+the two earlier framings both mistook the path for the thing.
+
 **Traced, not inferred.** For `range-to : Integer, Integer -> Iter Integer`
 the IR annotates the partial application `(fn int-default (ctd "Step" (args
 (tvar 16))))`, so `zig-closure-make` hands `resty = Step (tvar 16)` to the
