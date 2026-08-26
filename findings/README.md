@@ -993,9 +993,46 @@ it.
 ## 36. The python plug's TCO matches a self-call by NAME, so a partial or over-application in tail position loops instead of applying
 
 **Found 2026-08-24 by source reading, while implementing the same
-transformation for the zig plug (finding 33). THEIRS.
-SOURCE-READ ONLY -- no python arm has been run against it, and the
-reproducer below is the thing to run before this is filed upstream.**
+transformation for the zig plug (finding 33). THEIRS. SOURCE-READ ONLY.**
+
+**RE-FRAMED 2026-08-26, and the original framing was WRONG.** The
+Cobblestone compiler lane answered PR 87's question with seven compiled
+arms, and we verified the load-bearing part ourselves: **bare metal's
+gate is arity-blind in exactly the same way.** `is-self-call`
+(`Emit/X86_64.codex:75-80`) walks the apply spine and answers True on
+reaching an `IrName` equal to the definition's name; it never counts
+arguments. `has-tail-call` (`:82-90`) routes `IrApply` straight into it,
+and `should-tco` (`:108-111`) adds only `params > 0`.
+
+So the python plug is not diverging from the reference implementation.
+**It is faithfully copying it.** This finding as filed says the python
+plug got something wrong that C# or bare metal got right, and that is not
+what is happening.
+
+**And the defect cannot fire on compiler output.** A definition cannot
+tail-call itself at non-full arity in a well-typed program: for return
+type R the body would need `R = (remaining params) -> R`, an infinite
+type. Six of their seven arms refuse (CDX2001, or CDX2010 *Infinite type*
+by name where the return type is inferred); the seventh compiles and is
+not the shape -- one parameter, one argument, a FULL-arity self call
+whose result happens to be a function. The exclusion happens in the TYPE
+CHECKER, one stage before the pass.
+
+**What survives is a TRUST-MODEL finding, and it is worth more than the
+original.** The wire's grammar CAN express a partial self-application in
+tail position -- application is curried, one argument per node
+(`IRTextEmitter.codex:382`), a saturated call and a partial application
+are the same spine shape, and nothing marks saturation. The plug-side
+parser accepts it structurally with no arity check
+(`plugs/common/IRTextParser.codex:705`, verified). A plug fed
+hand-authored or third-party IR text is protected by NOTHING in the plug.
+Every plug's TCO gate is safe by an invariant that lives somewhere else,
+and no plug says so.
+
+**The lesson that generalises past this row:** reading bare metal's pass
+as the reference tells you what the pass does, not what makes it safe.
+This gate is correct only because of an upstream invariant it does not
+state and does not check. Copying the pass copies the hole.
 
 `codex/plugs/python/PythonEmitter.codex`, Section: Tail Call
 Optimization. `is-self-call` collects the apply chain and compares the
