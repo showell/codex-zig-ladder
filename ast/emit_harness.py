@@ -151,7 +151,23 @@ BINDINGS = """in let resolved-env = for b in ((cr.env).bindings) -> TypeBinding 
 RESOLVED_TABLES = EXPR_TYPES + "\n    " + BINDINGS
 
 
-def frontend_source(src, passes, scan=True, deck_bytes=None, resolve=True):
+# The Codex-visible half of the note above: prose the two hosted harnesses put
+# at the head of their driver, written once because two copies of it is the
+# same failure the lift itself was.
+LIFT_PROSE = """ The lift is opening.codex:1713-1720, and it is on that path only since
+ Update 50 -- the release names it in four words, "the DDC witness holds
+ after the lambda-lift break". Before that a plug never received a
+ `__lam_N`, which is also why nothing noticed these harnesses had none: the
+ codexzig fixed point held because NEITHER arm lifted, so the property was
+ never tested against a subject carrying a lifted lambda, and the first
+ time it was, it failed. It goes between the IR pipeline and
+ ir-prune-unreachable-roots, where the driver puts it -- pruning first drops
+ the lifted definitions, which are reachable only from the bodies the lift
+ rewrote. The ceiling is 0 and emit_harness.py says why it is not the
+ driver's."""
+
+
+def frontend_source(src, passes, scan=True, deck_bytes=None, resolve=True, lift=False):
     """The compiler's own sequence from source text to a lowered IRChapter,
     bound as `ir`. Every program built here runs exactly this -- the oracle
     harnesses and the hosted compiler alike -- so it is written once. `src` is
@@ -173,6 +189,13 @@ def frontend_source(src, passes, scan=True, deck_bytes=None, resolve=True):
     Simplify, Occurrence and LambdaLifting straight back out of the unit
     however many chapters were bundled.
 
+    `lift` runs LambdaLifting between the IR pipeline and emission, where
+    emit-ir-cce runs it -- and only SINCE Update 50, which is why this
+    parameter exists and why it defaults off. The rungs banked their truth
+    against a driver that did not lift; the two hosted harnesses stand in for
+    one that does. LIFT_PROSE carries the account a reader of the bundle
+    needs.
+
     `scan=False` restores the empty renames/colliding/assignments this used to
     pass, and exists only to bisect a failure against the scan. It is wrong on
     purpose -- the driver computes those values -- so nothing should ship with
@@ -189,10 +212,27 @@ def frontend_source(src, passes, scan=True, deck_bytes=None, resolve=True):
     # lives in ResolveTypes.codex and none of their bundles carry it. Adding a
     # chapter to buy a resolved IR dump would grow four rungs whose whole value
     # is being small, and fibx and whole already prove the resolved path.
-    RESOLVE = ("""in let type-map = build-type-def-map (ch.type-defs) 0 (list-length (ch.type-defs)) []
+    # The LIFT phase, and the ceiling it is NOT given.
+    #
+    # opening.codex:1713-1720 builds a 104 MB deck floor for the lift and hands
+    # lift-lambdas its top, so lift-defs can stop rather than overrun. That
+    # ceiling cannot be copied here and 0 is not laziness. lift-defs checks
+    # deck-bound-short-of, which compares __heap-save against the ceiling, and
+    # the driver asks it from INSIDE a phase-wide deck-record extent, where
+    # __heap-save reads the deck cursor. No harness built here wraps a phase in
+    # such an extent -- which is why every ceiling in this file is 0 -- so
+    # __heap-save is the real heap top, already above the reservation the
+    # prologue made, and any non-zero ceiling would stop the lift on its FIRST
+    # definition and emit a truncated program without saying so. What bounds
+    # the lift here is deck_bytes, and the emitted zig fails loud when it is
+    # exceeded: cx_bump_alloc panics with "the two cursors met".
+    lowered = "ir-lowered" if lift else "ir"
+    RESOLVE = (f"""in let type-map = build-type-def-map (ch.type-defs) 0 (list-length (ch.type-defs)) []
     in let sorted = sort-bindings (type-map & bound)
-    in let ir = __record-set ir0 "defs" (rewrite-ir-defs sorted (ir0.defs) 0)""" if resolve else
-        "in let ir = ir0")
+    in let {lowered} = __record-set ir0 "defs" (rewrite-ir-defs sorted (ir0.defs) 0)""" if resolve else
+        "" if lift else "in let ir = ir0")
+    LIFT = (("\n    " if RESOLVE else "")
+            + f"in let ir = lift-lambdas {lowered if resolve else 'ir0'} 0") if lift else ""
 
     if scan:
         head = f"""let toks = tokenize {src} 1
@@ -219,7 +259,7 @@ def frontend_source(src, passes, scan=True, deck_bytes=None, resolve=True):
     {EXPR_TYPES}
     {BINDINGS}
     {lower}
-    {RESOLVE}"""
+    {RESOLVE}{LIFT}"""
 
 
 def pipeline_source(src, passes, scan=True, deck_bytes=None):

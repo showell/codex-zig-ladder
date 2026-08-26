@@ -43,7 +43,7 @@ is wrong and the IR loses a root.
 """
 import pathlib
 
-from emit_harness import frontend_source, HOSTED_DECK_BYTES
+from emit_harness import frontend_source, HOSTED_DECK_BYTES, LIFT_PROSE
 
 HERE = pathlib.Path(__file__).parent
 
@@ -88,9 +88,11 @@ Section: Roots
 
 Section: Driver
 
+{LIFT_PROSE}
+
   opening : [Console, FileSystem] Nothing = act
     src <- read-file-uni "/dev/stdin"
-    {frontend_source("src", True, deck_bytes=HOSTED_DECK_BYTES, resolve=False)}
+    {frontend_source("src", True, deck_bytes=HOSTED_DECK_BYTES, resolve=False, lift=True)}
     in let czg-bag = bag-merge-all [bag-from-list (toks.errors), doc.parse-bag, rr.bag, cr.state.bag]
     in if bag-has-errors czg-bag then print-text (czg-halted (bag-errors czg-bag))
     else let meta = IRTextMeta {{

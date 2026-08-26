@@ -43,7 +43,7 @@ reaching either servicer lost it from the IR silently.
 """
 import pathlib
 
-from emit_harness import frontend_source, HOSTED_DECK_BYTES
+from emit_harness import frontend_source, HOSTED_DECK_BYTES, LIFT_PROSE
 
 HERE = pathlib.Path(__file__).parent
 
@@ -58,9 +58,11 @@ Section: Roots
 
 Section: Driver
 
+{LIFT_PROSE}
+
   opening : [Console, FileSystem] Nothing = act
     src <- read-file-uni "/dev/stdin"
-    {frontend_source("src", True, deck_bytes=HOSTED_DECK_BYTES, resolve=False)}
+    {frontend_source("src", True, deck_bytes=HOSTED_DECK_BYTES, resolve=False, lift=True)}
     in let meta = IRTextMeta {{
       chapter-title = ch.chapter-title,
       prose = ch.prose,
