@@ -53,9 +53,16 @@ because the same 40-minute run means different things depending on the
 answer, and mistaking one for another misprices the work. The vocabulary
 is open; these are the words in use.
 
-- **HUNTING.** Fishing for defects that are not ours -- the project's
-  product, and the reason the ladder exists. A surprise is the payoff; a
-  clean pass is a mild disappointment.
+- **COMPLETENESS.** Closing a hole in the zig plug. **New and first-class
+  as of 2026-08-26**, on Steve's ruling: the plug is close enough now that
+  its own state matters, and each hole closed unmasks the next defect.
+  Not every hole is owed -- "does not port nicely to zig and does not come
+  up in real life" is a legitimate place to stop, said out loud.
+- **HUNTING.** Fishing for defects that are not ours. **Turned DOWN
+  2026-08-26**, same ruling: still the thing that produces the product,
+  but no longer the default activity. Findings arrive faster than we can
+  measure, write up and merge them, so draining the pile beats adding to
+  it. A surprise is still the payoff.
 - **DUE_DILIGENCE.** Verifying our own changes break nothing. Green earns
   no celebration; only a red result is information.
 - **ERGONOMICS.** Making the work faster and safer. **Not in this file
@@ -66,6 +73,17 @@ is open; these are the words in use.
   HUNTING and DUE_DILIGENCE are worth exactly what this is worth.
 - **OUTBOUND.** Getting a finding to Damian. Nothing else moves the
   project's product across the fence, and nothing happens automatically.
+
+**THE MISSION CHANGED 2026-08-26**, in a note reply on
+`where-the-ladder-stands`. Steve: *"our goal should shift to finishing the
+zig plug ... we don't need to completely finish it -- some things just
+don't port nicely to zig and don't come up in real life -- but we should
+keep closing holes."* And: *"This doesn't mean that we abandon the goal of
+reporting defects. We still want to send stuff over the wall with the
+proper amount of due diligence on our side. Anything that we can verify
+with our toolchain should be checked."* Both goals are live; neither
+replaces the other. Ordering rule that follows: **a known hole with a
+clear fix outranks a new hunt.**
 
 **The baseline rule (Steve, 2026-08-26): every hypothesis we hunt from here
 is a CHILD OF THE UPDATE 50 COMMIT.** `upstream/master` is `8cc80685` and
@@ -238,6 +256,44 @@ not agree with it on every value, and a `show` that is right for 2.5 and
 wrong for 0.1 is worse than one that refuses. So the plug refuses with a
 named marker for now, which also puts the gap in the histogram where it can
 be ranked.
+
+## 1e. The corpus reading pass -- DONE once, and it is the COMPLETENESS work list
+
+**Objective: COMPLETENESS. KEYBOARD, no compute.** Added on Steve's note
+reply: *"I agree. Add the reading pass to priorities."*
+
+**Done 2026-08-26 21:0x** against the `f47-guard2` `corpus/run.jsonl`,
+which had been on disk for hours. All 112 refusals classified by cause:
+
+     41  expected type 'i64', found 'bool'          finding 50   FIXED
+     40  startFn return type (thread entry)         finding 53   NEW, open
+     12  undeclared Frequency/Timestamp/Duration    finding 17   unit families
+      3  expected type 'void', found 'comptime_int'  unclassified
+      2  expected type 'i64', found 'f64'           item 1c      refuses, named
+      2  undeclared identifier 'True'               finding 52   NEW, FIXED
+      1  IList(i64) depends on itself               finding 48   open
+     11  singletons: shadowing, switch exhaustiveness, arity, sin, ...
+
+**Three causes were 93 of 112.** Two findings came straight out of it
+(52 and 53), one of which was the second-largest class in the corpus and
+had never been filed -- its only trace in the register was an aside
+inside finding 42.
+
+**After the f50/f51 build the pile is 69, not 112**, so this table wants
+re-running against the new `run.jsonl` before it is used to rank work.
+That is one script invocation, no compute.
+
+**What is left:**
+- Re-classify the 69 and update this table.
+- The 3 `void`/`comptime_int` and the 11 singletons are unclassified. That
+  is the next reading, and it is where the remaining unknown defects are.
+- `tcp-reliability` moved `refused -> crashed` in the f50/f51 run: it now
+  builds and panics `index out of bounds: index 0, len 0`. A crash is a
+  different class from a refusal and it is unexamined.
+
+**The lesson worth keeping:** the evidence for finding 52 and finding 53
+had been in our own corpus output for as long as we have been running it.
+Nobody had read it. A summary is where a 40-program class goes to hide.
 
 ## 1b. The corpus measurement cannot see a compiler error, and it is the same gate as this morning's
 
