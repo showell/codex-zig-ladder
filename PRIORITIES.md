@@ -238,10 +238,11 @@ loop unless it says otherwise.
 
 ---
 
-## 1z. FINDING 49 -- the IR harness never reads the diagnostic bag, and it is the integrity of every measurement we make
+## 1z. FINDING 49 -- FIXED (7a6071d), BUILDING; read the corpus count when it lands
 
-**Objective: INTEGRITY. KEYBOARD to write, BOX to verify. THIS IS THE TOP
-ITEM.** Raised 2026-08-26 23:5x after it produced a false report to
+**Objective: INTEGRITY. Fix written and committed `7a6071d`; chain
+`f49-gate2` running on codex `cab52a35` so the gate is the ONLY delta.
+What is left is to READ THE RESULT and act on it.** Raised 2026-08-26 23:5x after it produced a false report to
 Damian's lane and cost them a triage round.
 
 `ast/CodexIrHarness.codex` calls `check-chapter`, binds `cr.state`, and
