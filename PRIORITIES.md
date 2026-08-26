@@ -115,97 +115,74 @@ loop unless it says otherwise.
 
 ---
 
-## 1. Teach both harnesses to lift, or the gate stays red and the natives stay blind
+## 1. Send the emitter fix, and decide which HEAD the rebank runs on
 
-**Objective: INTEGRITY, and it BLOCKS the Update 50 rebank. KEYBOARD to
-write** -- it is two harness chapters and the driver already shows what to
-write. **BOX to verify** (`codexzig_build.sh`, ~10 min).
+**Objective: OUTBOUND, then DUE_DILIGENCE. KEYBOARD to write the PR, BOX
+for the rebank.**
 
-**Update 50 turned on lambda lifting for the source-emitting path, and our
-harnesses did not follow.** `opening.codex` goes from one `lift-lambdas`
-call to two between the interim `0c4327d5` and the release `8cc80685`, and
-the new one is on the path that feeds text plugs:
+**The harness lift is DONE and verified** (ladder `9266f10`, chain
+`~/runs/20260826T160728Z-u50-harness-lift/`, 2026-08-26 16:32). Both hosted
+harnesses now run LambdaLifting where `opening.codex:1713-1720` runs it. The
+lift went into `emit_harness.py`'s `frontend_source` behind a `lift` flag
+rather than into the two generated chapters -- `ast/*Harness.codex` is
+gitignored and rewritten before every bundle, so an edit there is undone
+silently, and two copies of the phase would have been the same failure one
+level down. The flag defaults OFF: the rungs banked their truth against a
+driver that did not lift.
 
-    -    else let raw-defs = fe.ir.defs
-    +     in let lifted-ir = deck-record (lift-lambdas (fe.ir) lift-ceiling)
-    +     in let raw-defs = lifted-ir.defs
-    -      let ir = ir-prune-unreachable-roots (fe.ir) ir-emit-roots
-    +      let ir = ir-prune-unreachable-roots lifted-ir ir-emit-roots
+**The ceiling is 0 and that is not laziness.** `lift-defs` asks
+`deck-bound-short-of`, which compares `__heap-save` against the ceiling, and
+the driver asks it from inside a phase-wide `deck-record` extent where
+`__heap-save` reads the DECK CURSOR. Nothing `emit_harness.py` builds wraps a
+phase in such an extent -- which is why every ceiling in that file is 0 -- so
+`__heap-save` there is the real heap top, already above the reservation, and
+a non-zero ceiling would stop the lift on its FIRST definition and emit a
+truncated program without saying so. What bounds it is the 512 MB
+reservation, and the emitted zig fails loud past it: `probe-deck-overrun`
+passes by panicking with "the two cursors met".
 
-The release commit message names it in four words -- "the DDC witness holds
-after the lambda-lift break". **Before Update 50 a plug never received a
-`__lam_N` at all.** `ast/CodexZigHarness.codex` and `ast/CodexIrHarness.codex`
-have **zero** `lift-lambdas` calls, which was correct when they were written
-and is drift now.
+### What the chain said
 
-**Two things follow, and they are the same fix.**
+    leg0 natives          GREEN   codexir.ir 8,669,320 -> 8,870,818 bytes
+    leg1 codexzig gate    GREEN   fixed point holds, 354 __lam on BOTH arms
+    leg2 tiers --bare     GREEN   21 gold banked, committed as 782a45a
+    leg3 tiers --zig      RED     STALE admission only; 0 unexpected on 22
+    leg4 corpus census    GREEN   five programs moved, 134 -> 133 gaps
+    leg5 codexzig corpus  RED     correct 179, halted 13, unresolved 16,
+                                  564/564 byte-identical -- baseline exactly
 
-    ast/codexzig.zig       (seed + ring plug, through the DRIVER)   300 __lam defs
-    ast/codexzig.self.zig  (one program, through OUR harness)         0 __lam defs
+Both REDs are the standing state. leg3's is the COMPILER-18 ledger; leg5
+exits 1 whenever anything halts and the same 13 halt.
 
-1. **The codexzig FIXED POINT fails**, and not because of the emitter fix
-   below. The two arms are not running the same pipeline, so they emit
-   different programs -- `return __lam_0(p0, p1);` against
-   `return emit_negate(_lam3_s, cx_list_at(_lam3_a, 0));`, first divergence
-   at byte 101,750. **It held last night because NEITHER arm lifted**, so
-   the property was never tested against a subject containing a lifted
-   lambda, and the first time it was, it failed. That is weaker than "codexzig
-   reaches a fixed point" has been sounding.
-2. **`native/codexir` cannot pose the question either**, so `corpus_run.py`,
-   `tier_run.py --zig` and the whole tier set are structurally blind to every
-   defect that needs a lifted lambda. All of them stayed green through the
-   T38 failure. **A green suite is a statement about the questions the
-   instrument can ask.**
+**The gate is the result.** It held last night because NEITHER arm lifted, so
+the property was never posed against a subject containing a lifted lambda.
+It now holds with 354 of them on both sides.
 
-**The work.** Add the lift to both harnesses exactly as `opening.codex` does
-it -- including the deck reservation, which is not decoration: `lift-lambdas`
-is the whole of the LIFT phase and writes 38 MB on the 2.81 MB selfhost, and
-the ceiling is what makes it stop rather than overrun. Then rebuild the
-natives, re-run `codexzig_build.sh`, and the fixed point is the check that
-says it worked. **Expect the corpus census and the marker histogram to move
-once the natives can lift** -- that is the blind spot opening, not a
-regression, and it is the first honest census this tree has had.
+**The census move is smaller than this item used to claim, and that is worth
+recording.** Four spawn programs -- `nested-spawn`, `network-scope-spawn`,
+`proc-state-running`, `spawn-memo-table` -- gained `no emitter for
+poke-byte`, because their spawned thunk bodies are lifted into defs the
+emitter now walks. `db-full-test` LOST `unresolved type variable T88 of
+hamt-fold`, one more site where a lifted lambda carries its own type
+arguments and finding 46's rule finds a concrete answer. Nothing else in 594
+programs moved, and no verdict changed. The blind spot was real and NARROW at
+corpus scale; where it bit was the self-host.
 
-**This is the second copied-thing-that-fell-behind in one day.** The morning's
-cold read found `ir-emit-roots` at four entries where upstream has six, in
-both harnesses. This is the same failure one level up: not a copied list, a
-copied PIPELINE. **Worth a standing check** -- what else do these harnesses
-reproduce from `opening.codex` by hand?
+### What is left
 
-### The T38 half is done
-
-Diagnosed and FIXED 2026-08-26 on `zig-plug-tvar-not-an-answer` (`a961dcb6`,
-directly on the pin). **OURS, the emitter**, latent since Update 44, and the
-item's old hypothesis (finding 44 / implicit type parameters) is REFUTED. A
-recovered type argument that is itself a type variable is not an answer;
-concrete beats variable, variable beats nothing, nothing is the
-`@compileError` marker that could not fire because a variable answer looked
-like success. **Finding 46 has the five lines of IR and the whole account**,
-and the essay is at
-`http://143.244.172.148:9100/notes/a-type-variable-is-not-an-answer.md`.
-
-    warmups/lamtvar          1 error  ->  WARMUP PASS against bare metal
-    native_build.sh codexir 47 errors ->  built, 24,819,896 bytes
-    ast/codexzig.zig        47 errors ->  built, 0 T38 sites, 28,112,141 bytes
-    codexir.ir              8,669,320 bytes, byte-for-byte the failing run's
-                            size -- nothing above the emitter moved
-
-Reproducer in the tree: `warmups/lamtvar.codex`, via `./warmups/regen.sh
-lamtvar` then `./cycle.sh lamtvar`. It has to go through the SEED, because
-the natives do not lift -- which is this item.
-
-### What the verification chain said
-
-`~/runs/20260826T150915Z-u50-tvar-verify`, six legs, 2026-08-26 15:09.
-
-- **natives GREEN**, **codexzig gate RED on the fixed point only** (above).
-- **`allcycles` RED and it is NOT a verdict on the emitter**: the sweep died
-  at `ir_to_codex_roundtrip` on a missing `ast/ir_to_codex.truth`, 0/14 rungs,
-  368 s in. That is the fresh-sandbox restore path, and `truth/u50` does not
-  exist yet because the rebank has not run. **The sweep still owes an
-  answer** and re-running it is the first BOX job after the harness fix.
-- **tiers `--bare` GREEN**, 21 gold files banked to `findings/gold/u50/`.
-- **tiers `--zig` RED, and it is the GOOD red** -- see below.
+1. **The PR** for the emitter fix (finding 46, branch
+   `zig-plug-tvar-not-an-answer` on the pin). Plugs backlog row, `Ladder:`
+   line, and per the standing rule NAME THE STACK -- here that is the bare
+   pin, since all eight prior PRs landed. **The harness lift is OURS and does
+   NOT ride it.** Cold-read before sending; three outbound artifacts in a row
+   had the wrong headline claim.
+2. **Decide which HEAD the rebank runs on.** The fix branch is not the
+   release, and a bank taken with our patch under it is not a bank of Update
+   50. First time that question has had teeth.
+3. **`ast/allcycles.sh` is still UNPAID**, and it is owed to the rebank, not
+   to a chain: `restore_truths.py` answers "NO BANK for this seed" because
+   `truth/u50` does not exist, and the sweep dies at rung one, 0/14. Nothing
+   can pay it before the rebank.
 
 ### COMPILER-18 looks FIXED in Update 50, and the ledger is what said so
 
@@ -216,11 +193,12 @@ the natives do not lift -- which is this item.
     u50              47
 
 The arms now AGREE, so tier 14's admission in `gold/EXPECTED.txt` went STALE
-and `tiers_run.py` set the whole set RED to say so. **This is the mechanism
-working exactly as `prim-closure.codex` says it should** -- "it is the whole
-point of the file that the admission becomes STALE the day the arms agree" --
-and it fired on the first u50 bank, with nobody remembering to check. Nothing
-in the zig plug is involved; the bare arm does not touch it.
+and `tiers_run.py` set the whole set RED to say so -- confirmed again by the
+harness-lift chain's leg3 (STALE 1, green 15, noted 6, zero unexpected).
+**This is the mechanism working exactly as `prim-closure.codex` says it
+should** -- "it is the whole point of the file that the admission becomes
+STALE the day the arms agree". Nothing in the zig plug is involved; the bare
+arm does not touch it.
 
 **Do not just delete the admission.** Confirm the partial application really
 keeps its arity now (read `emit-partial-application` and `is-self-call`
@@ -229,16 +207,6 @@ on the COMPILER-18 row. **The tier stops being a detector the day it stops
 disagreeing**, so what replaces it is a live question -- that belongs with
 "The tiers stay green, and each one earns its keep".
 
-### Then, and only then
-
-1. **The PR** for the emitter fix. Plugs backlog, `Ladder:` line, and per the
-   standing rule NAME THE STACK -- here that is the bare pin, since all eight
-   prior PRs landed and the branch sits directly on `8cc80685`. **The harness
-   lift is OURS and does not go in it.** Cold-read before sending; three
-   outbound artifacts in a row had the wrong headline claim.
-2. **Decide which HEAD the rebank runs on.** The fix branch is not the
-   release, and a bank taken with our patch under it is not a bank of Update
-   50. First time that question has had teeth.
 
 ## 2. Wire codexzig into the Update ceremony, after the canaries
 
@@ -504,6 +472,57 @@ ROC's expected output, which is evidence about Roc. What makes a ported
 snippet trustworthy here is bare metal agreeing with the zig arm on it, so
 the port lands as corpus material first and only earns an `.expected` of its
 own once the two arms have been read.
+
+### The first port is in, and three arms agree on it
+
+**`roc-returned-closure`** (2026-08-26), from the case Roc names "inspect:
+returned closure calls captured function argument" -- four lines:
+
+    wrap : (I64 -> I64) -> { next : () -> I64 }
+    wrap = |transform| { next: || transform(1.I64) }
+    wrapped = wrap(|_| 9.I64)
+    (wrapped.next)()                                    -- Roc expects 9
+
+**Why this one first.** It captures a function-typed PARAMETER in a closure
+that leaves as a record field and is entered after `wrap` has returned. No
+row in the depot's 1371 programs asks that: `record-smoke.codex` puts a
+lambda in a record field but captures a Text and an Integer;
+`dce-reach.codex` passes a function as a value but calls it in the frame
+that received it.
+
+**One environment adaptation, and the file's prose names it** so a reader
+does not take the port for a loose one. Roc's `next` is a THUNK, `() ->
+I64`, and Codex has no nullary function type -- a nullary definition is a
+constant, evaluated once, not a closure to enter -- so `next` takes an
+Integer and ignores it. Everything the case asks survives that.
+
+**The oracle question above is ANSWERED for this row, which is why it has an
+`.expected`.** Three arms, independently:
+
+    Roc's own expected output                              9
+    Codex bare metal (seed under QEMU, warmups/regen.sh)   9
+    Codex -> zig plug -> zig 0.16.0                        9
+
+**And it is a lambda-lifting subject, so it was worth reading both ways.**
+
+    pre-lift  natives   ir 2047 bytes   0 __lam   ->  9
+    post-lift natives   ir 2373 bytes   4 __lam   ->  9
+
+Pre-lift the plug does the closure conversion itself -- an `_Env1 { c0:
+CxFn1(i64,i64) }` boxed with `cx_new`, entered through `.call(.ctx, 1)`.
+Post-lift the lambda is a TWO-parameter top-level def applied to ONE
+argument, so the record field holds a **partial application** -- finding
+39's exact shape, reached by a closure that outlives its frame. Different
+code path, same answer.
+
+**Filing is the open question and it is Steve's.** The `.codex` and
+`.expected` are in the depot at `codex/test/`, untracked, on the T38 fix
+branch -- which is where `corpus_run.py` reads from and NOT where they
+should be committed, because that branch is about to become the finding-46
+PR and this is a separate contribution. The source is also checked in at
+`warmups/roc-returned-closure.codex`, which is what produced the bare-metal
+truth. **Two copies of one source is the thing this queue keeps filing as a
+defect**, so pick a home before the second port.
 
 ## 7. zigc has a runner now, and one inconclusive result
 
