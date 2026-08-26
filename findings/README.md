@@ -1194,7 +1194,57 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
-## 56. A let-bound alias lets a definition return a FUNCTION where its declaration says Integer, and the type checker says nothing
+## 56. ATTRIBUTION IN DOUBT -- a definition returns a FUNCTION where its declaration says Integer and no diagnostic fires, but the accepting compiler is OUR zig-built one and theirs refuses
+
+**2026-08-26 22:5x: the Cobblestone lane CANNOT REPRODUCE, and their
+non-repro is well controlled.** `fa (x) (y) = let g = fa in g x` is
+refused with CDX2001 at their head and at four seed revisions stepping
+back to about 2026-08-20, with a positive control -- the same alias at
+FULL arity compiles at all four, so those seeds are not refusing
+everything with an alias in it. Nothing they landed today explains it and
+the refusal predates this cycle.
+
+**The likeliest explanation is that this is OURS, and it is worse than
+what we reported.** `native/codexir` is not bare metal. `native_build.sh`
+says what it is in its own header: *"bundle the subject, compile it to IR
+with the seed, push that IR through the ring plug, and build the emitted
+zig."* **It is the compiler compiled THROUGH THE ZIG PLUG** -- our arm,
+not the reference. Every diagnostic in the probe run came out of a type
+checker this plug emitted.
+
+So the reading flips. If bare metal refuses the same program that our
+zig-built compiler accepts, the defect is not a type-checker soundness
+hole in Codex. It is **the zig plug miscompiling the type checker until a
+diagnostic stops firing** -- a silent wrong answer in the compiler we
+build, which is the exact class the ladder exists to catch and the worst
+one we could have.
+
+**THE MEASUREMENT THAT SETTLES IT** is the same probe through the SEED on
+bare metal, which is a QEMU job and is queued behind the running sweep.
+Three outcomes:
+
+- **bare metal refuses (CDX2001), ours accepts** -> OURS, a silent
+  miscompile of the type checker. Retract the report, file the real
+  finding, and it is bigger than the one being retracted.
+- **bare metal also accepts** -> the pins genuinely differ and the
+  question moves to which revision changed, which is theirs to answer.
+- **our own re-run now refuses** -> the original measurement was
+  contaminated and the answer is neither.
+
+**Until that runs, this finding claims nothing.** The confirmation the
+lane gave us was against a report whose instrument we had not checked,
+and the fault for that is ours, not theirs -- they asked for our exact
+pin before concluding, which was the right instinct and one we should
+have had first.
+
+**Our exact pin, for them:** codex tree on branch
+`zig-plug-tvar-not-an-answer`, probe run at `31be533e`, which is 11
+commits above `upstream/master` = `8cc80685` (Update 50). All 11 touch
+`codex/plugs/zig/ZigEmitter.codex` only -- no compiler, no type checker.
+Natives built from that tree by `native_build.sh`, i.e. seed -> ring plug
+-> emitted zig -> `zig build-exe`.
+
+
 
 Found 2026-08-26 22:19 by `findings/probe-pr87-alias.codex`, written as a
 falsifier for PR 87 at the Cobblestone compiler lane's request -- they
