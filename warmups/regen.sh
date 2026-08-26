@@ -9,12 +9,32 @@ T="$(cd "$(dirname "$0")/.." && pwd)"  # ladder-root-bootstrap: reaches the LADD
 S=$T/warmups
 
 cd $S
-for src in hello recurse fib; do
+# The three originals are the default; a name on the command line
+# regenerates just that one, which is what a new probe wants -- the whole
+# set is three guests and a probe is one.
+srcs=("$@")
+[ ${#srcs[@]} -eq 0 ] && srcs=(hello recurse fib)
+for src in "${srcs[@]}"; do
     echo "=== $src ==="
     python3 - "$src" <<'PY'
+import pathlib
 import sys
+
+sys.path.insert(0, str(pathlib.Path.cwd().parent))  # ladder-root-bootstrap
+from cite_resolve import resolve
+
+# What the seed compiles is the CITE-RESOLVED unit, the same one corpus_run
+# and tier_run hand to their front ends. The blob step skipped this because
+# the three originals reach only builtins and needed nothing -- which meant
+# a warmup could not use a foreword definition at all, and the first probe
+# that wanted `map-list` halted on CDX3002 without ever reaching the plug.
+# resolve() also pulls in the two chapters the DESUGARER writes calls to, so
+# a comprehension resolves whether or not the source cites anything.
 p = sys.argv[1]
-src = open(f'{p}.codex', 'rb').read()
+unit, missing = resolve(pathlib.Path(f'{p}.codex'))
+if missing:
+    sys.exit('unresolved cites: ' + '; '.join(f'{q} chapter {n}' for _, q, n in missing))
+src = unit.encode()
 open(f'{p}-cdx.blob', 'wb').write(b"CDX map\n" + src + b"\x04")
 open(f'{p}-ir-cce.blob', 'wb').write(b"IR-CCE\n" + src + b"\x04")
 PY

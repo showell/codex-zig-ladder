@@ -1,0 +1,43 @@
+Chapter: WarmupLamTvar
+
+ The smallest program that makes the zig plug name a type variable in a
+ scope where nothing declares it.
+
+ A comprehension desugars to `map-list f xs`. When `f` is a NAMED
+ definition, the plug recovers map-list's own `a` from that function's
+ declared parameter type and emits a concrete type argument. When `f` is
+ a LAMBDA it is lifted to a `__lam_N` definition by the DRIVER, and the
+ lift runs after resolve, so the lifted definition's parameter carries
+ the type it was HANDED -- map-list's own `a`, still a TypeVar -- rather
+ than a resolved one. CSharpEmitter.codex says this above `is-lam-def`
+ and answers `dynamic`; zig has no `dynamic`.
+
+ The lift is why this file has to reach the plug through the seed. The
+ IR pipeline does not lift, so `native/codexir` emits the lambda inline
+ and this program transpiles clean there.
+
+ `mapped-named` is the control and `mapped-lambda` the defect row: same
+ map-list, same element type, and the only difference is whether the
+ mapped function has a name.
+
+ The control calls map-list directly. A comprehension does NOT make one:
+ `for x in xs -> bump x` builds a lambda around the call rather than
+ handing `bump` over, so it lifts like any other and both rows would be
+ defect rows -- which is what the first version of this file measured.
+
+Section: Main
+
+  bump : Integer -> Integer
+  bump (n) = n + 1
+
+  mapped-named : List Integer -> List Integer
+  mapped-named (xs) = map-list bump xs
+
+  mapped-lambda : List Integer -> List Integer
+  mapped-lambda (xs) = for x in xs -> x + 1
+
+  opening : [Console] Nothing
+  opening = act
+   print-line-uni (show (list-at (mapped-named [1, 2, 3]) 2))
+   print-line-uni (show (list-at (mapped-lambda [1, 2, 3]) 2))
+  end
