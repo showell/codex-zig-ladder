@@ -135,6 +135,49 @@ census taught this morning -- a marker name is not a mechanism.
 So the candidate population is four depot programs plus one Roc port, all
 sharing the shape, against a post-47 histogram of 95 distinct gaps.
 
+
+**THE WIRE READ, 2026-08-26 22:0x, `roc-fold-sum` through
+`native/codexir`.** This is the design input for a recovery rule and it
+shows TWO independent sources, where the hypothesis assumed one gap.
+
+    (def "fold-loop" (param "step" (fn int-default (fn int-default int-default))) ...)
+
+    (def "__lam_0" (params (param "xs" (list int-default))
+                           (param "base" int-default)
+                           (param "step" error))
+                   (apply (apply (apply (apply (name "fold-loop" ...
+
+    (def "__lam_1" (params (param "acc" error) (param "x" error))
+                   (fn error (fn error error))
+                   (binary add-int (name "acc" int-default) (name "x" int-default) int-default))
+
+**`xs` and `base` recovered; only the FUNCTION-typed parameter did not.**
+The hypothesis says "ErrorTy for its parameters and its return", and for
+the let-bound lambda that is what happens. For an immediately-applied
+lambda it is not: two of three parameters arrive typed. The refusal is
+narrower than the hypothesis claims.
+
+**Source 1, for `__lam_1`: the body's own USES carry the type.** The
+params say `error` twice, and one node away the body reads
+`(name "acc" int-default)` and `(name "x" int-default)` with an
+`int-default` result. Scanning a lambda's body for a use of its own
+parameter that carries a non-error type answers both.
+
+**Source 2, for `__lam_0`'s `step`: the CALLEE's declared type.** The
+body is an apply spine bottoming out at `fold-loop`, whose `step`
+parameter is declared `(fn int-default (fn int-default int-default))` --
+exactly the type that is missing, in the same IR, in a definition the
+plug already has in `ctx.irdefs`. Recovery is: find which argument
+position the parameter occupies in the spine, take the callee's declared
+type there.
+
+Source 1 is simpler and more general. Source 2 is the one that reaches
+`step`, because `step` appears in the body only as an argument. **Both
+are needed for these five ports, and neither exists today.**
+
+This also settles where the rule does NOT go: `emit-zig-atype` (finding
+55) is a different path with a different input, and a recovery rule
+written there would not see an IR body at all.
 ### H1. FALSIFIED 2026-08-26 17:52 -- Update 50 made the largest ladder unit uncompilable to IR-CCE in a 3 GB guest
 
 Raised 2026-08-26 17:42, when `ast/rebank_all.sh` died at 11/12 on
