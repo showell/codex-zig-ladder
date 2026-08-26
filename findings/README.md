@@ -1194,162 +1194,54 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
-## 56. ATTRIBUTION IN DOUBT -- a definition returns a FUNCTION where its declaration says Integer and no diagnostic fires, but the accepting compiler is OUR zig-built one and theirs refuses
+## 56. WITHDRAWN ENTIRELY -- there is no soundness hole and no miscompile; `native/codexir` never reads the diagnostic bag, which is finding 49
 
-**2026-08-26 22:5x: the Cobblestone lane CANNOT REPRODUCE, and their
-non-repro is well controlled.** `fa (x) (y) = let g = fa in g x` is
-refused with CDX2001 at their head and at four seed revisions stepping
-back to about 2026-08-20, with a positive control -- the same alias at
-FULL arity compiles at all four, so those seeds are not refusing
-everything with an alias in it. Nothing they landed today explains it and
-the refusal predates this cycle.
+**Settled 2026-08-26 23:5x. Nothing was wrong with any compiler.** The
+type checker is correct, bare metal is correct, and the zig plug compiles
+that type checker correctly. The instrument was deaf.
 
-**The likeliest explanation is that this is OURS, and it is worse than
-what we reported.** `native/codexir` is not bare metal. `native_build.sh`
-says what it is in its own header: *"bundle the subject, compile it to IR
-with the seed, push that IR through the ring plug, and build the emitted
-zig."* **It is the compiler compiled THROUGH THE ZIG PLUG** -- our arm,
-not the reference. Every diagnostic in the probe run came out of a type
-checker this plug emitted.
+**The measurement, all on one tree (codex `cab52a35`), same source unit:**
 
-So the reading flips. If bare metal refuses the same program that our
-zig-built compiler accepts, the defect is not a type-checker soundness
-hole in Codex. It is **the zig plug miscompiling the type checker until a
-diagnostic stops firing** -- a silent wrong answer in the compiler we
-build, which is the exact class the ladder exists to catch and the worst
-one we could have.
+    program              bare metal (seed)   native/codexir   native/codexzig
+    probe-pr87-alias     CDX2001 Int vs Fun  rc=0, NONE       CDX2001 Int vs Fun
+    probe-pr87-direct    CDX2001 Int vs Fun  rc=0, NONE       CDX2001 Int vs Fun
+    probe-cdx2001-text   CDX2001 Int vs Text rc=0, NONE       CDX2001 Int vs Text
 
-**THE LANE HAS STOOD DOWN AND RE-FRAMED OUTCOME 1, 2026-08-26 23:1x.**
-No bisect will run. Their four-seed refusal sweep now serves as the
-reference measurement ours compares against.
+`codexir` and `codexzig` are **the same compiler emitted by the same
+plug**, differing only in their harness. `ast/CodexZigHarness.codex`
+merges the bags and halts; `ast/CodexIrHarness.codex` calls
+`check-chapter`, binds `cr.state`, and contains the word "bag" **zero
+times**. So the checker computed CDX2001 every time and one harness
+never asked.
 
-Their reframe, which is the right one and better than the one we sent
-them: **outcome 1 is not an embarrassment, it is a find.** A
-zig-plug-emitted type checker that silently stops firing CDX2001 is the
-shared-contract class this whole exchange has been circling -- a
-miscompile with nothing to do with the target language -- and it would be
-**the first one caught in EMITTED COMPILER CODE rather than in a leaf
-program.** That makes it the most valuable specimen of the class so far.
-If it lands they want the reproducer.
+**That is finding 49, filed on the morning of the same day, still open,
+and then used all night as an oracle.**
 
-**So outcome 1 now carries an obligation, not just a retraction:** a
-minimal subject, both arms' verdicts side by side, and the emitted zig at
-the site where the diagnostic stops being produced.
+**The zig plug is EXONERATED, and better than that** -- `codexzig`
+producing the identical code and message as the seed, for both shapes, is
+positive evidence that the plug compiles the type checker correctly here.
 
-**Their reciprocal, worth keeping:** they have paid for this failure mode
-themselves -- a release proof that certified a compiler nobody was
-publishing, because the harness used whatever binary was lying there.
-*"Your 'which arm are we standing on' is our 'read the kernel line it
-prints.'"* Same lesson, both directions.
+**Three wrong attributions in one investigation, each corrected by the
+next measurement:**
 
-**THE MEASUREMENT THAT SETTLES IT** is the same probe through the SEED on
-bare metal, which is a QEMU job and is queued behind the running sweep.
-Three outcomes:
+1. "Codex's type checker is unsound" -- refuted by their four-seed
+   non-repro with a positive control.
+2. "Our plug miscompiles the type checker until CDX2001 stops firing" --
+   refuted by `codexzig`, which is that same miscompiled-by-hypothesis
+   plug and reports the diagnostic correctly.
+3. The truth: our IR harness does not consult the bag it was handed.
 
-- **bare metal refuses (CDX2001), ours accepts** -> OURS, a silent
-  miscompile of the type checker. Retract the report, file the real
-  finding, and it is bigger than the one being retracted.
-- **bare metal also accepts** -> the pins genuinely differ and the
-  question moves to which revision changed, which is theirs to answer.
-- **our own re-run now refuses** -> the original measurement was
-  contaminated and the answer is neither.
+**The control did its job and I nearly did not run it.** `probe-pr87-direct`
+is what showed the alias was never the trigger; `probe-cdx2001-text` is
+what showed the shape was never the trigger either. Both were cheap and
+both were written only because someone asked what would falsify the
+claim.
 
-**Until that runs, this finding claims nothing.** The confirmation the
-lane gave us was against a report whose instrument we had not checked,
-and the fault for that is ours, not theirs -- they asked for our exact
-pin before concluding, which was the right instinct and one we should
-have had first.
-
-**Our exact pin, for them:** codex tree on branch
-`zig-plug-tvar-not-an-answer`, probe run at `31be533e`, which is 11
-commits above `upstream/master` = `8cc80685` (Update 50). All 11 touch
-`codex/plugs/zig/ZigEmitter.codex` only -- no compiler, no type checker.
-Natives built from that tree by `native_build.sh`, i.e. seed -> ring plug
--> emitted zig -> `zig build-exe`.
-
-
-
-Found 2026-08-26 22:19 by `findings/probe-pr87-alias.codex`, written as a
-falsifier for PR 87 at the Cobblestone compiler lane's request -- they
-named the let-bound alias as the shape their seven arms did not cover.
-**THEIRS**, the type checker. Not fixed.
-
-**The probe was PREDICTED to be refused and it COMPILES.**
-
-    fa : Integer, Integer -> Integer
-    fa (x) (y) = let g = fa in g x
-
-    codexir rc=0  diagnostics=NONE  halted=False
-
-`findings/probe-pr87-deck.codex` -- `fd (x) (y) = deck-record (fd x)` --
-compiles clean too, so this is not special to `let`.
-
-**The wire shows the mismatch inside one node:**
-
-    (def "fa" (params (param "x" int-default) (param "y" int-default))
-              (fn int-default (fn int-default int-default))
-              (let "g" (fn int-default (fn int-default int-default))
-                   (name "fa" (fn int-default (fn int-default int-default)))
-                   (apply (name "g" ...) (name "x" int-default)
-                          (fn int-default int-default))))
-
-Two parameters. The declared type peels to `int-default` after two. The
-body's type is `(fn int-default int-default)` -- a function. Nothing
-diagnosed it.
-
-**The plug then emits what it was told:**
-
-    fn fa(x: i64, y: i64) i64 {
-        ... break :b0 g.call(g.ctx, x);
-    }
-
-    probe-pr87-alias.zig:843:238: error: expected 3 argument(s), found 2
-
-Zig is the first component in the chain to object.
-
-**Falsification attempted.** The alternative is that Codex intends a body
-of function type to be legal when a definition is written at less than
-its full arity -- that `fa` is really arity-1 and the second parameter is
-notional. Refuted by the checker contradicting ITSELF in the same IR: the
-call site in `opening` reads
-
-    (apply (apply (name "fa" ...) (int-lit 1) ...) (int-lit 2) int-default)
-
--- two arguments, result `int-default`. So the checker believes `fa 1 2`
-is an Integer while the body it accepted makes `fa x y` a function. Both
-readings cannot hold, and it committed to both.
-
-**CONFIRMED BY THE COBBLESTONE LANE, 2026-08-26 22:4x**, on the report we
-sent: the row stays withdrawn, and this is *"a type-checker soundness
-hole, full stop."* They read the alias the same way we do -- it never
-reopens the TCO question, because the spine's root is `g` and the gate
-cannot fire.
-
-**Their formulation is alias-INDEPENDENT**, and that matters for the
-control still owed: they state the hole as a body accepted at a function
-type against a declared Integer return, with the call site believing
-Integer in the same IR. Nothing in that sentence depends on the alias.
-So `findings/probe-pr87-direct.codex` cannot retract this finding -- it
-can only fix its SCOPE. If the direct form also compiles clean, the hole
-is not an alias corner but a return-type check that does not run, which
-is wider than what was reported and owes them a prompt correction.
-
-**What this does and does not do to PR 87's row.** It does NOT reopen it.
-The TCO gate matches a self call by NAME, and through an alias the apply
-spine's root is `g`, not `fa`, so `is-self-call` answers False and the
-gate still cannot fire -- which is what the probe's own recorded
-prediction said would happen if it ever compiled. The row withdraws as
-agreed.
-
-What it does is answer their Q1 differently in one corner. Their seven
-arms established that a non-full-arity self tail call needs an infinite
-type and the checker refuses it, by name (CDX2010) where inference is
-doing the work. Through an alias the checker never asks: `g` has a
-concrete type from the `let`, `g x` has a concrete function type, and
-nothing compares that against the declared return.
-
-So the shape is not well-typed, and it is **accepted anyway.** That is a
-larger claim than the row we withdrew, and it is theirs.
+**What this costs beyond the retraction:** every probe run tonight went
+through `codexir`, and so does `corpus_run.py`. A corpus program carrying
+a compiler error emits IR anyway and we then build and match its zig. See
+finding 49 -- it is no longer a tidy-up, it is the integrity of the
+measurement.
 
 ## 55. `emit-zig-atype` emits ANY unrecognized type name verbatim, with no scope and no refusal -- 12 programs behind one `else`
 
