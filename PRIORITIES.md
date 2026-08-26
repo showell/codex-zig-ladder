@@ -118,14 +118,19 @@ rebank, and it is blocked on a decision rather than on the box -- see item 2.
 
 ### Loose ends, so they stop living in somebody's head
 
-- **THREE DEPOT BRANCHES HAVE NO REMOTE AND ARE THE ONLY COPY**:
-  `u50-rebank` (`8cc80685`, the pin), `zig-plug-tvar-not-an-answer`
-  (`a961dcb6`, the finding-46 fix) and `roc-corpus-ports` (`f151d3ea`, the
-  ports). Everything else in that repo tracks `origin`. A push was attempted
-  2026-08-26 and refused by the permission classifier, so it needs Steve's
-  hand:  `git -C ~/showell_repos/NewRepository push origin u50-rebank
-  zig-plug-tvar-not-an-answer roc-corpus-ports`. **The ladder repo is clean
-  and pushed; the depot is the exposure.**
+- **The depot is backed up again, 2026-08-26.** `u50-rebank` (`8cc80685`,
+  the pin), `zig-plug-tvar-not-an-answer` (`a961dcb6`, the finding-46 fix)
+  and `roc-corpus-ports` (`f151d3ea`, the ports) had no remote at all and
+  were the only copy of themselves; Steve pushed all three and every local
+  branch now tracks its own `origin/` counterpart.
+- **One upstream said the wrong thing and it was a live foot-gun.**
+  `seed-6cf4a8e0-rebank` -- the INTERIM, `0c4327d5` -- had its upstream set
+  to `origin/u50-rebank`, which the push moved to the RELEASE `8cc80685`. A
+  `git push` from that branch would have tried to rewind the pin, and a
+  `git pull` would have dragged the release onto the interim.
+  `origin/seed-6cf4a8e0-rebank` existed the whole time and was unused. Both
+  repointed. **The general shape is worth remembering: a branch renamed
+  locally keeps the upstream it was created with, and nothing warns you.**
 - **`roc-corpus-ports` was cut off the FIX branch, not the pin**, so it
   carries `a961dcb6` underneath. Deliberate -- Steve's "off the latest and
   greatest for now" -- but a PR cut from it would drag the emitter fix along,
