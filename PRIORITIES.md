@@ -67,6 +67,25 @@ is open; these are the words in use.
 - **OUTBOUND.** Getting a finding to Damian. Nothing else moves the
   project's product across the fence, and nothing happens automatically.
 
+**The baseline rule (Steve, 2026-08-26): every hypothesis we hunt from here
+is a CHILD OF THE UPDATE 50 COMMIT.** `upstream/master` is `8cc80685` and
+everything done before it has been absorbed, so a branch cut from an older
+pin is measuring a tree nobody is going to ship against. Both live branches
+already satisfy it -- `zig-plug-tvar-not-an-answer` and `roc-corpus-ports`
+are children of `8cc80685` -- and the rule is written down for the next one.
+
+**Housekeeping is part of that.** Sandboxes older than about four hours were
+pruned on 2026-08-26 (25 down to 5, 11 GB down to 2.4), along with four
+stale PR worktrees left in a dead session's scratchpad holding 1.2 GB and
+four branches hostage from checkout. **Every run directory cited in this
+file or in the register before 14:00 on 2026-08-26 is GONE** -- the numbers
+out of them are recorded here and in JUSTIFICATIONS, which is where they
+belong, but the raw logs are not recoverable and a citation to one is a
+dead pointer. Two gaps worth knowing: `sandbox.sh --prune` runs
+`git worktree prune` on the LADDER only, so the depot's metadata needs the
+same command by hand, and nothing prunes worktrees created outside
+`~/runs`.
+
 **The venue rule (Steve, 2026-08-22): everything computes on this box.**
 Every job below -- natives, tiers, census, sweeps, rebanks -- runs in a
 sandbox (`./sandbox.sh <label>`, `. ../env`, detached with a log). Every
