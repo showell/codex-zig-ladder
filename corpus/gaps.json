@@ -1,15 +1,15 @@
 [
  [
   "no emitter for poke-32",
-  122
+  123
  ],
  [
   "no emitter for peek-32",
-  118
+  119
  ],
  [
   "no emitter for poke-byte",
-  91
+  95
  ],
  [
   "no emitter for poke-16",
@@ -17,19 +17,19 @@
  ],
  [
   "no emitter for alloc-bytes",
-  52
+  53
  ],
  [
   "no emitter for bit-not",
-  45
- ],
- [
-  "no emitter for port-in-32",
-  40
+  46
  ],
  [
   "no emitter for port-out-32",
-  40
+  41
+ ],
+ [
+  "no emitter for port-in-32",
+  41
  ],
  [
   "no emitter for block-read-sector",
@@ -81,18 +81,18 @@
  ],
  [
   "no emitter for process-wait",
-  9
+  10
  ],
  [
   "no emitter for vec-extract",
   9
  ],
  [
-  "no emitter for unicode-bytes-to-text",
+  "no emitter for text-to-unicode-bytes",
   8
  ],
  [
-  "no emitter for text-to-unicode-bytes",
+  "no emitter for unicode-bytes-to-text",
   8
  ],
  [
@@ -136,11 +136,11 @@
   5
  ],
  [
-  "no emitter for gpu-out",
+  "no emitter for port-out-byte",
   5
  ],
  [
-  "no emitter for port-out-byte",
+  "no emitter for gpu-out",
   5
  ],
  [
@@ -157,10 +157,6 @@
  ],
  [
   "no emitter for read-text",
-  4
- ],
- [
-  "no emitter for process-yield",
   4
  ],
  [
@@ -184,6 +180,10 @@
   3
  ],
  [
+  "no emitter for process-yield",
+  3
+ ],
+ [
   "no emitter for real-to-bits",
   3
  ],
@@ -196,11 +196,7 @@
   2
  ],
  [
-  "unresolved type variable T73 of hamt-node-get",
-  2
- ],
- [
-  "unresolved type variable T72 of hamt-get",
+  "unresolved type variable T74 of collision-find",
   2
  ],
  [
@@ -208,11 +204,35 @@
   2
  ],
  [
-  "unresolved type variable T74 of collision-find",
+  "unresolved type variable T72 of hamt-get",
+  2
+ ],
+ [
+  "unresolved type variable T73 of hamt-node-get",
   2
  ],
  [
   "no emitter for read-mmio",
+  2
+ ],
+ [
+  "unresolved type variable T71 of hamt-remove",
+  2
+ ],
+ [
+  "unresolved type variable T64 of collision-find",
+  2
+ ],
+ [
+  "unresolved type variable T72 of hamt-node-remove",
+  2
+ ],
+ [
+  "unresolved type variable T73 of collision-remove",
+  2
+ ],
+ [
+  "unresolved type variable T63 of hamt-node-get",
   2
  ],
  [
@@ -224,35 +244,7 @@
   2
  ],
  [
-  "unresolved type variable T71 of hamt-remove",
-  2
- ],
- [
-  "unresolved type variable T63 of hamt-node-get",
-  2
- ],
- [
-  "unresolved type variable T72 of hamt-node-remove",
-  2
- ],
- [
-  "unresolved type variable T64 of collision-find",
-  2
- ],
- [
-  "unresolved type variable T73 of collision-remove",
-  2
- ],
- [
   "no emitter for port-in-16",
-  2
- ],
- [
-  "no emitter for __list-head",
-  2
- ],
- [
-  "no emitter for __list-len",
   2
  ],
  [
@@ -260,11 +252,11 @@
   2
  ],
  [
-  "no emitter for mask-none",
+  "no emitter for __list-len",
   2
  ],
  [
-  "no emitter for mask-all",
+  "no emitter for __list-head",
   2
  ],
  [
@@ -273,6 +265,14 @@
  ],
  [
   "no emitter for mask-count",
+  2
+ ],
+ [
+  "no emitter for mask-all",
+  2
+ ],
+ [
+  "no emitter for mask-none",
   2
  ],
  [
@@ -296,11 +296,11 @@
   1
  ],
  [
-  "no emitter for memory-fence",
+  "no emitter for atomic-cas",
   1
  ],
  [
-  "no emitter for atomic-cas",
+  "no emitter for memory-fence",
   1
  ],
  [
@@ -312,11 +312,11 @@
   1
  ],
  [
-  "no emitter for key-status",
+  "no emitter for key-load",
   1
  ],
  [
-  "no emitter for key-load",
+  "no emitter for key-status",
   1
  ],
  [
@@ -336,39 +336,11 @@
   1
  ],
  [
-  "unresolved type variable T82 of hamt-node-remove",
-  1
- ],
- [
   "unresolved type variable T81 of hamt-remove",
   1
  ],
  [
-  "unresolved type variable T73 of hamt-get",
-  1
- ],
- [
-  "unresolved type variable T84 of collision-remove",
-  1
- ],
- [
-  "unresolved type variable T83 of hamt-node-remove",
-  1
- ],
- [
-  "unresolved type variable T82 of hamt-remove",
-  1
- ],
- [
-  "unresolved type variable T74 of hamt-node-get",
-  1
- ],
- [
-  "unresolved type variable T95 of hamt-to-list",
-  1
- ],
- [
-  "unresolved type variable T86 of hamt-size",
+  "unresolved type variable T82 of hamt-node-remove",
   1
  ],
  [
@@ -376,11 +348,35 @@
   1
  ],
  [
-  "unresolved type variable T75 of collision-find",
+  "unresolved type variable T84 of collision-remove",
   1
  ],
  [
-  "unresolved type variable T88 of hamt-fold",
+  "unresolved type variable T95 of hamt-to-list",
+  1
+ ],
+ [
+  "unresolved type variable T74 of hamt-node-get",
+  1
+ ],
+ [
+  "unresolved type variable T82 of hamt-remove",
+  1
+ ],
+ [
+  "unresolved type variable T73 of hamt-get",
+  1
+ ],
+ [
+  "unresolved type variable T83 of hamt-node-remove",
+  1
+ ],
+ [
+  "unresolved type variable T86 of hamt-size",
+  1
+ ],
+ [
+  "unresolved type variable T75 of collision-find",
   1
  ],
  [
@@ -404,11 +400,11 @@
   1
  ],
  [
-  "unresolved type variable T43 of ilist-append",
+  "unresolved type variable T44 of ilist-reverse",
   1
  ],
  [
-  "unresolved type variable T44 of ilist-reverse",
+  "unresolved type variable T43 of ilist-append",
   1
  ],
  [
@@ -428,27 +424,7 @@
   1
  ],
  [
-  "unresolved type variable T63 of cl-drop",
-  1
- ],
- [
-  "unresolved type variable T48 of cl-length",
-  1
- ],
- [
-  "unresolved type variable T49 of cl-length-acc",
-  1
- ],
- [
-  "unresolved type variable T59 of cl-append",
-  1
- ],
- [
   "unresolved type variable T47 of cl-tail",
-  1
- ],
- [
-  "unresolved type variable T62 of cl-take",
   1
  ],
  [
@@ -456,7 +432,35 @@
   1
  ],
  [
+  "unresolved type variable T59 of cl-append",
+  1
+ ],
+ [
+  "unresolved type variable T49 of cl-length-acc",
+  1
+ ],
+ [
+  "unresolved type variable T48 of cl-length",
+  1
+ ],
+ [
+  "unresolved type variable T63 of cl-drop",
+  1
+ ],
+ [
+  "unresolved type variable T62 of cl-take",
+  1
+ ],
+ [
   "no emitter for process-exit",
+  1
+ ],
+ [
+  "unresolved type variable T16 of __lam_0",
+  1
+ ],
+ [
+  "unresolved type variable T16 of __lam_1",
   1
  ],
  [
@@ -488,15 +492,15 @@
   1
  ],
  [
+  "unresolved type variable T44 of describe",
+  1
+ ],
+ [
   "no emitter for port-out-16",
   1
  ],
  [
-  "no emitter for vec-div",
-  1
- ],
- [
-  "no emitter for vec-add",
+  "no emitter for vec-sub",
   1
  ],
  [
@@ -504,7 +508,11 @@
   1
  ],
  [
-  "no emitter for vec-sub",
+  "no emitter for vec-add",
+  1
+ ],
+ [
+  "no emitter for vec-div",
   1
  ],
  [

@@ -437,3 +437,35 @@ wants more: the tracer prints negative headroom for fifteen more steps, the
 program reaches 200% of the reservation, and then takes a General protection
 exception inside `cx_list_at`. No partial zig is written, so the failure
 cannot be mistaken for success -- but nothing names the deck, either.
+
+## Thirty percent of the "emitter gaps" are not gaps (2026-08-26)
+
+`corpus/gaps.json` is the histogram that RANKS which emitter arm to write
+next. Banked 2026-08-26 over 596 programs, split by what the marker
+actually says:
+
+    no emitter for              91 distinct /  947 program-hits
+    unresolved type variable    40 distinct /   51 program-hits
+    other                        4 distinct /   15 program-hits
+    TOTAL                      135 distinct
+
+**Only the first row is an emitter gap** -- a builtin with no rule, which
+is a named piece of work. The second is the finding-46/47 class: a type
+argument the emitter could not resolve. That is a DEFECT, and two of them
+are already filed, so it is not work the histogram should be ranking.
+
+**And the distinct count flatters that row badly, because those markers are
+keyed by FUNCTION NAME.** `unresolved type variable T88 of hamt-fold` and
+`T16 of __lam_1` are separate entries, so forty distinct entries cover
+fifty-one program-hits -- roughly one apiece. A single real gap,
+`no emitter for poke-32`, reaches 123 programs by itself.
+
+**So "distinct gaps" is the wrong number and this file has been quoting
+it.** The 135 -> 133 -> 135 movements tracked across 2026-08-26 are mostly
+that keying: the last two came from ONE ported program hitting finding 47
+in two lifted lambdas. **Program-hits is the number that ranks work**;
+distinct-count is a rename away from moving on its own.
+
+Measured with the banked `corpus/gaps.json` by prefix, no re-run needed.
+The cheap improvement, if anyone wants it: bucket the tvar markers under
+one key and keep the function names as detail.
