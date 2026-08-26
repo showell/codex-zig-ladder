@@ -766,35 +766,38 @@ were our own missing chapters, which is the failure `cite_resolve.py`'s own
 docstring was written to prevent: "the plug's fallback fires -- which looks
 exactly like an emitter gap and is not one."
 
-## 6. One question left behind PR 87, and it needs no plug
+## 6. PR 87's row is ANSWERED and withdraws; the re-scope is drafted and unsent
 
-**Objective: OUTBOUND, already sent; this is the loose end.** Does a
-well-typed Codex program exist in which a definition **tail-calls itself
-at non-full arity**? A definition's body has the definition's return
-type, and such a call has a function type, so possibly none does.
+**Objective: OUTBOUND. KEYBOARD, and the drafting is done.**
 
-PR 87 reports the python plug's TCO gate as a MISSING GUARD on exactly
-that shape and says plainly that the reachability is unestablished.
-Settling it promotes the row to a live defect or closes it. **It is a
-type-checker question: no python, no toolchain we lack, KEYBOARD.** If
-one exists, the second half is to emit python for it and read
-`emit-py-tco-jump`'s output directly rather than inferring from the
-answer, since the stale-temporary path produces a plausible number.
+Answered 2026-08-26 by the Cobblestone compiler lane over Gmail, measured
+against seed C3181693 (main 19889), seven arms compiled. **Q1 no, Q2 yes,
+Q3 no distinct node exists.** The row withdraws.
 
-**Everything else in this family is answered and upstream.** The
-corpus gap and COMPILER-18's precondition -- a second CALL SITE, which
-defeats `inline-single-caller` so the partial-application object is
-really built and really entered -- are PR 86 and its follow-up comment.
-The register carries the five-program table.
+**Two of the three answers landed on US, not on the row:**
+- PR 87's reproducer is their arm B -- one parameter, one argument, a
+  FULL-arity self call whose result happens to be a function. We already
+  knew it could not reproduce; we did not know why.
+- The TCO gate is arity-blind **on bare metal too**
+  (`Emit/X86_64.codex:75-80`, verified here). Finding 36 filed that as a
+  python-plug defect; python is copying the reference faithfully.
+  Finding 36 is re-framed.
 
-**The reusable lesson, which cost the most to learn:** the branch that
-became PRs 86 and 87 was ONE branch, and its headline claim was false --
-row 1.57 already listed python as compliant on the path that claim
-needed. One page, two rows, flat contradiction, caught by a cold read
-and not by me. **Cold-read every outbound artifact before it goes.** The
-same read caught a reproducer that was full-arity and could not
-reproduce, an unverified negative about thirty emitters we have no
-toolchain for, and a citation off by two lines.
+**What is left to send:** `outbound/DRAFT-pr87-rescope.md`, the
+trust-model version they said they would find worth having -- no plug's
+TCO gate checks arity, the invariant that makes that safe lives in the
+type checker, and nothing near the gate says so. It asks for a comment
+rather than a parser arity check, because who feeds hand-authored IR to
+a plug is their call.
+
+**Owed if we take their falsifiers** (offered in the draft, one compiler
+run): three probe shapes -- a tail self-call under `deck-record`, one at
+a non-final `act` statement, one through a `let`-bound alias -- plus
+confirming the two coverage gaps we already read in bare metal
+(`has-tail-call` answers False for `IrTry` outright; `has-tail-call-act`
+inspects only the last statement). Neither gap looks like a route to the
+shape; a tail call the pass declines to optimise is a deeper stack, not
+a wrong answer.
 
 ## 7. Diagnostics as a banked set
 
