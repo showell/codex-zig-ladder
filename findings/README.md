@@ -1073,6 +1073,63 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
+## 53. `main` spawns `opening` on a thread, and zig refuses a thread entry that returns a value -- 40 corpus programs, and the value was the answer
+
+Found 2026-08-26 21:0x by the corpus reading pass. **OURS**,
+`codex/plugs/zig/ZigEmitter.codex`. Not fixed.
+
+**40 of 112 corpus refusals, the second-largest class**, and until now it
+was not a finding -- the only mention anywhere in this register is a
+passing aside inside finding 42, naming it as a reason one program stayed
+refused. A class this size going unfiled is what the reading pass was for.
+
+    /home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return
+    type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'
+
+Every emitted program carries the same `main`:
+
+    pub fn main() void {
+        const stack_bytes: usize = 512 * 1024 * 1024;
+        const t = std.Thread.spawn(.{ .stack_size = stack_bytes }, opening, .{}) catch @panic("spawn");
+        t.join();
+    }
+
+The difference between the 40 and the rest is one line of the subject:
+
+    opening : [Console] Nothing   ->  fn opening() void   ->  runs
+    opening : Integer             ->  fn opening() i64    ->  zig refuses
+
+**The thread is not gratuitous.** It is the only way to ask for a stack
+bigger than the default, and Codex source assumes bare metal's. The C#
+plug carries the same workaround and its comment gives the case: the
+compiler's own lexer cycles `scan-token -> skip-prose-line -> scan-token`,
+which self-TCO cannot flatten, and a 96-byte chapter overflows a 1 MB
+stack. Removing the thread is not the fix. This is downstream of finding
+33 -- no tail calls on this arm -- and will be until that changes.
+
+**The returned value is the program's OUTPUT, not a status.**
+`ble-att-encode.codex` ends `in a + b + c + d + e` and its `.expected`
+holds `5`. `corpus_run.py` compares the process's stderr text against
+`.expected`, so a shim that discards the value would turn 40 refusals into
+40 silent mismatches -- strictly worse, because a refusal is loud.
+
+**The C# plug already has the rule** (`opening-call-text`), dispatching on
+`opening`'s return type: Nothing, Void, Effectful, Proof and PropEq are
+called and discarded; a Text is printed through the CCE decoder;
+everything else is printed. The zig plug has no such dispatch and spawns
+whatever it finds.
+
+**Falsification attempted:** the alternative was that these 40 share a
+cause with the other refusal classes -- that the value-returning entry is
+incidental and something else breaks them. Refuted by the signature: all
+40 fail inside `std/Thread.zig` at the spawn, before any of the subject's
+own code is analysed, and the two `opening` spellings above separate the
+40 from the 289 that build.
+
+**Cost of the fix:** a return-type dispatch in the entry emitter plus a
+void shim for the thread to enter. The Real arm wants item 1c's
+`cx_real_to_text` and should refuse until it exists.
+
 ## 52. A `when` on a Boolean reaches the plug as the SPELLING `True`, and the plug emits it into zig, which has no such identifier
 
 Found 2026-08-26 21:0x by classifying all 112 corpus refusals by cause --
