@@ -336,12 +336,19 @@ mistranslation waiting to be filed as a finding. Port what is portable, drop
 what is not, and record next to each what was changed and why. A snippet
 ported wrongly costs more than one not ported at all.
 
-**The oracle question, before any of it is banked.** Our corpus verdicts
-come from the depot's hand-verified `.expected`. These snippets arrive with
-ROC's expected output, which is evidence about Roc. What makes a ported
-snippet trustworthy here is bare metal agreeing with the zig arm on it, so
-the port lands as corpus material first and only earns an `.expected` of its
-own once the two arms have been read.
+**The oracle question, and Steve's 2026-08-26 ruling on it.** This item used
+to say a port earns its `.expected` only once bare metal and the zig arm
+have been read against each other. **That is SUPERSEDED.** The gate is
+codexzig's output against ROC'S HARNESS'S EXPECTED VALUE -- Roc's answer is
+the oracle, because it was written by people with no knowledge of this
+compiler, and that independence is the whole reason for borrowing somebody
+else's suite instead of writing more rows of our own.
+
+Bare metal is still worth reading and `warmups/regen.sh` still produces it
+in about two minutes, but it is EVIDENCE and not the gate. The distinction
+earned its keep immediately: `roc-iter-map` never reached a bare-metal
+comparison, because Roc's expected value and a refusal from codexzig were
+already a complete finding.
 
 ### The first port is in, and three arms agree on it
 
