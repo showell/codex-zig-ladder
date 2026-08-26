@@ -1126,6 +1126,27 @@ incidental and something else breaks them. Refuted by the signature: all
 own code is analysed, and the two `opening` spellings above separate the
 40 from the 289 that build.
 
+**PREDICTIONS, written before the build (2026-08-26 21:2x, fix `3b7cc358`,
+unbuilt).** Recorded first so the result cannot be rationalised after.
+
+1. All 40 leave the `startFn` class. If any remain, the shim is not
+   reaching them and the entry lookup is wrong.
+2. **They will NOT all reach `match`, and that is not a failure.** The
+   `startFn` error fires inside `std/Thread.zig` before a line of the
+   subject is analysed, so these 40 programs have never had their own
+   emitted zig checked by anything. Expect new refusal classes to appear
+   as they are examined for the first time. A result of "40 moved, 15
+   matched, 25 newly refused" is the fix working and exposing the next
+   layer -- the `inductive-list` shape, at 40x the size.
+3. The corpus total moves off 69 refusals by roughly 40 minus whatever
+   new classes appear.
+4. Programs whose `opening` returns Nothing are untouched: their shim is
+   a plain call and their emitted `main` differs only by the extra
+   `cx_entry` frame.
+5. `factorial` and `geometry-test` already refuse on the Real marker for
+   `show`; if either also has a Real `opening` it will now refuse at the
+   entry instead, which is the same gap in a second place, not a new one.
+
 **Cost of the fix:** a return-type dispatch in the entry emitter plus a
 void shim for the thread to enter. The Real arm wants item 1c's
 `cx_real_to_text` and should refuse until it exists.
@@ -1175,6 +1196,22 @@ and 0. Applied at both `IrLitPat` sites, the switch arm and the if-chain.
 wrong. It is not. Finding 50 is `show` picking a conversion by the
 argument's type and is fixed in the builtins table; this is a pattern
 decoder in the match emitter, and the two fixes touch no common code.
+
+**PREDICTIONS, written before the build (2026-08-26 21:2x, fix
+`a2d4646c`, unbuilt).**
+
+1. `when-bool-cross` and `when-bool-pattern` move `refused -> match`,
+   printing `spin2: 150 / spin3: 150 / cross: 115 / frm: 150` and
+   `bare-true: 1 / bare-false: 1 / computed: 1 / both-arms-named: 9 /
+   if-control: 1 / int-control: 1 / char-control: 1` respectively.
+2. **A `differ` verdict on either would be the worse outcome**, not a
+   smaller one: it would mean the arms are inverted, which is the silent
+   wrong answer `when-bool-cross` was written to catch. Its header
+   records the number a backend produced when it got this wrong -- 100
+   instead of 150 -- so a `frm: 100` is the signature to watch for.
+3. No other corpus program should move from this change alone. If one
+   does, the spelling appeared somewhere unexamined and the two-site fix
+   is incomplete.
 
 **The C# plug looks like it has the same defect**, from
 `cs-tco-lit-text`, which passes the spelling through for everything that
