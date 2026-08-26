@@ -115,7 +115,70 @@ loop unless it says otherwise.
 
 ---
 
-## 1. Wire codexzig into the Update ceremony, after the canaries
+## 1. Forty-seven undeclared `T38`s stop Update 50 at the codexzig gate
+
+**Objective: INTEGRITY, and it BLOCKS the Update 50 rebank. KEYBOARD to
+diagnose** -- the failing artifacts are on disk and `zig build-exe` reads them
+in seconds. Found 2026-08-26, the first time the gate ran on a real release.
+
+`./codexzig_build.sh` against the Update 50 pin emits zig that will not
+compile: **47 errors, every one `use of undeclared identifier 'T38'`.**
+
+`T38` IS declared -- 73 times, as `comptime T38: type`, a generic parameter.
+The 47 failures use it where nothing binds it, so a type variable is reaching
+call sites instead of being instantiated:
+
+    map_list(T38, []const u8, ...)      inside `fn opening()`, which is not generic
+
+**It is Update 50 and nothing else, and that was established before anything
+was concluded from it:**
+
+    pin                       0c4327d5 interim      8cc80685 Update 50
+    CodexZigHarness.codex     4153 bytes            byte-IDENTICAL
+    czg-emit-roots            the fixed six         the same six
+    error gate present        yes                   yes
+    `map_list(T38` in the zig  0                    47
+    outcome                   FIXED POINT           47 errors
+
+The roots fix and the error gate were both already in the last good build, so
+neither is a confounder, and `cite_resolve` is not in this path at all -- the
+subject is bundled by `bundle_codexzig.ps1`. **The only variable is the codex
+tree.**
+
+**Where to start, and it is one program.** Take one of the 47 sites in
+`ast/codexzig.zig` and walk it back through `ast/codexzig.ir`: if the wire
+already carries `T38` as the type argument, the change is upstream of the
+emitter, in the front end or the serialiser; if the wire carries a concrete
+type and the emitter writes `T38`, it is the emitter. **That single question
+separates a compiler finding from a plug finding**, and everything after it
+depends on the answer.
+
+**The hypothesis, which must not be planted in the reading:** `T38` is an
+IMPLICIT TYPE PARAMETER, which is finding 44's exact subject
+(COMPILER-20/PR 90 -- the AST does not carry what the serialiser derives).
+codexzig's architecture rests on that derivation: it emits IR text and parses
+it straight back BECAUSE the wire creates what the tree does not carry, so a
+move on either side of it stops the round trip agreeing with itself. It also
+rhymes with the corpus: `typeclass-poly` and `typeclass-smoke` refuse on
+`use of undeclared identifier 'T2'`, and after the implicit-chapter fix that
+became `T16`. Same shape, different arity. **Read the IR first and let it
+answer; the rhyme is a reason to look, not a finding.**
+
+**The artifacts are banked in the sandbox**, so the diagnosis costs no
+rebuild: `~/runs/20260826T135239Z-u50-canary/ladder/ast/` holds
+`codexzig.zig` (2,316,634 bytes), `codexzig.ir` (9,623,436), and
+`codexzig-subject.codex` (2,886,824). The prior good build's
+`ast/codexzig.zig` is still in the main tree for the before-column.
+
+**What it blocks and what it does not.** The Update 50 rebank waits on this:
+a release whose compiler does not transpile is not a release to spend
+fifty-one minutes banking. Steps 1 and 2 of the ceremony are done and green
+(contracts held, canary green, pin `u50-rebank` at `8cc80685`, seed
+`C45E5825`, banking to `truth/u50`). **This is the gate earning its place on
+its first real Update** -- a quarter hour spent to not spend an hour, which is
+the argument the item below made in advance.
+
+## 2. Wire codexzig into the Update ceremony, after the canaries
 
 **Objective: ERGONOMICS in service of INTEGRITY. KEYBOARD to wire, BOX to
 prove.** Steve's call, 2026-08-25: on an Update, run the canaries and then go
@@ -149,9 +212,21 @@ the answer is right.
 **One thing to fix while wiring it:** `codexzig_corpus.py` now skips the
 byte-comparison half when `native/codexir` is absent and says so, which is
 the fresh-sandbox case the ceremony runs in -- confirm that path actually
-works in a fresh sandbox rather than trusting the branch.
+works in a fresh sandbox rather than trusting the branch. **Still
+unanswered on 2026-08-26**: the build went red before the corpus leg ran, so
+that path has not been exercised in a fresh sandbox yet.
 
-## 2. Thirty-nine corpus programs emit zig that cannot compile, one cause
+**IT RAN FOR REAL ON 2026-08-26, AND IT CAUGHT SOMETHING.** Update 50, the
+canaries green, then codexzig between steps 2 and 3 exactly as this item
+says: red, 47 undeclared `T38`s, in about fifteen minutes of a fifty-one
+minute alternative that would have banked a release whose compiler does not
+transpile. The item above is what it caught. **What is left here is the
+PROSE** -- the README's "Processing a new Update" still does not name this
+step, so the next person to run the ceremony follows a list that omits the
+thing that just paid for itself. Write it in, including the paragraph above
+about what it does not replace.
+
+## 3. Thirty-nine corpus programs emit zig that cannot compile, one cause
 
 **Objective: HUNTING, then OUTBOUND. KEYBOARD -- `codexzig_corpus.py` and
 `zig build-exe -femit-bin=no` answer in seconds each.** Found 2026-08-26 while
@@ -179,7 +254,7 @@ different row and a better one. Read `opening.codex`'s own entry handling
 first, then decide which claim to write. **Cold-read the artifact before
 sending**, per the lesson under "One question left behind PR 87".
 
-## 2a. The 112 pile is characterised now, and the rest is a long tail
+## 3a. The 112 pile is characterised now, and the rest is a long tail
 
 The 39 above are the head. The remainder, measured on the whole pile with
 `zig build-exe`:
@@ -203,7 +278,7 @@ variable: 111 refused before, 111 refused after; normalised for shifted line
 numbers, four messages differed at all, and none changed class. The two
 piles are unrelated.
 
-## 2b. Four programs halt because our harness does not split quoted works
+## 3b. Four programs halt because our harness does not split quoted works
 
 **Objective: INTEGRITY. KEYBOARD.** `quotes-gate`, `quotes-parse`,
 `quote-from-peer` and `quote-from-store` halt at the error gate with
@@ -232,16 +307,18 @@ The other nine halts are correct: they are negative tests
 `mutable-alias`, `parser-resync`, `effect-handler-clause`) whose whole
 purpose is to be diagnosed, and a compiler that diagnoses them is working.
 
-## 2c. The census wants a re-bank, and it should ride Update 50
+## 3c. The census wants a re-bank, and it should ride Update 50
 
 **Objective: INTEGRITY. BOX-adjacent -- `corpus_run.py --changed --bank`
 takes the compute lock, ~25 minutes, no QEMU.**
 
 `cite_resolve` now carries the implicit chapters (`8830e7b`), so every
 `zig_sha` in `corpus/census.json` has moved and the bank is dated
-2026-08-25. **Do not bank it against the u50-stack**: Update 50 has landed
-and the pin moves, and a bank taken against a tree we are about to leave is
-stale the moment it is written. It rides the Update 50 ceremony.
+2026-08-25. **Do not bank it against the u50-stack**: that tree is gone.
+The pin moved on 2026-08-26 -- `u50-rebank` is `8cc80685`, seed `C45E5825`,
+banking to `truth/u50` -- so a bank taken against the old tree would have
+been stale before it was written. It rides the Update 50 ceremony, which is
+itself waiting on the `T38` item at the top of this file.
 
 What a re-bank must absorb, measured 2026-08-26 and both verified as
 improvements, not regressions:
@@ -260,7 +337,7 @@ were our own missing chapters, which is the failure `cite_resolve.py`'s own
 docstring was written to prevent: "the plug's fallback fires -- which looks
 exactly like an emitter gap and is not one."
 
-## 3. One question left behind PR 87, and it needs no plug
+## 4. One question left behind PR 87, and it needs no plug
 
 **Objective: OUTBOUND, already sent; this is the loose end.** Does a
 well-typed Codex program exist in which a definition **tail-calls itself
@@ -290,7 +367,7 @@ same read caught a reproducer that was full-arity and could not
 reproduce, an unverified negative about thirty emitters we have no
 toolchain for, and a citation off by two lines.
 
-## 4. Diagnostics as a banked set
+## 5. Diagnostics as a banked set
 
 **Objective: INTEGRITY. KEYBOARD to build, then one `ast/rebank_all.sh`
 to bank -- a sweep will NOT do.** `<unit>-subject.cdx.diags` is written
@@ -328,7 +405,7 @@ to run the census at all when any `.ir` was rebuilt, which is honest and
 which means the sweep we now run MOST is the one that reports no
 diagnostics. A banked set is comparable whatever produced the IR.
 
-## 5. Port Roc's closure/recursion snippets into the corpus
+## 6. Port Roc's closure/recursion snippets into the corpus
 
 **Objective: HUNTING. KEYBOARD to port, BOX to bank.** (Steve, 2026-08-25.)
 
@@ -366,7 +443,7 @@ snippet trustworthy here is bare metal agreeing with the zig arm on it, so
 the port lands as corpus material first and only earns an `.expected` of its
 own once the two arms have been read.
 
-## 6. zigc has a runner now, and one inconclusive result
+## 7. zigc has a runner now, and one inconclusive result
 
 **Objective: INTEGRITY. BOX for the first run of a session, KEYBOARD
 after it** -- the build is cached now, measured 2026-08-25: **first run
@@ -402,7 +479,7 @@ of mine, each caught by a guard already in the tree -- no mode flags
 a naive marker grep that counted a prelude guard
 (`findings/prelude-comptime-guards.txt` exists for exactly that).
 
-## 7. Every unhandled construct must refuse BY NAME
+## 8. Every unhandled construct must refuse BY NAME
 
 **Objective: INTEGRITY, and it is the one that sets the queue. BOX.**
 Four
@@ -418,7 +495,7 @@ that cannot see them. The systemic answer -- every unhandled construct
 refuses by name -- is worth more than any individual gap, and the census
 in "The refusal-gaps branch" is where the count would show it.
 
-## 8. The refusal-gaps branch, rebased and re-verified
+## 9. The refusal-gaps branch, rebased and re-verified
 
 **Objective: HUNTING, reached through our own gap-filling. BOX.** Every
 family implemented promotes a slab of census programs into the comparing
@@ -446,7 +523,7 @@ non-exhaustive switch. Also queued: the JS plug's IrNumLit takes bits as
 a NUMBER and its parseFloat is correctly rounded where bare metal's
 `__text_to_double` is not -- probe before filing.
 
-## 9. The tiers stay green, and each one earns its keep
+## 10. The tiers stay green, and each one earns its keep
 
 **Objective: DUE_DILIGENCE that keeps turning into HUNTING. BOX** for
 any new row, since a bare column costs QEMU. The tiers
@@ -493,7 +570,7 @@ finding on its FIRST run:
   anyone remembering to check. That is what a tier is for, and it could
   not do it while one arm refused to compile.
 
-## 10. The stack is measured now, and the emitter's prose about it is wrong
+## 11. The stack is measured now, and the emitter's prose about it is wrong
 
 **Objective: INTEGRITY, already half done. BOX.** `stack_probe.py` --
 finding
@@ -657,7 +734,12 @@ host has no JDK, and retracted the promise to run it -- and the ruling
 arrived anyway. Do not hold the finding back, and do not imply a
 follow-up we cannot make.
 
-**The queue is EMPTY as of 2026-08-26, and EIGHT PRs are open:**
+**ALL EIGHT LANDED IN UPDATE 50 (`8cc80685`, 2026-08-26).** The release
+note says "eight PRs absorbed" and the tree agrees -- checked file by file
+rather than taken on trust: `IRTextParser.codex` is byte-identical to
+PR 89's, and finding 42's fix is in the released `ZigEmitter`. **Nothing is
+open and nothing is prepared and unsent.** The eight, kept here until the
+next queue entry displaces them:
 
 - **84** the zig plug's stack-note correction (verified inert first,
   ladder tag `stack-prose-verified`)
@@ -700,6 +782,53 @@ branch, tier bare columns, rebank on the droplet, bank over green arms,
 tag `uNN-14of14`; then rebase the branches, natives, tiers, census. u49
 took one evening end to end and Update 50's interim absorb took two
 sittings of a single day, most of it unattended.
+
+**Update 50 ITSELF landed 2026-08-26 (`8cc80685`, seed `C45E5825`), and
+its ceremony is STOPPED AT THE GATE.** Do not restart it below the `T38`
+item at the top of this file.
+
+Done:
+
+- **Step 1, read before running anything: all four checks clean.** The
+  contracts we hard-code both hold -- `ram-size-addr` 4072 (0xFE8) for
+  `codex_vm.py`, and `serial-ring-buf-addr` 5242880 / `-size` 1048576 /
+  wpos 28704 / rpos 28712 for `ring_compile.py`. `tools/codex-vm.c` moved
+  84 lines and every one is I219 bed modelling, no contract surface.
+- **All eight PRs (84-91) absorbed, verified rather than taken on trust.**
+  `IRTextParser.codex` is byte-identical to PR 89; finding 42's fix
+  (`zig-push-param-renames` composed under `zig-push-tail-renames`) is in
+  Update 50's `ZigEmitter`. The remaining C# and emitter deltas are
+  Damian's new work, not reverts. **The outbound queue is EMPTY again.**
+- **Damian changed the emitter too**, so natives must be rebuilt and
+  emitter behaviour may move: `zig-occurs` and `zig-max-list-len` now
+  descend into a branch's GUARD and not only its body (a 40-element
+  literal in a guard emitted no `@setEvalBranchQuota`), plus a
+  `char-encode` builtin.
+- **The pin moved, and one branch was misnamed.** `u50-rebank` pointed at
+  the INTERIM `0c4327d5`, which banked as `seed-6cf4a8e0`; it is
+  `seed-6cf4a8e0-rebank` now, and `u50-rebank` is the release. Both
+  pushed. Sandboxes record codex COMMITS, not branch names, so nothing was
+  stranded.
+- **`seed_identity` needed teaching, or the bank would have misnamed
+  itself** (`46e8f6a`). Update 50 names its seed in a fifth form,
+  `**Release head: main 19777. Seed \`C45E5825\``, and without it the
+  release derived as `seed-c45e5825` -- which would have banked a real
+  release as if it were an interim and left it out of the `u<N>` pruner
+  forever. Now `truth/u50`.
+- **Step 2, the canary: GREEN.** New seed boots under our QEMU flags,
+  takes the ring preload, output parses, 5.0 s -- same as the old seed.
+  **It previews the bank diff**: diagnostics byte-identical (14, same
+  codes, same line:col), image 72 bytes SMALLER and diverging from byte 9.
+  So expect the x86 truths to move and the front-end truths to hold,
+  which is what ~330 lines of changed `Emit/X86_64*` should look like.
+- **Step 2.5, the codexzig gate: RED.** See the `T38` item. The rebank has
+  not started, and that is the gate working rather than the ceremony
+  stalling.
+
+Left: everything from step 3 on, and none of it should begin until the
+`T38` question is answered. `check_paths.py` will keep reporting FAIL on
+`codex/plugs/zig/build-output/zig-plug.cdx` until `cycle.sh` runs once --
+that is the ordinary fresh-pin artifact, not a finding.
 
 **Update 50's interim push is mid-ceremony (seed `6CF4A8E0`).** Done: the
 pin, the tier bare columns, the rebank (14/14 green, 731 s), the bank
