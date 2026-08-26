@@ -227,6 +227,28 @@ instead. Next build settles it.
 
 ## 1f. Unit families are 53% of everything left, and half the fix is ONE ARM
 
+**PREDICTIONS for the units+shadowing chain, written before it runs
+(codex `cab52a35`, which deliberately EXCLUDES the H2 recovery rule at
+`3f0f42e5` -- that is the least-reviewed code written today and it moves
+the same programs finding 47 governs).**
+
+1. `unit-family`, `unit-smoke`, `units-foreword`, `implicit-convert`
+   move `refused -> match`. `unit-family` prints `2400 / 240 / 2 / 100`.
+2. The 11 `undeclared Frequency/Timestamp/Duration` do NOT move. Part B
+   is untouched, and if they move something is not understood.
+3. `dns-answer-count` and `tcp-checksum-refuse` move `refused -> match`
+   (finding 54's two instances).
+4. Corpus refused 30 -> about 24.
+5. **The risk is regression, not failure.** `emit-zig-type`'s `UnitTy`
+   arm is consulted everywhere, so every program carrying a unit type
+   changes its emitted zig -- including programs that MATCH today and
+   were matching while their unit values were `void`. A currently-green
+   program going red is the outcome to watch for, and it would be this
+   change, not the prelude rename, which cannot reach a program that
+   does not define a top-level `l` or `base`.
+6. Sweep stays 14/14. This is the leg that would catch a unit value
+   whose printed answer moved.
+
 **Objective: COMPLETENESS. KEYBOARD to write, BOX to verify.** Raised to
 the top 2026-08-26 on Steve's call: these have been standing in front of
 more interesting defects, and the corpus agrees -- after the f52/f53
