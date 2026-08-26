@@ -34,9 +34,16 @@ src, stem = pathlib.Path(sys.argv[1]), sys.argv[2]
 unit, miss = corpus_run.resolve(src)
 if miss:
     print(f"UNRESOLVED cites: {miss}"); raise SystemExit(1)
+# The ring transport wants a FRAMED blob, not raw source: a "CDX map"
+# header line carrying the mode flags, then the source, then \x04 as
+# end-of-input. oracle_lib.sh:176 is the authority for this shape.
+# Writing raw text instead makes the guest read the bytes and then wait
+# forever for an EOT that never comes -- it sits at 0.3% CPU looking
+# exactly like a slow compile. That cost 15 minutes on 2026-08-26.
+blob = b"CDX map\n" + unit.encode() + b"\x04"
 out = pathlib.Path(f"seedprobe-{stem}.blob")
-out.write_text(unit)
-print(f"  unit {len(unit)} chars -> {out}")
+out.write_bytes(blob)
+print(f"  unit {len(unit)} chars -> {out} ({len(blob)} framed bytes)")
 PY
 
 echo "  compiling on the seed (QEMU) ..."
