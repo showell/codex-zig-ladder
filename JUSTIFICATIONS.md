@@ -351,7 +351,7 @@ files -- because a glob that matches nothing produces the same happy
 verdict as a glob that matches everything, and this one is run once and
 believed.
 
-## The deck costs ~153 MB per MB of source, and it is all the front end (2026-08-25)
+## The deck costs ~145 MB per MB of source near the ceiling, and it is all the front end (2026-08-25)
 
 Measured by `./codexzig_scale.py` across every `ast/*-subject.codex`,
 reading the `CX-DECK used=` trace the emitted runtime prints on stdout.
@@ -380,27 +380,52 @@ reservation is 512 MB (`reserved=536870912`).
 All fourteen emit zig byte-identical to `codexir | zigemit`, which is the
 breadth half of the same run; the deck column is what it was for.
 
-Close to linear at **~153 MB of deck per MB of source** -- the figure
-`codexzig_scale.py` computes, averaging the subjects over 300 KB, where the
-fixed overhead has stopped dominating -- so the reservation runs out around
-**3.4 MB of source**. (An earlier hand-read of the same table said 145 MB
-and 3.5 MB; the runner's number is the one to quote, because it is the one
-that gets recomputed.) The compiler's own bundles
+**The ratio is not constant and the average is the wrong summary.** The
+per-subject ratios run from 89.6 (lir_to_x86) to 181.8 (desugar) -- a 2x
+spread, with the SMALL subjects taking the HIGHER ratios, which is the
+opposite of fixed overhead. `codexzig_scale.py` averages the subjects over
+300 KB and gets ~153 MB/MB, hence a ceiling near 3.4 MB. But the four
+subjects above 2 MB -- the only ones anywhere near the reservation -- average
+**145 MB/MB**, giving **3.5 MB**, and the model's own largest point
+contradicts it: at 2.87 MB it predicts 439 MB where the measurement is 421.
+
+So quote **~145 MB/MB and a ceiling near 3.5 MB** for anything about the
+ceiling, and treat 153 as what it is: an average over a range whose small
+end will never be near the limit. An earlier revision of this entry replaced
+145 with 153 on the grounds that the runner recomputes it. Recomputability
+is not accuracy, and that was the wrong trade. The compiler's own bundles
 are 2.5-2.9 MB today and every Update adds chapters.
 
 **The whole cost is the FRONT END, and combining the halves is free.** On
 `codexir-subject.codex` (2.62 MB), run three ways:
 
     codexir alone (front half)   384 MB
-    zigemit alone (back half)      0 MB
+    zigemit alone (back half)      -    NOT INSTRUMENTED, see below
     codexzig (both, one arena)   384 MB
 
-The emitter never touches the deck, so `codexzig`'s headroom is exactly
-`codexir`'s and the two-heap worry that was raised against combining the
+**The zigemit row is not a measurement and must not be read as one.** A cold
+read caught this: `ast/ZigEmitHosted.codex` carries no deck prologue -- no
+`init-phase-allocator`, no `__heap-save`, no `__deck-set`, no
+`__heap-advance` -- so in the emitted `ast/zigemit.zig` the deck base and top
+stay zero and `cx_deck_report` returns at its first guard on every call.
+**zigemit cannot print a CX-DECK line however much memory it uses.** The
+tracer's absence was reported as a measured zero.
+
+What the OTHER two rows do establish is the load-bearing part and it stands:
+codexir alone and codexzig on the same subject both peak at 384 MB, so
+carrying the emitter in the same process adds nothing measurable to the
+deck. `codexzig`'s headroom is `codexir`'s and the two-heap worry that was raised against combining the
 halves does not apply to this region at all. It also means the ceiling is not a property of
 the combined program: `codexir` in the two-process pipeline hits it at the
 same input size, and the ladder would meet it first through whichever rung
 bundles the most chapters.
+
+**"Runs out" is shorthand and finding 45 is the literal truth.** Crossing
+the reservation does not stop anything: the tracer prints negative headroom
+and the program keeps allocating to roughly twice the reservation before it
+faults. So the ceiling is where behaviour becomes undefined, not where a
+refusal happens -- which is the point of finding 45 and the reason to fix it
+before the compiler grows into it.
 
 This is the deck (the phase allocator's region), NOT the 512 MB thread
 stack `stack_probe.py` measures for finding 37. Two constants that happen to

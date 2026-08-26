@@ -49,19 +49,51 @@ HERE = pathlib.Path(__file__).parent
 
 out = f'''Chapter: CodexZigHarness
 
+Section: Halt
+
+ The driver this stands in for does not emit when the bag has errors:
+ opening.codex:1676-1678 prints the codegen error header and the notices,
+ and then `if bag-has-errors (fe.bag) then print-line-uni "CODEGEN-HALTED:
+ errors in bag; no IR emitted"`. This harness skipped that gate until
+ 2026-08-25, and a cold read found what it costs: a file reading `this is
+ not codex at all` produced 36,697 bytes of plausible zig and exit 0, and so
+ did a program calling a function that does not exist. For a tool that is
+ handed to other people, the first thing they will feed it is a program with
+ a mistake in it.
+
+ The bags are the ones the driver merges, reached from what the frontend
+ already binds: lex errors from `toks.errors` (opening.codex:449 wraps the
+ same list), the parse bag from `doc.parse-bag` (:485), the resolve bag from
+ `rr.bag`, and the type checker's from `cr.state.bag` -- which is what
+ `check-bag0` at :620 merges. The PRINTERS are not reachable: they live in
+ opening.codex, which cannot be bundled beside a harness defining `opening`,
+ so this prints the count and the first error rather than the driver's full
+ report.
+
+ CODEGEN-HALTED is the marker the rest of the tree already refuses on by
+ name (ast/f4_boot.py), which is why the text is that and not a new word.
+
+  czg-halted : List Diagnostic -> Text
+  czg-halted (es) =
+   let n = list-length es
+   in let e0 = list-at es 0
+   in "CODEGEN-HALTED: " & show n & " error(s); no zig emitted; first CDX" & show (e0.code) & " " & (e0.message) & "\n"
+
 Section: Roots
 
  opening.codex:1316, copied because that chapter cannot ride along.
 
   czg-emit-roots : List Text
-  czg-emit-roots = ["opening", "vb-capacity-auto", "vb-read-auto", "vb-write-auto"]
+  czg-emit-roots = ["opening", "vb-capacity-auto", "vb-read-auto", "vb-write-auto", "fat16-servicer-read", "fat16-servicer-write"]
 
 Section: Driver
 
   opening : [Console, FileSystem] Nothing = act
     src <- read-file-uni "/dev/stdin"
     {frontend_source("src", True, deck_bytes=HOSTED_DECK_BYTES, resolve=False)}
-    in let meta = IRTextMeta {{
+    in let czg-bag = bag-merge-all [bag-from-list (toks.errors), doc.parse-bag, rr.bag, cr.state.bag]
+    in if bag-has-errors czg-bag then print-text (czg-halted (bag-errors czg-bag))
+    else let meta = IRTextMeta {{
       chapter-title = ch.chapter-title,
       prose = ch.prose,
       section-titles = ch.section-titles,

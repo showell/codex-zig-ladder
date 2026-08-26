@@ -83,3 +83,4 @@ ringplug-source-check.codex
 !logs/INDEX.md
 findings/.tier-run/
 ast/.stack-probe/
+*.self.zig

@@ -925,7 +925,10 @@ zig, then `zig build-exe`, about ten seconds and no VM -- and feeding it
     cz16.zig:141:25: 0x13fbace in cx_list_at__anon_53837
         return l.items.items[@intCast(i)];
 
-**It reaches exactly 200% of the reservation before dying**, and it dies in
+**It reaches about 200% of the reservation before dying** (33,496,942 of
+16,777,216 is 199.65%, and that is the last TRACED value, not the value at
+the fault -- the tracer only prints when the peak grows by a megabyte, so
+every number here is a floor), and it dies in
 `cx_list_at` reading past the end of a list -- a memory fault in the middle
 of the compiler, not a diagnosis. A user who meets this sees a GP exception
 in a list accessor and has no reason to suspect the deck.

@@ -33,6 +33,13 @@ ir-emit-roots is copied from opening.codex:1316 rather than cited, because
 opening.codex cannot be bundled beside a harness that defines `opening`. If
 that list changes upstream, this copy is wrong and the IR will be missing a
 root -- which is the cost of standing in for the driver.
+
+**And it HAD drifted, found by a cold read 2026-08-25.** Upstream carries six
+roots; this copy carried four, missing `fat16-servicer-read` and
+`fat16-servicer-write`. Nothing noticed because CodexZigHarness inherited the
+same truncation, so both arms pruned the same two roots and agreed with each
+other -- an oracle cannot see a mistake both of its arms make. Any subject
+reaching either servicer lost it from the IR silently.
 """
 import pathlib
 
@@ -47,7 +54,7 @@ Section: Roots
  opening.codex:1316, copied because that chapter cannot ride along.
 
   irc-emit-roots : List Text
-  irc-emit-roots = ["opening", "vb-capacity-auto", "vb-read-auto", "vb-write-auto"]
+  irc-emit-roots = ["opening", "vb-capacity-auto", "vb-read-auto", "vb-write-auto", "fat16-servicer-read", "fat16-servicer-write"]
 
 Section: Driver
 

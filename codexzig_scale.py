@@ -29,10 +29,12 @@ import sys
 import time
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # ladder-root-bootstrap
+import compute_lock
 import corpus_run
 from ladder_root import LADDER
 
 CODEXZIG = LADDER / 'native' / 'codexzig'
+EXPECT_SUBJECTS = 14     # the rung bundlers' output; fewer means a partial tree
 SQUEEZE_MB = 16          # small enough that parse-subject cannot fit
 SQUEEZE_SUBJECT = 'parse-subject.codex'
 
@@ -48,8 +50,20 @@ def main():
         if not t.is_file():
             raise SystemExit(f'MISSING {t} -- build it first '
                              f'(codexzig_build.sh, native_build.sh)')
+    compute_lock.take()
     subs = sorted((LADDER / 'ast').glob('*-subject.codex'),
                   key=lambda p: p.stat().st_size)
+    # A GLOB THAT MATCHES NOTHING MUST NOT PASS. The subjects are gitignored
+    # build artifacts of fourteen separate bundlers, so a sandbox where only
+    # codexzig_build.sh has run finds ONE and would otherwise report
+    # "1/1 byte-identical" in the same happy voice as a full sweep --
+    # the exact shape JUSTIFICATIONS warns about, in the file that feeds it.
+    if len(subs) < EXPECT_SUBJECTS:
+        print(f'### ONLY {len(subs)} of {EXPECT_SUBJECTS} unit subjects are '
+              f'bundled in ast/ -- refusing to report a partial sweep as a '
+              f'sweep.\n    Bundle the rungs (ast/ensure_ir.sh, or a full '
+              f'cycle) or accept that this table is not comparable.')
+        return 2
     print(f'### {len(subs)} unit subjects through codexzig')
     print(f"{'subject':<34}{'MB':>6}{'secs':>6}{'deck':>8}{'free':>7}  vs pipeline")
     rows = []
@@ -86,8 +100,8 @@ def main():
     print(f'\n### squeezing the deck to {SQUEEZE_MB} MB (finding 45)')
     zig = LADDER / 'ast' / 'codexzig.zig'
     if not zig.is_file():
-        print(f'    no {zig} to squeeze -- skipped (it is the build\'s output)')
-        return 1 if moved else 0
+        print(f'    no {zig} to squeeze -- finding 45 NOT re-checked this run')
+        return 2
     work = LADDER / 'corpus' / '.codexzig'
     work.mkdir(parents=True, exist_ok=True)
     small = work / f'squeeze{SQUEEZE_MB}.zig'
@@ -105,8 +119,16 @@ def main():
         print('    SQUEEZE BUILD FAILED:',
               b.stderr.decode('utf-8', 'replace')[:200])
         return 1
-    src = (LADDER / 'ast' / SQUEEZE_SUBJECT).read_bytes()
-    r = subprocess.run([str(exe)], input=src, capture_output=True, timeout=900)
+    subj = LADDER / 'ast' / SQUEEZE_SUBJECT
+    if not subj.is_file():
+        print(f'    no {subj} to squeeze -- finding 45 NOT re-checked this run')
+        return 2
+    src = subj.read_bytes()
+    # BOUNDED, because this program is built to run out of memory: an
+    # unbounded runaway livelocked a whole host on 2026-08-19 and the
+    # resident bound is what corpus_run calls not optional.
+    r = subprocess.run(corpus_run.BOUNDED + ['timeout', '600', str(exe)],
+                       input=src, capture_output=True, timeout=900)
     peak, reserved = deck_peak(r.stdout.decode('utf-8', 'replace'))
     err = r.stderr.decode('utf-8', 'replace')
     emitted = sum(1 for l in err.splitlines()
@@ -119,8 +141,10 @@ def main():
                   if 'exception' in l or 'panic' in l or 'cx heap' in l), '')
     print(f'    {first[:110]}')
     if r.returncode == 0:
-        print('    NOTE: it SUCCEEDED. Either the deck got cheaper or the '
-              'squeeze is no longer small enough -- finding 45 wants re-reading.')
+        print('    REFUSING: it SUCCEEDED, so the squeeze no longer squeezes '
+              'and finding 45 went UNCHECKED this run. Either the deck got '
+              'cheaper or SQUEEZE_MB is too generous; re-read the finding.')
+        return 2
     elif emitted:
         print('    NOTE: emitted zig reached stderr before the fault. Finding 45 '
               'says none does; a partial transpile CAN now look like a whole one.')

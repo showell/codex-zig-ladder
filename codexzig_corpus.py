@@ -26,10 +26,20 @@ TWO CHECKS PER PROGRAM, and they answer different questions:
                     defect the pipeline shares, because the oracle is outside
                     both.
 
-MEASURED 2026-08-25, against our fork's stack (upstream `0c4327d5` plus
-PR 85's finding-42 fix and PR 89's IRTextParser rename -- the optimistic
-Update 51, not bare upstream): **correct 181, byte-identical to the pipeline
-181/181, in 104 seconds.**
+**WHAT THE `.expected` HALF DOES AND DOES NOT PROVE.** The sample is
+selected as `verdict == match` -- programs the PIPELINE already got right --
+and codexzig's bytes are identical to the pipeline's, so on this sample the
+`.expected` result is entailed rather than discovered. It catches a defect
+codexzig has and the pipeline does not; it cannot catch one they share,
+because the sample is defined to exclude those. Zig's cache is
+content-addressed, so the second run of the same bytes is a cache hit and
+the run is much faster than the builds would suggest. An earlier version of
+this docstring called this leg "the one that can find a defect the pipeline
+shares"; that was wrong, and a cold read caught it.
+
+It is still worth running: it is the only leg whose oracle was written by
+someone outside this project, and it fails loudly if the emitted zig stops
+building or the depot's `.expected` moves.
 
 The comparison semantics are corpus_run's, imported rather than re-spelled:
 `expected_text` carries the 0x01/CRLF normalisation the depot's own
@@ -49,6 +59,20 @@ from ladder_root import LADDER
 
 CODEXZIG = LADDER / 'native' / 'codexzig'
 OUT = LADDER / 'corpus' / '.codexzig'
+
+
+def halted(path):
+    """The CODEGEN-HALTED line if the compiler refused the subject, else ''.
+
+    The harness prints this instead of zig when the diagnostic bag has
+    errors, the way the driver does (opening.codex:1678). Anything reading
+    a transpile has to look for it, or a refusal reads as a short program.
+    """
+    head = path.read_bytes()[:400].decode('utf-8', 'replace')
+    for line in head.splitlines():
+        if line.startswith('CODEGEN-HALTED:'):
+            return line
+    return ''
 
 
 def emit(tool_argv, src_bytes, dest):
@@ -74,7 +98,14 @@ def main():
 
     wanted = set(names)
     tally = {'correct': 0, 'differ': 0, 'refused': 0, 'crashed': 0,
-             'timeout': 0, 'transpile-failed': 0, 'unresolved': 0}
+             'timeout': 0, 'transpile-failed': 0, 'unresolved': 0,
+             'halted': 0, 'oom-killed': 0, 'no-expected': 0}
+    nocompare = []
+    have_pipeline = corpus_run.CODEXIR.is_file() and corpus_run.ZIGEMIT.is_file()
+    if not have_pipeline:
+        print('    NOTE: native/codexir or native/zigemit is absent, so the '
+              'byte-comparison half is SKIPPED.\n          The .expected half '
+              'below needs only codexzig and still runs.')
     same, moved, bad = 0, [], []
     started = time.time()
     for i, name in enumerate(every, 1):
@@ -87,22 +118,48 @@ def main():
         # declare reported as undeclared identifiers.
         unit, missing = corpus_run.resolve(corpus_run.TESTS / f'{name}.codex')
         if missing:
-            tally['transpile-failed'] += 1
-            bad.append((name, 'unresolved',
-                        '; '.join(f'{q} chapter {n}' for _, q, n in missing[:3])))
+            # NOT a failure of this tool. The census already classifies these
+            # as `unresolved` (16 of 593 today) because a cite names a quire
+            # the registry has no entry for; cite_resolve refuses rather than
+            # guessing. Counting them as failures made this runner incapable
+            # of exiting 0, which is a gate that cannot fail -- found cold,
+            # 2026-08-25.
+            tally['unresolved'] += 1
             continue
         src = unit.encode()
         one = OUT / f'{name}.zig'
         duo_ir, duo = OUT / f'{name}.ir', OUT / f'{name}.duo.zig'
 
-        if not emit([str(CODEXZIG)], src, one):
+        try:
+            got_one = emit([str(CODEXZIG)], src, one)
+        except subprocess.TimeoutExpired:
+            tally['timeout'] += 1
+            bad.append((name, 'timeout', 'codexzig did not finish'))
+            continue
+        if not got_one:
             tally['transpile-failed'] += 1
             bad.append((name, 'transpile-failed', 'codexzig wrote nothing'))
             continue
-        # Structural: same bytes as the two-process pipeline?
-        if emit([str(corpus_run.CODEXIR)], src, duo_ir) and \
-           emit([str(corpus_run.ZIGEMIT)], duo_ir.read_bytes(), duo):
-            if one.read_bytes() == duo.read_bytes():
+        halt = halted(one)
+        if halt:
+            # The compiler refused the subject. That is an ANSWER, not a
+            # failure of the transpiler -- but it is only right if the
+            # pipeline refuses too, and today only codexzig carries the gate.
+            tally['halted'] += 1
+            bad.append((name, 'halted', halt[:110]))
+            continue
+        # Structural: same bytes as the two-process pipeline? Absent natives
+        # are a SKIP with a count, not a silent pass -- a fresh sandbox has
+        # codexzig and no native/codexir at all.
+        if have_pipeline:
+            try:
+                ok = (emit([str(corpus_run.CODEXIR)], src, duo_ir)
+                      and emit([str(corpus_run.ZIGEMIT)], duo_ir.read_bytes(), duo))
+            except subprocess.TimeoutExpired:
+                ok = False
+            if not ok:
+                nocompare.append(name)
+            elif one.read_bytes() == duo.read_bytes():
                 same += 1
             else:
                 moved.append(name)
@@ -123,6 +180,13 @@ def main():
             continue
         if p.returncode != 0:
             err = p.stderr.decode('utf-8', 'replace')
+            if p.returncode in (137, -9) or 'Killed' in err[-200:]:
+                # The cgroup bound fired. corpus_run:317-323 gives this its
+                # own verdict because nothing about the emitted zig was
+                # judged; calling it `refused` would blame the plug.
+                tally['oom-killed'] += 1
+                bad.append((name, 'oom-killed', 'resident bound fired'))
+                continue
             kind = 'crashed' if 'panic:' in err else 'refused'
             tally[kind] += 1
             first = next((l for l in err.splitlines()
@@ -131,6 +195,12 @@ def main():
             continue
         got = p.stderr.decode('utf-8', 'replace')
         want = corpus_run.expected_text(name)
+        if want is None:
+            # The census said this program had one. It does not any more, so
+            # the census is stale and saying so is the answer.
+            tally['no-expected'] += 1
+            bad.append((name, 'no-expected', 'census says match, .expected is gone'))
+            continue
         if got.strip() == want.strip():
             tally['correct'] += 1
         else:
@@ -142,8 +212,13 @@ def main():
 
     print(f'\n### {int(time.time() - started)}s')
     print('    ' + ', '.join(f'{k} {v}' for k, v in tally.items() if v))
-    print(f'    byte-identical to codexir | zigemit: {same}/{len(every)}'
-          + (f'  MOVED: {" ".join(moved)}' if moved else ''))
+    if have_pipeline:
+        compared = same + len(moved)
+        print(f'    byte-identical to codexir | zigemit: {same}/{compared} compared'
+              + (f', {len(nocompare)} not comparable' if nocompare else '')
+              + (f'  MOVED: {" ".join(moved)}' if moved else ''))
+    else:
+        print('    byte-comparison SKIPPED (no native/codexir, native/zigemit)')
     if bad:
         print('\n### programs to read, most interesting first')
         for name, kind, why in sorted(bad, key=lambda b: b[1]):
