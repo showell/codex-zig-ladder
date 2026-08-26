@@ -1219,6 +1219,29 @@ diagnostic stops firing** -- a silent wrong answer in the compiler we
 build, which is the exact class the ladder exists to catch and the worst
 one we could have.
 
+**THE LANE HAS STOOD DOWN AND RE-FRAMED OUTCOME 1, 2026-08-26 23:1x.**
+No bisect will run. Their four-seed refusal sweep now serves as the
+reference measurement ours compares against.
+
+Their reframe, which is the right one and better than the one we sent
+them: **outcome 1 is not an embarrassment, it is a find.** A
+zig-plug-emitted type checker that silently stops firing CDX2001 is the
+shared-contract class this whole exchange has been circling -- a
+miscompile with nothing to do with the target language -- and it would be
+**the first one caught in EMITTED COMPILER CODE rather than in a leaf
+program.** That makes it the most valuable specimen of the class so far.
+If it lands they want the reproducer.
+
+**So outcome 1 now carries an obligation, not just a retraction:** a
+minimal subject, both arms' verdicts side by side, and the emitted zig at
+the site where the diagnostic stops being produced.
+
+**Their reciprocal, worth keeping:** they have paid for this failure mode
+themselves -- a release proof that certified a compiler nobody was
+publishing, because the harness used whatever binary was lying there.
+*"Your 'which arm are we standing on' is our 'read the kernel line it
+prints.'"* Same lesson, both directions.
+
 **THE MEASUREMENT THAT SETTLES IT** is the same probe through the SEED on
 bare metal, which is a QEMU job and is queued behind the running sweep.
 Three outcomes:
