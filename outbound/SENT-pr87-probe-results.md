@@ -1,3 +1,20 @@
+# SENT -- awaiting reply
+
+**Sent by Steve over Gmail 2026-08-26 ~22:3x.** Not yet answered.
+
+**A CONTROL WAS ADDED AFTER THIS WENT OUT and has not run yet.**
+`findings/probe-pr87-direct.codex` is the same definition with the alias
+removed. This report attributes the acceptance to the let-bound alias on
+the strength of the lane's own arm A refusing -- measured on their tree,
+not ours. If the control also compiles clean, the attribution in this
+report is wrong: the alias is not the trigger and what we have is a
+return-type check that does not run at all. **That would be a bigger
+claim, not a smaller one, and it would need a correction sent promptly.**
+
+Also owed: the `deck-record` probe's zig verdict, which was masked by our
+own finding 54 (our prelude has a local `fd`, the probe was named `fd`).
+Renamed `deck-self`; the compiler verdict in this report is unaffected.
+
 # Draft: PR 87 falsifier results, for the compiler lane
 
 You asked for the outcome either way, including a null result. It is not
