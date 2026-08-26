@@ -1054,6 +1054,52 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
+## 49. `native/codexir` emits IR for a program with compiler errors and says nothing, because its harness never consults the diagnostic bag
+
+Found 2026-08-26 on the ladder droplet, while looking for a keyboard-cost
+gate on an emitter refactor. **OURS**, `ast/CodexIrHarness.codex`. Not fixed.
+
+**It is the sibling of the gate the cold read fixed this morning.**
+`ast/CodexZigHarness.codex` was found skipping the driver's error gate
+(`opening.codex:1676-1678`) and now merges four bags and halts:
+
+    czg-bag = bag-merge-all [bag-from-list (toks.errors), doc.parse-bag,
+                             rr.bag, cr.state.bag]
+    if bag-has-errors czg-bag then print-text (czg-halted (bag-errors czg-bag))
+
+`CodexIrHarness.codex` runs the same `check-chapter`, binds the same
+`cr.state`, and then lowers and prints regardless. The file is 59 lines and
+the words `error`, `halt` and `diag` do not appear in it.
+
+**Measured, three runs over one 5,529-line bundle of the zig plug.** The
+clean source, an undefined name, and a call with an argument deleted all
+produce `rc=0`, an IR of the same size, and **zero** non-telemetry lines on
+stdout. The undefined name reaches the IR as a typed node:
+
+    (name "scopeX" (list (int 0 4294967295 ov-error) ...
+
+**Falsification attempted.** The obvious escape is that the diagnostic rides
+the IR stream rather than stdout. It does not: `CDX9002` and `undefined`
+occur in the emitted IR exactly as often in the CLEAN run as in the two
+broken ones -- seven and one -- because every occurrence is prose inside the
+plug's own source. Nothing is reported anywhere.
+
+**What it costs us.** `corpus_run.py` runs all 593 corpus programs through
+`native/codexir` and gates only on `returncode != 0 or not stderr`, so a
+program that does not compile is scored on the zig its broken IR produced.
+The same blind spot in the codexzig path, once opened, showed 41 of 593
+carrying compiler errors nobody had seen. **How many of the 593 this one
+hides is unknown and is the first thing to measure after the fix** -- it is
+not the same number, because `corpus_run` resolves cites through the fixed
+`cite_resolve` and the 41 included 28 that were an artifact of that.
+
+**Confidence: HIGH.** Source read and behaviour measured, and the fix is the
+gate that already exists four files away.
+
+**Why it is not fixed yet.** It changes what `corpus_run.py --run` reports,
+and that run is the measurement PRIORITIES item 1 rests on. Moving the
+instrument in the middle of reading it would confound both.
+
 ## 48. A self-recursive type that is also GENERIC is emitted with no indirection, so zig says it contains itself
 
 Found 2026-08-26 on the ladder droplet. **OURS**,

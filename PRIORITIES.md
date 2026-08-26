@@ -126,9 +126,10 @@ why finding 47 is item 1 and the Roc porting it came out of is item 3.
 Three efforts are live at once. They are ordered here, and the ordering is
 the whole point of writing them down:
 
-    1  finding 47        UPSTREAM, reproduced, cause unmeasured   -> item 1
+    1  finding 47        guard written, NOTHING BUILT             -> item 1
+    1a finding 49        our corpus gate is blind, fix is known    -> item 1a
     2  finding 46's PR   fix done and verified, not sent          -> item 2
-    3  the Roc ports     2 of ~12 done, the runner exists         -> item 3
+    3  the Roc ports     4 of ~12 written, 1 never run            -> item 3
 
 **THE REBANK STALLED ONCE, RESUMED, AND IS SWEEPING.**
 `~/runs/20260826T171739Z-u50-rebank-tvar`, on `zig-plug-tvar-not-an-answer`
@@ -174,7 +175,7 @@ loop unless it says otherwise.
 
 ---
 
-## 1. Finding 47 is two thirds fixed, and the last third is a decision
+## 1. Finding 47: the guard is written and NOTHING HAS BEEN BUILT
 
 **Objective: a FIX carried to OUTBOUND. KEYBOARD, but the remaining step is a
 REFACTOR and Steve's call.**
@@ -193,34 +194,82 @@ wrong metric.** A marker count is the emitter's self-report about itself;
 build failure and the count could not see it. **`corpus_run.py --run` is the
 measurement for anything in this family.**
 
-**Three emission paths carry an out-of-scope type variable. Two are closed.**
-`zig-resolve-tvar` gets a scope test (`bbf339c0`), and a closure whose type
-names a variable the site does not declare is refused whole (`8b493672`).
-The third is a callee's variable emitted untranslated into a caller --
-`cx_ll_of(HamtEntry(T25), ...)` inside a function whose scope declares
-`T70` -- and it is why `hamt-test` and `kvstore-test` still fail.
+**Three emission paths carried an out-of-scope type variable, and the queue
+was about to grow a fourth.** `zig-resolve-tvar`'s last-resort answer
+(`bbf339c0`), the closure environment struct (`8b493672`), and a callee's
+variable emitted untranslated into a caller -- `cx_ll_of(HamtEntry(T25),
+...)` inside a function whose scope declares `T70`, which is why `hamt-test`
+and `kvstore-test` refuse.
 
-**THE DECISION, and it is why this stopped rather than continuing.** Patching
-the third site would be the third patch, and the emitter memory named this
-shape in advance: "six sites had to learn independently that a generic name
-must be applied; expect a seventh." The structural answer is a guard in
-`emit-zig-type` -- and there is nowhere to put one: it is `CodexType -> Text`,
-no context, **35 call sites**. Threading context through it is a refactor
-with a real blast radius, and it is the difference between fixing this class
-once and fixing it a site at a time forever.
+**STEVE'S CALL, 2026-08-26: pay for the context-threading refactor once.**
+Done, `d4ba6e75`. `emit-zig-type` takes the scope; thirteen type-emitting
+helpers thread it and the fifty-five callers already carrying a `ZigCtx`
+pass `ctx.scope-tvars`. The "35 call sites" that made this look expensive
+were 34 CALLS across 21 functions, and the call graph is what settled it:
+of 73 definitions that transitively reach `emit-zig-type`, 55 already hold a
+context. The refusal fires at the OUTERMOST type, which keeps
+`zig-is-unmapped`'s leading-`@compileError` test working -- a marker buried
+inside `*CxList(...)` would be invisible to it.
 
-**Where that leaves the branch.** Against the pin it buys one program that
-builds and answers correctly and costs three their diagnostic. By
-"fail-loud is the floor" that trade is not obviously worth taking, so **the
-row should not ship** until the third path is closed or the three are
-understood. `inductive-list` is already understood: it is finding 48, and its
-marker was masking it.
+Two things fell out. `zig-tvar-ids` did not walk `VectorTy`, `UnitTy`,
+`LinearTy`, `PropEqTy` or `TypeApply`, and it also decides which comptime
+parameters a definition declares, so those holes were already live.
+`emit-zig-def` emitted its parameters and return type under the CALLER's
+scope, before its own comptime parameters existed.
+
+**NOTHING HAS BEEN BUILT.** The plug bundle goes through `native/codexir`
+clean in 3.3 s, and that gate is close to worthless -- deleting an argument
+or misspelling a name passes it silently, which is finding 49. The row is
+`findings/probe-tvar-recovery.codex` case (g) plus `corpus_run.py --run`,
+and both want the box.
+
+**What the last measured state was**, `bbf339c0` only, chain
+`~/runs/20260826T185412Z-scope-gate`: markers 40 -> 8, match 183 -> 184,
+`tvar-in-declared-type` new and matching, and `hamt-test`, `kvstore-test`,
+`inductive-list` markers -> refused. That chain's leg4 sweep was still
+running when the refactor was written, so it is a verdict on the first patch
+and not on HEAD. `inductive-list` is understood: finding 48, and its marker
+was masking it.
+
+**Where that leaves the branch.** Until the guard is measured, the trade on
+record is one program gained against three diagnostics lost, and by
+"fail-loud is the floor" **the row should not ship**. The guard is meant to
+turn all three of those into honest refusals rather than build failures;
+whether it does is the thing to run.
 
 **The instrument is `findings/probe-tvar-recovery.codex`**, seven cases, one
 function each, bare metal as the oracle. It earned itself immediately: case
 (f) was written believing it captured the failing shape and does not, and only
 case (g) -- a closure returning a declared generic type -- reproduces it.
 **Any change in this area is gated on that row and on `--run`.**
+
+## 1a. The corpus measurement cannot see a compiler error, and it is the same gate as this morning's
+
+**Objective: INSTRUMENT. KEYBOARD to write (`ast/CodexIrHarness.codex`), BOX
+to verify (`./native_build.sh`, then `./corpus_run.py --run`).**
+
+Finding 49. `ast/CodexZigHarness.codex` got the driver's error gate this
+morning; `ast/CodexIrHarness.codex` never had it, runs the same
+`check-chapter`, binds the same `cr.state`, and lowers and prints regardless.
+Measured over one 5,529-line bundle: an undefined name and a deleted argument
+both give `rc=0`, an IR of the same size, and nothing on stdout. The
+undefined name reaches the IR as a typed node.
+
+`corpus_run.py` gates only on `returncode != 0 or not stderr`, so every
+corpus program that does not compile is scored on the zig its broken IR
+produced. When the same blind spot was opened in the codexzig path it showed
+41 of 593.
+
+**It goes AFTER item 1, and that ordering is the point.** Item 1's verdict is
+a DELTA against a bank taken with this instrument. Change the instrument
+first and the comparison is gone -- the tree is part of the measurement, and
+so is the harness. Run item 1's chain, then fix the gate, then re-measure
+everything and expect the census to move.
+
+**The fix is four files away**: merge `bag-from-list (toks.errors)`,
+`doc.parse-bag`, `rr.bag` and `cr.state.bag`, halt if the bag has errors.
+Copy the PIPELINE, not the list -- that is the lesson this file has now
+learned three times (`ir-emit-roots`, the lambda lift, this).
 
 ## 2. Send the emitter fix, and decide which HEAD the rebank runs on
 
@@ -451,9 +500,20 @@ thing to keep in step.
 finding, the finding goes to the top of the queue and this item waits.** So
 finding 47 is item 1 and this resumes after it.
 
-**Ten or so left in the closure/recursion cluster**, and they are the ones
-worth doing: the three iterator-like cases (`map` is ported, `keep_if` and
-`drop_if` remain and are the same lazy-stream shape with a predicate), the
+**`roc-iter-keep-if` is WRITTEN AND HAS NEVER RUN** (codex `c4ecd929`,
+2026-08-26). Its `.expected` says 2 on ROC's authority; nothing has compiled
+it on either arm. It is committed unexercised on purpose -- a subject is
+worth more in git than in a working tree -- and it is not a measurement
+until it has been through `roc_ports_run.py`. What it asks that
+`roc-iter-map` does not is the REJECT branch: keep_if's else-branch builds a
+fresh iterator and immediately enters it, so the recursion goes through a
+record field of a value constructed one expression earlier and never bound.
+Findings 38 and 40 territory.
+
+**Nine or so left in the closure/recursion cluster**, and they are the ones
+worth doing: the three iterator-like cases (`map` is ported, `keep_if` is
+written but unrun, `drop_if` remains and is the same lazy-stream shape with
+a predicate), the
 four inline-fold lambdas, "recursive function with var keeps outer binding",
 the two early-return-via-predicate cases, and the closure-captures-list
 pair. The rest of the file's ~118 cases are list, record and tag inspection,
