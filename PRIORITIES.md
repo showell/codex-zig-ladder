@@ -830,38 +830,41 @@ were our own missing chapters, which is the failure `cite_resolve.py`'s own
 docstring was written to prevent: "the plug's fallback fires -- which looks
 exactly like an emitter gap and is not one."
 
-## 6. PR 87's row is ANSWERED and withdraws; the re-scope is drafted and unsent
+## 6. PR 87 is SETTLED; three probes are written and owe one compiler run
 
-**Objective: OUTBOUND. KEYBOARD, and the drafting is done.**
+**Objective: OUTBOUND. The drafting and the writing are done; what is
+left is a BOX run and a report.**
 
-Answered 2026-08-26 by the Cobblestone compiler lane over Gmail, measured
-against seed C3181693 (main 19889), seven arms compiled. **Q1 no, Q2 yes,
-Q3 no distinct node exists.** The row withdraws.
+Answered and then **accepted as written**, 2026-08-26, both over Gmail.
+The row withdrew and the trust-model re-scope replaced it. Their side:
+the invariant gets declared in the **Developers Rulebook's plug-wire
+contract section**, naming the shape, the CDX2010 occurs check as the
+component doing the work, and the hand-authored-IR caveat; the
+`IRTextParser` arity check is recorded as an open lead, not built.
 
-**Two of the three answers landed on US, not on the row:**
-- PR 87's reproducer is their arm B -- one parameter, one argument, a
-  FULL-arity self call whose result happens to be a function. We already
-  knew it could not reproduce; we did not know why.
-- The TCO gate is arity-blind **on bare metal too**
-  (`Emit/X86_64.codex:75-80`, verified here). Finding 36 filed that as a
-  python-plug defect; python is copying the reference faithfully.
-  Finding 36 is re-framed.
+**Two answers landed on US:** PR 87's reproducer was their arm B (full
+arity, result happens to be a function), and the TCO gate is arity-blind
+**on bare metal too** -- so finding 36 blamed the wrong component and is
+re-framed.
 
-**What is left to send:** `outbound/DRAFT-pr87-rescope.md`, the
-trust-model version they said they would find worth having -- no plug's
-TCO gate checks arity, the invariant that makes that safe lives in the
-type checker, and nothing near the gate says so. It asks for a comment
-rather than a parser arity check, because who feeds hand-authored IR to
-a plug is their call.
+**OWED, and explicitly accepted by them:**
+- `findings/probe-pr87-alias.codex` -- the let-bound alias, **the shape
+  their seven arms did not cover.** Prediction recorded in the file:
+  the checker should refuse it, and if it ever compiled `is-self-call`
+  would not fire at all, because through an alias the apply spine's root
+  is `g` rather than the definition's name. That defeats the gate in the
+  SAFE direction.
+- `findings/probe-pr87-deck.codex` -- self tail call under `deck-record`.
+- `findings/probe-pr87-armb.codex` -- their arm B with a base case,
+  **executed** rather than compiled. Expects `5`. They said an executed
+  arm is strictly better evidence and they will take it.
+- The two coverage corners are already **source-read confirmed** here:
+  `has-tail-call` answers False for `IrTry` outright and
+  `has-tail-call-act` inspects only the last statement.
 
-**Owed if we take their falsifiers** (offered in the draft, one compiler
-run): three probe shapes -- a tail self-call under `deck-record`, one at
-a non-final `act` statement, one through a `let`-bound alias -- plus
-confirming the two coverage gaps we already read in bare metal
-(`has-tail-call` answers False for `IrTry` outright; `has-tail-call-act`
-inspects only the last statement). Neither gap looks like a route to the
-shape; a tail call the pass declines to optimise is a deeper stack, not
-a wrong answer.
+**Report either way. A null result is a result** -- they asked for it in
+those words, because "tried and found nothing" moves confidence where
+silence does not.
 
 ## 7. Diagnostics as a banked set
 

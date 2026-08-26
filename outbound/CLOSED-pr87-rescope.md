@@ -1,3 +1,33 @@
+# CLOSED -- sent, ACCEPTED as written
+
+**Sent by Steve over Gmail 2026-08-26. Accepted the same evening.**
+
+Where it landed on their side: the invariant gets **declared in the
+Developers Rulebook's plug-wire contract section** ("What the wire
+carries") -- naming the shape, the reason it cannot occur in
+compiler-produced IR, the CDX2010 occurs check as the component doing
+the work, and the hand-authored-IR caveat. A pointer comment at
+`is-self-call` is under consideration by the same lane under their
+rediscovery rule. **The IRTextParser arity check is recorded as an open
+lead, not built** -- they agreed it is a trust-model question and that
+nothing today feeds a plug IR the compiler did not produce, so the
+question gets written down where it will be found rather than answered
+under no pressure.
+
+That is a better outcome than a code change: a comment rots, a rulebook
+section is what the next plug author reads.
+
+**OWED BY US, and accepted:**
+- The zig **execution** datum -- an executed arm beats a compiled one.
+- The falsifier work on more shapes and the two coverage corners,
+  **reporting either way, including a null result**, since "tried and
+  found nothing" moves confidence where silence does not.
+- The **let-bound alias** shape specifically: their seven arms did not
+  cover it.
+
+Probes written: `findings/probe-pr87-alias.codex`,
+`probe-pr87-deck.codex`, `probe-pr87-armb.codex`. Not yet run.
+
 # Draft: re-scope PR 87's row, in reply to the compiler lane
 
 Requested implicitly by their answer: *"If you re-scope rather than
