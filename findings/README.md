@@ -1151,6 +1151,67 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
+## 54. The prelude's own locals shadow user top-level names, and about forty-five of the commonest identifiers are live ammunition
+
+Found 2026-08-26 22:0x by the corpus reading pass, looking for something
+unrelated to units to piggyback on a chain. **OURS**,
+`codex/plugs/zig/ZigEmitter.codex`, `zig-prelude`. **Two instances
+fixed; the class is NOT.**
+
+    corpus/dns-answer-count.zig:22:11   local constant shadows declaration of 'l'
+    corpus/tcp-checksum-refuse.zig:209:9  local variable shadows declaration of 'base'
+
+Both error lines are in the PRELUDE, not in user code:
+
+    fn cx_ll_empty(comptime T: type) *CxList(T) {
+        const l = cx_gpa.create(CxList(T)) catch @panic("oom");
+    fn cx_ipow(a: i64, b: i64) i64 {
+        var base = a;
+
+against user top-levels `fn l() DnsResponse` and `fn base() NetSession`.
+Zig forbids a local shadowing a container-level declaration, so the
+prelude's private variable names are effectively **reserved words for
+every Codex program the plug compiles** -- and nothing says so.
+
+**The plug guards user names against prelude DECLARATIONS and not
+against prelude LOCALS.** `zig-prelude-decls` holds `std`, `main`,
+`cx_heap_mem` and the deck globals; `zig-sanitize` appends `_` to any
+codex name in it. The prelude's locals are not in that list.
+
+**The surface is 45 names, measured** by extracting every `const`/`var`
+binding from the prelude of an emitted program:
+
+    acc al ascii b b0 base bot buf c chunk clamped code cp dot e fd frac
+    i k l large_val m n neg o off out p path r raw rc s start top u v xs z
+    (plus the cce_* tables)
+
+`i`, `n`, `s`, `acc`, `buf`, `out`, `top`, `start`, `code`, `path` --
+these are ordinary names for an ordinary definition. Two programs hit it
+today because two programs happened to define `l` and `base`.
+
+**Fixed: the two instances**, by renaming those prelude locals to
+`cx_l`, `cx_acc`, `cx_base`, `cx_e`. **Not fixed: the other 43.**
+
+**Why the whole class was not fixed tonight, stated rather than
+skipped.** There are two routes and both are too big for a piggyback:
+
+- **Add the 45 names to `zig-prelude-decls`.** Rejected on measurement,
+  not taste: `zig-sanitize` has **55 call sites** covering type names,
+  ctor names, parameters and definitions, so this renames `i`, `n` and
+  `s` everywhere in every program -- widening exactly the rename
+  machinery that produced finding 42, to buy two programs.
+- **Rename all 45 prelude locals.** Correct, and confined to our own
+  text since the prelude is 66 separate string literals. But it is a
+  regex rewrite over 931 lines of zig embedded in Codex string
+  literals, and a subtle miss breaks every emitted program rather than
+  one.
+
+The second is the real answer and it wants its own sitting, not a
+piggyback. **What would make it safe:** re-derive the local list from an
+emitted `.zig` after the rename and assert it is empty of unprefixed
+names -- the same shape as the ladder's other `check_*.py` guards, so
+the class cannot come back silently.
+
 ## 53. `main` spawns `opening` on a thread, and zig refuses a thread entry that returns a value -- 40 corpus programs, and the value was the answer
 
 Found 2026-08-26 21:0x by the corpus reading pass. **OURS**,
