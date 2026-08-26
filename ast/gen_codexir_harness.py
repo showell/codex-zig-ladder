@@ -43,11 +43,34 @@ reaching either servicer lost it from the IR silently.
 """
 import pathlib
 
-from emit_harness import frontend_source, HOSTED_DECK_BYTES, LIFT_PROSE
+from emit_harness import (frontend_source, HOSTED_DECK_BYTES, LIFT_PROSE,
+                          halt_gate, halt_formatter)
 
 HERE = pathlib.Path(__file__).parent
 
 out = f'''Chapter: CodexIrHarness
+
+Section: Halt
+
+ The driver does not emit when the bag has errors -- opening.codex:1676-1678
+ prints the codegen header and then `if bag-has-errors (fe.bag) then
+ print-line-uni "CODEGEN-HALTED: errors in bag; no IR emitted"`. This harness
+ did not, until 2026-08-26, and that is not a cosmetic gap.
+
+ What it cost. native/codexir accepted a three-line program the seed refuses
+ with CDX2001, and we reported that to Damian's compiler lane first as a
+ soundness hole in their type checker and then as a miscompile in our plug.
+ It was neither: native/codexzig, the same compiler from the same plug whose
+ harness DOES read the bag, refuses it with the same code and the same
+ wording. Their lane ran a four-seed sweep with a positive control to tell us
+ we were wrong. The checker was never broken; this harness was deaf.
+
+ What it costs quietly. corpus_run.py runs this tool, so a corpus program
+ carrying a compiler error emitted IR anyway and we built, ran and scored its
+ zig. Expect the clean count to FALL when this lands -- that is the gate
+ working, not a regression.
+
+{halt_formatter('irc', 'IR')}
 
 Section: Roots
 
@@ -63,7 +86,7 @@ Section: Driver
   opening : [Console, FileSystem] Nothing = act
     src <- read-file-uni "/dev/stdin"
     {frontend_source("src", True, deck_bytes=HOSTED_DECK_BYTES, resolve=False, lift=True)}
-    in let meta = IRTextMeta {{
+    {halt_gate('irc', 'IR')}let meta = IRTextMeta {{
       chapter-title = ch.chapter-title,
       prose = ch.prose,
       section-titles = ch.section-titles,

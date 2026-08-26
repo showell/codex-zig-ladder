@@ -43,7 +43,8 @@ is wrong and the IR loses a root.
 """
 import pathlib
 
-from emit_harness import frontend_source, HOSTED_DECK_BYTES, LIFT_PROSE
+from emit_harness import (frontend_source, HOSTED_DECK_BYTES, LIFT_PROSE,
+                          halt_gate, halt_formatter)
 
 HERE = pathlib.Path(__file__).parent
 
@@ -73,11 +74,7 @@ Section: Halt
  CODEGEN-HALTED is the marker the rest of the tree already refuses on by
  name (ast/f4_boot.py), which is why the text is that and not a new word.
 
-  czg-halted : List Diagnostic -> Text
-  czg-halted (es) =
-   let n = list-length es
-   in let e0 = list-at es 0
-   in "CODEGEN-HALTED: " & show n & " error(s); no zig emitted; first CDX" & show (e0.code) & " " & (e0.message) & "\n"
+{halt_formatter('czg', 'zig')}
 
 Section: Roots
 
@@ -93,9 +90,7 @@ Section: Driver
   opening : [Console, FileSystem] Nothing = act
     src <- read-file-uni "/dev/stdin"
     {frontend_source("src", True, deck_bytes=HOSTED_DECK_BYTES, resolve=False, lift=True)}
-    in let czg-bag = bag-merge-all [bag-from-list (toks.errors), doc.parse-bag, rr.bag, cr.state.bag]
-    in if bag-has-errors czg-bag then print-text (czg-halted (bag-errors czg-bag))
-    else let meta = IRTextMeta {{
+    {halt_gate('czg', 'zig')}let meta = IRTextMeta {{
       chapter-title = ch.chapter-title,
       prose = ch.prose,
       section-titles = ch.section-titles,

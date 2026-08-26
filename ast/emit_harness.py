@@ -167,6 +167,60 @@ LIFT_PROSE = """ The lift is opening.codex:1713-1720, and it is on that path onl
  driver's."""
 
 
+# The four bags the driver merges before it decides whether to emit at all:
+# lex errors from `toks.errors` (opening.codex:449 wraps the same list), the
+# parse bag from `doc.parse-bag` (:485), the resolve bag from `rr.bag`, and the
+# type checker's from `cr.state.bag`, which is what `check-bag0` at :620 merges.
+#
+# It lives HERE, once, and not in the two generators, because a copied list is
+# what this tree keeps paying for. `ir-emit-roots` drifted from upstream's six
+# to four in BOTH harnesses and no oracle could see it -- being wrong together
+# looks exactly like being right. Then the error gate itself existed in one
+# harness and not the other, and the ungated one was used all night as an
+# oracle: on 2026-08-26 it reported a three-line program to Damian's compiler
+# lane as a type-checker soundness hole, then as a miscompile in our plug, and
+# it was neither. The seed refused it with CDX2001 and so did the GATED harness
+# built from the same plug.
+#
+# `check_harness_gates.py` still compares the generated files, because a
+# constant shared in python does not prove the emitted Codex agrees.
+BAG_MERGE = ("bag-merge-all [bag-from-list (toks.errors), doc.parse-bag, "
+             "rr.bag, cr.state.bag]")
+
+
+def halt_gate(prefix, artifact):
+    """The driver's error gate, for a harness that stands in for it.
+
+    `prefix` names the harness's bag/formatter (`czg`, `irc`); `artifact` is
+    what is NOT emitted, for the message. Returns the two Codex lines that go
+    after the frontend and before the emit, ending in `else` so the caller's
+    next line continues the let-chain.
+
+    CODEGEN-HALTED is the marker the rest of the tree refuses on by name
+    (ast/f4_boot.py), which is why the text is that and not a new word.
+    """
+    return (f"in let {prefix}-bag = {BAG_MERGE}\n"
+            f"    in if bag-has-errors {prefix}-bag "
+            f"then print-text ({prefix}-halted (bag-errors {prefix}-bag))\n"
+            f"    else ")
+
+
+def halt_formatter(prefix, artifact):
+    """The `<prefix>-halted` definition. The driver's PRINTERS are not
+    reachable -- they live in opening.codex, which cannot be bundled beside a
+    harness defining `opening` -- so this prints the count and the first error
+    rather than the full report."""
+    nl = chr(10)
+    return (
+        "  " + prefix + "-halted : List Diagnostic -> Text" + nl
+        + "  " + prefix + "-halted (es) =" + nl
+        + "   let n = list-length es" + nl
+        + "   in let e0 = list-at es 0" + nl
+        + '   in "CODEGEN-HALTED: " & show n & " error(s); no ' + artifact
+        + ' emitted; first CDX" & show (e0.code) & " " & (e0.message) & "' + nl + '"'
+    )
+
+
 def frontend_source(src, passes, scan=True, deck_bytes=None, resolve=True, lift=False):
     """The compiler's own sequence from source text to a lowered IRChapter,
     bound as `ir`. Every program built here runs exactly this -- the oracle
