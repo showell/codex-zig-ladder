@@ -1470,7 +1470,32 @@ pattern lands in C# as the identifier `True` rather than the keyword
 measurement are assigned, pinned to `when-bool-cross` and
 `when-bool-pattern`, with credit to us in the changelist.
 
-**The read-across-plugs suggestion was taken literally:** the same lane
+**MEASURED ACROSS PLUGS 2026-08-26 22:1x, and the reach was THREE plugs,
+not one.** The Cobblestone lane reproduced it by RUNNING the emitted
+programs rather than by reading:
+
+- **csharp** -- the three sites we named.
+- **javascript** -- not predicted by us at all.
+- **their absorbed copy of the zig plug** -- our fork carried our fix,
+  their copy did not.
+
+All three fixed on main, pinned to `when-bool-cross` and
+`when-bool-pattern`, 11 rows green per plug, credit to us in the
+changelist.
+
+**The sweep we suggested found two defects nobody had reported**, which
+is the return on reading a class across plugs rather than fixing one:
+
+- the **csharp** TCO match emits an unreachable catch-all that Roslyn
+  refuses as CS8510;
+- the **javascript** plug's `CharTy` literals were missing the BigInt
+  suffix, **so every char arm fell through silently.**
+
+That second one is a silent wrong answer -- the class we care most about
+and the one a source read does not find. It was reachable only because
+the fix was measured by execution.
+
+**The original read-across-plugs suggestion was taken literally:** the same lane
 sweeps the remaining wired plugs, and the wasm plug gets the two cross
 tests gated early. Findings 50 and 36 are queued upstream as leads from
 the same table.
