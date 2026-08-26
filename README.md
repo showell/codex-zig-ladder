@@ -1010,30 +1010,27 @@ pulled the shared checkout mid-run" stop being a thing that can happen.
 How the Codex clone `CODEX_ROOT` points at is managed. This lived in nobody's
 head for a while and the head it lived in got confused, so, written down:
 
-**The checkout carries UNCOMMITTED patches on purpose, and `git -C
-$CODEX_ROOT status` is how you see them.** As of 2026-08-25 there are four
-modified files and all four are our own open PRs, applied so that what we
-measure is the tree we believe in rather than bare `upstream/master`:
+**We measure on our fork's STACK, not on bare upstream, and the stack is a
+BRANCH.** `u50-rebank` points at the pin (`0c4327d5`, which is
+`upstream/master` verbatim). `u50-stack` is that plus the changes we have
+sent and they have not yet taken -- the optimistic version of the next
+Update -- because a number taken on bare upstream is a number about a
+compiler already missing our own fixes. `git diff u50-rebank..u50-stack` is
+exactly the stack, and `ladder_status.py` prints it.
 
-    codex/plugs/common/IRTextParser.codex             PR 89
-    codex/plugs/csharp/CSharpEmitterExpressions.codex PR 89
-    codex/plugs/csharp/CSharpPlug.codex               PR 89
-    codex/plugs/zig/ZigEmitter.codex                  PR 85 (finding 42)
+As of 2026-08-26 that is one commit carrying four files: `ZigEmitter.codex`
+(PR 85, finding 42) and `IRTextParser.codex` plus two C# call sites (PR 89).
+When a PR lands upstream, drop its part at the pin move rather than carrying
+it twice.
 
-That last one was copied in from sandbox `20260825T160701Z-f42-row` while
-chasing what turned out to be a bug in our own corpus checker, and it stayed
-because it belongs there: PRIORITIES' standing rule is to measure against
-our fork's stack -- upstream plus everything sent and not yet taken, the
-optimistic version of the next Update -- and to name that stack in the PR.
-A number taken on bare upstream is a number about a compiler we already know
-is missing our fixes.
-
-**They are patches, not commits, so nothing protects them.** A `git
-checkout`, a pin move, or a `git stash` that is never popped drops them
-silently, and the next measurement is then against a different compiler than
-the one the last measurement named. `ladder_status.py` prints the list for
-exactly that reason. When a PR lands upstream, drop its patch at the pin
-move rather than carrying it twice.
+**These were uncommitted working-tree edits until 2026-08-26**, and this
+paragraph used to say they were uncommitted on purpose. They were not: they
+were applied to test something and never committed, and the justification
+was written afterwards. A patch is not a commit -- a `git checkout`, a pin
+move, or a stash nobody pops drops it silently, and the next measurement is
+then against a different compiler than the last one named, with nothing
+recording the difference. Committing costs nothing and removes the whole
+class.
 
 **Two remotes, with different jobs.** `upstream` is `damiant3/Cobblestone`
 -- renamed from `NewRepository` on 2026-08-25, with the interim push that

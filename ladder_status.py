@@ -86,13 +86,27 @@ def main():
     for pid, args in jobs:
         print(f"compute  {pid} {args[:60]}")
 
-    # The checkout carries our unmerged PRs as UNCOMMITTED patches, on
-    # purpose (README "The checkout"): we measure against our fork's stack,
-    # not bare upstream. Nothing protects a patch, so a session that has
-    # lost its state must be told they are there before it trusts a
-    # measurement or moves the pin.
-    patched = sh(f"git -C {CODEX} status --porcelain | awk '{{print $2}}'")
-    print(f"patches  {' '.join(patched.split()) if patched else 'none (checkout is clean upstream)'}")
+    # WHICH COMPILER a measurement was taken against. We measure on our
+    # fork's stack -- the pin plus the PRs we have sent and they have not
+    # taken -- so a session that has lost its state has to be told what is
+    # applied before it trusts a number or moves the pin.
+    #
+    # Those changes lived as uncommitted working-tree edits until
+    # 2026-08-26, which was an accident dressed up as a decision (Steve:
+    # "that seems like an unnecessary footgun"). They are commits on a stack
+    # branch now, so they survive a checkout and `git log` says what they
+    # are. Loose edits are still reported, because an uncommitted change is
+    # exactly the thing nobody remembers making.
+    branch = sh(f"git -C {CODEX} rev-parse --abbrev-ref HEAD")
+    stack = sh(f"git -C {CODEX} log --oneline upstream/master..HEAD")
+    n = len(stack.splitlines()) if stack else 0
+    print(f"codex    {branch} = upstream/master"
+          + (f" + {n} commit{'s' if n != 1 else ''}" if n else " exactly"))
+    for line in stack.splitlines():
+        print(f"           {line}")
+    loose = sh(f"git -C {CODEX} status --porcelain | awk '{{print $2}}'")
+    if loose:
+        print(f"UNCOMMITTED in the checkout: {' '.join(loose.split())}")
 
     logs = sorted((LADDER / 'logs').glob('*.log'), key=lambda p: p.stat().st_mtime)
     if logs:
