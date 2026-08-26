@@ -111,6 +111,13 @@ the whole point of writing them down:
     2  finding 46's PR   fix done and verified, not sent          -> item 2
     3  the Roc ports     2 of ~12 done, the runner exists         -> item 3
 
+**The rebank is unblocked and is the next BOX job.** Its HEAD was the last
+open decision and item 2 settles it: `zig-plug-tvar-not-an-answer`. One run
+of `ast/rebank_all.sh` writes `truth/u50` and pays three debts at once --
+the sweep that has been owed since the emitter change, `allcycles.sh` dying
+at rung one, and `gen_ir_to_codex_roundtrip_harness.py` refusing to
+regenerate in a fresh tree. All three are the same missing bank.
+
 **Update 50's absorb is otherwise CLOSED as of 16:32.** The harness lift is
 in and verified, the bare gold for u50 is banked and committed, the tier set
 and both corpora are at their known baselines. What is NOT done is the
@@ -148,14 +155,18 @@ rebank, and it is blocked on a decision rather than on the box -- see item 2.
   because of the BASE, not because any port commit contains it, so
   cherry-picking the ports onto the pin is mechanical whenever they go out.
   Nothing to do now; keep the commits test-only and it stays that way.
-- **`corpus/census.json` was still the 2026-08-25 bank; being re-banked
-  2026-08-26 17:0x** (`corpus_run.py --changed --bank`, ~25 min, compute
-  lock, no QEMU). The census item said it was waiting on the T38 item at the
-  top of this file, and that item is DONE, so the blocker it named is gone.
-  It banks against the CURRENT stack -- the pin plus finding 46's fix, with
-  post-lift natives `939d57187a37` -- which is the standing rule (measure
-  against our fork's stack and NAME it), and the census's own `meta` records
-  both tool fingerprints, so the bank says what produced it.
+- **`corpus/census.json` is BANKED against Update 50, 2026-08-26** (596
+  programs, natives `939d57187a37` = the pin plus finding 46's fix, ~28 min).
+  Six verdicts moved and all six are accounted for in the commit; the one
+  that was NOT predicted is `typeclass-smoke` going `refused -> markers`,
+  which is finding 46's fix working -- it now names `unresolved type variable
+  T44 of describe` where it used to emit a bogus type for zig to reject.
+  **The measurement that came out of it is in JUSTIFICATIONS and matters more
+  than the bank: only 91 of the 135 distinct "emitter gaps" are gaps.** Forty
+  are the finding-46/47 type-variable class, keyed by FUNCTION NAME, covering
+  51 program-hits between them where one real gap reaches 123 alone. The
+  135/133/135 numbers quoted across 2026-08-26 are mostly that keying.
+  **Rank by program-hits, not distinct count.**
 - **`native/` in the main checkout was replaced 2026-08-26 16:44** with the
   binaries from `~/runs/20260826T160728Z-u50-harness-lift/ladder/native`
   (post-T38-fix, post-lift); the tree's own were stale by a morning. **The
