@@ -115,73 +115,130 @@ loop unless it says otherwise.
 
 ---
 
-## 1. The `T38`s are diagnosed and fixed; what is left is the verification and the PR
+## 1. Teach both harnesses to lift, or the gate stays red and the natives stay blind
 
-**Objective: OUTBOUND. KEYBOARD to write the PR; the measurement is BOX and
-is already running.** Diagnosed and fixed 2026-08-26, the same day the gate
-caught it.
+**Objective: INTEGRITY, and it BLOCKS the Update 50 rebank. KEYBOARD to
+write** -- it is two harness chapters and the driver already shows what to
+write. **BOX to verify** (`codexzig_build.sh`, ~10 min).
 
-**The item's own question is answered, and the hypothesis it carried was
-wrong.** It asked whether the wire carries `T38` (compiler) or the emitter
-writes it (plug). **The emitter writes it. OURS.** It is not finding 44 and
-not implicit type parameters: it is the LAMBDA LIFT, which `opening.codex`
-runs in the driver AFTER the resolve pass, so a `__lam_N` def carries the
-types its lambda was HANDED. That is intended -- CSharpEmitter.codex states
-it above `is-lam-def` and answers `dynamic`. The zig plug has to recover the
-type instead, and its recovery walk could not tell "no answer here" from "an
-answer that is itself a variable", so it stopped one argument short of the
-list whose element type was the answer. **Finding 46 has the five lines of IR
-and the whole account.**
+**Update 50 turned on lambda lifting for the source-emitting path, and our
+harnesses did not follow.** `opening.codex` goes from one `lift-lambdas`
+call to two between the interim `0c4327d5` and the release `8cc80685`, and
+the new one is on the path that feeds text plugs:
 
-**Fixed on `zig-plug-tvar-not-an-answer` (`a961dcb6`, off the pin
-`8cc80685`).** Two halves from one root: the recovery rule (concrete beats
-variable, variable beats nothing, nothing is the `@compileError` marker that
-could not fire before because a variable answer looked like success), the two
-copied walks collapsed into the one the prose already claimed they were, and
-the closure trampoline taught to apply a generic callee's type arguments --
-the seventh site of "a generic name must be applied", which the emitter's own
-prose predicted.
+    -    else let raw-defs = fe.ir.defs
+    +     in let lifted-ir = deck-record (lift-lambdas (fe.ir) lift-ceiling)
+    +     in let raw-defs = lifted-ir.defs
+    -      let ir = ir-prune-unreachable-roots (fe.ir) ir-emit-roots
+    +      let ir = ir-prune-unreachable-roots lifted-ir ir-emit-roots
 
-**Measured so far:**
+The release commit message names it in four words -- "the DDC witness holds
+after the lambda-lift break". **Before Update 50 a plug never received a
+`__lam_N` at all.** `ast/CodexZigHarness.codex` and `ast/CodexIrHarness.codex`
+have **zero** `lift-lambdas` calls, which was correct when they were written
+and is drift now.
 
-    warmups/lamtvar                 1 error  ->  WARMUP PASS against bare metal
-    native_build.sh codexir        47 errors ->  built, 24,819,896 bytes
-    codexir.ir                     8,669,320 bytes, byte-for-byte the failing
-                                   run's size -- nothing above the emitter moved
+**Two things follow, and they are the same fix.**
 
-**The reproducer is thirty lines and it is in the tree**: `warmups/lamtvar.codex`,
-run with `./warmups/regen.sh lamtvar` then `./cycle.sh lamtvar`. Its two rows
-differ in one thing -- whether the mapped function has a name -- and it had to
-be routed through the SEED, because `native/codexir` does not lift lambdas at
-all. Getting it there is why `warmups/regen.sh` now cite-resolves the way
-every other runner already did.
+    ast/codexzig.zig       (seed + ring plug, through the DRIVER)   300 __lam defs
+    ast/codexzig.self.zig  (one program, through OUR harness)         0 __lam defs
 
-**Running now, detached: `~/runs/20260826T150915Z-u50-tvar-verify`.** Six
-legs, `tail CHAIN-STATUS.txt`: natives, `codexzig_build.sh` (THE GATE),
-`ast/allcycles.sh` (the sweep any emitter change owes), tiers `--bare` then
-`--zig`, and the corpus census. **Expect the census to MOVE**: the unresolved
-type-variable marker now fires where a variable answer used to pass, so read
-the histogram against `corpus/census.json` rather than against memory.
+1. **The codexzig FIXED POINT fails**, and not because of the emitter fix
+   below. The two arms are not running the same pipeline, so they emit
+   different programs -- `return __lam_0(p0, p1);` against
+   `return emit_negate(_lam3_s, cx_list_at(_lam3_a, 0));`, first divergence
+   at byte 101,750. **It held last night because NEITHER arm lifted**, so
+   the property was never tested against a subject containing a lifted
+   lambda, and the first time it was, it failed. That is weaker than "codexzig
+   reaches a fixed point" has been sounding.
+2. **`native/codexir` cannot pose the question either**, so `corpus_run.py`,
+   `tier_run.py --zig` and the whole tier set are structurally blind to every
+   defect that needs a lifted lambda. All of them stayed green through the
+   T38 failure. **A green suite is a statement about the questions the
+   instrument can ask.**
 
-**What is left.**
+**The work.** Add the lift to both harnesses exactly as `opening.codex` does
+it -- including the deck reservation, which is not decoration: `lift-lambdas`
+is the whole of the LIFT phase and writes 38 MB on the 2.81 MB selfhost, and
+the ceiling is what makes it stop rather than overrun. Then rebuild the
+natives, re-run `codexzig_build.sh`, and the fixed point is the check that
+says it worked. **Expect the corpus census and the marker histogram to move
+once the natives can lift** -- that is the blind spot opening, not a
+regression, and it is the first honest census this tree has had.
 
-1. Read the chain. The gate leg is what unblocks the Update 50 rebank.
-2. **The PR.** Plugs backlog, `Ladder:` line, and per the standing rule NAME
-   THE STACK -- which for this one is the bare pin, since all eight prior PRs
-   landed and `zig-plug-tvar-not-an-answer` sits directly on `8cc80685`.
-   Cold-read it first; three outbound artifacts in a row had the wrong
-   headline claim.
-3. **Decide which HEAD the rebank runs on.** The fix branch is not the
-   release. A bank taken with our patch under it is not a bank of Update 50,
-   and this is the first time that question has had teeth.
+**This is the second copied-thing-that-fell-behind in one day.** The morning's
+cold read found `ir-emit-roots` at four entries where upstream has six, in
+both harnesses. This is the same failure one level up: not a copied list, a
+copied PIPELINE. **Worth a standing check** -- what else do these harnesses
+reproduce from `opening.codex` by hand?
 
-**The blind spot is the durable finding here, and it should outlive the
-fix.** `lift-lambdas` is the DRIVER's, not `default-ir-pipeline`'s, so
-`native/codexir` never emits a `__lam_N`. Everything built on the natives --
-`corpus_run.py`, `tier_run.py --zig`, and the whole tier set -- is
-structurally blind to this entire class, and all of it stayed green through
-the failure. **The tier set cannot answer a question the natives cannot
-pose.** Whether the natives should lift is item-sized on its own.
+### The T38 half is done
+
+Diagnosed and FIXED 2026-08-26 on `zig-plug-tvar-not-an-answer` (`a961dcb6`,
+directly on the pin). **OURS, the emitter**, latent since Update 44, and the
+item's old hypothesis (finding 44 / implicit type parameters) is REFUTED. A
+recovered type argument that is itself a type variable is not an answer;
+concrete beats variable, variable beats nothing, nothing is the
+`@compileError` marker that could not fire because a variable answer looked
+like success. **Finding 46 has the five lines of IR and the whole account**,
+and the essay is at
+`http://143.244.172.148:9100/notes/a-type-variable-is-not-an-answer.md`.
+
+    warmups/lamtvar          1 error  ->  WARMUP PASS against bare metal
+    native_build.sh codexir 47 errors ->  built, 24,819,896 bytes
+    ast/codexzig.zig        47 errors ->  built, 0 T38 sites, 28,112,141 bytes
+    codexir.ir              8,669,320 bytes, byte-for-byte the failing run's
+                            size -- nothing above the emitter moved
+
+Reproducer in the tree: `warmups/lamtvar.codex`, via `./warmups/regen.sh
+lamtvar` then `./cycle.sh lamtvar`. It has to go through the SEED, because
+the natives do not lift -- which is this item.
+
+### What the verification chain said
+
+`~/runs/20260826T150915Z-u50-tvar-verify`, six legs, 2026-08-26 15:09.
+
+- **natives GREEN**, **codexzig gate RED on the fixed point only** (above).
+- **`allcycles` RED and it is NOT a verdict on the emitter**: the sweep died
+  at `ir_to_codex_roundtrip` on a missing `ast/ir_to_codex.truth`, 0/14 rungs,
+  368 s in. That is the fresh-sandbox restore path, and `truth/u50` does not
+  exist yet because the rebank has not run. **The sweep still owes an
+  answer** and re-running it is the first BOX job after the harness fix.
+- **tiers `--bare` GREEN**, 21 gold files banked to `findings/gold/u50/`.
+- **tiers `--zig` RED, and it is the GOOD red** -- see below.
+
+### COMPILER-18 looks FIXED in Update 50, and the ledger is what said so
+
+`prim-closure`'s `under-mutual` row on BARE METAL, across the three banks:
+
+    u49              not-47
+    seed-6cf4a8e0    not-47
+    u50              47
+
+The arms now AGREE, so tier 14's admission in `gold/EXPECTED.txt` went STALE
+and `tiers_run.py` set the whole set RED to say so. **This is the mechanism
+working exactly as `prim-closure.codex` says it should** -- "it is the whole
+point of the file that the admission becomes STALE the day the arms agree" --
+and it fired on the first u50 bank, with nobody remembering to check. Nothing
+in the zig plug is involved; the bare arm does not touch it.
+
+**Do not just delete the admission.** Confirm the partial application really
+keeps its arity now (read `emit-partial-application` and `is-self-call`
+against the release), then retire the admission, close finding 39, and say so
+on the COMPILER-18 row. **The tier stops being a detector the day it stops
+disagreeing**, so what replaces it is a live question -- that belongs with
+"The tiers stay green, and each one earns its keep".
+
+### Then, and only then
+
+1. **The PR** for the emitter fix. Plugs backlog, `Ladder:` line, and per the
+   standing rule NAME THE STACK -- here that is the bare pin, since all eight
+   prior PRs landed and the branch sits directly on `8cc80685`. **The harness
+   lift is OURS and does not go in it.** Cold-read before sending; three
+   outbound artifacts in a row had the wrong headline claim.
+2. **Decide which HEAD the rebank runs on.** The fix branch is not the
+   release, and a bank taken with our patch under it is not a bank of Update
+   50. First time that question has had teeth.
 
 ## 2. Wire codexzig into the Update ceremony, after the canaries
 
