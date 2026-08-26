@@ -1246,6 +1246,21 @@ call site in `opening` reads
 is an Integer while the body it accepted makes `fa x y` a function. Both
 readings cannot hold, and it committed to both.
 
+**CONFIRMED BY THE COBBLESTONE LANE, 2026-08-26 22:4x**, on the report we
+sent: the row stays withdrawn, and this is *"a type-checker soundness
+hole, full stop."* They read the alias the same way we do -- it never
+reopens the TCO question, because the spine's root is `g` and the gate
+cannot fire.
+
+**Their formulation is alias-INDEPENDENT**, and that matters for the
+control still owed: they state the hole as a body accepted at a function
+type against a declared Integer return, with the call site believing
+Integer in the same IR. Nothing in that sentence depends on the alias.
+So `findings/probe-pr87-direct.codex` cannot retract this finding -- it
+can only fix its SCOPE. If the direct form also compiles clean, the hole
+is not an alias corner but a return-type check that does not run, which
+is wider than what was reported and owes them a prompt correction.
+
 **What this does and does not do to PR 87's row.** It does NOT reopen it.
 The TCO gate matches a self call by NAME, and through an alias the apply
 spine's root is `g`, not `fa`, so `is-self-call` answers False and the
