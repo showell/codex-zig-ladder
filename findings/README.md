@@ -964,13 +964,28 @@ identically. Matching is by POSITION with no name comparison, sound for the
 reason upstream gives about this wire: the IR is well-typed, so a mismatched
 pair cannot arrive.
 
-**A PREDICTION worth testing, because it is what would make this finding
-big.** `corpus/gaps.json` carries 40 distinct `unresolved type variable`
-markers over 51 programs, including `T88 of hamt-fold` in `db-full-test` and
-`T44 of describe` in `typeclass-smoke`. If those are variables inside
-declared types, this one fix clears a large share of them at once. If they
-are not, this fix moves only `roc-iter-map` and the rest are a different
-defect. **Measure it -- do not assume it.**
+**The premise of the big version is CONFIRMED; the outcome is not.**
+`corpus/gaps.json` carries 40 distinct `unresolved type variable` markers
+over 51 programs. Two were read straight out of their IR with the pre-fix
+natives, and both have the variable inside a `ConstructedTy`'s argument
+list -- the arm that is missing:
+
+    typeclass-smoke  (param "__Showable-dict" (ctd "ShowableDict" (args (tvar 44))))
+    db-full-test     (param "m"               (ctd "HamtMap"      (args (tvar 88))))
+
+Neither is a Roc port and neither involves a lifted lambda, so the blocked
+mechanism reaches well past the case that found it.
+
+**What that does NOT establish** is that the fix resolves them: the walk
+must also find a concrete type at the matching position on the ACTUAL side,
+and nothing here has checked that. And `typeclass-smoke` deserves its own
+look rather than being folded into this one -- `describe` also takes
+`(param "x" (tvar 44))`, a BARE variable, which the existing `TypeVar` arm
+already handles, so its failure may instead be the actuals list running
+short and falling through to the return fallback. **One confirmed mechanism
+is not a confirmed cause for all forty.** Re-run
+`corpus_run.py --transpile` after the fix and diff the tvar markers in
+`gaps.json`; that is the measurement, and it costs three minutes.
 
 **Verification owed, in the order PR 85 established:** a tier row that FAILS
 first, then the fix, then the row green on both arms, then natives ->
