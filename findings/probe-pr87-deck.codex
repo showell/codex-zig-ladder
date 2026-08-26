@@ -1,0 +1,23 @@
+Chapter: Pr87Deck
+  cites Foreword chapter Console
+
+ PR 87 falsifier 2, the first of the two untried corners: a self tail
+ call at non-full arity wrapped in `deck-record`, which is typed
+ `a -> a` and so does not change the expression's type.
+
+ PREDICTION: CDX2001, for the same reason their arm E refused --
+ wrapping the self-application in anything at all stops it being a bare
+ self-application in tail position, and the type is unchanged, so the
+ body still has a function type where Integer is wanted.
+
+Section: Functions
+
+  fd : Integer, Integer -> Integer
+  fd (x) (y) = deck-record (fd x)
+
+Section: Entry
+
+  opening : [Console] Nothing
+  opening = act
+   print-line-uni (show (fd 1 2))
+  end

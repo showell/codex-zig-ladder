@@ -1,0 +1,32 @@
+Chapter: Pr87ArmB
+  cites Foreword chapter Console
+
+ PR 87's EXECUTION datum, which the Cobblestone lane asked for: every one
+ of their seven arms was compiled to IR text, not run. This is their arm
+ B -- the one that COMPILES -- given a base case so it terminates, and
+ executed on the zig arm.
+
+ Arm B is a FULL-arity self tail call whose result happens to be a
+ function. It is not the shape PR 87 worried about, and it is the shape
+ PR 87's own reproducer had, which is why that reproducer compiled and
+ could not reproduce.
+
+ `should-tco` will fire on it: one parameter, a tail position, and
+ `is-self-call` matches the name. So the pass rewrites it as a loop and
+ the returned closure must still be the right one.
+
+ PREDICTION: 5. `gb 3` counts down to `gb 0`, which answers the identity
+ lambda, and applying that to 5 gives 5. A wrong answer here would say
+ the TCO rewrite loses the closure the last frame built.
+
+Section: Functions
+
+  gb : Integer -> (Integer -> Integer)
+  gb (x) = if x <= 0 then (\y -> y) else gb (x - 1)
+
+Section: Entry
+
+  opening : [Console] Nothing
+  opening = act
+   print-line-uni (show ((gb 3) 5))
+  end

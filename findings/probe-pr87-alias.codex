@@ -1,0 +1,35 @@
+Chapter: Pr87Alias
+  cites Foreword chapter Console
+
+ PR 87 falsifier 1, the shape the Cobblestone lane's seven arms did not
+ cover: a self tail call at NON-FULL arity reached through a let-bound
+ ALIAS of the definition rather than through its own name.
+
+ PREDICTION, written before this was compiled. Two things, and they
+ point in opposite directions.
+
+ The TYPE CHECKER should refuse it exactly as it refused their arm A:
+ `g x` has a function type, the body must have `fa`'s return type
+ Integer, so CDX2001. The alias changes how the call is spelled, not
+ what it means.
+
+ But if it DID compile, `is-self-call` (Emit/X86_64.codex:75-80) would
+ not fire, because it walks the apply spine to an IrName and compares
+ that name to the definition's. Through an alias the spine root is `g`,
+ not `fa`. So the alias defeats the gate in the SAFE direction -- a
+ missed tail call, not an unsafe one -- and it is therefore not a route
+ to the shape PR 87 worried about.
+
+ A null result here is a reportable result: they asked for it either way.
+
+Section: Functions
+
+  fa : Integer, Integer -> Integer
+  fa (x) (y) = let g = fa in g x
+
+Section: Entry
+
+  opening : [Console] Nothing
+  opening = act
+   print-line-uni (show (fa 1 2))
+  end
