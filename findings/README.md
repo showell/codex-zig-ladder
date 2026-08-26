@@ -1151,6 +1151,54 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
+## 55. `emit-zig-atype` emits ANY unrecognized type name verbatim, with no scope and no refusal -- 12 programs behind one `else`
+
+Found 2026-08-26 22:1x by chasing `queue-test`'s `use of undeclared
+identifier 'a'` and landing on the same line as finding 17's
+`Frequency`. **OURS**, `ZigEmitter.codex:445-447`. Not fixed.
+
+    is ANamedType (name) (s) ->
+     let mapped = zig-lookup-type zig-type-map (name.value) 0
+     in if text-length mapped > 0 then mapped else zig-sanitize (name.value)
+
+**One fallback, two findings, twelve programs.** Record fields and ctor
+payloads arrive as `ATypeExpr` rather than as a resolved `CodexType`, so
+they take this path and never reach `emit-zig-type`. When the name is
+not in `zig-type-map` it is emitted as itself:
+
+- `Frequency`, `Timestamp`, `Duration` -- unit families. **11 programs**,
+  and this is finding 17's part B.
+- `a` -- a source-level TYPE VARIABLE. **1 program**, `queue-test`:
+  `Queue a = record { ... }` in `foreword/core/Queue.codex`, and the
+  emitted line reads `QueueS(T52){ .front = cx_ll_empty(a), ... }`. The
+  definition declares `comptime T52` and the field's element type is
+  spelled `a`, in the same expression.
+
+**This path bypasses everything built for type variables tonight.**
+`emit-zig-type` takes a scope and refuses a stray variable
+(`zig-stray-tvar` / `zig-tvar-scope-refusal`, findings 46 and 47).
+`emit-zig-atype` takes no scope, has no refusal, and answers with the
+source name. So a type variable that arrives as an `ANamedType` rather
+than a `TypeVar` walks past the guard, the scope check and the marker,
+and lands in the output as an undeclared zig identifier.
+
+**Why it is loud rather than wrong:** an undeclared identifier is a zig
+error, so nothing ships a wrong answer. It is also invisible to the
+marker histogram that ranks emitter work, because it produces no marker
+-- the same blind spot finding 17 named in 2026-08-19 and the reason its
+reach was undercounted for a week.
+
+**The fix is one `else`, and it is the same `else` for both symptoms:**
+resolve the name against the unit-defs and the enclosing definition's
+type parameters, and refuse with a marker when neither answers. Doing it
+also lets the histogram see the class.
+
+**Falsification attempted:** the alternative was that `a` and
+`Frequency` are two different defects that happen to look alike. Refuted
+by reading the path -- both are `ANamedType` whose `name.value` misses
+`zig-type-map`, and both reach the same `zig-sanitize (name.value)`.
+They differ only in what the name means.
+
 ## 54. The prelude's own locals shadow user top-level names, and about forty-five of the commonest identifiers are live ammunition
 
 Found 2026-08-26 22:0x by the corpus reading pass, looking for something

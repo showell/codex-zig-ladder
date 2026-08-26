@@ -262,11 +262,17 @@ That `void` is what makes `w` and `h` void, which is what makes
 `(w +% h)` an `invalid operands: 'void' and 'void'`.
 
 **(B) Record FIELDS never reach `emit-zig-type`.** They arrive as
-`ATypeExpr` -- `(a-named "Frequency")` -- and the field path emits the
-name verbatim (`sound-test.zig:844`: `ob_sample_rate: Frequency,`), which
-is undeclared in zig. This needs the `unit-def` consumed and the name
-registered. Buys the other 11. **The path has NOT been read yet** and the
-cost is unestimated.
+`ATypeExpr` and take `emit-zig-atype`, whose `ANamedType` arm emits any
+unrecognized name verbatim (`ZigEmitter.codex:445-447`). **The path HAS
+now been read, and it is finding 55**: the same `else` also emits a
+source-level TYPE VARIABLE verbatim, which is `queue-test`'s
+`cx_ll_empty(a)`. So part B buys **12 programs, not 11**, and the fix is
+one `else` -- resolve the name against the unit-defs and the enclosing
+definition's type parameters, and refuse with a marker when neither
+answers.
+
+Note that this path takes **no scope and has no refusal**, so every
+type-variable guard built on 2026-08-26 walks straight past it.
 
 **Fixtures: (A) needs none.** `codex/test/unit-family.codex` is 30 lines,
 one unit family, four expected values, nothing else going on -- a unit
