@@ -1229,6 +1229,23 @@ unbuilt).** Recorded first so the result cannot be rationalised after.
 void shim for the thread to enter. The Real arm wants item 1c's
 `cx_real_to_text` and should refuse until it exists.
 
+
+**BUILT AND MEASURED 2026-08-26 21:43 (`f52-f53`, codex `31be533e`).
+FIXED.** **Zero `startFn` refusals remain.** Corpus match 225 -> 263,
+refused 69 -> 30, all 326 programs rebuilt.
+
+**Prediction 2 was WRONG, and wrong in the good direction.** It said
+"they will NOT all reach match, expect new refusal classes as these 40
+are examined for the first time -- inductive-list at 40x the size."
+They essentially all reached match. Exactly TWO new refusals surfaced
+(`fork-nested` and `par-map`, `invalid operands: 'struct' and
+'struct'`), not the 25 the prediction braced for. The hedge toward
+pessimism was the wrong call and the fix was cleaner than its author
+expected. Recorded because a prediction that is only ever checked when
+it is right is not a prediction.
+
+`neg-real-repro` moved `refused -> markers`: the entry Real refusal
+firing with its own message, as designed.
 ## 52. A `when` on a Boolean reaches the plug as the SPELLING `True`, and the plug emits it into zig, which has no such identifier
 
 Found 2026-08-26 21:0x by classifying all 112 corpus refusals by cause --
@@ -1311,6 +1328,12 @@ happened to read and hedged it twice; the class was three times bigger.
 Hedging the confidence was right and the scope estimate was still low --
 those are different things, and only the first was hedged.
 
+
+**BUILT AND MEASURED 2026-08-26 21:43 (`f52-f53`, codex `31be533e`).
+FIXED.** `when-bool-cross` and `when-bool-pattern` both `refused ->
+match`, printing exactly the predicted values. No `frm: 100` -- the
+inverted-arms answer this program was written to catch did not appear.
+No other corpus program moved from this change, as predicted.
 ## 51. A refusal that replaces an EXPRESSION strands the parameters that fed it, and zig reports the stranding, never the refusal
 
 Found 2026-08-26 20:08 by `verify_emitter.sh` legs 1 and 4 on the
