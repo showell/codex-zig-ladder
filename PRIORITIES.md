@@ -249,6 +249,24 @@ the same programs finding 47 governs).**
 6. Sweep stays 14/14. This is the leg that would catch a unit value
    whose printed answer moved.
 
+**RESULT, chain `f17-f54` on codex `cab52a35`, 2026-08-26 22:32.**
+Corpus `match 263 -> 269`, `refused 30 -> 24`. Six moved, every one
+`refused -> match`, and **nothing that matched stopped matching** --
+prediction 5, the one that mattered, held:
+
+    implicit-convert  media-codec-test  unit-family
+    unit-family-mixed  unit-smoke  units-foreword
+
+Two of those (`unit-family-mixed`, `media-codec-test`) were not named in
+the prediction, so part A reached further than the four clean fixtures.
+The 11 `undeclared Frequency/Timestamp/Duration` did not move, as
+predicted -- **part B is still open and is now item 1f(B) + finding 55.**
+
+**Prediction 3 FAILED: finding 54's two programs did NOT move**, and the
+failure is worth more than the six that passed. See finding 54 -- the
+surface is 66 names, not 45, because the first extraction never looked
+at prelude function PARAMETERS.
+
 **Objective: COMPLETENESS. KEYBOARD to write, BOX to verify.** Raised to
 the top 2026-08-26 on Steve's call: these have been standing in front of
 more interesting defects, and the corpus agrees -- after the f52/f53
