@@ -225,6 +225,60 @@ because the tvar marker had been standing in front of finding 48.
 NOT BUILT. The refusal is correct and zig reports the parameter it stranded
 instead. Next build settles it.
 
+## 1f. Unit families are 53% of everything left, and half the fix is ONE ARM
+
+**Objective: COMPLETENESS. KEYBOARD to write, BOX to verify.** Raised to
+the top 2026-08-26 on Steve's call: these have been standing in front of
+more interesting defects, and the corpus agrees -- after the f52/f53
+build they are **16 of the 30 remaining refusals**.
+
+**It is two fixes, and only the first is easy.**
+
+**(A) `emit-zig-type` maps `UnitTy` to `"void"`** (`ZigEmitter.codex:296`)
+and should recurse into the backing type. **One arm.** Buys the 5 clean
+programs (`unit-family`, `unit-smoke`, `units-foreword`,
+`implicit-convert`, and the second `void`/`void`).
+
+The evidence that it is only this: `unit-family`'s emitted body is
+already arithmetically CORRECT end to end --
+
+    const w = Centimeter(20);                        // 20 *% 10   = 200
+    const h = Meter(1);                              // 1 *% 1000  = 1000
+    const p = ((w +% h) *% 2);                       // 2400
+    cx_print_line(cx_show_int(p));                   // 2400
+    cx_print_line(cx_show_int(@divTrunc(p, 10)));    // 240
+    cx_print_line(cx_show_int(@divTrunc(p, 1000)));  // 2
+    cx_print_line(cx_show_int((50 *% 2)));           // 100
+
+and its `.expected` is `2400 / 240 / 2 / 100`. Scale factors multiply,
+conversions inlined to `@divTrunc`, `double-length (Millimeter 50)`
+constant-folded. The only wrong thing in the program is the return type:
+
+    fn Centimeter(__fv: i64) void {   <- void, should be i64
+        return b0: { const __unit_0 = (__fv *% 10); break :b0 __unit_0; };
+    }
+
+That `void` is what makes `w` and `h` void, which is what makes
+`(w +% h)` an `invalid operands: 'void' and 'void'`.
+
+**(B) Record FIELDS never reach `emit-zig-type`.** They arrive as
+`ATypeExpr` -- `(a-named "Frequency")` -- and the field path emits the
+name verbatim (`sound-test.zig:844`: `ob_sample_rate: Frequency,`), which
+is undeclared in zig. This needs the `unit-def` consumed and the name
+registered. Buys the other 11. **The path has NOT been read yet** and the
+cost is unestimated.
+
+**Fixtures: (A) needs none.** `codex/test/unit-family.codex` is 30 lines,
+one unit family, four expected values, nothing else going on -- a unit
+test that happens to live in the corpus. So are `unit-smoke` and
+`units-foreword`.
+
+**(B) does want one.** Its 11 programs are `av-codec-test`,
+`edge-mesh-route`, `ota-update`, `sound-test`, `synth-test` and friends --
+big, messy, plenty else wrong with them. A new fixture is about ten
+lines: one chapter, one unit family, one record with a field of that
+type.
+
 ## 1a. `show` has five type cases and the plug implements one -- WRITTEN, NOT BUILT
 
 **Written 2026-08-26 20:2x in `8b641203`. Text shows as itself, Boolean as
@@ -283,13 +337,23 @@ inside finding 42.
 pile is 70 (69 refused + 1 crashed), and it is more concentrated than
 before, not less:
 
-     40  startFn return type (thread entry)      finding 53   fix staged
-     11  undeclared Frequency/Timestamp/Duration finding 17   unit families
-      3  expected type 'void', found comptime_int             unclassified
-      2  undeclared identifier 'True'            finding 52   fix staged
+     40  startFn return type (thread entry)      finding 53   FIXED
+     11  undeclared Frequency/Timestamp/Duration finding 17   item 1f (B)
+      3  expected type 'void', found comptime_int finding 17   item 1f (A)
+      2  undeclared identifier 'True'            finding 52   FIXED
       2  expected 1 argument(s), found 0                      unclassified
-      2  invalid operands: 'void' and 'void'                  unclassified
+      2  invalid operands: 'void' and 'void'     finding 17   item 1f (A)
      10  singletons (shadowing, switch exhaustiveness, sin, CxFn1, ...)
+
+**AFTER the f52/f53 build the pile is 30**, and it is mostly one thing:
+
+     16  unit families (three messages, one gap)  finding 17   item 1f
+      2  invalid operands: 'struct' and 'struct'              NEW, unmasked
+      1  IList depends on itself                 finding 48
+     11  singletons and small classes
+
+The 2 `'struct' and 'struct'` are `fork-nested` and `par-map`, and both
+were `startFn` refusals before -- **newly visible, not a regression.**
 
 The `found 'bool'` class (41) is GONE and the `found 'f64'` class (2) has
 become named markers -- both fixes in that build confirmed from a second
