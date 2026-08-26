@@ -96,9 +96,25 @@ this.
                    in one sandbox run. NOT YET RUN -- the box is sweeping
                    finding 47.
 
-**If it survives**, the corpus already carries the class: 5 programs hit `no
-zig type for this codex type` and 1 hits `no zig type for this applied
-type`, against a post-47 histogram of 95 distinct gaps.
+**The reach is MEASURED, and it is a depot class rather than an artifact of
+porting.** Of the six programs still hitting a `no zig type` marker after
+finding 47's fix, every lifted lambda in four of them is error-typed:
+
+    effect-launder-lazy     1 of 1 lifted lambdas error-typed
+    ir-check-clean          2 of 2
+    lazy-smoke             12 of 12
+    linear-capture-once     1 of 1
+    ota-gate-real           0 lifted lambdas    <- NOT this class
+    type-name-existence     'no zig type for this APPLIED type', a different marker
+
+**`ota-gate-real` is excluded on purpose**, and naming it matters more than
+the four that fit: it carries the same marker with no lifted lambda in it at
+all, so its cause is something else and folding it in would inflate this
+hypothesis by one program on a marker-name match. That is the mistake the
+census taught this morning -- a marker name is not a mechanism.
+
+So the candidate population is four depot programs plus one Roc port, all
+sharing the shape, against a post-47 histogram of 95 distinct gaps.
 
 ### H1. FALSIFIED### H1. FALSIFIED 2026-08-26 17:52 -- Update 50 made the largest ladder unit uncompilable to IR-CCE in a 3 GB guest
 
