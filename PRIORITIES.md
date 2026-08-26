@@ -146,6 +146,24 @@ time.
    right check and is the same discipline we got wrong on finding 56 --
    applied to our test DATA rather than our instrument.
 
+   **The ports are a TWO-WAY oracle, and tomorrow's run should not jump
+   to the fun conclusion.** Roc's expected values are battle-tested
+   across several Roc backends -- but that is INTERNAL consistency, the
+   same thing a self-hosting fixed point buys and the same thing it
+   cannot detect. If Roc computes a value wrongly and consistently, all
+   their backends agree and nobody sees it. Codex bare metal is very
+   likely the first outside witness those snippets have had.
+
+   So discriminate before claiming: if **bare metal and our zig arm
+   agree with each other** and both disagree with Roc's `.expected`,
+   there are still two readings -- our PORT does not faithfully express
+   the same computation (ours to fix, and the likelier one), or Roc is
+   wrong (theirs, and worth reporting to them). Settle it by re-reading
+   the port against the original snippet BEFORE writing to anyone.
+   Nothing in the current 3-match/8-fail split is evidence either way:
+   the eight fail to BUILD, so no disagreement about a VALUE has been
+   observed yet.
+
    Three outcomes: bare metal agrees and the ports are sound; bare metal
    disagrees and our `.expected` is a bad adaptation, which is ours to
    fix and should be volunteered rather than waited for; or bare metal
