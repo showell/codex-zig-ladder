@@ -52,7 +52,7 @@ A finding with no such line is a finding nobody tried to break.
 
 *Not findings. Each carries what would refute it and what that costs.*
 
-### H1. Update 50 made the largest ladder unit uncompilable to IR-CCE in a 3 GB guest
+### H1. FALSIFIED 2026-08-26 17:52 -- Update 50 made the largest ladder unit uncompilable to IR-CCE in a 3 GB guest
 
 Raised 2026-08-26 17:42, when `ast/rebank_all.sh` died at 11/12 on
 `passes_to_x86` -- 2.65 MB of source, the largest unit. Its CDX compile
@@ -84,14 +84,25 @@ not fit is the one worth keeping.**
                    since 17:44 (`~/runs/20260826T171739Z-u50-rebank-tvar/
                    retry-passes.log`).
 
-**Consequence if it survives:** `truth/u50` cannot be banked, so the sweep,
-`allcycles.sh` and the roundtrip harness generator stay blocked, and Update
-50 cannot be absorbed on this box without raising `CODEX_MEM_MB` (Steve's
-call) or finding the mechanism.
- A finding is moved only when
-its question is answered AND its fix exists; "fixed but not sent upstream" is
-closed for this register's purposes, and `PRIORITIES.md`'s outbound queue is
-what tracks the sending.
+**FALSIFIED, by its own stated test, nine minutes after it was raised.** The
+retry of that one unit COMPLETED: `stream: 14,029,343 bytes in 219 s`,
+`SIZE: 14029026, got 14029026`, `wrote ast/passes_to_x86.ir`. A stall that
+does not reproduce is not the release -- a tree cannot explain a moving
+failure -- so this is transport or QEMU, and it belongs with the transport
+defect rather than with Update 50. The rebank was resumed from the sweep
+rather than re-recording eleven good units.
+
+**One number worth keeping out of it.** The IR is 14,029,026 bytes against
+the interim's 13,883,457 -- **+145,569, about 1%** -- which is the lift
+adding lifted definitions to the largest unit, and it compiles fine. So the
+lift's cost on this path is measured now, and it is small. That was the
+thing H1 was reaching for, and it turns out to be the opposite of a problem.
+
+**What it would have cost to file this as a finding instead:** a numbered
+entry in the register asserting a release regression, and a retraction. The
+hypothesis form was written twenty minutes before this and H1 was its first
+use.
+
 
 This directory holds the findings and the probes that make them runnable. It
 is discussion material rather than a proposed addition to the Codex tree,
