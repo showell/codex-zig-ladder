@@ -899,6 +899,78 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
+## 47. Lambda lifting on the plug-facing path promotes an UNBOUND type variable into a lifted definition's signature, and the same definition's body contradicts it
+
+Found 2026-08-26 on the ladder droplet, by the second snippet ported from
+Roc's closure/recursion suite (PRIORITIES item 6), on its first run.
+**UPSTREAM**, `codex/compiler/opening.codex`, and **new at Update 50** --
+before it, `emit-ir-cce` did not lift, so no text plug ever received a
+`__lam_N` and this could not be reached.
+
+**The reproducer is a corpus program**, `codex/test/roc-iter-map.codex` on
+branch `roc-corpus-ports`: a lazy stream as a record holding a closure,
+mapped over, first two items read. Roc expects 24.
+
+**What the wire carries.** Both of the lifted lambdas come out with a return
+type that is a type variable bound NOWHERE, while the body of the same
+definition uses the concrete type. The sharpest of the two needs no
+generics at all -- `range-to : Integer, Integer -> Iter Integer` is
+monomorphic:
+
+    (def "__lam_1" "" (params (param "start" int-default)
+                              (param "stop" int-default)
+                              (param "ignored" int-default))
+      (fn int-default (fn int-default (fn int-default
+        (ctd "Step" (args (tvar 16))))))          <-- the SIGNATURE
+      (if (binary eq ...)
+        (name "Done" (ctd "Step" (args int-default)))   <-- the BODY
+        ...))
+
+`tvar 16` appears in the signature and in no parameter, so no call site can
+supply it; `int-default` is sitting in the body two lines down. The
+definition contradicts itself.
+
+**It is the RELEASE COMPILER's own wire, not our harness's.** Measured by
+running the cite-resolved unit through the Update 50 seed under QEMU
+(`ring_compile.py`, IR-CCE mode) and decoding with `cce.py`. That wire and
+`native/codexir`'s output differ in exactly one token -- the unit name the
+driver hard-codes, `(chapter "Program")` against `(chapter "RocIterMap")` --
+and agree on all three lifted definitions including `(tvar 16)`. 7148 chars
+against 7151.
+
+**What it costs a statically typed plug.** The zig plug does the right thing
+and refuses loudly, which is finding 46's rule working: it emits
+`fn __lam_1(comptime T16: type, ...) Step(T16)` and, at the call site,
+`@compileError("zig plug: unresolved type variable T16 of __lam_1")`. The
+program does not build. **A dynamically typed target would drop the
+annotation and run**, which is why this is worth filing rather than
+shrugging at -- the wire is wrong for everyone and only some targets say so.
+
+**Hypothesis for the cause, read from source and NOT yet measured.** The two
+frontends disagree about the order of RESOLVE and LIFT.
+`compile-frontend-cdx` resolves first (`opening.codex:833-835` builds the
+type-def map and runs `rewrite-ir-defs`) and lifts afterwards (`:843`).
+`compile-frontend-ir` -- the sequence behind `emit-ir-cce`, and the one that
+feeds every text plug -- never resolves at all, by design, and
+`emit-ir-cce` lifts on top of that unresolved IR (`:1713-1720`). An
+unresolved annotation is harmless on an inline lambda and becomes a
+SIGNATURE the moment that lambda is lifted. **Test before filing upstream:**
+generate a harness with `frontend_source(resolve=True, lift=True)` and see
+whether `tvar 16` becomes `int-default`. That is a bundle and a seed compile,
+and it names the fix if it holds.
+
+**Why nothing caught it.** Update 50 turned the lift on for this path and the
+depot's own corpus did not move, because nothing in it builds a record whose
+field is a closure over a locally-typed constructor. Our side could not have
+caught it either: `ast/CodexIrHarness.codex` had no lift until 2026-08-26,
+so `native/codexir`, `corpus_run.py`, `tier_run.py --zig` and the whole tier
+set were structurally blind to every defect needing a lifted lambda. Both
+blind spots closed the same week and this was the first thing through.
+
+**Confidence: HIGH** on the defect -- reproduced from the release compiler
+itself, minimal, and self-contradictory within one definition.
+**Confidence: MEDIUM** on the cause above, which is a source reading.
+
 ## 46. A type variable is not an answer, and taking one as an answer put `T23` in a scope that declares no such name
 
 Found 2026-08-26 on the ladder droplet, on the first Update whose ceremony ran
