@@ -113,27 +113,35 @@ time.
 
 ## What to pick up next
 
-**Ordered so the work that does not need the box comes first.** Every
-item says which it is:
+**Post-PR-92 queue, 2026-08-26 23:3x. In order.**
 
-- **KEYBOARD** -- reading, editing, PR-writing, a `zig run` that takes
-  seconds. Runs beside a sweep without touching it; the box has two CPUs
-  and ERGONOMICS.md "two CPUs, so keyboard work runs beside a compute
-  job" is the standing statement of that.
-- **BOX** -- wants QEMU, a natives build, a sweep or a rebank, and
-  therefore the lock. One at a time, in a sandbox, detached, with a log.
+1. **Finish the settling run for finding 56** (item "PR 87 is SETTLED").
+   The seed probe is the ONE thing we owe Damian's lane by name. They
+   have stood down and are waiting on our number, and they have said
+   they want the reproducer if bare metal refuses.
+   `outbound/DRAFT-literal-pattern-controls.md` is drafted and held so
+   it can be sent once, with the seed result folded in.
+2. **Units part B / finding 55** (item 1f) -- one `else` in
+   `emit-zig-atype`. `7de07cf0` is WRITTEN and unbuilt; it declares the
+   unit family instead of resolving the name. 11 programs, and the same
+   `else` also emits a type variable verbatim, which it does NOT fix.
+3. **The prelude shadowing class** (finding 54) -- 66 names, both
+   candidate fixes costed in row 1.90 and neither taken. Wants its own
+   sitting plus a check that re-derives the surface AND counts
+   parameters.
+4. **The H2 recovery rule** (`3f0f42e5`) -- written, never built, and it
+   carries a KNOWN GAP in its own prose: match binders are not guarded
+   against rebinding, which yields a wrong recovered type rather than a
+   refusal. Close the gap, then a cold read, then a chain of its own.
+5. The rest of the reading pass (item 1e): 24 corpus refusals left, of
+   which 11 are item 2 above and 5 are a concurrency cluster nobody has
+   read.
 
-**Every tag names the ENTRY POINT it means.** A cold read of this queue on
-2026-08-25 found three cost claims wrong, and all three came from an item
-describing a step in prose while the script that performs it starts a
-guest -- "one light run" for a plug with no runner on this host, "3
-seconds" for a script with five QEMU legs. One script name per bullet
-makes the claim checkable: follow it to `codex_vm.launch`, which every
-guest in the tree goes through, and if it reaches there it is BOX.
-
-An item marked BOX is not blocked on anything else; it is blocked on the
-box being free. When one is running, the KEYBOARD items above it are the
-list.
+**Instruments built 2026-08-26** and worth knowing before you reach for a
+command: `verify_emitter.sh` (the six-leg chain), `run_pr87_probes.sh`,
+**`run_seed_probe.sh` (bare metal -- read its header before asking any
+compiler question)**, and `sandbox.sh <label> [ladder-ref] [codex-repo]
+[codex-ref]`, whose fourth argument is how a chain excludes a commit.
 
 ## Where things stand, 2026-08-26 evening
 
@@ -194,36 +202,23 @@ loop unless it says otherwise.
 
 ---
 
-## 1. Finding 47: the guard is BUILT and MEASURED, and the message does not reach the user
+## 0. SHIPPED 2026-08-26 as PR 92 -- do not re-do
 
-**MEASURED 2026-08-26 20:08 by `verify_emitter.sh` on `419c292d`
-(`~/runs/20260826T195402Z-f47-guard2`), the first chain that ever
-compiled the three guard commits.**
+**https://github.com/damiant3/Cobblestone/pull/92**, branch
+`zig-plug-u50-emitter-batch` off `8cc80685`, ladder tag
+`u50-emitter-batch`. 24 commits, rows 1.85-1.90.
 
-    leg0 natives      GREEN  5m13
-    leg1 tvar-matrix         case (g) diagnosed, and see finding 51
-    leg2 corpus       GREEN  2m54   tvar markers 40 -> 8 -> 0, match 183 -> 185
-    leg3 codexzig     GREEN  5m54   fixed point holds
-    leg4 roc-ports    RED    2 of 11, three iterator ports -> finding 51
-    leg5 sweep               running
+    corpus match    183 -> 269
+    corpus refused  112 ->  24
+    sweep           14/14 on all four chains
 
-**It did not compile at first.** `zig-closure-make` handed a sentinel-carrying
-`Integer` to a parameter bounded `0..4294967295`; CDX2051, leg0 red in eleven
-seconds, fixed in `419c292d`. Neither `8b493672` nor `d4ba6e75` had ever been
-through a compiler -- the chain that should have caught it was cut before they
-landed, which is the exact miss `verify_emitter.sh` exists to prevent.
+Closed by it: finding 47 (tvar scope guard), 50 (`show`'s five type
+cases), 51 (a refusal strands its parameters), 52 (Boolean literal
+patterns), 53 (the thread entry), 17 part A (units are their backing
+type). Rows 1.89 and 1.90 report 17(B)/55 and 54 as OPEN.
 
-**Zero type-variable markers across 606 programs**, down from 8 distinct over
-10 program-hits at 19:02 and 40 before any fix. Nothing that matched stopped
-matching. Reach is honest and small: 325 of 329 verdicts carried because the
-emitted zig was byte-identical, and of the 12 that moved, 10 are programs
-added today. The two real movers both went toward honesty --
-`typeclass-poly` refused -> markers, and `inductive-list` markers -> refused
-because the tvar marker had been standing in front of finding 48.
-
-**What is left is finding 51**, and it is fixed at the keyboard in `6bf2911c`,
-NOT BUILT. The refusal is correct and zig reports the parameter it stranded
-instead. Next build settles it.
+**Their reply comes to the PR on GitHub, not email** (Steve asked for
+that) -- `gh pr view 92 --repo damiant3/Cobblestone --comments`.
 
 ## 1f. Unit families are 53% of everything left, and half the fix is ONE ARM
 
@@ -325,20 +320,6 @@ big, messy, plenty else wrong with them. A new fixture is about ten
 lines: one chapter, one unit family, one record with a field of that
 type.
 
-## 1a. `show` has five type cases and the plug implements one -- WRITTEN, NOT BUILT
-
-**Written 2026-08-26 20:2x in `8b641203`. Text shows as itself, Boolean as
-`True`/`False` through `zig-escape-text` (so the CCE bytes come from the same
-escaper every other literal uses), everything else stays `cx_show_int`, and
-the unit wrapper comes off first. Reals REFUSE -- see item 1c.**
-
-Confirmed while writing it: `emit-show-bool` spells the tags `"True"` and
-`"False"`, so `roc-early-return-predicate.expected` holding Roc's `True` is
-right and the port needs no adaptation note.
-
-Still owed: the `TextTy` case is predicted from source and NOT measured, and
-no corpus program produced that mismatch. One probe before the fix claims it.
-
 ## 1c. `show` on a Real needs `__real_to_text`, and this plug has no such thing
 
 **Objective: a FIX. KEYBOARD to write (a `cx_real_to_text` in the zig
@@ -418,152 +399,6 @@ because everything around it moved.
 **The lesson worth keeping:** the evidence for finding 52 and finding 53
 had been in our own corpus output for as long as we have been running it.
 Nobody had read it. A summary is where a 40-program class goes to hide.
-
-## 1b. The corpus measurement cannot see a compiler error, and it is the same gate as this morning's
-
-**Objective: INSTRUMENT. KEYBOARD to write (`ast/CodexIrHarness.codex`), BOX
-to verify (`./native_build.sh`, then `./corpus_run.py --run`).**
-
-Finding 49. `ast/CodexZigHarness.codex` got the driver's error gate this
-morning; `ast/CodexIrHarness.codex` never had it, runs the same
-`check-chapter`, binds the same `cr.state`, and lowers and prints regardless.
-Measured over one 5,529-line bundle: an undefined name and a deleted argument
-both give `rc=0`, an IR of the same size, and nothing on stdout. The
-undefined name reaches the IR as a typed node.
-
-`corpus_run.py` gates only on `returncode != 0 or not stderr`, so every
-corpus program that does not compile is scored on the zig its broken IR
-produced. When the same blind spot was opened in the codexzig path it showed
-41 of 593.
-
-**It goes AFTER items 1 and 1a, and that ordering is the point.** Item 1's verdict is
-a DELTA against a bank taken with this instrument. Change the instrument
-first and the comparison is gone -- the tree is part of the measurement, and
-so is the harness. Run item 1's chain, then fix the gate, then re-measure
-everything and expect the census to move.
-
-**The fix is four files away**: merge `bag-from-list (toks.errors)`,
-`doc.parse-bag`, `rr.bag` and `cr.state.bag`, halt if the bag has errors.
-Copy the PIPELINE, not the list -- that is the lesson this file has now
-learned three times (`ir-emit-roots`, the lambda lift, this).
-
-## 2. Send the emitter fix, and decide which HEAD the rebank runs on
-
-**Objective: OUTBOUND, then DUE_DILIGENCE. KEYBOARD to write the PR, BOX
-for the rebank.**
-
-**The harness lift is DONE and verified** (ladder `9266f10`, chain
-`~/runs/20260826T160728Z-u50-harness-lift/`, 2026-08-26 16:32). Both hosted
-harnesses now run LambdaLifting where `opening.codex:1713-1720` runs it. The
-lift went into `emit_harness.py`'s `frontend_source` behind a `lift` flag
-rather than into the two generated chapters -- `ast/*Harness.codex` is
-gitignored and rewritten before every bundle, so an edit there is undone
-silently, and two copies of the phase would have been the same failure one
-level down. The flag defaults OFF: the rungs banked their truth against a
-driver that did not lift.
-
-**The ceiling is 0 and that is not laziness.** `lift-defs` asks
-`deck-bound-short-of`, which compares `__heap-save` against the ceiling, and
-the driver asks it from inside a phase-wide `deck-record` extent where
-`__heap-save` reads the DECK CURSOR. Nothing `emit_harness.py` builds wraps a
-phase in such an extent -- which is why every ceiling in that file is 0 -- so
-`__heap-save` there is the real heap top, already above the reservation, and
-a non-zero ceiling would stop the lift on its FIRST definition and emit a
-truncated program without saying so. What bounds it is the 512 MB
-reservation, and the emitted zig fails loud past it: `probe-deck-overrun`
-passes by panicking with "the two cursors met".
-
-### What the chain said
-
-    leg0 natives          GREEN   codexir.ir 8,669,320 -> 8,870,818 bytes
-    leg1 codexzig gate    GREEN   fixed point holds, 354 __lam on BOTH arms
-    leg2 tiers --bare     GREEN   21 gold banked, committed as 782a45a
-    leg3 tiers --zig      RED     STALE admission only; 0 unexpected on 22
-    leg4 corpus census    GREEN   five programs moved, 134 -> 133 gaps
-    leg5 codexzig corpus  RED     correct 179, halted 13, unresolved 16,
-                                  564/564 byte-identical -- baseline exactly
-
-Both REDs are the standing state. leg3's is the COMPILER-18 ledger; leg5
-exits 1 whenever anything halts and the same 13 halt.
-
-**The gate is the result.** It held last night because NEITHER arm lifted, so
-the property was never posed against a subject containing a lifted lambda.
-It now holds with 354 of them on both sides.
-
-**The census move is smaller than this item used to claim, and that is worth
-recording.** Four spawn programs -- `nested-spawn`, `network-scope-spawn`,
-`proc-state-running`, `spawn-memo-table` -- gained `no emitter for
-poke-byte`, because their spawned thunk bodies are lifted into defs the
-emitter now walks. `db-full-test` LOST `unresolved type variable T88 of
-hamt-fold`, one more site where a lifted lambda carries its own type
-arguments and finding 46's rule finds a concrete answer. Nothing else in 594
-programs moved, and no verdict changed. The blind spot was real and NARROW at
-corpus scale; where it bit was the self-host.
-
-### What is left
-
-1. **The PR** for the emitter fix (finding 46, branch
-   `zig-plug-tvar-not-an-answer` on the pin). Plugs backlog row, `Ladder:`
-   line, and per the standing rule NAME THE STACK -- here that is the bare
-   pin, since all eight prior PRs landed. **The harness lift is OURS and does
-   NOT ride it.** Cold-read before sending; three outbound artifacts in a row
-   had the wrong headline claim.
-2. **DECIDED 2026-08-26: the rebank runs on the FIX branch,
-   `zig-plug-tvar-not-an-answer` (`a961dcb6`).** The question looked like it
-   had teeth and it does not, once two things are checked.
-
-   `ast/rebank_all.sh` does two halves: bank the 14 bare-metal truths
-   through the seed, then rebuild the zig plug and sweep against them.
-
-   **The truths cannot move.** The fix branch differs from the pin in
-   exactly ONE file, `codex/plugs/zig/ZigEmitter.codex`, and bare metal
-   never runs the plug. The check that could have broken that argument is
-   whether any RUNG SUBJECT bundles ZigEmitter -- it would then be part of
-   what gets compiled -- and none does: `bundle_codexzig.ps1` and
-   `bundle_ringplug.ps1` are the only two that carry it, and neither is one
-   of the fourteen (`lex parse desugar scope check lower ir_to_codex
-   ir_to_codex_roundtrip lir_to_x86 ir_to_wire ir_to_x86_on_fib
-   ir_to_x86_on_cce passes_to_x86_on_mid passes_to_x86_on_arith`).
-
-   **The sweep half cannot run on the pin at all.** That is what the 47
-   `T38`s are: `native_build.sh` does not get through them on the bare
-   release. Banking on the pin buys a correctly-labelled bank and a dead
-   second half.
-
-   So the only argument for the pin was the label, and the label is what
-   the standing rule already covers: measure against OUR FORK'S STACK and
-   NAME it. Here the stack is one commit, and it is the one about to be a
-   PR. **Bookkeeping owed with the bank: record that the tree carried
-   `a961dcb6`**, alongside the seed and harness-content the sidecars keep
-   already.
-3. **`ast/allcycles.sh` is still UNPAID**, and it is owed to the rebank, not
-   to a chain: `restore_truths.py` answers "NO BANK for this seed" because
-   `truth/u50` does not exist, and the sweep dies at rung one, 0/14. Nothing
-   can pay it before the rebank.
-
-### COMPILER-18 looks FIXED in Update 50, and the ledger is what said so
-
-`prim-closure`'s `under-mutual` row on BARE METAL, across the three banks:
-
-    u49              not-47
-    seed-6cf4a8e0    not-47
-    u50              47
-
-The arms now AGREE, so tier 14's admission in `gold/EXPECTED.txt` went STALE
-and `tiers_run.py` set the whole set RED to say so -- confirmed again by the
-harness-lift chain's leg3 (STALE 1, green 15, noted 6, zero unexpected).
-**This is the mechanism working exactly as `prim-closure.codex` says it
-should** -- "it is the whole point of the file that the admission becomes
-STALE the day the arms agree". Nothing in the zig plug is involved; the bare
-arm does not touch it.
-
-**Do not just delete the admission.** Confirm the partial application really
-keeps its arity now (read `emit-partial-application` and `is-self-call`
-against the release), then retire the admission, close finding 39, and say so
-on the COMPILER-18 row. **The tier stops being a detector the day it stops
-disagreeing**, so what replaces it is a live question -- that belongs with
-"The tiers stay green, and each one earns its keep".
-
 
 ## 3. Port Roc's closure/recursion snippets into the corpus
 
