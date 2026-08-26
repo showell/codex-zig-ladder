@@ -1194,6 +1194,75 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
+## 56. A let-bound alias lets a definition return a FUNCTION where its declaration says Integer, and the type checker says nothing
+
+Found 2026-08-26 22:19 by `findings/probe-pr87-alias.codex`, written as a
+falsifier for PR 87 at the Cobblestone compiler lane's request -- they
+named the let-bound alias as the shape their seven arms did not cover.
+**THEIRS**, the type checker. Not fixed.
+
+**The probe was PREDICTED to be refused and it COMPILES.**
+
+    fa : Integer, Integer -> Integer
+    fa (x) (y) = let g = fa in g x
+
+    codexir rc=0  diagnostics=NONE  halted=False
+
+`findings/probe-pr87-deck.codex` -- `fd (x) (y) = deck-record (fd x)` --
+compiles clean too, so this is not special to `let`.
+
+**The wire shows the mismatch inside one node:**
+
+    (def "fa" (params (param "x" int-default) (param "y" int-default))
+              (fn int-default (fn int-default int-default))
+              (let "g" (fn int-default (fn int-default int-default))
+                   (name "fa" (fn int-default (fn int-default int-default)))
+                   (apply (name "g" ...) (name "x" int-default)
+                          (fn int-default int-default))))
+
+Two parameters. The declared type peels to `int-default` after two. The
+body's type is `(fn int-default int-default)` -- a function. Nothing
+diagnosed it.
+
+**The plug then emits what it was told:**
+
+    fn fa(x: i64, y: i64) i64 {
+        ... break :b0 g.call(g.ctx, x);
+    }
+
+    probe-pr87-alias.zig:843:238: error: expected 3 argument(s), found 2
+
+Zig is the first component in the chain to object.
+
+**Falsification attempted.** The alternative is that Codex intends a body
+of function type to be legal when a definition is written at less than
+its full arity -- that `fa` is really arity-1 and the second parameter is
+notional. Refuted by the checker contradicting ITSELF in the same IR: the
+call site in `opening` reads
+
+    (apply (apply (name "fa" ...) (int-lit 1) ...) (int-lit 2) int-default)
+
+-- two arguments, result `int-default`. So the checker believes `fa 1 2`
+is an Integer while the body it accepted makes `fa x y` a function. Both
+readings cannot hold, and it committed to both.
+
+**What this does and does not do to PR 87's row.** It does NOT reopen it.
+The TCO gate matches a self call by NAME, and through an alias the apply
+spine's root is `g`, not `fa`, so `is-self-call` answers False and the
+gate still cannot fire -- which is what the probe's own recorded
+prediction said would happen if it ever compiled. The row withdraws as
+agreed.
+
+What it does is answer their Q1 differently in one corner. Their seven
+arms established that a non-full-arity self tail call needs an infinite
+type and the checker refuses it, by name (CDX2010) where inference is
+doing the work. Through an alias the checker never asks: `g` has a
+concrete type from the `let`, `g x` has a concrete function type, and
+nothing compares that against the declared return.
+
+So the shape is not well-typed, and it is **accepted anyway.** That is a
+larger claim than the row we withdrew, and it is theirs.
+
 ## 55. `emit-zig-atype` emits ANY unrecognized type name verbatim, with no scope and no refusal -- 12 programs behind one `else`
 
 Found 2026-08-26 22:1x by chasing `queue-test`'s `use of undeclared
