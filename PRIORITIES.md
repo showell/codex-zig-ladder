@@ -115,29 +115,31 @@ time.
 
 **Post-PR-92 queue, 2026-08-26 23:3x. In order.**
 
-1. **Finish the settling run for finding 56** (item "PR 87 is SETTLED").
-   The seed probe is the ONE thing we owe Damian's lane by name. They
-   have stood down and are waiting on our number, and they have said
-   they want the reproducer if bare metal refuses.
-   `outbound/DRAFT-literal-pattern-controls.md` is drafted and held so
-   it can be sent once, with the seed result folded in.
-2. **Units part B / finding 55** (item 1f) -- one `else` in
+1. **FINDING 49 -- the IR harness reads no diagnostic bag** (item 1z).
+   Settled the finding-56 question by producing three wrong attributions
+   in a row, and it is the integrity of `corpus_run.py` as well. Top of
+   the list.
+2. **Send the finding-56 withdrawal** -- `outbound/` carries the drafts.
+   It is a full retraction, not a narrowing: no soundness hole, no
+   miscompile, our harness was deaf. They ran a four-seed sweep for us
+   and are owed the answer promptly.
+3. **Units part B / finding 55** (item 1f) -- one `else` in
    `emit-zig-atype`. `7de07cf0` is WRITTEN and unbuilt; it declares the
    unit family instead of resolving the name. 11 programs, and the same
    `else` also emits a type variable verbatim, which it does NOT fix.
-3. **The prelude shadowing class** (finding 54) -- 66 names, both
+4. **The prelude shadowing class** (finding 54) -- 66 names, both
    candidate fixes costed in row 1.90 and neither taken. Wants its own
    sitting plus a check that re-derives the surface AND counts
    parameters.
-4. **The H2 recovery rule** (`3f0f42e5`) -- written, never built, and it
+5. **The H2 recovery rule** (`3f0f42e5`) -- written, never built, and it
    carries a KNOWN GAP in its own prose: match binders are not guarded
    against rebinding, which yields a wrong recovered type rather than a
    refusal. Close the gap, then a cold read, then a chain of its own.
-5. The rest of the reading pass (item 1e): 24 corpus refusals left, of
+6. The rest of the reading pass (item 1e): 24 corpus refusals left, of
    which 11 are item 2 above and 5 are a concurrency cluster nobody has
    read.
 
-6. **Verify the Roc ports' `.expected` against BARE METAL** -- owed,
+7. **Verify the Roc ports' `.expected` against BARE METAL** -- owed,
    and we have not done it. Their values come from Roc, adapted, and
    every run we made compared them against OUR ARM (`codexzig`,
    `corpus_run.py`), never against the seed. Damian's review says it
@@ -235,6 +237,51 @@ the whole compiler survive transpilation". Everything below is the cheap
 loop unless it says otherwise.
 
 ---
+
+## 1z. FINDING 49 -- the IR harness never reads the diagnostic bag, and it is the integrity of every measurement we make
+
+**Objective: INTEGRITY. KEYBOARD to write, BOX to verify. THIS IS THE TOP
+ITEM.** Raised 2026-08-26 23:5x after it produced a false report to
+Damian's lane and cost them a triage round.
+
+`ast/CodexIrHarness.codex` calls `check-chapter`, binds `cr.state`, and
+contains the word `bag` **zero times**. Its sibling
+`ast/CodexZigHarness.codex` merges four bags and halts. So
+`native/codexir` emits IR for a program with compiler errors and says
+nothing.
+
+**Measured 2026-08-26 on one tree, same source unit, three arms:**
+
+    program              seed (bare metal)   native/codexir   native/codexzig
+    probe-pr87-alias     CDX2001 Int vs Fun  rc=0, NONE       CDX2001 Int vs Fun
+    probe-pr87-direct    CDX2001 Int vs Fun  rc=0, NONE       CDX2001 Int vs Fun
+    probe-cdx2001-text   CDX2001 Int vs Text rc=0, NONE       CDX2001 Int vs Text
+
+**What it has already cost.** A three-line program was reported to
+Damian's lane as a type-checker soundness hole in Codex. It was not. Then
+it was reported as our plug miscompiling their checker. It was not that
+either -- `codexzig` is the same plug's output and gets it right. Their
+compiler lane ran a four-seed refusal sweep with a positive control to
+tell us so.
+
+**What it is still costing, silently.** `corpus_run.py` runs
+`native/codexir`. A corpus program carrying a compiler error emits IR
+anyway, and we then build its zig, run it, and record a verdict. **We do
+not know how many of the 326 "clean" programs have compiler errors**,
+because the instrument that would say so is the one that cannot.
+`codexzig`'s gate found 41 of 593 when it was turned on; `codexir` has no
+such gate and has never been asked.
+
+**The fix** is the gate its sibling already has: merge
+`toks.errors`, `doc.parse-bag`, `rr.bag` and `cr.state.bag`, and halt
+with `CODEGEN-HALTED` rather than emitting. `CodexZigHarness.codex:5-17`
+is the model and its prose explains the driver's behaviour it stands in
+for. **Do not copy the list -- reuse the shape**, which is the lesson
+that keeps arriving in this tree.
+
+**Then re-run the corpus and expect the clean count to FALL.** That is
+the point, not a regression: programs whose verdicts we have been
+recording without the right to.
 
 ## 0. SHIPPED 2026-08-26 as PR 92 -- do not re-do
 
