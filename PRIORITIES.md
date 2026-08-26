@@ -183,7 +183,40 @@ to run the census at all when any `.ir` was rebuilt, which is honest and
 which means the sweep we now run MOST is the one that reports no
 diagnostics. A banked set is comparable whatever produced the IR.
 
-## 3. Port Roc's closure/recursion snippets into the corpus
+## 3. The gate says our corpus units are missing chapters, and it may be one bug
+
+**Objective: INTEGRITY, and it is cheap. KEYBOARD.** Found 2026-08-26, the
+moment `codexzig` started honouring the driver's error gate.
+
+41 of the 593 corpus programs now halt with real compiler diagnostics, and
+three of them are in the 181 the census calls well-behaved:
+
+    mini-bootstrap   CDX3002 Undefined name: map-list
+    quotes-gate      CDX1000 Expected token kind mismatch, got '71'
+    quotes-parse     CDX1000 Expected token kind mismatch, got '71'
+    board-types      CDX3008 Undefined type name: Tup2
+
+**These are almost certainly OUR unit assembly, not the programs.** The
+depot builds and runs all four; `cite_resolve.py` assembles a unit from a
+program plus the chapters it cites, and `map-list` and `Tup2` are exactly
+what a unit MISSING a chapter looks like. The three well-behaved ones
+emitted zig that built and matched `.expected` before the gate existed --
+so the front end reported errors and generated correct code anyway, which is
+why nobody saw it.
+
+**The hypothesis worth testing first, because it would collapse two piles
+into one:** the 112 programs the census calls `clean` but whose zig will not
+build fail overwhelmingly on `use of undeclared identifier` -- `Frequency`,
+`Timestamp`, `Tup2`, `T2`, `True` -- which is what a MISSING TYPE-DEF looks
+like downstream. If both piles are `cite_resolve` not reproducing the
+depot's compilation environment, one fix moves 150 programs and the corpus
+census gets meaningfully more honest.
+
+Start by taking one of the four, diffing our resolved unit against what the
+depot's own build feeds the compiler for it, and naming the missing chapter.
+No QEMU: `cite_resolve.resolve` and `native/codexzig` answer in seconds.
+
+## 4. Port Roc's closure/recursion snippets into the corpus
 
 **Objective: HUNTING. KEYBOARD to port, BOX to bank.** (Steve, 2026-08-25.)
 
@@ -221,7 +254,7 @@ snippet trustworthy here is bare metal agreeing with the zig arm on it, so
 the port lands as corpus material first and only earns an `.expected` of its
 own once the two arms have been read.
 
-## 4. zigc has a runner now, and one inconclusive result
+## 5. zigc has a runner now, and one inconclusive result
 
 **Objective: INTEGRITY. BOX for the first run of a session, KEYBOARD
 after it** -- the build is cached now, measured 2026-08-25: **first run
@@ -257,7 +290,7 @@ of mine, each caught by a guard already in the tree -- no mode flags
 a naive marker grep that counted a prelude guard
 (`findings/prelude-comptime-guards.txt` exists for exactly that).
 
-## 5. Every unhandled construct must refuse BY NAME
+## 6. Every unhandled construct must refuse BY NAME
 
 **Objective: INTEGRITY, and it is the one that sets the queue. BOX.**
 Four
@@ -273,7 +306,7 @@ that cannot see them. The systemic answer -- every unhandled construct
 refuses by name -- is worth more than any individual gap, and the census
 in "The refusal-gaps branch" is where the count would show it.
 
-## 6. The refusal-gaps branch, rebased and re-verified
+## 7. The refusal-gaps branch, rebased and re-verified
 
 **Objective: HUNTING, reached through our own gap-filling. BOX.** Every
 family implemented promotes a slab of census programs into the comparing
@@ -301,7 +334,7 @@ non-exhaustive switch. Also queued: the JS plug's IrNumLit takes bits as
 a NUMBER and its parseFloat is correctly rounded where bare metal's
 `__text_to_double` is not -- probe before filing.
 
-## 7. The tiers stay green, and each one earns its keep
+## 8. The tiers stay green, and each one earns its keep
 
 **Objective: DUE_DILIGENCE that keeps turning into HUNTING. BOX** for
 any new row, since a bare column costs QEMU. The tiers
@@ -348,7 +381,7 @@ finding on its FIRST run:
   anyone remembering to check. That is what a tier is for, and it could
   not do it while one arm refused to compile.
 
-## 8. The stack is measured now, and the emitter's prose about it is wrong
+## 9. The stack is measured now, and the emitter's prose about it is wrong
 
 **Objective: INTEGRITY, already half done. BOX.** `stack_probe.py` --
 finding

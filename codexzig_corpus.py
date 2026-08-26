@@ -26,6 +26,13 @@ TWO CHECKS PER PROGRAM, and they answer different questions:
                     defect the pipeline shares, because the oracle is outside
                     both.
 
+MEASURED 2026-08-26 on our fork's stack, after the error gate and the roots
+fix: **correct 178, halted 41, unresolved 16; byte-identical to the pipeline
+536/536 compared**, in 295 s. The 41 halts are new information rather than a
+regression -- see PRIORITIES "The gate says our corpus units are missing
+chapters". Three of them were in the well-behaved 181, which is the sharpest
+form of the same news.
+
 **WHAT THE `.expected` HALF DOES AND DOES NOT PROVE.** The sample is
 selected as `verdict == match` -- programs the PIPELINE already got right --
 and codexzig's bytes are identical to the pipeline's, so on this sample the
