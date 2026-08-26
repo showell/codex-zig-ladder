@@ -52,7 +52,37 @@ A finding with no such line is a finding nobody tried to break.
 
 *Not findings. Each carries what would refute it and what that costs.*
 
-### H2. A let-bound lambda reaches the plug with `ErrorTy` for its parameter and its return, and nothing diagnoses it
+### H3. A recursive type that is also GENERIC is emitted without indirection, and zig rejects it outright
+
+Raised 2026-08-26 19:05, and **it is not a regression -- it was MASKED.**
+`inductive-list` carried an `unresolved type variable` marker until finding
+47's fix resolved it, and underneath was a different defect entirely:
+
+    corpus/inductive-list.zig:844:12: error: type 'inductive-list.IList(i64)'
+    depends on itself for field declared
+
+`IList a = | INil | ICons (a) (IList a)` is self-referential AND
+parameterised. The plug HAS recursion handling -- `zig-typedef-recursive`
+boxes a self-recursive type through `cx_new` -- and the emitted output shows
+`IList(T43)` used directly as a field type, so the boxing did not fire for
+the generic case.
+
+**Why this is worth having.** A marker was standing in front of it. Nobody
+could see it because the program never got as far as being built, and the
+census counted it under the type-variable class it is not. That is the
+blind-spot pattern this ladder keeps finding: an instrument that stops at
+the first complaint reports the first complaint.
+
+    Falsified by:  the same program built against the PIN also failing this
+                   way, which would make it neither new nor masked -- but
+                   the pin never reached the build, so the honest test is a
+                   non-generic self-recursive type building fine while the
+                   generic one does not. If BOTH fail, the defect is
+                   recursion handling generally and not the generic case.
+    Cost to test:  two probe functions in an existing tier row, no guest,
+                   under a minute. NOT YET RUN.
+
+### H2. A let-bound lambda reaches the plug### H2. A let-bound lambda reaches the plug with `ErrorTy` for its parameter and its return, and nothing diagnoses it
 
 Raised 2026-08-26 18:30 by `codex/test/roc-closure-captures-list.codex`, the
 third Roc port. It refuses with `zig plug: no zig type for this codex type`
@@ -1208,8 +1238,39 @@ self-report and the question was whether the output is correct. **The right
 falsifier was available and cheap the whole time: build three programs.** It
 took four minutes once asked.
 
-**Still owed:** the `codexzig` fixed point and the sweep an emitter change
-requires, both in flight.
+**MEASURED 2026-08-26 19:02, with a corpus run that BUILDS.** The scope test
+(`bbf339c0`) landed and the numbers are:
+
+    tvar markers        40 -> 8 distinct over 10 program-hits
+    match               183 -> 184     nothing that matched stopped matching
+    tvar-in-declared-type   (new) -> MATCH, answers 73
+
+**And three programs traded a diagnostic for a build failure**, which is the
+part that matters: `hamt-test`, `kvstore-test` and `inductive-list` moved
+`markers -> refused`. Two of them are the same out-of-scope variable in a
+THIRD emission path -- `cx_ll_of(HamtEntry(T25), ...)` inside a function
+whose scope declares `T70`, a callee's variable emitted untranslated into a
+caller. The third, `inductive-list`, is a different defect the marker was
+masking: H3.
+
+**So the fix now covers two of three paths and I have stopped.** The scope
+test guards `zig-resolve-tvar`; `8b493672` refuses a whole closure whose type
+names an out-of-scope variable; the list-element path is untouched. Patching
+it would be the third site, and the emitter memory predicted this exact
+shape -- "six sites had to learn independently that a generic name must be
+applied; expect a seventh".
+
+**The structural answer is a guard in `emit-zig-type`, and it does not
+exist**: that function is `CodexType -> Text` with no context and 35 call
+sites, so there is nowhere central that knows which variables are legal to
+name. That is a refactor and a decision, not a fix, and it is Steve's call
+rather than something to start at the end of a session.
+
+**Where that leaves the branch.** Against the pin it buys one more program
+that builds and answers correctly, and costs three programs their
+diagnostic. By "fail-loud is the floor" that trade is not obviously worth
+taking, and the row should not ship until the third path is closed or the
+three are understood.
 
 ## 46. A type variable is not an answer, and taking one as an answer put `T23` in a scope that declares no such name
 
