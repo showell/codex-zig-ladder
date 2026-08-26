@@ -98,6 +98,53 @@ An item marked BOX is not blocked on anything else; it is blocked on the
 box being free. When one is running, the KEYBOARD items above it are the
 list.
 
+## Where things stand, 2026-08-26 evening
+
+**Depth-first is the rule now (Steve, 2026-08-26): the moment a port
+unleashes a finding, that finding goes to the top of this list.** That is
+why finding 47 is item 1 and the Roc porting it came out of is item 3.
+
+Three efforts are live at once. They are ordered here, and the ordering is
+the whole point of writing them down:
+
+    1  finding 47        UPSTREAM, reproduced, cause unmeasured   -> item 1
+    2  finding 46's PR   fix done and verified, not sent          -> item 2
+    3  the Roc ports     2 of ~12 done, the runner exists         -> item 3
+
+**Update 50's absorb is otherwise CLOSED as of 16:32.** The harness lift is
+in and verified, the bare gold for u50 is banked and committed, the tier set
+and both corpora are at their known baselines. What is NOT done is the
+rebank, and it is blocked on a decision rather than on the box -- see item 2.
+
+### Loose ends, so they stop living in somebody's head
+
+- **THREE DEPOT BRANCHES HAVE NO REMOTE AND ARE THE ONLY COPY**:
+  `u50-rebank` (`8cc80685`, the pin), `zig-plug-tvar-not-an-answer`
+  (`a961dcb6`, the finding-46 fix) and `roc-corpus-ports` (`f151d3ea`, the
+  ports). Everything else in that repo tracks `origin`. A push was attempted
+  2026-08-26 and refused by the permission classifier, so it needs Steve's
+  hand:  `git -C ~/showell_repos/NewRepository push origin u50-rebank
+  zig-plug-tvar-not-an-answer roc-corpus-ports`. **The ladder repo is clean
+  and pushed; the depot is the exposure.**
+- **`roc-corpus-ports` was cut off the FIX branch, not the pin**, so it
+  carries `a961dcb6` underneath. Deliberate -- Steve's "off the latest and
+  greatest for now" -- but a PR cut from it would drag the emitter fix along,
+  so rebase onto the pin before any of it goes out.
+- **`corpus/census.json` is still the 2026-08-25 bank.** The harness-lift
+  chain measured a newer one (594 programs, 133 gaps, the five that moved)
+  and nothing banked it. `corpus_run.py --run --bank` is what writes it; it
+  should ride the rebank -- see "The census wants a re-bank".
+- **`native/` in the main checkout was replaced 2026-08-26 16:44** with the
+  binaries from `~/runs/20260826T160728Z-u50-harness-lift/ladder/native`
+  (post-T38-fix, post-lift). The tree's own were stale by a morning. Nothing
+  records that but this line, because `native/` is gitignored.
+- **`roc_ports_run.py` is RED and should stay red.** `roc-iter-map` refuses,
+  and the refusal is finding 47. There is no admission ledger like
+  `gold/EXPECTED.txt` and one should not be added until a second port needs
+  it -- a green suite that has been taught to expect a defect is exactly what
+  "a green suite is a statement about the questions the instrument can ask"
+  warns about.
+
 ## The native loop, which changes what is cheap
 
     native/codexir   .codex -> IR      ~0.1s
@@ -115,7 +162,57 @@ loop unless it says otherwise.
 
 ---
 
-## 1. Send the emitter fix, and decide which HEAD the rebank runs on
+## 1. Finding 47: nail the cause, then send it
+
+**Objective: HUNTING, carried through to OUTBOUND. KEYBOARD to read, BOX
+to prove.** (Steve, 2026-08-26: depth-first -- the moment a port unleashes
+a finding, that finding is the top of this list.)
+
+**UPSTREAM, new at Update 50, and reproduced from the release compiler
+itself.** `emit-ir-cce` lifts a lambda into a top-level definition whose
+return type is a type variable bound NOWHERE, while the body of that same
+definition uses the concrete type. Finding 47 has the account; the
+reproducer is `codex/test/roc-iter-map.codex` on branch `roc-corpus-ports`,
+and `./roc_ports_run.py roc-iter-map` is the one-line way to see it.
+
+The sharpest instance needs no generics at all -- `range-to : Integer,
+Integer -> Iter Integer` is monomorphic:
+
+    signature   (fn int-default (fn int-default (fn int-default
+                  (ctd "Step" (args (tvar 16))))))
+    body        (name "Done" (ctd "Step" (args int-default)))
+
+**Attribution is SETTLED and did not rest on our harness.** The Update 50
+seed under QEMU (`ring_compile.py`, IR-CCE mode, decoded with `cce.py`)
+emits the same three lifted definitions with the same bad `tvar 16`. Its
+wire and `native/codexir`'s output differ in ONE token -- `(chapter
+"Program")` against `(chapter "RocIterMap")`, the unit name the driver
+hard-codes. 7148 chars against 7151.
+
+**THE NEXT STEP, and it is a BOX job of about ten minutes.** The cause in
+finding 47 is a source reading, not a measurement, and three outbound
+artifacts in a row have had the wrong headline claim. The hypothesis:
+`compile-frontend-cdx` resolves before it lifts (`opening.codex:833-835`,
+then `:843`), and `compile-frontend-ir` -- the sequence behind
+`emit-ir-cce`, the one that feeds every text plug -- never resolves at all,
+so `:1713-1720` lifts on top of unresolved annotations. An unresolved
+annotation is harmless on an inline lambda and becomes a SIGNATURE the
+moment it is lifted.
+
+**The test:** generate a one-off harness with
+`frontend_source(resolve=True, lift=True)`, bundle it, seed-compile it, and
+read whether `tvar 16` comes back as `int-default`. If it does, the fix has
+a name and the PR writes itself. **Do not ship that harness** -- it must
+mirror the driver, and the driver does not resolve on this path. It is a
+diagnostic only.
+
+**Then the PR.** Compiler backlog (this is `opening.codex`, not a plug),
+`Ladder:` line, the reproducer inline, and NAME THE STACK. Say plainly that
+a dynamically typed target drops the annotation and runs, so the wire is
+wrong for everyone and only some targets say so.
+
+
+## 2. Send the emitter fix, and decide which HEAD the rebank runs on
 
 **Objective: OUTBOUND, then DUE_DILIGENCE. KEYBOARD to write the PR, BOX
 for the rebank.**
@@ -208,234 +305,7 @@ disagreeing**, so what replaces it is a live question -- that belongs with
 "The tiers stay green, and each one earns its keep".
 
 
-## 2. Wire codexzig into the Update ceremony, after the canaries
-
-**Objective: ERGONOMICS in service of INTEGRITY. KEYBOARD to wire, BOX to
-prove.** Steve's call, 2026-08-25: on an Update, run the canaries and then go
-straight to codexzig.
-
-**Where it goes.** README "Processing a new Update" is the spine: (1) read
-the release, (2) probe the contract cheaply, (3) prerequisites for the
-rebank, (4) decide what the zig arms measure, (5) run, bank, retire. Step 2
-is the canary -- the five-second seed probes that confirm the new seed boots
-under our QEMU flags. **codexzig goes between 2 and 3**, before the rebank
-costs an hour.
-
-**What the gate is.** `./codexzig_build.sh` from the new pin, about ten
-minutes of box time, and it ends by re-emitting its own bundle and comparing
-byte for byte -- so the build IS the fixed-point check. Then
-`./codexzig_corpus.py`, about five minutes. Together that is roughly a
-quarter hour to learn whether the new release still transpiles faithfully
-across the whole compiler, against fifty-one minutes for rebank plus sweep.
-Red means stop and read; green means start the rebank knowing the pipeline
-survived.
-
-**Say plainly in the README what it does NOT replace.** Everything codexzig
-checks is the zig arm against itself or against `.expected`. The rungs
-compare the zig arm against BARE METAL, and a defect the plug and the seed
-share -- or one the emitter makes identically on both paths -- is invisible
-here and visible there. Finding 42 is the case in point: a silent wrong
-answer the fixed point could never have caught, because both arms would have
-been wrong together. codexzig says transpilation still works; the rungs say
-the answer is right.
-
-**One thing to fix while wiring it:** `codexzig_corpus.py` now skips the
-byte-comparison half when `native/codexir` is absent and says so, which is
-the fresh-sandbox case the ceremony runs in -- confirm that path actually
-works in a fresh sandbox rather than trusting the branch. **Still
-unanswered on 2026-08-26**: the build went red before the corpus leg ran, so
-that path has not been exercised in a fresh sandbox yet.
-
-**IT RAN FOR REAL ON 2026-08-26, AND IT CAUGHT SOMETHING.** Update 50, the
-canaries green, then codexzig between steps 2 and 3 exactly as this item
-says: red, 47 undeclared `T38`s, in about fifteen minutes of a fifty-one
-minute alternative that would have banked a release whose compiler does not
-transpile. The item above is what it caught. **What is left here is the
-PROSE** -- the README's "Processing a new Update" still does not name this
-step, so the next person to run the ceremony follows a list that omits the
-thing that just paid for itself. Write it in, including the paragraph above
-about what it does not replace.
-
-## 3. Thirty-nine corpus programs emit zig that cannot compile, one cause
-
-**Objective: HUNTING, then OUTBOUND. KEYBOARD -- `codexzig_corpus.py` and
-`zig build-exe -femit-bin=no` answer in seconds each.** Found 2026-08-26 while
-characterising the 112 clean-but-unbuildable pile.
-
-The emitted `main` launches the program's entry point on a thread
-unconditionally:
-
-    const t = std.Thread.spawn(.{ .stack_size = stack_bytes }, opening, .{})
-
-`std.Thread.spawn` requires the entry function to return `void`, `u8`,
-`noreturn`, `!noreturn` or `!void`. Every corpus program whose `opening`
-returns a VALUE emits zig that zig rejects before it runs -- 32 returning
-`i64`, 6 returning text, 1 returning `f64`. **That is 39 of the 112, one
-defect, 35% of the pile.**
-
-It is nearly unrecorded: `findings/README.md:1247` mentions it once in
-passing, as the reason `final-batch-test` was never run. Nobody had counted
-it.
-
-**What it needs before it goes.** Whether a non-`Nothing` `opening` is
-well-formed Codex at all -- the depot's own driver may reject it, in which
-case the finding is that our plug accepts what the seed refuses, which is a
-different row and a better one. Read `opening.codex`'s own entry handling
-first, then decide which claim to write. **Cold-read the artifact before
-sending**, per the lesson under "One question left behind PR 87".
-
-## 3a. The 112 pile is characterised now, and the rest is a long tail
-
-The 39 above are the head. The remainder, measured on the whole pile with
-`zig build-exe`:
-
-    47  expected type 'i64', found 'bool'  -- generated-code type mismatch
-     5  use of undeclared identifier 'Frequency'
-     5  use of undeclared identifier 'Timestamp'
-     2  use of undeclared identifier 'T16'   (a 16-element tuple; `Tuple`
-                                              defines Tup2..Tup5 only)
-     2  use of undeclared identifier 'True'
-     1  each: Duration, sin, a switch, two shadowing errors, and four more
-
-**The `expected type 'i64', found 'bool'` cluster is 47 programs and is the
-next one worth splitting**, on the same method: read the emitted zig at the
-reported column, not the Codex.
-
-**The hypothesis that sent us here is REFUTED and should not be retried.**
-The queue said these might be the same missing-chapter bug as the halts,
-which would have moved 150 programs at once. Measured A/B over all 112, one
-variable: 111 refused before, 111 refused after; normalised for shifted line
-numbers, four messages differed at all, and none changed class. The two
-piles are unrelated.
-
-## 3b. Four programs halt because our harness does not split quoted works
-
-**Objective: INTEGRITY. KEYBOARD.** `quotes-gate`, `quotes-parse`,
-`quote-from-peer` and `quote-from-store` halt at the error gate with
-`CDX1000 Expected token kind mismatch` -- and `quotes-gate` and
-`quotes-parse` are in the well-behaved 181, so they ran and matched
-`.expected` while the front end was reporting a parse error about them.
-
-**It is not unit assembly; it is the harness reusing half a driver.** The
-driver splits the `%%QUOTED-WORKS%%` blob off the source and verifies the
-signed definitions BEFORE tokenising (`opening.codex:1063-1073`,
-`split-quoted-works`). `emit_harness.frontend_source` starts at `tokenize`,
-so our harness hands the blob to the lexer as if it were code. The digest
-`71f85b...` is the token it chokes on.
-
-**Third time this shape has cost us**, after the error gate itself and the
-`ir-emit-roots` list: a piece of the real driver the harness does not copy,
-with no test that could tell. Fixing it means `frontend_source` calling
-`split-quoted-works` -- which means bundling the chapter that defines it,
-and that chapter is `opening.codex`, which cannot ride beside a harness
-that defines `opening`. Same wall `czg-emit-roots` hit. **Decide whether to
-copy the split or to teach the bundler to carry a renamed `opening`; do not
-copy it silently, because that is exactly how the roots list drifted.**
-
-The other nine halts are correct: they are negative tests
-(`class-op-no-instance`, `effect-launder-*`, `let-effectful-bug`,
-`mutable-alias`, `parser-resync`, `effect-handler-clause`) whose whole
-purpose is to be diagnosed, and a compiler that diagnoses them is working.
-
-## 3c. The census wants a re-bank, and it should ride Update 50
-
-**Objective: INTEGRITY. BOX-adjacent -- `corpus_run.py --changed --bank`
-takes the compute lock, ~25 minutes, no QEMU.**
-
-`cite_resolve` now carries the implicit chapters (`8830e7b`), so every
-`zig_sha` in `corpus/census.json` has moved and the bank is dated
-2026-08-25. **Do not bank it against the u50-stack**: that tree is gone.
-The pin moved on 2026-08-26 -- `u50-rebank` is `8cc80685`, seed `C45E5825`,
-banking to `truth/u50` -- so a bank taken against the old tree would have
-been stale before it was written. It rides the Update 50 ceremony, which is
-itself waiting on the `T38` item at the top of this file.
-
-What a re-bank must absorb, measured 2026-08-26 and both verified as
-improvements, not regressions:
-
-    dtls-fragment            refused -> match     NOT ours: finding 42's fix,
-                                                  which landed after the bank
-    list-comprehension-copy  markers -> refused    ours: its marker was
-                                                  literally `no emitter for
-                                                  map-list`
-
-**And the number that says why this mattered.** The gap histogram -- the
-thing that RANKS which emitter arm to write next -- went from 135 distinct
-gaps to 133. The two that vanished are `no emitter for MkTup2` (18
-programs) and `no emitter for map-list` (2). Twenty hits in the ranking
-were our own missing chapters, which is the failure `cite_resolve.py`'s own
-docstring was written to prevent: "the plug's fallback fires -- which looks
-exactly like an emitter gap and is not one."
-
-## 4. One question left behind PR 87, and it needs no plug
-
-**Objective: OUTBOUND, already sent; this is the loose end.** Does a
-well-typed Codex program exist in which a definition **tail-calls itself
-at non-full arity**? A definition's body has the definition's return
-type, and such a call has a function type, so possibly none does.
-
-PR 87 reports the python plug's TCO gate as a MISSING GUARD on exactly
-that shape and says plainly that the reachability is unestablished.
-Settling it promotes the row to a live defect or closes it. **It is a
-type-checker question: no python, no toolchain we lack, KEYBOARD.** If
-one exists, the second half is to emit python for it and read
-`emit-py-tco-jump`'s output directly rather than inferring from the
-answer, since the stale-temporary path produces a plausible number.
-
-**Everything else in this family is answered and upstream.** The
-corpus gap and COMPILER-18's precondition -- a second CALL SITE, which
-defeats `inline-single-caller` so the partial-application object is
-really built and really entered -- are PR 86 and its follow-up comment.
-The register carries the five-program table.
-
-**The reusable lesson, which cost the most to learn:** the branch that
-became PRs 86 and 87 was ONE branch, and its headline claim was false --
-row 1.57 already listed python as compliant on the path that claim
-needed. One page, two rows, flat contradiction, caught by a cold read
-and not by me. **Cold-read every outbound artifact before it goes.** The
-same read caught a reproducer that was full-arity and could not
-reproduce, an unverified negative about thirty emitters we have no
-toolchain for, and a citation off by two lines.
-
-## 5. Diagnostics as a banked set
-
-**Objective: INTEGRITY. KEYBOARD to build, then one `ast/rebank_all.sh`
-to bank -- a sweep will NOT do.** `<unit>-subject.cdx.diags` is written
-only by the truth arm's bare-metal compile (`oracle_lib.sh:231-235`);
-`ensure_ir.sh` says in its own prose that it writes none, and
-`bank_truth.py` copies only `.truth` and `.truth.prov`, so nothing on
-disk carries a diags population today. The rebank is the only producer.
-
-**Write the banker as a READER of a run's outputs, not a step inside
-it** -- consuming `ast/*-subject.cdx.diags` and `ast/*.ir.diags` after
-the fact. Then it can be written and debugged while a run is in flight
-and a bug in it costs no compute. **And bank the harness set hash beside
-the seed sha** (`truth_prov.set_hash`, the way `bank_truth.py` does for
-truths): a diags bank without provenance has the hole the truth bank
-closed on 2026-08-24, and this item exists because a number without
-provenance says nothing.
-
-**It rides a rebank we were running anyway; it must not ride one that
-carries a bundler edit.** The population is a function of the bundled
-subject text, so landing any harness or bundler change in the same run
-makes a moved count unattributable between the Update, the emitter and
-that change -- which is the failure `check_diags.py:70-75` already records
-for CDX6020. One bundler change, one sandbox, one diff, per `e91fdb3`.
-
-A pinned count (CDX6020 x43 in
-`check_diags.py`) says something changed; a banked set diffed like a
-truth file says WHAT, and retires the pins that move whenever the unit
-list changes rather than when the source does. 2026-08-25 is the case
-for it: the count had not moved, so the pin said nothing, while both
-source citations under it had rotted -- one by an Update, one from the
-day it was written.
-
-It also closes the hole the cheap sweep leaves. `allcycles.sh` declines
-to run the census at all when any `.ir` was rebuilt, which is honest and
-which means the sweep we now run MOST is the one that reports no
-diagnostics. A banked set is comparable whatever produced the IR.
-
-## 6. Port Roc's closure/recursion snippets into the corpus
+## 3. Port Roc's closure/recursion snippets into the corpus
 
 **Objective: HUNTING. KEYBOARD to port, BOX to bank.** (Steve, 2026-08-25.)
 
@@ -515,16 +385,275 @@ argument, so the record field holds a **partial application** -- finding
 39's exact shape, reached by a closure that outlives its frame. Different
 code path, same answer.
 
-**Filing is the open question and it is Steve's.** The `.codex` and
-`.expected` are in the depot at `codex/test/`, untracked, on the T38 fix
-branch -- which is where `corpus_run.py` reads from and NOT where they
-should be committed, because that branch is about to become the finding-46
-PR and this is a separate contribution. The source is also checked in at
-`warmups/roc-returned-closure.codex`, which is what produced the bare-metal
-truth. **Two copies of one source is the thing this queue keeps filing as a
-defect**, so pick a home before the second port.
+**Filing is SETTLED (Steve, 2026-08-26): a proper git branch off the latest
+and greatest, and no thought given to upstreaming until a critical mass of
+snippets is ported.** That is `roc-corpus-ports` in the depot, cut off
+`a961dcb6` -- which means it carries the finding-46 emitter fix underneath
+and must be rebased onto the pin before anything goes out. The `warmups/`
+copy is DELETED; the depot branch is the single home.
 
-## 7. zigc has a runner now, and one inconclusive result
+**The gate per port is one thing, and it is Steve's wording: the port is
+codexzig-executed and returns the same result as ROC'S HARNESS'S EXPECTED
+VALUE.** Not bare metal, not our own comparison. `./roc_ports_run.py` is
+that gate -- cite-resolve, `native/codexzig`, `zig run`, diff against
+`<name>.expected` -- over every `roc-*.codex` in the depot's test directory.
+It is a glob and not a manifest, because a list beside the files is a second
+thing to keep in step.
+
+**Two ported, and the second one found something.**
+
+    match      roc-returned-closure    Roc 9,  bare metal 9,  codexzig 9
+    refused    roc-iter-map            Roc 24, codexzig REFUSES -> finding 47
+
+**Depth-first from here (Steve, 2026-08-26): when a port unleashes a
+finding, the finding goes to the top of the queue and this item waits.** So
+finding 47 is item 1 and this resumes after it.
+
+**Ten or so left in the closure/recursion cluster**, and they are the ones
+worth doing: the three iterator-like cases (`map` is ported, `keep_if` and
+`drop_if` remain and are the same lazy-stream shape with a predicate), the
+four inline-fold lambdas, "recursive function with var keeps outer binding",
+the two early-return-via-predicate cases, and the closure-captures-list
+pair. The rest of the file's ~118 cases are list, record and tag inspection,
+which our corpus already covers heavily.
+
+**Adaptations recorded so far**, in each port's own prose: Codex has no
+nullary function type, so Roc's `() -> a` thunks take an ignored Integer;
+Codex has no anonymous record, so `One({item, rest})` carries its two as
+constructor fields; `end` is a reserved word and cannot be a parameter name.
+**Roc's numeric literals default to a decimal type** and its expectations
+read `10.0` where a Codex Integer prints `10` -- every fold case in that file
+is affected, and the adaptation must be named in the port rather than
+silently absorbed into the `.expected`.
+
+## 4. Wire codexzig into the Update ceremony, after the canaries
+
+**Objective: ERGONOMICS in service of INTEGRITY. KEYBOARD to wire, BOX to
+prove.** Steve's call, 2026-08-25: on an Update, run the canaries and then go
+straight to codexzig.
+
+**Where it goes.** README "Processing a new Update" is the spine: (1) read
+the release, (2) probe the contract cheaply, (3) prerequisites for the
+rebank, (4) decide what the zig arms measure, (5) run, bank, retire. Step 2
+is the canary -- the five-second seed probes that confirm the new seed boots
+under our QEMU flags. **codexzig goes between 2 and 3**, before the rebank
+costs an hour.
+
+**What the gate is.** `./codexzig_build.sh` from the new pin, about ten
+minutes of box time, and it ends by re-emitting its own bundle and comparing
+byte for byte -- so the build IS the fixed-point check. Then
+`./codexzig_corpus.py`, about five minutes. Together that is roughly a
+quarter hour to learn whether the new release still transpiles faithfully
+across the whole compiler, against fifty-one minutes for rebank plus sweep.
+Red means stop and read; green means start the rebank knowing the pipeline
+survived.
+
+**Say plainly in the README what it does NOT replace.** Everything codexzig
+checks is the zig arm against itself or against `.expected`. The rungs
+compare the zig arm against BARE METAL, and a defect the plug and the seed
+share -- or one the emitter makes identically on both paths -- is invisible
+here and visible there. Finding 42 is the case in point: a silent wrong
+answer the fixed point could never have caught, because both arms would have
+been wrong together. codexzig says transpilation still works; the rungs say
+the answer is right.
+
+**One thing to fix while wiring it:** `codexzig_corpus.py` now skips the
+byte-comparison half when `native/codexir` is absent and says so, which is
+the fresh-sandbox case the ceremony runs in -- confirm that path actually
+works in a fresh sandbox rather than trusting the branch. **Still
+unanswered on 2026-08-26**: the build went red before the corpus leg ran, so
+that path has not been exercised in a fresh sandbox yet.
+
+**IT RAN FOR REAL ON 2026-08-26, AND IT CAUGHT SOMETHING.** Update 50, the
+canaries green, then codexzig between steps 2 and 3 exactly as this item
+says: red, 47 undeclared `T38`s, in about fifteen minutes of a fifty-one
+minute alternative that would have banked a release whose compiler does not
+transpile. The item above is what it caught. **What is left here is the
+PROSE** -- the README's "Processing a new Update" still does not name this
+step, so the next person to run the ceremony follows a list that omits the
+thing that just paid for itself. Write it in, including the paragraph above
+about what it does not replace.
+
+## 5. Thirty-nine corpus programs emit zig that cannot compile, one cause
+
+**Objective: HUNTING, then OUTBOUND. KEYBOARD -- `codexzig_corpus.py` and
+`zig build-exe -femit-bin=no` answer in seconds each.** Found 2026-08-26 while
+characterising the 112 clean-but-unbuildable pile.
+
+The emitted `main` launches the program's entry point on a thread
+unconditionally:
+
+    const t = std.Thread.spawn(.{ .stack_size = stack_bytes }, opening, .{})
+
+`std.Thread.spawn` requires the entry function to return `void`, `u8`,
+`noreturn`, `!noreturn` or `!void`. Every corpus program whose `opening`
+returns a VALUE emits zig that zig rejects before it runs -- 32 returning
+`i64`, 6 returning text, 1 returning `f64`. **That is 39 of the 112, one
+defect, 35% of the pile.**
+
+It is nearly unrecorded: `findings/README.md:1247` mentions it once in
+passing, as the reason `final-batch-test` was never run. Nobody had counted
+it.
+
+**What it needs before it goes.** Whether a non-`Nothing` `opening` is
+well-formed Codex at all -- the depot's own driver may reject it, in which
+case the finding is that our plug accepts what the seed refuses, which is a
+different row and a better one. Read `opening.codex`'s own entry handling
+first, then decide which claim to write. **Cold-read the artifact before
+sending**, per the lesson under "One question left behind PR 87".
+
+## 5a. The 112 pile is characterised now, and the rest is a long tail
+
+The 39 above are the head. The remainder, measured on the whole pile with
+`zig build-exe`:
+
+    47  expected type 'i64', found 'bool'  -- generated-code type mismatch
+     5  use of undeclared identifier 'Frequency'
+     5  use of undeclared identifier 'Timestamp'
+     2  use of undeclared identifier 'T16'   (a 16-element tuple; `Tuple`
+                                              defines Tup2..Tup5 only)
+     2  use of undeclared identifier 'True'
+     1  each: Duration, sin, a switch, two shadowing errors, and four more
+
+**The `expected type 'i64', found 'bool'` cluster is 47 programs and is the
+next one worth splitting**, on the same method: read the emitted zig at the
+reported column, not the Codex.
+
+**The hypothesis that sent us here is REFUTED and should not be retried.**
+The queue said these might be the same missing-chapter bug as the halts,
+which would have moved 150 programs at once. Measured A/B over all 112, one
+variable: 111 refused before, 111 refused after; normalised for shifted line
+numbers, four messages differed at all, and none changed class. The two
+piles are unrelated.
+
+## 5b. Four programs halt because our harness does not split quoted works
+
+**Objective: INTEGRITY. KEYBOARD.** `quotes-gate`, `quotes-parse`,
+`quote-from-peer` and `quote-from-store` halt at the error gate with
+`CDX1000 Expected token kind mismatch` -- and `quotes-gate` and
+`quotes-parse` are in the well-behaved 181, so they ran and matched
+`.expected` while the front end was reporting a parse error about them.
+
+**It is not unit assembly; it is the harness reusing half a driver.** The
+driver splits the `%%QUOTED-WORKS%%` blob off the source and verifies the
+signed definitions BEFORE tokenising (`opening.codex:1063-1073`,
+`split-quoted-works`). `emit_harness.frontend_source` starts at `tokenize`,
+so our harness hands the blob to the lexer as if it were code. The digest
+`71f85b...` is the token it chokes on.
+
+**Third time this shape has cost us**, after the error gate itself and the
+`ir-emit-roots` list: a piece of the real driver the harness does not copy,
+with no test that could tell. Fixing it means `frontend_source` calling
+`split-quoted-works` -- which means bundling the chapter that defines it,
+and that chapter is `opening.codex`, which cannot ride beside a harness
+that defines `opening`. Same wall `czg-emit-roots` hit. **Decide whether to
+copy the split or to teach the bundler to carry a renamed `opening`; do not
+copy it silently, because that is exactly how the roots list drifted.**
+
+The other nine halts are correct: they are negative tests
+(`class-op-no-instance`, `effect-launder-*`, `let-effectful-bug`,
+`mutable-alias`, `parser-resync`, `effect-handler-clause`) whose whole
+purpose is to be diagnosed, and a compiler that diagnoses them is working.
+
+## 5c. The census wants a re-bank, and it should ride Update 50
+
+**Objective: INTEGRITY. BOX-adjacent -- `corpus_run.py --changed --bank`
+takes the compute lock, ~25 minutes, no QEMU.**
+
+`cite_resolve` now carries the implicit chapters (`8830e7b`), so every
+`zig_sha` in `corpus/census.json` has moved and the bank is dated
+2026-08-25. **Do not bank it against the u50-stack**: that tree is gone.
+The pin moved on 2026-08-26 -- `u50-rebank` is `8cc80685`, seed `C45E5825`,
+banking to `truth/u50` -- so a bank taken against the old tree would have
+been stale before it was written. It rides the Update 50 ceremony, which is
+itself waiting on the `T38` item at the top of this file.
+
+What a re-bank must absorb, measured 2026-08-26 and both verified as
+improvements, not regressions:
+
+    dtls-fragment            refused -> match     NOT ours: finding 42's fix,
+                                                  which landed after the bank
+    list-comprehension-copy  markers -> refused    ours: its marker was
+                                                  literally `no emitter for
+                                                  map-list`
+
+**And the number that says why this mattered.** The gap histogram -- the
+thing that RANKS which emitter arm to write next -- went from 135 distinct
+gaps to 133. The two that vanished are `no emitter for MkTup2` (18
+programs) and `no emitter for map-list` (2). Twenty hits in the ranking
+were our own missing chapters, which is the failure `cite_resolve.py`'s own
+docstring was written to prevent: "the plug's fallback fires -- which looks
+exactly like an emitter gap and is not one."
+
+## 6. One question left behind PR 87, and it needs no plug
+
+**Objective: OUTBOUND, already sent; this is the loose end.** Does a
+well-typed Codex program exist in which a definition **tail-calls itself
+at non-full arity**? A definition's body has the definition's return
+type, and such a call has a function type, so possibly none does.
+
+PR 87 reports the python plug's TCO gate as a MISSING GUARD on exactly
+that shape and says plainly that the reachability is unestablished.
+Settling it promotes the row to a live defect or closes it. **It is a
+type-checker question: no python, no toolchain we lack, KEYBOARD.** If
+one exists, the second half is to emit python for it and read
+`emit-py-tco-jump`'s output directly rather than inferring from the
+answer, since the stale-temporary path produces a plausible number.
+
+**Everything else in this family is answered and upstream.** The
+corpus gap and COMPILER-18's precondition -- a second CALL SITE, which
+defeats `inline-single-caller` so the partial-application object is
+really built and really entered -- are PR 86 and its follow-up comment.
+The register carries the five-program table.
+
+**The reusable lesson, which cost the most to learn:** the branch that
+became PRs 86 and 87 was ONE branch, and its headline claim was false --
+row 1.57 already listed python as compliant on the path that claim
+needed. One page, two rows, flat contradiction, caught by a cold read
+and not by me. **Cold-read every outbound artifact before it goes.** The
+same read caught a reproducer that was full-arity and could not
+reproduce, an unverified negative about thirty emitters we have no
+toolchain for, and a citation off by two lines.
+
+## 7. Diagnostics as a banked set
+
+**Objective: INTEGRITY. KEYBOARD to build, then one `ast/rebank_all.sh`
+to bank -- a sweep will NOT do.** `<unit>-subject.cdx.diags` is written
+only by the truth arm's bare-metal compile (`oracle_lib.sh:231-235`);
+`ensure_ir.sh` says in its own prose that it writes none, and
+`bank_truth.py` copies only `.truth` and `.truth.prov`, so nothing on
+disk carries a diags population today. The rebank is the only producer.
+
+**Write the banker as a READER of a run's outputs, not a step inside
+it** -- consuming `ast/*-subject.cdx.diags` and `ast/*.ir.diags` after
+the fact. Then it can be written and debugged while a run is in flight
+and a bug in it costs no compute. **And bank the harness set hash beside
+the seed sha** (`truth_prov.set_hash`, the way `bank_truth.py` does for
+truths): a diags bank without provenance has the hole the truth bank
+closed on 2026-08-24, and this item exists because a number without
+provenance says nothing.
+
+**It rides a rebank we were running anyway; it must not ride one that
+carries a bundler edit.** The population is a function of the bundled
+subject text, so landing any harness or bundler change in the same run
+makes a moved count unattributable between the Update, the emitter and
+that change -- which is the failure `check_diags.py:70-75` already records
+for CDX6020. One bundler change, one sandbox, one diff, per `e91fdb3`.
+
+A pinned count (CDX6020 x43 in
+`check_diags.py`) says something changed; a banked set diffed like a
+truth file says WHAT, and retires the pins that move whenever the unit
+list changes rather than when the source does. 2026-08-25 is the case
+for it: the count had not moved, so the pin said nothing, while both
+source citations under it had rotted -- one by an Update, one from the
+day it was written.
+
+It also closes the hole the cheap sweep leaves. `allcycles.sh` declines
+to run the census at all when any `.ir` was rebuilt, which is honest and
+which means the sweep we now run MOST is the one that reports no
+diagnostics. A banked set is comparable whatever produced the IR.
+
+## 8. zigc has a runner now, and one inconclusive result
 
 **Objective: INTEGRITY. BOX for the first run of a session, KEYBOARD
 after it** -- the build is cached now, measured 2026-08-25: **first run
@@ -560,7 +689,7 @@ of mine, each caught by a guard already in the tree -- no mode flags
 a naive marker grep that counted a prelude guard
 (`findings/prelude-comptime-guards.txt` exists for exactly that).
 
-## 8. Every unhandled construct must refuse BY NAME
+## 9. Every unhandled construct must refuse BY NAME
 
 **Objective: INTEGRITY, and it is the one that sets the queue. BOX.**
 Four
@@ -576,7 +705,7 @@ that cannot see them. The systemic answer -- every unhandled construct
 refuses by name -- is worth more than any individual gap, and the census
 in "The refusal-gaps branch" is where the count would show it.
 
-## 9. The refusal-gaps branch, rebased and re-verified
+## 10. The refusal-gaps branch, rebased and re-verified
 
 **Objective: HUNTING, reached through our own gap-filling. BOX.** Every
 family implemented promotes a slab of census programs into the comparing
@@ -604,7 +733,7 @@ non-exhaustive switch. Also queued: the JS plug's IrNumLit takes bits as
 a NUMBER and its parseFloat is correctly rounded where bare metal's
 `__text_to_double` is not -- probe before filing.
 
-## 10. The tiers stay green, and each one earns its keep
+## 11. The tiers stay green, and each one earns its keep
 
 **Objective: DUE_DILIGENCE that keeps turning into HUNTING. BOX** for
 any new row, since a bare column costs QEMU. The tiers
@@ -651,7 +780,7 @@ finding on its FIRST run:
   anyone remembering to check. That is what a tier is for, and it could
   not do it while one arm refused to compile.
 
-## 11. The stack is measured now, and the emitter's prose about it is wrong
+## 12. The stack is measured now, and the emitter's prose about it is wrong
 
 **Objective: INTEGRITY, already half done. BOX.** `stack_probe.py` --
 finding
