@@ -52,36 +52,6 @@ A finding with no such line is a finding nobody tried to break.
 
 *Not findings. Each carries what would refute it and what that costs.*
 
-### H3. A recursive type that is also GENERIC is emitted without indirection, and zig rejects it outright
-
-Raised 2026-08-26 19:05, and **it is not a regression -- it was MASKED.**
-`inductive-list` carried an `unresolved type variable` marker until finding
-47's fix resolved it, and underneath was a different defect entirely:
-
-    corpus/inductive-list.zig:844:12: error: type 'inductive-list.IList(i64)'
-    depends on itself for field declared
-
-`IList a = | INil | ICons (a) (IList a)` is self-referential AND
-parameterised. The plug HAS recursion handling -- `zig-typedef-recursive`
-boxes a self-recursive type through `cx_new` -- and the emitted output shows
-`IList(T43)` used directly as a field type, so the boxing did not fire for
-the generic case.
-
-**Why this is worth having.** A marker was standing in front of it. Nobody
-could see it because the program never got as far as being built, and the
-census counted it under the type-variable class it is not. That is the
-blind-spot pattern this ladder keeps finding: an instrument that stops at
-the first complaint reports the first complaint.
-
-    Falsified by:  the same program built against the PIN also failing this
-                   way, which would make it neither new nor masked -- but
-                   the pin never reached the build, so the honest test is a
-                   non-generic self-recursive type building fine while the
-                   generic one does not. If BOTH fail, the defect is
-                   recursion handling generally and not the generic case.
-    Cost to test:  two probe functions in an existing tier row, no guest,
-                   under a minute. NOT YET RUN.
-
 ### H2. A let-bound lambda reaches the plug### H2. A let-bound lambda reaches the plug with `ErrorTy` for its parameter and its return, and nothing diagnoses it
 
 Raised 2026-08-26 18:30 by `codex/test/roc-closure-captures-list.codex`, the
@@ -1083,6 +1053,47 @@ no python arm has been run, so whether any real program reaches the
 shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
+
+## 48. A self-recursive type that is also GENERIC is emitted with no indirection, so zig says it contains itself
+
+Found 2026-08-26 on the ladder droplet. **OURS**,
+`codex/plugs/zig/ZigEmitter.codex`. Promoted from H3 after its falsification
+test ran and it survived.
+
+**It was MASKED, and that is how it was found.** `inductive-list` carried an
+`unresolved type variable` marker until finding 47's fix resolved it, and
+underneath sat this. The program never reached a build, so nothing could see
+it, and the census filed it under a class it does not belong to.
+
+**The reproducer is `findings/probe-recursive-generic.codex`**, two types
+identical in shape and differing only in whether they carry a parameter:
+
+    Nat = | Zed | Suc (Nat)
+    Stack (a) = | Empty | Push (a) (Stack a)
+
+    non-generic     const NatS = union(enum) { ... };
+                    const Nat = *NatS;              <- the indirection
+    generic         fn Stack(comptime a: type) type {
+                      return union(enum) {
+                        Push: struct { a, Stack(a) },   <- no pointer
+                      }; }
+
+    error: type 'Stack(i64)' depends on itself for field declared here
+
+**Falsification attempted.** The test named before running it: if BOTH types
+failed, the defect would be recursion handling generally rather than the
+generic case, and H3 would be misnamed. `Nat` builds and answers 2. Only the
+parameterised one fails. The plug HAS the machinery -- `zig-typedef-recursive`
+boxes a self-recursive type and `emit-zig-ctor-apply` reads it to choose
+`tname & "S"` -- and the generic emission path has no counterpart to
+`const Nat = *NatS`.
+
+**Confidence: HIGH.** Two types, one difference, one builds and one does not,
+and the missing construct is visible in the output.
+
+**Not yet established:** how many corpus programs this reaches. `inductive-list`
+is one. The count is unknown because until finding 47's fix most such programs
+stopped at a marker, which is the same blind spot that hid this one.
 
 ## 47. The type-variable recovery walk knows `List a` and `a -> b` and nothing the subject declares, so a variable inside `Step a` cannot be recovered from any position
 

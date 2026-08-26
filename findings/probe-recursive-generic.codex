@@ -1,0 +1,34 @@
+Chapter: ProbeRecursiveGeneric
+  cites Foreword chapter Console
+
+ H3's falsifier, and the whole of it. A self-recursive type emitted without
+ indirection makes zig say "depends on itself for field declared". The plug
+ boxes such a type through `zig-typedef-recursive`. The question is whether
+ that boxing fires when the recursive type is ALSO parameterised.
+
+ Two types, identical in shape, differing only in whether they carry a
+ parameter. If the plain one builds and the generic one does not, the defect
+ is the generic case. If neither builds, it is recursion handling generally
+ and H3 is misnamed.
+
+Section: Types
+
+  Nat = | Zed | Suc (Nat)
+
+  Stack (a) = | Empty | Push (a) (Stack a)
+
+Section: Cases
+
+  nat-depth : Nat -> Integer
+  nat-depth (n) = when n is Zed -> 0 is Suc (m) -> 1 + nat-depth m
+
+  stack-depth : Stack a -> Integer
+  stack-depth (s) = when s is Empty -> 0 is Push (x) (r) -> 1 + stack-depth r
+
+Section: Entry
+
+  opening : [Console] Nothing
+  opening = act
+   print-line-uni (show (nat-depth (Suc (Suc Zed))))
+   print-line-uni (show (stack-depth (Push 1 (Push 2 Empty))))
+  end
