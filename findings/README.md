@@ -1073,6 +1073,56 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
+## 52. A `when` on a Boolean reaches the plug as the SPELLING `True`, and the plug emits it into zig, which has no such identifier
+
+Found 2026-08-26 21:0x by classifying all 112 corpus refusals by cause --
+the reading pass, from a `run.jsonl` that had been on disk for hours.
+**OURS**, `codex/plugs/zig/ZigEmitter.codex`. Fixed, not built.
+
+    corpus/when-bool-cross.zig:870:33: error: use of undeclared identifier 'True'
+    corpus/when-bool-pattern.zig:842:37: error: use of undeclared identifier 'True'
+
+The emitted switch:
+
+    switch ((_tl_n == 0)) { True => { return _tl_acc; }, False => { ... } }
+
+**The requirement is written down, in a test the compiler ships.**
+`codex/test/when-bool-cross.codex` opens by stating it:
+
+    A `when` on a Boolean scrutinee reaches the plug as an IrLitPat whose
+    value is the spelling `True` or `False`; the plug must read those as 1
+    and 0. Reading them with a plain integer parse yields 0 for both and
+    inverts the arms, so `frm` returned its initial accumulator (100)
+    instead of 150.
+
+That is a cross-backend regression, written because some other backend
+got it wrong and returned a wrong ANSWER. This plug never got that far:
+it emits an identifier zig does not have, so it fails loudly. The luck is
+worth naming -- the failure mode the test was written to catch is silent,
+and we avoided it by being wrong in a noisier way.
+
+**Bare metal decodes through a shared compiler function**
+(`Syntax/Token.codex:149`), whose entire body is the rule:
+
+    pat-lit-to-integer (t) =
+     if t == "True" then 1
+     else if t == "False" then 0
+     else lit-text-to-integer t
+
+**The fix** is `zig-lit-pat-text`, the same rule spelled for a language
+whose scrutinee here is already `bool`: `true` and `false` rather than 1
+and 0. Applied at both `IrLitPat` sites, the switch arm and the if-chain.
+
+**Falsification attempted:** the alternative was that this is finding
+50's class arriving somewhere else -- both are Booleans the plug got
+wrong. It is not. Finding 50 is `show` picking a conversion by the
+argument's type and is fixed in the builtins table; this is a pattern
+decoder in the match emitter, and the two fixes touch no common code.
+
+**The C# plug looks like it has the same defect**, from
+`cs-tco-lit-text`, which passes the spelling through for everything that
+is not an IntegerTy. Not measured -- noted for whoever runs that plug.
+
 ## 51. A refusal that replaces an EXPRESSION strands the parameters that fed it, and zig reports the stranding, never the refusal
 
 Found 2026-08-26 20:08 by `verify_emitter.sh` legs 1 and 4 on the
