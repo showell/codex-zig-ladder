@@ -8,7 +8,87 @@ last said rather than what is true.
 
 This file holds the LIVE ones. Findings that are fully closed move to
 `CLOSED.md`, which keeps their numbers and a one-line disposition each, so the
-gaps here are explained rather than mysterious. A finding is moved only when
+gaps here are explained rather than mysterious.
+
+## A HYPOTHESIS IS NOT A FINDING, and it goes in its own section
+
+**Added 2026-08-26, and the reason is worth keeping.** Finding 47 was filed
+three times: first as an upstream compiler defect, then as a return-type gap,
+and finally as three missing arms in one `when`. Each rewrite came from
+reading source or IR rather than from reasoning about the previous version,
+and each time the refuting evidence was under a minute away -- the first
+filing was killed by prose that the fix commit under discussion had cited in
+its own first paragraph.
+
+The register is part of why. It had exactly ONE shape -- a filed finding with
+a confidence line -- so a first guess had to enter as a finding or not at all,
+and three corrections got recorded where one hypothesis surviving two
+falsifications would have been the process working.
+
+**So: a claim enters as a hypothesis, numbered `H<n>`, and is promoted to a
+finding number only when its falsification test has been RUN and it
+survived.** H-numbers are never reused and a promoted hypothesis says which
+finding it became, so the trail from guess to result stays readable.
+
+**Every hypothesis MUST carry two lines, and they are the point of the
+form:**
+
+    Falsified by:  <the specific observation that would prove this wrong>
+    Cost to test:  <what running that costs -- minutes, a guest, a rebuild>
+
+**If you cannot name a falsification test, you do not have a hypothesis
+either -- you have a hunch, and it does not go in this file.** If you can
+name one and it is cheap, RUN IT BEFORE FILING; the form exists for the
+tests that are not cheap, or for a claim that has to be recorded while the
+box is busy.
+
+**And every FINDING gains a matching line:**
+
+    Falsification attempted:  <what was tried against it, and survived>
+
+A finding with no such line is a finding nobody tried to break.
+
+## Hypotheses
+
+*Not findings. Each carries what would refute it and what that costs.*
+
+### H1. Update 50 made the largest ladder unit uncompilable to IR-CCE in a 3 GB guest
+
+Raised 2026-08-26 17:42, when `ast/rebank_all.sh` died at 11/12 on
+`passes_to_x86` -- 2.65 MB of source, the largest unit. Its CDX compile
+succeeded (2,304,302 bytes) and the IR-CCE compile of the same source then
+stalled: `RuntimeError: guest stopped consuming at rpos 2097152 of 2652454`,
+with the host having written the whole blob in two refills.
+
+**What suggests it.** The same unit, same step, same host and same 3 GB
+guest emitted **13,883,457 bytes of IR in 195 s** on 2026-08-25 against the
+interim `0c4327d5` (`~/runs/20260825T122248Z-u50-rebank`). The only thing
+that moved is the codex tree going interim -> release, and IR-CCE is exactly
+the path Update 50 added `lift-lambdas` to. The zig plug is NOT in this path
+-- the seed performs this compile -- so our own changes are excluded.
+
+**What already argues against it.** The stall is during INPUT CONSUMPTION,
+at 79% of the source, which is before a lift would run at all. A
+lift-memory story does not explain a guest that stops reading. **This is
+recorded because it is the fact that does not fit, and the fact that does
+not fit is the one worth keeping.**
+
+    Falsified by:  the retry of that one unit completing, or stalling at a
+                   DIFFERENT rpos. Either kills determinism, and a
+                   non-deterministic stall is transport or QEMU, not the
+                   release -- the tree cannot explain a moving failure.
+                   Also falsified by the interim tree stalling the same way
+                   when re-run, which would make it not-Update-50 at all.
+    Cost to test:  one unit, roughly six minutes of box time, the other
+                   eleven truths already on disk in the sandbox. IN FLIGHT
+                   since 17:44 (`~/runs/20260826T171739Z-u50-rebank-tvar/
+                   retry-passes.log`).
+
+**Consequence if it survives:** `truth/u50` cannot be banked, so the sweep,
+`allcycles.sh` and the roundtrip harness generator stay blocked, and Update
+50 cannot be absorbed on this box without raising `CODEX_MEM_MB` (Steve's
+call) or finding the mechanism.
+ A finding is moved only when
 its question is answered AND its fix exists; "fixed but not sent upstream" is
 closed for this register's purposes, and `PRIORITIES.md`'s outbound queue is
 what tracks the sending.
@@ -1007,8 +1087,19 @@ first, then the fix, then the row green on both arms, then natives ->
 full sweep. The truths banked today are unaffected: they are bare metal, and
 this is the plug.
 
+**Falsification attempted, and this is why the finding reads as it does.**
+Three claims were filed and two died: "upstream's compiler emits a
+self-contradictory def" was killed by `CSharpEmitter.codex:534-541` saying
+the wire is intended and the IR well-typed; "the recovery never consults the
+return type" was killed by `zig-resolve-tvar-type`'s fallback, which does.
+What survived was the third, and it survived a test the first two would have
+failed: a fourteen-line subject with no lambda in it, which fires the marker
+against pre-fix natives with 0 `__lam` defs in its IR. Both earlier versions
+predicted that program would be fine.
+
 **Confidence: HIGH on the diagnosis** -- the missing arms are read directly
-from the source and the failing match was traced through real IR.
+from the source, the failing match was traced through real IR, and the two
+competing explanations were each refuted by evidence rather than replaced.
 **UNVERIFIED on the fix.**
 
 ## 46. A type variable is not an answer, and taking one as an answer put `T23` in a scope that declares no such name
