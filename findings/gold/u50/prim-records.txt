@@ -1,0 +1,21 @@
+# key 136e33054c954e09
+-- record allocation cost by field count --
+record 1 field 8
+record 2 fields16
+record 4 fields32
+record 8 fields64
+-- finding 10: records are pointers, record-set mutates --
+update is visible on it    : yes
+alias sees the update      : yes
+original name sees it too  : yes
+  (yes on all three = one object, mutated in place)
+-- a second record is a second object --
+sibling is undisturbed     : yes
+-- closures --
+lambda captures a local    : yes
+shadowing param is not one : yes
+closure applies twice      : yes
+closure passes through     : yes
+-- closure allocation cost --
+capturing lambda 16
+non-capturing    8

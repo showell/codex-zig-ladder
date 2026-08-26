@@ -1,0 +1,31 @@
+# key 9d993785fcd37f91
+enter switches to the mark : yes
+outer exit restores bivy   : yes
+inner exit does not restore: yes
+outer exit does restore    : yes
+mark and bivy are distinct : yes
+deck reserve bumps by size : yes
+save/restore round trips   : yes
+deck-record survives rewind: yes
+meter reads a 1024 reserve : yes
+ratio arithmetic 2x and 4x : yes
+verdict names the two shapes: yes
+-- meters below this line are expected to differ between arms --
+frontier observes allocation: yes
+list literal 1  24
+list literal 2  32
+list literal 4  48
+list literal 8  80
+concat 4 & 4    192
+chain a&b&c&d   176
+push loop 16    144
+capacity 0      16
+capacity 16     144
+capacity 256    2064
+text concat 2   16
+List Integer 4  48
+List Text 4     48
+-- accumulator shapes: n, 2n, 4n and the ratios --
+cat-accum  20240 73232 277520  ratios 3.6 3.8 -> QUADRATIC
+push-accum 528 1040 2064  ratios 2.0 2.0 -> LINEAR
+text-accum 72 136 264  ratios 1.9 1.9 -> LINEAR

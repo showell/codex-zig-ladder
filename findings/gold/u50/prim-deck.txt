@@ -1,0 +1,23 @@
+# key b504e55abfe13b84
+-- tier 0: the meter itself --
+advance moves by exactly n : yes
+advance by zero moves none : yes
+frontier observes a list   : yes
+same shape costs the same  : yes
+bigger shape costs more    : yes
+save round trips           : yes
+-- tier 1: the two cursors --
+enter switches to the mark : yes
+inner enter does not switch: yes
+inner exit does not restore: yes
+outer exit restores bivy   : yes
+mark and bivy distinguish  : yes
+-- tier 1: the frozen cell, and the intrinsic gate (finding 25) --
+deck-pos frozen in extent  : yes
+heap-save moves in extent  : no
+deck-pos advances after    : no
+  (last two: yes = deck-record was intercepted here)
+-- tier 1: a decked value outlives a rewind that would reclaim it --
+deck-record survives rewind: yes
+-- tier 1: deck reserve, via the decomposition every arm has --
+reserve bumps by its size  : yes

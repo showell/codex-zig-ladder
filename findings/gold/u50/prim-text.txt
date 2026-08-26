@@ -1,0 +1,52 @@
+# key 063385bb6e37dfae
+frontier observes allocation: yes
+meter reads a 1024 reserve  : yes
+-- CCE codes: identical on every arm, or an arm is wrong --
+code A        41
+code z        38
+code space    2
+code question 68
+code Gamma    198
+code tau      199
+code eacute   97
+-- finding 23: an uncovered codepoint substitutes, it does not refuse --
+turnstile code68
+substitutes   yes
+length is one yes
+-- lengths --
+len abcd      4
+len empty     0
+len concat    8
+-- cost: expect 8 + align8(len) --
+cat 4 & 4     16
+cat 8 & 8     24
+cat 1 & 1     16
+cat empty     16
+-- substring semantics: identical on both arms, in range --
+sub content   yes
+sub from zero yes
+sub to the endyes
+sub of length0yes
+sub at the endyes
+sub whole textyes
+sub of a builtyes
+-- cost: both copy; bare metal 8 + align8(len), the plug the bytes --
+sub 4 of 8    16
+sub 8 of 8    16
+sub 20 of 20  32
+sub 0 of 4    8
+scan 28 x 4   448
+-- split: pieces are copies on both arms; the list growth differs --
+split abc     3
+split none    1
+split empty   1
+split gap     3
+split trailing3
+piece 1       yes
+piece 2       yes
+split rejoins yes
+replace works yes
+cost split 3  112
+cost split 6  256
+-- finding 22: accumulate one byte at a time, n / 2n / 4n --
+text-accum 72 136 264  ratios 1.9 1.9 -> LINEAR

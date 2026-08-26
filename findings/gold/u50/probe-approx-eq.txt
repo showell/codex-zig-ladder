@@ -1,0 +1,4 @@
+# key 41bad2d64f59246b
+one-ulp 1
+same 1
+far 0
