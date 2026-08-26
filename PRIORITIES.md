@@ -176,108 +176,68 @@ loop unless it says otherwise.
 
 ---
 
-## 1. Finding 47: the guard is written and NOTHING HAS BEEN BUILT
+## 1. Finding 47: the guard is BUILT and MEASURED, and the message does not reach the user
 
-**Objective: a FIX carried to OUTBOUND. KEYBOARD, but the remaining step is a
-REFACTOR and Steve's call.**
+**MEASURED 2026-08-26 20:08 by `verify_emitter.sh` on `419c292d`
+(`~/runs/20260826T195402Z-f47-guard2`), the first chain that ever
+compiled the three guard commits.**
 
-**What the fix does, measured 2026-08-26 19:02 by a corpus run that BUILDS
-rather than a marker census:**
+    leg0 natives      GREEN  5m13
+    leg1 tvar-matrix         case (g) diagnosed, and see finding 51
+    leg2 corpus       GREEN  2m54   tvar markers 40 -> 8 -> 0, match 183 -> 185
+    leg3 codexzig     GREEN  5m54   fixed point holds
+    leg4 roc-ports    RED    2 of 11, three iterator ports -> finding 51
+    leg5 sweep               running
 
-    tvar markers            40 -> 8 distinct over 10 program-hits
-    match                   183 -> 184, nothing that matched stopped matching
-    tvar-in-declared-type   (new) -> MATCH, answers 73
-    hamt-test, kvstore-test, inductive-list   markers -> refused
+**It did not compile at first.** `zig-closure-make` handed a sentinel-carrying
+`Integer` to a parameter bounded `0..4294967295`; CDX2051, leg0 red in eleven
+seconds, fixed in `419c292d`. Neither `8b493672` nor `d4ba6e75` had ever been
+through a compiler -- the chain that should have caught it was cut before they
+landed, which is the exact miss `verify_emitter.sh` exists to prevent.
 
-**The first write-up of this said "verified, clears all forty" and used the
-wrong metric.** A marker count is the emitter's self-report about itself;
-`--transpile` builds nothing. Three programs had traded a diagnostic for a
-build failure and the count could not see it. **`corpus_run.py --run` is the
-measurement for anything in this family.**
+**Zero type-variable markers across 606 programs**, down from 8 distinct over
+10 program-hits at 19:02 and 40 before any fix. Nothing that matched stopped
+matching. Reach is honest and small: 325 of 329 verdicts carried because the
+emitted zig was byte-identical, and of the 12 that moved, 10 are programs
+added today. The two real movers both went toward honesty --
+`typeclass-poly` refused -> markers, and `inductive-list` markers -> refused
+because the tvar marker had been standing in front of finding 48.
 
-**Three emission paths carried an out-of-scope type variable, and the queue
-was about to grow a fourth.** `zig-resolve-tvar`'s last-resort answer
-(`bbf339c0`), the closure environment struct (`8b493672`), and a callee's
-variable emitted untranslated into a caller -- `cx_ll_of(HamtEntry(T25),
-...)` inside a function whose scope declares `T70`, which is why `hamt-test`
-and `kvstore-test` refuse.
+**What is left is finding 51**, and it is fixed at the keyboard in `6bf2911c`,
+NOT BUILT. The refusal is correct and zig reports the parameter it stranded
+instead. Next build settles it.
 
-**STEVE'S CALL, 2026-08-26: pay for the context-threading refactor once.**
-Done, `d4ba6e75`. `emit-zig-type` takes the scope; thirteen type-emitting
-helpers thread it and the fifty-five callers already carrying a `ZigCtx`
-pass `ctx.scope-tvars`. The "35 call sites" that made this look expensive
-were 34 CALLS across 21 functions, and the call graph is what settled it:
-of 73 definitions that transitively reach `emit-zig-type`, 55 already hold a
-context. The refusal fires at the OUTERMOST type, which keeps
-`zig-is-unmapped`'s leading-`@compileError` test working -- a marker buried
-inside `*CxList(...)` would be invisible to it.
+## 1a. `show` has five type cases and the plug implements one -- WRITTEN, NOT BUILT
 
-Two things fell out. `zig-tvar-ids` did not walk `VectorTy`, `UnitTy`,
-`LinearTy`, `PropEqTy` or `TypeApply`, and it also decides which comptime
-parameters a definition declares, so those holes were already live.
-`emit-zig-def` emitted its parameters and return type under the CALLER's
-scope, before its own comptime parameters existed.
+**Written 2026-08-26 20:2x in `8b641203`. Text shows as itself, Boolean as
+`True`/`False` through `zig-escape-text` (so the CCE bytes come from the same
+escaper every other literal uses), everything else stays `cx_show_int`, and
+the unit wrapper comes off first. Reals REFUSE -- see item 1c.**
 
-**NOTHING HAS BEEN BUILT.** The plug bundle goes through `native/codexir`
-clean in 3.3 s, and that gate is close to worthless -- deleting an argument
-or misspelling a name passes it silently, which is finding 49. The row is
-`findings/probe-tvar-recovery.codex` case (g) plus `corpus_run.py --run`,
-and both want the box.
+Confirmed while writing it: `emit-show-bool` spells the tags `"True"` and
+`"False"`, so `roc-early-return-predicate.expected` holding Roc's `True` is
+right and the port needs no adaptation note.
 
-**The chain FINISHED GREEN on `bbf339c0`**, 19:37:17,
-`~/runs/20260826T185412Z-scope-gate`: natives, the case matrix, corpus
-`--run`, the codexzig gate including its fixed point, and **`allcycles.sh`
-14 of 14 rungs**. Markers 40 -> 8, match 183 -> 184,
-`tvar-in-declared-type` new and matching, `hamt-test`, `kvstore-test`,
-`inductive-list` markers -> refused. **That is a verdict on the FIRST PATCH
-and not on HEAD** -- the sandbox copied codex at 18:54 and `8b493672` landed
-at 19:01, `d4ba6e75` at 19:20.
+Still owed: the `TextTy` case is predicted from source and NOT measured, and
+no corpus program produced that mismatch. One probe before the fix claims it.
 
-**Three new subjects arrived for this item after that run**, from the Roc
-ports: `roc-iter-map`, `roc-iter-keep-if` and `roc-iter-drop-if` all refuse
-with `use of undeclared identifier 'T16'`, which is this class. They are
-independent of the depot and they were not written by anyone who knew what
-the emitter does. Put them on the row. `inductive-list` is understood: finding 48, and its marker
-was masking it.
+## 1c. `show` on a Real needs `__real_to_text`, and this plug has no such thing
 
-**Where that leaves the branch.** Until the guard is measured, the trade on
-record is one program gained against three diagnostics lost, and by
-"fail-loud is the floor" **the row should not ship**. The guard is meant to
-turn all three of those into honest refusals rather than build failures;
-whether it does is the thing to run.
+**Objective: a FIX. KEYBOARD to write (a `cx_real_to_text` in the zig
+prelude), BOX to verify.**
 
-**The instrument is `findings/probe-tvar-recovery.codex`**, seven cases, one
-function each, bare metal as the oracle. It earned itself immediately: case
-(f) was written believing it captured the failing shape and does not, and only
-case (g) -- a closure returning a declared generic type -- reproduces it.
-**Any change in this area is gated on that row and on `--run`.**
+Split out of item 1a because the two halves cost wildly different things and
+buy wildly different amounts. Of finding 50's 42 refusals, **40 are `found
+'bool'` and 2 are `found 'f64'`** -- the Boolean half is 40 of them and is
+done; this is the other 2.
 
-## 1a. `show` has five type cases and the plug implements one, which is 37% of every corpus refusal
-
-**Objective: a FIX carried to OUTBOUND. KEYBOARD to write
-(`ZigEmitter.codex:852` plus two prelude functions), BOX to verify
-(`./native_build.sh`, then `./corpus_run.py --run`).**
-
-Finding 50, found by a Roc port on its first run. `show : forall a. a ->
-Text`; bare metal dispatches five ways at `Emit/X86_64.codex:1652` (f32
-real, other real, `TextTy`, `BooleanTy`, `otherwise` to `__itoa`) and the
-plug is one line that always emits `cx_show_int`.
-
-**Measured over the 2026-08-26 corpus run**: 40 refusals are
-`expected type 'i64', found 'bool'` and 2 are `found 'f64'` -- **42 of 113
-refusals, the largest single class in the corpus**. The site was read at the
-call in three of the forty rather than inferred from the message, because a
-marker name is not a mechanism.
-
-It is loud, so nothing ships a wrong answer; 42 programs simply cannot
-build. The `TextTy` case is predicted from source and NOT measured -- no
-corpus program produced that mismatch -- so it wants one probe before the
-fix claims to cover it.
-
-**ORDER: this goes after item 1 and before item 1b.** Item 1's guard is
-written and unmeasured, and its chain is the next BOX job; running two
-emitter changes into one natives build would leave neither measured. Item
-1b moves the instrument, so it comes after both.
+Bare metal's `__real_to_text` is hand-written assembly
+(`Emit/X86_64TextHelpers.codex:590`): sign bit, `cvttsd2si` for the integer
+part, fifteen fractional-digit iterations, CCE digit offsets. `std.fmt` will
+not agree with it on every value, and a `show` that is right for 2.5 and
+wrong for 0.1 is worse than one that refuses. So the plug refuses with a
+named marker for now, which also puts the gap in the histogram where it can
+be ranked.
 
 ## 1b. The corpus measurement cannot see a compiler error, and it is the same gate as this morning's
 
