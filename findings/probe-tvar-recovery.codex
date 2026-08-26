@@ -1,0 +1,90 @@
+Chapter: ProbeTvarRecovery
+  cites Foreword chapter Console
+
+ The type-variable recovery matrix, one function per shape, so a fix for one
+ cannot quietly break another. Findings 46 and 47 were both found by a single
+ program and fixed against it; 47's fix then converted a refusal into an
+ undeclared identifier in a shape nothing was watching. This exists so that
+ stops being possible.
+
+ Every case answers a number and bare metal is the oracle. A shape the plug
+ cannot emit shows up twice over: the row disagrees, and the emitted zig
+ carries a marker or a bare T<n>.
+
+Section: Types
+
+  Pair (a) = record { fst : a, snd : a }
+
+  Opt (a) = | Some (a) | Nope
+
+  Box (a) = record { unbox : Integer -> a }
+
+  Holder (a) = | Hold (a) | Empty
+
+  Wrap (a) = record { peek : Integer -> Holder a }
+
+Section: Cases
+
+ a. A variable inside a declared RECORD, matched against a concrete actual.
+ This is finding 47's reproducer shape and the arm it added.
+
+  pair-swap : Pair a -> Pair a
+  pair-swap (p) = Pair { fst = p.snd, snd = p.fst }
+
+ b. A variable inside List, the arm that existed before finding 47. A
+ regression guard: 47 must not have disturbed it.
+
+  first-or : List a, a -> a
+  first-or (xs) (d) = if list-length xs == 0 then d else list-at xs 0
+
+ c. A variable in a FUNCTION type, the other arm that existed before.
+
+  apply-to : (a -> b), a -> b
+  apply-to (f) (x) = f x
+
+ d. A variable inside a declared SUM rather than a record -- the same arm as
+ (a) but reached through a different constructor.
+
+  opt-or : Opt a, a -> a
+  opt-or (o) (d) = when o is Some (x) -> x is Nope -> d
+
+ e. NESTED: a variable inside a declared type inside a declared type. The
+ pairwise walk has to descend twice.
+
+  pair-of-list : Pair (List a) -> Integer
+  pair-of-list (p) = list-length (p.fst) + list-length (p.snd)
+
+ f. A CLOSURE stored in a declared record field, inside a definition that is
+ NOT generic. This is the shape finding 47's fix broke: the recovered answer
+ is itself a variable, the last-resort rule keeps it, and it is emitted into
+ a scope that declares no such name. Bare metal answers 42; a plug that
+ emits `T<n>` here does not build at all.
+
+  box-int : Integer -> Box Integer
+  box-int (n) = Box { unbox = \i -> n + i }
+
+ g. The same as (f) except the closure RETURNS a declared generic type
+ rather than a bare variable. That one difference is what (f) missed: with a
+ concrete return the recovery finds a concrete answer, and with `Holder a` it
+ finds another VARIABLE, keeps it by the last-resort rule, and emits a name
+ into a scope that declares none. This is `roc-iter-map`'s shape reduced to
+ six lines, and it is the case a fix must not leave behind.
+
+  wrap-int : Integer -> Wrap Integer
+  wrap-int (n) = Wrap { peek = \i -> Hold (n + i) }
+
+  unwrap : Wrap Integer -> Integer
+  unwrap (w) = when ((w.peek) 2) is Hold (v) -> v is Empty -> 0
+
+Section: Entry
+
+  opening : [Console] Nothing
+  opening = act
+   print-line-uni (show ((pair-swap (Pair { fst = 3, snd = 7 })).fst))
+   print-line-uni (show (first-or [11, 22] 0))
+   print-line-uni (show (apply-to (\x -> x * 2) 21))
+   print-line-uni (show (opt-or (Some 5) 0))
+   print-line-uni (show (pair-of-list (Pair { fst = [1, 2], snd = [3] })))
+   print-line-uni (show ((box-int 40).unbox 2))
+   print-line-uni (show (unwrap (wrap-int 40)))
+  end
