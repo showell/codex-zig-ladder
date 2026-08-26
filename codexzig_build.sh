@@ -15,9 +15,10 @@
 # artifact for people who want to see one program.
 #
 # Why it is one bundle and not two emitted zig files glued together (which
-# was studied and rejected -- the two share 68 identical cx_* prelude symbols
-# and 26 more colliding top-level names, so a textual merge is 94 duplicates
-# to rename inside generated code): the merge happens BEFORE the emitter
+# was studied and rejected -- the two emitted files share hundreds of
+# declarations, so a textual merge is a pile of duplicate symbols to rename
+# inside generated code; the exact count moves with the emitter, which is
+# part of why the merge is the wrong level): the merge happens BEFORE the emitter
 # runs, in Codex, where the two halves already meet at a type --
 # emit-zig-chapter takes the compiler's own IRChapter. So there is one
 # program with one main, one arena and one thread, nothing generated gets

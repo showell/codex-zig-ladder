@@ -512,7 +512,7 @@ host has no JDK, and retracted the promise to run it -- and the ruling
 arrived anyway. Do not hold the finding back, and do not imply a
 follow-up we cannot make.
 
-**The queue is EMPTY as of 2026-08-25, and SIX PRs are open:**
+**The queue is EMPTY as of 2026-08-26, and EIGHT PRs are open:**
 
 - **84** the zig plug's stack-note correction (verified inert first,
   ladder tag `stack-prose-verified`)
@@ -535,6 +535,14 @@ follow-up we cannot make.
   and 156 deletions, no semantics. Verified on the zig arm only and it
   says so -- three C# call sites move with it and we have no toolchain to
   run them. Tag `codexzig-fixed-point`.
+- **90** finding 44 (COMPILER-20): a record's implicit type parameters are
+  derived by the IR text emitter at serialisation time and not carried on
+  the AST, so every consumer of the AST that is not the wire sees an
+  incomplete type. Doc-only. Tag `codexzig-fixed-point`.
+- **91** finding 45 (COMPILER-21): the deck reservation is advisory --
+  overrunning it is detected, printed, ignored, and then faults at twice the
+  reservation. Doc-only, with a ten-second no-VM reproduction. Tag
+  `deck-reservation-advisory`.
 On top of the six that landed in Update 50's interim push. Nothing is
 prepared and unsent, and the one question any of them left is the item
 above.

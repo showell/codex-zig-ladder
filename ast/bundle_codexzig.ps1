@@ -40,11 +40,17 @@
 # (see bundle_ir_to_x86.ps1). ZigEmitter never CALLS deck-record -- it
 # intercepts the name while emitting -- so dropping the copy costs nothing.
 #
-# One delta remains and it is deliberate: the compiler's strip-fun-args
-# carries an `is ForAllEff (id) (body)` arm the plug's copy lacks, so this
-# emitter strips one more constructor than native/zigemit does. Inert for any
-# program with no effect polymorphism in a stripped position; the two-process
-# pipeline is the oracle that says whether it is inert for a given one.
+# One source difference remains and it is INERT, statically, for every
+# program -- which is worth stating as a proof rather than a per-program
+# hedge, because it read as a live risk until someone grepped. The compiler's
+# strip-fun-args (Types/CodexTypeHelpers.codex) carries an
+# `is ForAllEff (id) (body)` arm that PlugTypes' copy lacks, and this bundle
+# carries the compiler's. But strip-fun-args has NO call site in the emitter:
+# in the zigemit bundle it is defined and never called, and the only
+# emitter-side caller here is strip-fun-args-emitter, a different function.
+# The one real caller is X86_64Chapter.codex, which the zig emitter never
+# runs. So the arm cannot reach the emitted bytes and no oracle is needed to
+# say so.
 $ErrorActionPreference = 'Stop'
 & (Join-Path $PSScriptRoot 'bundle_codexir.ps1') `
     -Harness 'CodexZigHarness.codex' `

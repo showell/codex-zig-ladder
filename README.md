@@ -1323,38 +1323,35 @@ code, F4 boots the emitted binary.
   std.debug.print in the emitted runtime -- a wart, and why every caller
   uses `2>` redirects) instead of the ring plug's serial framing, then
   transpiled and built like anything else here.
-- `codexzig_build.sh` -- builds `codexzig`, which is both of those in ONE
-  program: Codex source in on stdin, zig out on stderr, no intermediate IR
-  and no second process. Not a merge of the two emitted zig files
-  (that was studied and rejected: they share 68 identical `cx_*` prelude
-  symbols and 26 more colliding top-level names, so a textual merge is 94
-  duplicate symbols to rename inside generated code); it is one Codex
-  bundle, because the two halves already meet at
-  a type -- `emit-zig-chapter : IRChapter, List ATypeDef -> Text`, and
-  `IRChapter` is the COMPILER's own. So the bundle is codexir's chapter set
-  plus one chapter, the emitter, and the harness hands the front end's `ir`
-  straight to it. `IRTextParser` is not carried: it exists to rebuild those
-  values from text off a serial ring, which is the plug's problem, not a
-  hosted program's. **The two-process pipeline is its oracle, not merely its
-  predecessor** -- `./codexzig_build.sh --check <prog.codex>` runs both ways
-  and byte-compares. 85 programs agree byte for byte (2026-08-25: every
-  `codex/plugs/test-input`, every warmup, every `prim-*` and `probe-*`) --
-  and so does its OWN bundle: `codexzig < ast/codexzig-subject.codex` emits
-  the 2,273,737 bytes the seed-plus-ring-plug path emits from that source,
-  and a binary built from that output emits them again. Agreement is
-  structural rather than lucky: the harness emits the IR text and parses it
-  back in memory, so this is the same code in the same order as
-  `codexir | zigemit`. It has to be -- the wire DERIVES what the AST does
-  not carry (`IRTextEmitter.codex:404-406` infers a record's implicit type
-  parameters as it serialises), and a direct hand-off emits zig that will
-  not compile for a type declared like `SortPartition`.
+- `codexzig_build.sh` -- builds `codexzig`, which is `codexir` and
+  `zigemit` in ONE program: Codex source in on stdin, zig out on stderr, one
+  process. Not a merge of the two emitted zig files (that was studied and
+  rejected -- they share hundreds of declarations, so a textual merge is a
+  pile of duplicate symbols to rename inside generated code); it is one
+  Codex bundle, `codexir`'s chapter set plus two chapters, the emitter and
+  the IR text parser. **The two halves are joined by a `let`, not a pipe:**
+  the harness emits the IR text and parses it straight back in memory. That
+  round trip is deliberate. A direct hand-off looked possible, because
+  `emit-zig-chapter` takes the compiler's own `IRChapter` -- but the wire
+  DERIVES what the AST does not carry (`IRTextEmitter.codex:404-406` infers
+  a record's implicit type parameters as it serialises, finding 44), so the
+  direct version emitted zig that will not compile for a type declared like
+  `SortPartition`. Going through the wire makes this the same code in the
+  same order as `codexir | zigemit`, which is why agreement with the
+  pipeline is structural.
+  **The build ends with the fixed point**: the binary it just produced must
+  re-emit `ast/codexzig.zig` -- the file the seed-under-QEMU plus
+  ring-plug-under-QEMU path wrote minutes earlier -- byte for byte.
+  `./codexzig_build.sh --check <prog.codex>` transpiles one program both
+  ways and byte-compares, refusing a `CODEGEN-HALTED` or an output carrying
+  no `pub fn main`, because two tools failing identically is not a pass.
 - `codexzig_corpus.py` -- the breadth and correctness runner for `codexzig`:
   every corpus program byte-compared against the pipeline, and the
   well-behaved subset (clean + match) built, run, and checked against the
   depot's `.expected`. The `.expected` half is the only check in this tree
   whose oracle was written by someone with no knowledge of the plug.
 - `codexzig_scale.py` -- the deck. Every unit subject through `codexzig`
-  with its deck peak and headroom (JUSTIFICATIONS "The deck costs 145 MB per
+  with its deck peak and headroom (JUSTIFICATIONS "The deck costs ~145 MB per
   MB of source"), then a squeeze that lowers the reservation and confirms
   the failure is still finding 45's: negative headroom printed and ignored,
   twice the reservation reached, a GP fault in `cx_list_at`, and no emitted
