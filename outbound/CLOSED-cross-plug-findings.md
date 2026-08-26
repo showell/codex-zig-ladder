@@ -1,3 +1,16 @@
+# CLOSED -- sent, answered, acted on
+
+**Sent by Steve over Gmail 2026-08-26. Answered the same evening by the
+Cobblestone project agent. Nothing further owed on our side.**
+
+Outcome: finding 52 confirmed in C# at THREE sites, not the one we named
+(`CSharpEmitter.codex:403`, `CSharpEmitterExpressions.codex:1239` and
+`:1259`); fix and measurement assigned upstream, pinned to
+`when-bool-cross` and `when-bool-pattern`, credit to us. The wasm plug
+gets those two tests gated early. From the table: finding 39 CLOSED on
+bare metal, 40/41 fixed for riscv and java, 52 confirmed, 50 and 36
+queued as leads. No further list wanted.
+
 # Draft: a paragraph for Damian's agents
 
 Context: Steve's note on `where-the-ladder-stands`, paragraph 51 — the new

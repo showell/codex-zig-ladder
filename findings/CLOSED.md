@@ -1157,6 +1157,138 @@ lowering it now exists: one capped class at 1024 frames, one data
 dependent class in the sort, and no per-definition growth.
 
 
+## 39. A partial-application closure carries no remaining-arity, so under-application corrupts silently
+
+**Found 2026-08-24 by measuring finding 38 until its framing collapsed.
+THEIRS -- the native x86-64 backend, no plug in the path. OPEN. SENT as
+PR 79 (COMPILER-18); ladder tag `closure-arity`. Supersedes finding 38.
+The row was absorbed 2026-08-25 by Update 50's interim push at main
+19116, and it is item 1 in the upstream rulings queue -- still a
+question, not yet a decision: give the closure a remaining-arity word so
+the trampoline can re-close, or refuse under-application at the emit
+site. The recorded default reading is "implement the declared model",
+but the object layout and the spec are both Damian's to move. Tier 14 is
+our fixture for it and stays in the set.**
+
+**The two programs that carry it.** `let h = add3 10 in show ((h 20) 12)`
+prints 42 -- the shape of upstream's own fixture at
+`codex/plugs/test-input/partial.codex:9-10`. The same computation in two
+steps, `let j = add3 10 in let g = j 20 in show (g 12)`, FAULTS one line
+later in the same program (`findings/probe-indirect-under.codex`). And
+`findings/probe-closure-silent.codex` -- three ordinary definitions --
+prints **6291488** (`0x600020`, a heap address) where 47 belongs, with no
+crash and no diagnostic.
+
+**Control:** `add3` returns an Integer, is named by a partial application
+in every program in the series, and is correct in all of them. Only
+definitions whose return type is a function are affected.
+
+**A THIRD entry point, SENT as PR 86, found 2026-08-25 while trying to
+close the corpus hole in finding 36's family** (`findings/probe-closure-overapply.codex`,
+four lines, three definitions). The two programs above reach the defect
+through a two-step application. This one reaches it through a **FLAT
+OVER-APPLICATION of the named definition**: `pick 0 2 3`, where `pick`
+declares one parameter and returns a function. Bare metal FAULTS on that
+line -- not a wrong number, a register dump -- while the zig arm answers
+6, then 7, then 15 and runs to completion. The sibling
+`let p = pick 0 in show ((p 2) 3)` does the silent thing instead: **bare
+metal prints 6291624, `0x600028`, a heap address** where 6 belongs, and
+faults one line later. Same signature as `probe-closure-silent`'s
+6291488, reached from a different direction.
+
+**AND THE VARIABLE IS NOW ISOLATED, 2026-08-25: it is a second CALL
+SITE, and nothing else.** Five programs, one property changed at a time,
+bare metal each time:
+
+| definition | call sites | bare metal |
+|---|---|---|
+| `sel (n) = add3 1` | 1 | `6` correct |
+| `sel (n) = add3 n` | 1 | `12` correct |
+| `sel (n) = add3 n`, four statements | 1 | `12, 25` correct |
+| `choose (n) = if n == 0 then add3 1 else add3 2` | 1 | `6` correct |
+| `sel (n) = add3 n`, four statements | **2** | **FAULT** |
+
+`probe-overapply-two-callers.codex` and `probe-overapply-one-caller.codex`
+are the last two rows and they differ in ONE line: whether the third
+statement calls `sel` again or calls `add3`. That controls for statement
+count, which the finding itself flags as an unexplained variable.
+
+**So every earlier hypothesis about this was wrong, mine included.** Not
+the recursion; not the branch (two return paths with ONE call site is
+correct); not an argument-dependent capture. **With more than one call
+site, `inline-single-caller` cannot fire, so the partial-application
+object is really built and really entered -- and entering it is the
+defect.** Inlined, the closure is materialised at the call site and the
+trampoline is never reached, which is why every correct row above is
+correct.
+
+That also answers the finding's own "why does (2) need the mutual
+recursion at all": mutual recursion is simply one way to defeat the
+inliner, and a second call site is the cheapest. **The zig side already
+had this written down** -- tier 14's prose says `control-pick` "survived
+there only because the pipeline inlines pick and materialises the closure
+at the call site; even-fn is mutually recursive and nothing can inline
+it". This is the same statement for bare metal.
+
+The earlier `choose` file failed for this reason and not the one recorded
+for it: it called `choose` three times.
+
+**This is why the corpus hole cannot simply be filled.**
+`codex/plugs/test-input/partial.codex` has one definition, `add3`,
+returning an Integer, so the Rulebook's over-application case at
+`docs/DevelopersRulebook.md:258` is unreachable from it -- the branch
+riscv, java, the python plug and (until PR 83) the zig plug all get
+wrong. Every shape that WOULD reach that branch needs a definition
+returning a function, and every such shape lands on this finding. **The
+corpus is missing the case because a program exercising it does not run
+on bare metal today.** That is a better answer than "nobody thought of
+it", and it is an argument for COMPILER-18's ruling rather than a
+separate ask.
+
+**Mechanism, read from source and NOT measured.** A partial application
+is `[code-ptr][capture...]` of `(1 + num-captures) * 8` bytes
+(`Emit/X86_64Compound.codex:715-733`). Its code pointer is a trampoline
+that shifts the incoming argument registers up by the capture count
+(`:703-707`), loads the captures beneath (`:709-713`) and `jmp rax`
+(`:724-725`) -- so it only works when entered with every remaining
+argument at once, and the object stores no count for any caller to
+consult. Both entry paths reach it: `emit-over-apply-extras`
+(`:154`, `:253-274`) one argument per `call rax` by construction, and
+`emit-indirect-call` (`:166-169`, `:205-219`) with whatever the source
+wrote.
+
+**Why it is not exotic.** `docs/DevelopersRulebook.md:258-260` declares
+the model -- "over-applied by applying the rest one at a time".
+`test-input/lambda.codex:19` drives the over-apply path every build and
+passes, because its closure wants exactly one more argument. The tree
+tests the boundary and nothing past it. COMPILER-12 records the same
+shape on the plug side.
+
+**Confidence: HIGH on the measurements, and the mechanism is labelled as
+a reading.** Two things are NOT established and are stated as such in the
+PR: why the silent case needs its mutual recursion (the flat form
+`f (n) = add3 5` prints 47), and why appending a third statement to an
+unrelated two-statement program stops its FIRST statement from printing
+(`findings/probe-closure-luck.codex` against `-luck2`).
+
+**Everything else in `findings/probe-closure-*.codex` is the search, not
+the evidence.** The outbound case is the three files named above.
+
+**CLOSED 2026-08-26 by a direct answer from the Cobblestone project agent,
+over the Gmail channel.** The question this finding asked -- give the
+closure a remaining-arity word, or refuse under-application at the emit
+site -- was answered by taking neither option as posed. **The arity lives
+in the trampoline as a compile-time immediate with a stack-passed count,
+and deliberately NOT as a word in the object**, because they measured
+about twenty million partial applications per self-compile and the object
+word is not worth paying for at that rate. Fixed on bare metal this cycle.
+
+That is a better answer than either of ours and it came with the
+measurement that decides it, which neither of ours had. **Still owed on
+our side:** tier 14 is our fixture for this and its admission went STALE
+at Update 50; retiring it is a ladder change and has not been made.
+
+
 ## 40. The zig plug calls a curried definition flat, so an under-applied chain it cannot inline will not compile
 
 **Found 2026-08-24 on tier 14's first run against both arms. OURS -- the
@@ -1326,4 +1458,121 @@ markers (`:93-97`, `:163-177`); it never compiles the emitted target.
 
 Tier 13's prose says the zig arm "would not compile the closure return
 type" -- that is out of date; the return type emits fine.
+
+## 41. `riscv` and `java` break the same curried-application rule as finding 40, and riscv's correct fix is already in the tree, dead
+
+**Found 2026-08-24 by an independent read of the plug family while
+settling finding 40's open question. THEIRS -- `codex/plugs/riscv` and
+`codex/plugs/java`, no ladder arm in the path. OPEN, and the QUESTION IT
+ASKED IS ANSWERED. SENT as PR 80 (plugs-backlog 1.57), doc-only, off
+`upstream/master` 5b8091e2, ladder tag `curried-apply`; the row was
+absorbed 2026-08-25 by Update 50's interim push at main 19117.**
+
+**RULED BINDING (Damian, rulings queue call 21, 2026-08-24):** the
+Rulebook's over-application rule at `DevelopersRulebook.md:258` binds
+every plug that keeps an arity map, with no exemption -- the reasoning
+recorded upstream being that an exemption "would leave riscv shipping a
+correct fix nothing calls and java consulting no arity at all". The
+wiring is assigned: riscv calls `rv-emit-closure-over-apply` from its
+dispatch, java gains the arity check, both in reek's plugs close-out
+lane, with the observed-miscompile verification the 1.57 row asks for.
+So the finding stays live only until that wiring lands; nothing here is
+waiting on us, and the one thing we said we would not do -- run the java
+arm on a host with no JDK -- is retracted on the PR rather than pending.
+
+**What the ruling also decides:** it is the same rule at a fourth site in
+finding 36 (the python plug), which was held back precisely to see
+whether the rule bound. It does, so 36 no longer has to argue the rule
+for itself -- see the outbound queue in `PRIORITIES.md`.
+
+`docs/DevelopersRulebook.md:256-260` requires three cases of a plug that
+knows the callee's arity: flat at that arity, under-applied with one
+arrow per missing parameter, over-applied by applying the rest. Surveying
+the family for finding 40 turned up two more plugs implementing two of
+the three, and the way each fails is worth a row of its own.
+
+**`riscv` has the fix and never calls it.** The named-definition path
+(`RiscVCodeGen2.codex:583-591`) tests `list-length args < known-arity`
+and routes to `rv-emit-partial-application`; every other case, including
+`args > known-arity`, falls into `rv-emit-direct-call` with the whole
+argument list. Seventy lines further down,
+`rv-emit-closure-over-apply` (`:660-668`) is a correct take/drop
+over-apply -- and `grep -rn rv-emit-closure-over-apply codex/plugs/`
+returns exactly three hits: its signature, its definition, and its own
+self-recursive tail. **Nothing in the tree calls it.** Someone wrote the
+right thing and never wired it up.
+
+**`java` never consults arity at all.** `JavaEmitter.codex:158-168`
+emits `func & "(" & emit-jv-apply-args args ... & ")"` for both the
+`IrName` root and the `otherwise` root, with no lookup on either path.
+`lookup-arity` is defined at `:69-70` and `grep -n lookup-arity
+JavaEmitter.codex` returns only those two lines -- the signature and the
+definition. It is dead code in a second plug, for a second reason.
+
+**`arm64` is a near miss worth recording rather than filing.** It has
+the mechanism -- `a64-emit-oversaturated-call` (`Arm64CodeGen2.codex:927-932`),
+reached from `:980-981` -- but the arity it consults is
+`a64-known-arity` (`:901-915`), a hardcoded table of builtin names
+(`list-at`, `par-map`, ...). It does not fire for user definitions. Its
+local-closure path at `:976-978` does use a real def-arity table.
+
+**How the family actually splits**, which is the context a backlog row
+wants: `csharp` (`CSharpEmitterExpressions.codex:830-841`), `python`
+(`PythonEmitter.codex:646-655`), `javascript` (`:501-511`) and `rust`
+(`RustEmitter.codex:547-560`) route every non-exact case to a curried
+spine, so over-application is handled by construction. The TS family --
+`typescript` (`TypeScriptEmitter.codex:205-214`) plus `angular`,
+`electron`, `react`, `svelte`, `vue` -- splits on `args > ar` explicitly
+with take/drop. `haskell` (`HaskellEmitter.codex:411`) and `ocaml`
+(`OCamlEmitter.codex:380`) emit juxtaposition, which is already correct
+in those languages; both build an arity map and never consult it, which
+is harmless there. The compiler's own x86-64 backend does the take/drop
+split at `X86_64Compound.codex:154`. That leaves `zig` (finding 40),
+`riscv` and `java` as the three that look flat where the rule says they
+must not.
+
+**Confidence: HIGH for riscv and java as source facts, and the dead-code
+claim is a grep anyone can rerun.** What is NOT measured is the runtime
+consequence: "this produces a broken program" is inference from the
+emitted shape rather than an observed failure. Finding 40 is the same
+defect observed end to end, which is why it is the one with a reproducer.
+
+**CORRECTION 2026-08-24, and it was in the sent PR.** This finding first
+said the runtime consequence could not be checked here because the host
+has no PowerShell. That is FALSE: pwsh 7.5.4 is installed at
+`~/.local/pwsh/pwsh` -- the ladder's own `truth_arm` invokes it by that
+path for every bundle -- it is simply not on `PATH`, which is all
+`which pwsh` was reporting. The claim was written from one negative
+command and never checked against a tree that uses the thing daily.
+
+What is actually true is narrower and, for the finding, stronger:
+
+- **`test-plugs.ps1` never compiles what it emitted**, so for `java` it
+  cannot detect this defect no matter how often it runs.
+- **It does not run `riscv` or `arm64` AT ALL.** Its own prose says why:
+  the harness drives every plug as `run.ps1 -Src <codex> -Out <text>`
+  and asserts non-empty text with markers, while the native backends
+  take `-IrInput` and emit the binary wire protocol, so they "fail
+  parameter binding and exit 1 in under a second having done no work at
+  all". They are excluded from the plug list deliberately.
+- Running either plug here is possible but is a real job, not a grep:
+  `run.ps1` shells to `build/compile.ps1`, which compiles through the
+  seed, which on this box means the QEMU appliance. Not yet done.
+
+**Why nothing caught any of them:** `codex/plugs/test-input/partial.codex`
+covers under-application, saturation, and over-application of a LOCAL,
+but never over-application of a named top-level definition -- the exact
+shape all three plugs mishandle. `codex/plugs/test-plugs.ps1` judges
+exit code, non-empty output and text markers (`:93-97`, `:163-177`) and
+never compiles what it emitted. A one-line addition to `partial.codex`
+would put all three in front of a compiler.
+
+Related: finding 36 (the python plug's TCO matches a self-call by name,
+so over-application in tail position loops instead of applying) is the
+same rule broken in a fourth place, at a different stage.
+
+**CLOSED 2026-08-26 by the Cobblestone project agent over Gmail:** fixed
+for riscv and java, with the wiring tracked in their plugs register. The
+question this finding asked was already answered when it was filed; this
+closes the fix.
 
