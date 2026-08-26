@@ -137,6 +137,22 @@ time.
    which 11 are item 2 above and 5 are a concurrency cluster nobody has
    read.
 
+6. **Verify the Roc ports' `.expected` against BARE METAL** -- owed,
+   and we have not done it. Their values come from Roc, adapted, and
+   every run we made compared them against OUR ARM (`codexzig`,
+   `corpus_run.py`), never against the seed. Damian's review says it
+   will "re-measure the twelve new corpus `.expected` files on bare
+   metal before they are trusted as cross-backend truth", which is the
+   right check and is the same discipline we got wrong on finding 56 --
+   applied to our test DATA rather than our instrument.
+
+   Three outcomes: bare metal agrees and the ports are sound; bare metal
+   disagrees and our `.expected` is a bad adaptation, which is ours to
+   fix and should be volunteered rather than waited for; or bare metal
+   disagrees with our zig arm, which is a finding. **We should run this
+   ourselves rather than learn it from their review.** 11 seed compiles,
+   one compute job at a time.
+
 **Instruments built 2026-08-26** and worth knowing before you reach for a
 command: `verify_emitter.sh` (the six-leg chain), `run_pr87_probes.sh`,
 **`run_seed_probe.sh` (bare metal -- read its header before asking any
