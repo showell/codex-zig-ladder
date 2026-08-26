@@ -899,89 +899,88 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
-## 47. `zig-closure-make` recovers a lifted lambda's type variables from the supplied arguments and from the parameter types it stands in for -- never from the RETURN type, where the answer is sitting
+## 47. The type-variable recovery walk knows `List a` and `a -> b` and nothing the subject declares, so a variable inside `Step a` cannot be recovered from any position
 
 Found 2026-08-26 on the ladder droplet, by the second snippet ported from
 Roc's closure/recursion suite (PRIORITIES item 3), on its first run.
-**OURS**, `codex/plugs/zig/ZigEmitter.codex`, and a gap that finding 46's
-own fix left behind.
+**OURS**, `codex/plugs/zig/ZigEmitter.codex`, and the gap finding 46's own
+fix left behind. Fix WRITTEN 2026-08-26, **not yet verified** -- the box was
+banking `truth/u50` when it was written.
 
-**The first filing of this said UPSTREAM and that was WRONG.** It is
-corrected here rather than quietly, because the wrong version was written
-into PRIORITIES as item 1 and nearly went to Damian as a compiler-backlog
-row. What refuted it is upstream's own prose, `CSharpEmitter.codex:534-541`:
+**Two earlier framings of this finding were wrong and are recorded here
+because one of them reached PRIORITIES as item 1.** It was filed first as an
+UPSTREAM compiler defect, on the grounds that a lifted lambda's signature
+carried `(tvar 16)` while its body used the concrete type. Upstream says
+otherwise in its own prose, `CSharpEmitter.codex:534-541`: the IR-CCE lift
+runs after the resolve pass, a `__lam_N` carries "the expected types its
+lambda was handed, not the resolved ones", and **the IR is well-typed**. C#
+meets it with `dynamic`. So that shape is intended and the plug's job is to
+RECOVER. The second framing said the recovery never consults the return
+type; it does -- `zig-resolve-tvar-type` falls back to matching the def's
+declared return against `resty` once the parameters run out.
 
-> A lifted lambda reaches this plug with UNRESOLVED type variables in its
-> signature: the compiler's IR-CCE lift runs after the resolve pass, so a
-> `__lam_N` def carries the expected types its lambda was handed, not the
-> resolved ones. [...] the IR is well-typed.
+**The actual defect is one `when` with three arms missing.**
 
-So a `__lam_N` whose signature carries `(tvar 16)` while its body builds
-the concrete type is **the documented, intended shape of that wire**, not a
-contradiction. C# meets it with `dynamic`. The zig plug has to RECOVER the
-type, which is what finding 46 built the machinery for. What was reported
-as "the definition contradicts itself" is the resolved and unresolved views
-of one well-typed IR sitting side by side, exactly as designed.
+    zig-tvar-in-type (id) (decl) (actual) =
+     when decl
+      is TypeVar (vid) -> if vid == id then actual else VoidTy
+      is ListTy (elem) -> zig-tvar-in-elem-type id elem actual
+      is LinkedListTy (elem) -> zig-tvar-in-elem-type id elem actual
+      is FunTy (p) (fnrow) (r) -> zig-tvar-in-fun-type id p r actual
+      is otherwise -> VoidTy          <-- every declared type lands here
 
-**The real defect, and it is small.** `zig-closure-make`'s own prose names
-the two places it recovers from:
+The walk descends `List`, `LinkedList` and function types. **A
+`ConstructedTy`, `SumTy` or `RecordTy` -- every parameterised type a program
+declares for itself -- falls into `otherwise` and answers VoidTy.** So a
+variable inside `Step a`, `Iter a`, `Opt a`, a tuple, or any user record or
+sum is unrecoverable, in parameter position and return position alike. The
+position it is reached from was never the issue.
 
-> The types to recover FROM are in two places [...] the arguments already
-> supplied carry theirs, and the parameters the trampoline is about to take
-> are named by the function type this closure stands in for.
-
-A type variable that occurs **only in the lifted lambda's RETURN type** is
-in neither. Nothing at the call site mentions it, and
-`zig-fn-param-type-list` reads `pty`'s parameters. **But `pty` is the whole
-function type, and its return half is the answer.** For
-`range-to : Integer, Integer -> Iter Integer` the field's declared type is
-`Integer -> Step Integer`; `T16` is `Step Integer`, one field along in a
-value the function already holds.
-
-**The reproducer**, `codex/test/roc-iter-map.codex` on branch
-`roc-corpus-ports`, via `./roc_ports_run.py roc-iter-map`. The sharpest of
-its two instances needs no generics at all -- `range-to` is monomorphic:
-
-    (def "__lam_1" "" (params (param "start" int-default)
-                              (param "stop" int-default)
-                              (param "ignored" int-default))
-      (fn int-default (fn int-default (fn int-default
-        (ctd "Step" (args (tvar 16))))))
-      (if (binary eq ...)
-        (name "Done" (ctd "Step" (args int-default)))
-        ...))
-
-and what the plug emits for it:
+**Traced, not inferred.** For `range-to : Integer, Integer -> Iter Integer`
+the IR annotates the partial application `(fn int-default (ctd "Step" (args
+(tvar 16))))`, so `zig-closure-make` hands `resty = Step (tvar 16)` to the
+resolver, which peels `__lam_1`'s declared return to `(ctd "Step" (args
+(tvar 16)))` and asks `zig-tvar-in-type 16` to match the two. Both sides are
+`ConstructedTy`. `otherwise`. VoidTy. `zig-resolve-tvar` then emits the
+marker finding 46 installed:
 
     fn __lam_1(comptime T16: type, start: i64, stop: i64, ignored: i64) Step(T16)
     ... __lam_1(@compileError("zig plug: unresolved type variable T16 of __lam_1"), ...)
 
-**The @compileError is finding 46's marker working.** The plug refuses
-loudly rather than emitting a variable it cannot name, which is exactly the
-rule that finding installed. A dynamically typed target would drop the
-annotation and never notice.
+**Why finding 46 did not catch it.** That fix was found through the driver's
+own lift, via `codexzig_build.sh`, and every case it produced had its
+variables in `List a` or `(a -> b)` -- precisely the arms that exist. The
+emitter memory predicted this exact shape: "a generic name must be applied,
+and nothing enforces it centrally -- six sites had to learn independently.
+Expect a seventh." A walk that knows some type forms and forgets the rest is
+the same failure once more.
 
-**Still true and still worth having: the wire was read from the release
-compiler, not from our harness.** The Update 50 seed under QEMU
-(`ring_compile.py`, IR-CCE mode, decoded with `cce.py`) and
-`native/codexir` differ in ONE token -- `(chapter "Program")` against
-`(chapter "RocIterMap")`, the unit name the driver hard-codes -- and agree
-on all three lifted definitions. 7148 chars against 7151. That measurement
-was aimed at the wrong question but it answers a good one: **our harness
-reproduces the driver byte for byte on a program with three lifted
-lambdas**, which is the strongest check yet on the 2026-08-26 harness lift.
+**The fix**, written and unverified: three arms descending the argument
+lists pairwise, plus `zig-type-arg-list` to read them off the actual and
+`zig-tvar-in-args` to walk the pair. One declaration reaches the walk under
+all three constructors -- a name is a `ConstructedTy` until the checker
+rewrites it to the `SumTy` or `RecordTy` it denotes -- so all three descend
+identically. Matching is by POSITION with no name comparison, sound for the
+reason upstream gives about this wire: the IR is well-typed, so a mismatched
+pair cannot arrive.
 
-**Why nothing caught it.** `ast/CodexIrHarness.codex` had no lift until
-2026-08-26, so `native/codexir`, `corpus_run.py`, `tier_run.py --zig` and
-the whole tier set were structurally blind to every defect needing a lifted
-lambda. Finding 46 was found the same week by the one path that did lift --
-the driver's, through `codexzig_build.sh` -- and its machinery was built
-against the cases that path produced, all of which had their variables in
-parameter position.
+**A PREDICTION worth testing, because it is what would make this finding
+big.** `corpus/gaps.json` carries 40 distinct `unresolved type variable`
+markers over 51 programs, including `T88 of hamt-fold` in `db-full-test` and
+`T44 of describe` in `typeclass-smoke`. If those are variables inside
+declared types, this one fix clears a large share of them at once. If they
+are not, this fix moves only `roc-iter-map` and the rest are a different
+defect. **Measure it -- do not assume it.**
 
-**Confidence: HIGH.** Reproducible from a corpus program, the mechanism is
-named in the plug's own prose, and the answer is demonstrably present in a
-value the function already holds.
+**Verification owed, in the order PR 85 established:** a tier row that FAILS
+first, then the fix, then the row green on both arms, then natives ->
+`codexzig_build.sh` fixed point -> `tiers_run.py` -> `corpus_run.py` -> a
+full sweep. The truths banked today are unaffected: they are bare metal, and
+this is the plug.
+
+**Confidence: HIGH on the diagnosis** -- the missing arms are read directly
+from the source and the failing match was traced through real IR.
+**UNVERIFIED on the fix.**
 
 ## 46. A type variable is not an answer, and taking one as an answer put `T23` in a scope that declares no such name
 
