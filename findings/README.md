@@ -52,54 +52,6 @@ A finding with no such line is a finding nobody tried to break.
 
 *Not findings. Each carries what would refute it and what that costs.*
 
-### H4. A refusal that replaces an EXPRESSION strands the parameters that fed it, and zig's unused-parameter error is what the user is told instead
-
-Raised 2026-08-26 19:59 by `verify_emitter.sh` leg1 on the type-variable
-matrix, the leg whose whole job is case (g) of
-`findings/probe-tvar-recovery.codex`.
-
-The guard works at the level it was written for. The marker is in the
-emitted file, at `probe.zig:908`:
-
-    fn wrap_int(n: i64) Wrap(i64) {
-        return cx_new(WrapS(i64){ .peek = @compileError("zig plug: unresolved type variable T22 of __lam_1") });
-    }
-
-Before the guard, case (g) produced `use of undeclared identifier 'T22'`
-and nothing else -- a bare zig error with nothing to say about which
-variable, which callee, or why. It now produces a sentence. That is the
-change item 1 asked for and it landed.
-
-**But zig does not report that sentence.** The first error is `unused
-function parameter`. The refusal consumed the only expression that read
-`n`, so `n` became dead, and zig's unused-parameter check fires during
-semantic analysis of the signature -- before the `@compileError` in the
-body is ever reached. The plug says the right thing into a file nobody is
-shown.
-
-This is finding 42's lesson arriving from the other direction. There,
-zig's unused-parameter error was the ONLY reason a silent wrong answer
-became visible. Here the same check buries a message that was correct.
-
-**Why this is a hypothesis and not a finding.** That zig's `unused
-function parameter` names `n` in `wrap_int` is inferred from the body
-having no other reader, not read out of the compiler. The leg truncated
-every error line but the first to 70 characters, so the file that would
-settle it was discarded; `verify_emitter.sh` now keeps `probe-build.log`.
-
-**Falsified by:** `zig run probe.zig` on the leg1 artifact, reading which
-parameter and which function zig actually names. If it names something
-else, the refusal is not what stranded it and this is a different defect.
-
-**Cost to test:** one zig build of a 41 KB file, seconds. Deliberately NOT
-run while the chain holds the box.
-
-**If it survives**, the fix is in the refusal, not the guard: a refusal
-emitted into a function body must also discard the parameters it
-stranded (`_ = n;`), or be emitted at the TYPE position where zig has no
-liveness question to ask first. The second is closer to what
-`zig-is-unmapped` already expects, since it tests a leading prefix.
-
 ### H2. A lambda whose type no DECLARATION fixes reaches the plug with `ErrorTy` for its parameters and its return, and nothing diagnoses it
 
 Raised 2026-08-26 18:30 by `codex/test/roc-closure-captures-list.codex`, the
@@ -1120,6 +1072,56 @@ no python arm has been run, so whether any real program reaches the
 shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
+
+## 51. A refusal that replaces an EXPRESSION strands the parameters that fed it, and zig reports the stranding, never the refusal
+
+Found 2026-08-26 20:08 by `verify_emitter.sh` legs 1 and 4 on the
+`f47-guard2` chain -- the first chain that ever compiled the
+type-variable guard. **OURS**, `codex/plugs/zig/ZigEmitter.codex`. Not
+fixed.
+
+The guard does what item 1 asked. Case (g) of the probe matrix and the
+three iterator Roc ports used to emit `use of undeclared identifier
+'T16'`, a bare zig error naming no variable, no callee and no reason.
+They now emit a sentence:
+
+    fn iter_map(comptime T44: type, comptime T45: type, it: Iter(T44), transform: CxFn1(T44, T45)) Iter(T45) {
+        return cx_new(IterS(T45){ .next = @compileError("zig plug: unresolved type variable T16 of __lam_0") });
+    }
+
+**Zig never prints that sentence.** The refusal consumed the only
+expression that read `transform`, so the parameter went dead, and zig's
+unused-parameter check runs against the signature before the
+`@compileError` in the body is analysed.
+
+**Measured, not inferred.** Zig reports a column, and the column lands on
+the parameter the refusal stranded in every case:
+
+    roc-iter-map      857:68   transform: CxFn1(T44, T45)
+    roc-iter-keep-if  857:52   pred: CxFn1(T44, bool)
+    roc-iter-drop-if  857:52   pred: CxFn1(T44, bool)
+    probe.zig         908      wrap_int(n: i64), body is the refusal alone
+
+Four programs, three of them Roc ports written by people who have never
+seen this emitter.
+
+**This is finding 42 arriving from the other side.** There, zig's
+unused-parameter error was the only reason a silent wrong answer became
+visible, and we were glad of it. Here the same check buries a message
+that was correct. The check is not the defect either time; what changed
+is whether we had anything to say.
+
+**Falsification attempted:** the alternative was that the stranding is
+unrelated to the refusal and the parameter was already dead. Refuted by
+the column: in all three ports the named parameter is the closure the
+refusal replaced, and `roc-iter-map` strands `transform` while leaving
+`it` alone -- `it` still has a reader, `transform` does not.
+
+**The fix is in the refusal, not the guard.** A definition whose body
+carries a refusal must discard the parameters that refusal stranded
+(`_ = transform;`), so the first thing zig analyses is the message.
+`emit-zig-def` already owns the parameter list and already builds the
+body, so it is the one place that can see both.
 
 ## 50. The zig plug implements one of `show`'s five type cases and maps the other four onto it, and that is 37% of every corpus refusal
 
