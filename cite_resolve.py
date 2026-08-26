@@ -35,6 +35,16 @@ from ladder_root import CODEX
 CITE = re.compile(r'^\s*cites\s+([A-Za-z_][A-Za-z0-9_]*)\s+chapter\s+'
                   r'([A-Za-z_][A-Za-z0-9_ -]*?)\s*(?:\(.*)?$', re.M)
 QUIRE_LINE = re.compile(r"'([A-Za-z][A-Za-z0-9]*)'\s*=\s*'([^']+)'")
+EMBEDDED = re.compile(r'^Chapter:\s*(\w+)--(.+?)\s*$', re.M)
+
+# The two chapters `Resolve-CiteOrder` walks whether or not anything cites
+# them (build/quire-map.ps1:277-280). `for x in xs -> ...` desugars to a call
+# to `map-list` (Foreword ListUtils) and a tuple literal or pattern to
+# `MkTup<N>` (Foreword Tuple), so these are names the DESUGARER writes and no
+# author would know to cite. Leaving them out is what made `mini-bootstrap`
+# report `CDX3002 Undefined name: map-list` and `board-types`
+# `CDX3008 Undefined type name: Tup2` under a unit that the depot builds.
+IMPLICIT = (('Foreword', 'ListUtils'), ('Foreword', 'Tuple'))
 
 
 def quire_dirs():
@@ -49,29 +59,43 @@ def quire_dirs():
     return {q: d.replace('\\', '/') for q, d in QUIRE_LINE.findall(body)}
 
 
-def resolve(path, dirs=None, seen=None, missing=None):
-    """Return (unit_text, missing_cites). Dependencies first, each once."""
-    dirs = quire_dirs() if dirs is None else dirs
-    seen = set() if seen is None else seen
-    missing = [] if missing is None else missing
-    path = pathlib.Path(path)
-    if path in seen:
-        return '', missing
-    seen.add(path)
+def resolve(path, dirs=None):
+    """Return (unit_text, missing_cites). Dependencies first, each once.
 
+    The implicit chapters lead, then the root's own cites, then the root --
+    the order `Resolve-CiteOrder` returns, and therefore the order the depot's
+    own diagnostics are numbered against.
+    """
+    dirs = quire_dirs() if dirs is None else dirs
+    path = pathlib.Path(path)
     text = path.read_text(errors='replace')
+    seen, missing = {path}, []
+    # A source that already bundles a chapter satisfies it by carrying it;
+    # `compile.ps1` seeds `Resolve-CiteOrder` from exactly these lines, so a
+    # bundle is not handed a second copy of what it embeds.
+    embedded = {(q, n) for q, n in EMBEDDED.findall(text)}
+    cites = [c for c in IMPLICIT if c not in embedded] + CITE.findall(text)
+    parts = _walk(path.name, cites, dirs, seen, missing)
+    parts.append(text.rstrip('\n') + '\n')
+    return '\n'.join(parts), missing
+
+
+def _walk(who, cites, dirs, seen, missing):
+    """Each cited chapter preceded by everything it cites, each one once."""
     parts = []
-    for quire, name in CITE.findall(text):
+    for quire, name in cites:
         d = dirs.get(quire)
         dep = CODEX / d / f'{name}.codex' if d else None
         if dep is None or not dep.is_file():
-            missing.append((path.name, quire, name))
+            missing.append((who, quire, name))
             continue
-        sub, _ = resolve(dep, dirs, seen, missing)
-        if sub:
-            parts.append(sub)
-    parts.append(text.rstrip('\n') + '\n')
-    return '\n'.join(parts), missing
+        if dep in seen:
+            continue
+        seen.add(dep)
+        text = dep.read_text(errors='replace')
+        parts.extend(_walk(dep.name, CITE.findall(text), dirs, seen, missing))
+        parts.append(text.rstrip('\n') + '\n')
+    return parts
 
 
 def main():
