@@ -111,12 +111,38 @@ the whole point of writing them down:
     2  finding 46's PR   fix done and verified, not sent          -> item 2
     3  the Roc ports     2 of ~12 done, the runner exists         -> item 3
 
-**The rebank is unblocked and is the next BOX job.** Its HEAD was the last
-open decision and item 2 settles it: `zig-plug-tvar-not-an-answer`. One run
-of `ast/rebank_all.sh` writes `truth/u50` and pays three debts at once --
-the sweep that has been owed since the emitter change, `allcycles.sh` dying
-at rung one, and `gen_ir_to_codex_roundtrip_harness.py` refusing to
-regenerate in a fresh tree. All three are the same missing bank.
+**THE REBANK RAN AND DIED AT 11/12, 2026-08-26 17:42.**
+`~/runs/20260826T171739Z-u50-rebank-tvar`, on `zig-plug-tvar-not-an-answer`
+as decided. Eleven truth arms recorded into `ast/*.truth`; **`truth/u50` was
+never banked**, because `rebank_all.sh` banks after all twelve and then
+sweeps, so `allcycles.sh` did not run either. The sweep, `allcycles`, and the
+roundtrip generator are all still owed -- they were always the same missing
+bank.
+
+**What died.** `passes_to_x86`, the largest unit at 2.65 MB of source. Its
+CDX compile SUCCEEDED (2,304,302 bytes); the IR-CCE compile of the same
+source then stalled -- `RuntimeError: guest stopped consuming at rpos
+2097152 of 2652454`. The host wrote the whole blob in two refills; the guest
+read 79% of it and went quiet.
+
+**Why it is not obviously a flake.** The same unit, same step, same host and
+same 3 GB guest produced **13,883,457 bytes of IR in 195 s** on 2026-08-25
+against the interim `0c4327d5`
+(`~/runs/20260825T122248Z-u50-rebank`). The only thing that moved between
+those runs is the codex tree going interim -> release, and **IR-CCE is
+exactly the path Update 50 added the lambda lift to**. Our plug fix is not
+in this path at all: the SEED performs this compile.
+
+**Why it is not obviously the lift either, and this is the honest part.**
+The stall is during INPUT CONSUMPTION, before a lift would run. That does
+not fit a lift-memory story, and no mechanism has been established.
+
+**In flight:** a retry of that one unit (`truth_arm passes_to_x86` in the
+same sandbox, the other eleven truths already on disk) to answer
+reproducible-or-transient before anything is filed. Deterministic at the
+same `rpos` means a real defect and a mechanism to find; a clean pass means
+transport flakiness and a resume from unit twelve.
+
 
 **Update 50's absorb is otherwise CLOSED as of 16:32.** The harness lift is
 in and verified, the bare gold for u50 is banked and committed, the tier set
