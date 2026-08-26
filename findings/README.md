@@ -1172,32 +1172,41 @@ failed: a fourteen-line subject with no lambda in it, which fires the marker
 against pre-fix natives with 0 `__lam` defs in its IR. Both earlier versions
 predicted that program would be fine.
 
-**VERIFIED 2026-08-26 18:20, and the reach is the strong version.** Natives
-rebuilt against the fix, 597 programs re-transpiled:
+**PARTIALLY VERIFIED 2026-08-26, and the first verification of this finding
+used the WRONG METRIC.** Natives rebuilt, 597 programs re-transpiled:
 
     unresolved type variable markers   40 -> 0 distinct, 51 -> 0 program-hits
     all emitter gaps                  135 -> 95 distinct, 40 gone, 0 NEW
-    programs transpiling clean        326 -> 334
 
-**The prediction this finding refused to assume is confirmed.** It said "one
-confirmed mechanism is not a confirmed cause for all forty" and named the
-diff of `gaps.json` as the measurement. The measurement says all forty, with
-zero new markers and no program carrying a type-variable marker of any kind.
-`typeclass-smoke`'s `T44` went with them despite the caveat that it might
-fail for a different reason -- so that caveat was wrong, and it was cheaper
-to be wrong in writing than to have guessed right without checking.
+**Those numbers are true and they measure the wrong thing.** A marker count
+says the emitter stopped SAYING it could not answer. It does not say the zig
+builds, and `corpus_run.py --transpile` does not build anything. Built
+afterwards:
 
-**A process note worth keeping.** The chain's per-program readout queried
-`census.json`, which `corpus_run.py --transpile` does NOT rewrite -- only
-`--bank` does -- so it printed the stale bank and appeared to say
-`roc-iter-map` still carried its markers. `gaps.json` and `transpile.json`
-are the files `--transpile` rewrites and they are the authority. A
-contradiction was one quote away.
+    tvar-in-declared-type   refused -> RUNS, answers 73    genuinely fixed
+    roc-returned-closure    ran     -> RUNS, answers 9     unchanged
+    roc-iter-map            refused -> DOES NOT BUILD      not fixed
 
-**Confidence: HIGH, and the fix is measured** -- the missing arms were read
-from the source, the failing match traced through real IR, both competing
-explanations refuted by evidence rather than replaced, and the reach
-measured over the whole corpus rather than asserted.
+`roc-iter-map` emits `Step(T16)` and `__lam_1(T16, ...)` with `T16` declared
+nowhere -- 31 bare `T<n>` identifiers -- where an `@compileError` used to be.
+**The new arms find an answer, and the answer is itself a type variable.**
+`zig-prefer-concrete` keeps those as a last resort, which finding 46 chose
+deliberately because inside a generic definition a variable IS the right
+answer. Inside a closure's environment struct it is not, and nothing
+separates the two cases.
+
+**So the fix is real for the shape its reproducer has** -- a variable inside
+a declared type whose actual is concrete -- **and it makes the other shape
+WORSE**: a diagnostic became a build failure with no explanation. That is
+the trade this project exists to refuse.
+
+**How the wrong metric got past me.** The finding named "a diff of the
+`unresolved type variable` markers in `gaps.json`" as its measurement, and
+that is what ran. The measurement was carried out faithfully and it was the
+wrong measurement to have named, because the marker is the emitter's
+self-report and the question was whether the output is correct. **The right
+falsifier was available and cheap the whole time: build three programs.** It
+took four minutes once asked.
 
 **Still owed:** the `codexzig` fixed point and the sweep an emitter change
 requires, both in flight.
