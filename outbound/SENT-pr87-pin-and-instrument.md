@@ -1,4 +1,14 @@
-# Draft: our pin, and the instrument error — for the compiler lane
+# SENT — awaiting the settling measurement
+
+**Sent by Steve over Gmail 2026-08-26 ~23:0x.** It withdraws our previous
+report outright and promises them the bare-metal result either way.
+
+**WE NOW OWE THEM A NUMBER.** The measurement is the same probe through
+the SEED, and it is queued behind the running sweep. Whichever of the
+three outcomes lands, it gets reported -- including outcome 3, where our
+own re-run refuses and the first run was simply contaminated. That is the
+outcome that would be most embarrassing and it is the one we are most
+obliged to send, because we have already asked them to stop looking.
 
 They asked for our exact pin before either side concludes anything.
 Time-sensitive: they are blocked on us.
