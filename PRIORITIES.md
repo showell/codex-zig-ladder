@@ -151,38 +151,114 @@ byte-comparison half when `native/codexir` is absent and says so, which is
 the fresh-sandbox case the ceremony runs in -- confirm that path actually
 works in a fresh sandbox rather than trusting the branch.
 
-## 2. The gate says our corpus units are missing chapters, and it may be one bug
+## 2. Thirty-nine corpus programs emit zig that cannot compile, one cause
 
-**Objective: INTEGRITY, and it is cheap. KEYBOARD.** Found 2026-08-26, the
-moment `codexzig` started honouring the driver's error gate.
+**Objective: HUNTING, then OUTBOUND. KEYBOARD -- `codexzig_corpus.py` and
+`zig build-exe -femit-bin=no` answer in seconds each.** Found 2026-08-26 while
+characterising the 112 clean-but-unbuildable pile.
 
-41 of the 593 corpus programs now halt with real compiler diagnostics, and
-three of them are in the 181 the census calls well-behaved:
+The emitted `main` launches the program's entry point on a thread
+unconditionally:
 
-    mini-bootstrap   CDX3002 Undefined name: map-list
-    quotes-gate      CDX1000 Expected token kind mismatch, got '71'
-    quotes-parse     CDX1000 Expected token kind mismatch, got '71'
-    board-types      CDX3008 Undefined type name: Tup2
+    const t = std.Thread.spawn(.{ .stack_size = stack_bytes }, opening, .{})
 
-**These are almost certainly OUR unit assembly, not the programs.** The
-depot builds and runs all four; `cite_resolve.py` assembles a unit from a
-program plus the chapters it cites, and `map-list` and `Tup2` are exactly
-what a unit MISSING a chapter looks like. The three well-behaved ones
-emitted zig that built and matched `.expected` before the gate existed --
-so the front end reported errors and generated correct code anyway, which is
-why nobody saw it.
+`std.Thread.spawn` requires the entry function to return `void`, `u8`,
+`noreturn`, `!noreturn` or `!void`. Every corpus program whose `opening`
+returns a VALUE emits zig that zig rejects before it runs -- 32 returning
+`i64`, 6 returning text, 1 returning `f64`. **That is 39 of the 112, one
+defect, 35% of the pile.**
 
-**The hypothesis worth testing first, because it would collapse two piles
-into one:** the 112 programs the census calls `clean` but whose zig will not
-build fail overwhelmingly on `use of undeclared identifier` -- `Frequency`,
-`Timestamp`, `Tup2`, `T2`, `True` -- which is what a MISSING TYPE-DEF looks
-like downstream. If both piles are `cite_resolve` not reproducing the
-depot's compilation environment, one fix moves 150 programs and the corpus
-census gets meaningfully more honest.
+It is nearly unrecorded: `findings/README.md:1247` mentions it once in
+passing, as the reason `final-batch-test` was never run. Nobody had counted
+it.
 
-Start by taking one of the four, diffing our resolved unit against what the
-depot's own build feeds the compiler for it, and naming the missing chapter.
-No QEMU: `cite_resolve.resolve` and `native/codexzig` answer in seconds.
+**What it needs before it goes.** Whether a non-`Nothing` `opening` is
+well-formed Codex at all -- the depot's own driver may reject it, in which
+case the finding is that our plug accepts what the seed refuses, which is a
+different row and a better one. Read `opening.codex`'s own entry handling
+first, then decide which claim to write. **Cold-read the artifact before
+sending**, per the lesson under "One question left behind PR 87".
+
+## 2a. The 112 pile is characterised now, and the rest is a long tail
+
+The 39 above are the head. The remainder, measured on the whole pile with
+`zig build-exe`:
+
+    47  expected type 'i64', found 'bool'  -- generated-code type mismatch
+     5  use of undeclared identifier 'Frequency'
+     5  use of undeclared identifier 'Timestamp'
+     2  use of undeclared identifier 'T16'   (a 16-element tuple; `Tuple`
+                                              defines Tup2..Tup5 only)
+     2  use of undeclared identifier 'True'
+     1  each: Duration, sin, a switch, two shadowing errors, and four more
+
+**The `expected type 'i64', found 'bool'` cluster is 47 programs and is the
+next one worth splitting**, on the same method: read the emitted zig at the
+reported column, not the Codex.
+
+**The hypothesis that sent us here is REFUTED and should not be retried.**
+The queue said these might be the same missing-chapter bug as the halts,
+which would have moved 150 programs at once. Measured A/B over all 112, one
+variable: 111 refused before, 111 refused after; normalised for shifted line
+numbers, four messages differed at all, and none changed class. The two
+piles are unrelated.
+
+## 2b. Four programs halt because our harness does not split quoted works
+
+**Objective: INTEGRITY. KEYBOARD.** `quotes-gate`, `quotes-parse`,
+`quote-from-peer` and `quote-from-store` halt at the error gate with
+`CDX1000 Expected token kind mismatch` -- and `quotes-gate` and
+`quotes-parse` are in the well-behaved 181, so they ran and matched
+`.expected` while the front end was reporting a parse error about them.
+
+**It is not unit assembly; it is the harness reusing half a driver.** The
+driver splits the `%%QUOTED-WORKS%%` blob off the source and verifies the
+signed definitions BEFORE tokenising (`opening.codex:1063-1073`,
+`split-quoted-works`). `emit_harness.frontend_source` starts at `tokenize`,
+so our harness hands the blob to the lexer as if it were code. The digest
+`71f85b...` is the token it chokes on.
+
+**Third time this shape has cost us**, after the error gate itself and the
+`ir-emit-roots` list: a piece of the real driver the harness does not copy,
+with no test that could tell. Fixing it means `frontend_source` calling
+`split-quoted-works` -- which means bundling the chapter that defines it,
+and that chapter is `opening.codex`, which cannot ride beside a harness
+that defines `opening`. Same wall `czg-emit-roots` hit. **Decide whether to
+copy the split or to teach the bundler to carry a renamed `opening`; do not
+copy it silently, because that is exactly how the roots list drifted.**
+
+The other nine halts are correct: they are negative tests
+(`class-op-no-instance`, `effect-launder-*`, `let-effectful-bug`,
+`mutable-alias`, `parser-resync`, `effect-handler-clause`) whose whole
+purpose is to be diagnosed, and a compiler that diagnoses them is working.
+
+## 2c. The census wants a re-bank, and it should ride Update 50
+
+**Objective: INTEGRITY. BOX-adjacent -- `corpus_run.py --changed --bank`
+takes the compute lock, ~25 minutes, no QEMU.**
+
+`cite_resolve` now carries the implicit chapters (`8830e7b`), so every
+`zig_sha` in `corpus/census.json` has moved and the bank is dated
+2026-08-25. **Do not bank it against the u50-stack**: Update 50 has landed
+and the pin moves, and a bank taken against a tree we are about to leave is
+stale the moment it is written. It rides the Update 50 ceremony.
+
+What a re-bank must absorb, measured 2026-08-26 and both verified as
+improvements, not regressions:
+
+    dtls-fragment            refused -> match     NOT ours: finding 42's fix,
+                                                  which landed after the bank
+    list-comprehension-copy  markers -> refused    ours: its marker was
+                                                  literally `no emitter for
+                                                  map-list`
+
+**And the number that says why this mattered.** The gap histogram -- the
+thing that RANKS which emitter arm to write next -- went from 135 distinct
+gaps to 133. The two that vanished are `no emitter for MkTup2` (18
+programs) and `no emitter for map-list` (2). Twenty hits in the ranking
+were our own missing chapters, which is the failure `cite_resolve.py`'s own
+docstring was written to prevent: "the plug's fallback fires -- which looks
+exactly like an emitter gap and is not one."
 
 ## 3. One question left behind PR 87, and it needs no plug
 

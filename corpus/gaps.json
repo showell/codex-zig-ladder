@@ -33,14 +33,14 @@
  ],
  [
   "no emitter for block-read-sector",
-  20
+  24
  ],
  [
   "no emitter for poke-mmio-32",
   19
  ],
  [
-  "no emitter for MkTup2",
+  "no emitter for process-get-scope",
   18
  ],
  [
@@ -48,8 +48,8 @@
   17
  ],
  [
-  "no emitter for process-get-scope",
-  14
+  "no emitter for block-write-sector",
+  15
  ],
  [
   "no emitter for net-recv-raw",
@@ -74,10 +74,6 @@
  [
   "no emitter for vec-splat",
   12
- ],
- [
-  "no emitter for block-write-sector",
-  11
  ],
  [
   "no emitter for net-send-raw",
@@ -140,11 +136,11 @@
   5
  ],
  [
-  "no emitter for port-out-byte",
+  "no emitter for gpu-out",
   5
  ],
  [
-  "no emitter for gpu-out",
+  "no emitter for port-out-byte",
   5
  ],
  [
@@ -200,11 +196,7 @@
   2
  ],
  [
-  "unresolved type variable T74 of collision-find",
-  2
- ],
- [
-  "unresolved type variable T77 of make-single-branch",
+  "unresolved type variable T73 of hamt-node-get",
   2
  ],
  [
@@ -212,7 +204,11 @@
   2
  ],
  [
-  "unresolved type variable T73 of hamt-node-get",
+  "unresolved type variable T77 of make-single-branch",
+  2
+ ],
+ [
+  "unresolved type variable T74 of collision-find",
   2
  ],
  [
@@ -220,31 +216,31 @@
   2
  ],
  [
-  "unresolved type variable T55 of collision-remove",
+  "unresolved type variable T67 of make-single-branch",
   2
  ],
  [
-  "unresolved type variable T53 of hamt-remove",
+  "unresolved type variable T62 of hamt-get",
   2
  ],
  [
-  "unresolved type variable T45 of hamt-node-get",
+  "unresolved type variable T71 of hamt-remove",
   2
  ],
  [
-  "unresolved type variable T46 of collision-find",
+  "unresolved type variable T63 of hamt-node-get",
   2
  ],
  [
-  "unresolved type variable T44 of hamt-get",
+  "unresolved type variable T72 of hamt-node-remove",
   2
  ],
  [
-  "unresolved type variable T54 of hamt-node-remove",
+  "unresolved type variable T64 of collision-find",
   2
  ],
  [
-  "unresolved type variable T49 of make-single-branch",
+  "unresolved type variable T73 of collision-remove",
   2
  ],
  [
@@ -252,11 +248,11 @@
   2
  ],
  [
-  "no emitter for map-list",
+  "no emitter for __list-head",
   2
  ],
  [
-  "no emitter for __list-head",
+  "no emitter for __list-len",
   2
  ],
  [
@@ -264,7 +260,11 @@
   2
  ],
  [
-  "no emitter for __list-len",
+  "no emitter for mask-none",
+  2
+ ],
+ [
+  "no emitter for mask-all",
   2
  ],
  [
@@ -273,14 +273,6 @@
  ],
  [
   "no emitter for mask-count",
-  2
- ],
- [
-  "no emitter for mask-all",
-  2
- ],
- [
-  "no emitter for mask-none",
   2
  ],
  [
@@ -304,10 +296,6 @@
   1
  ],
  [
-  "no emitter for atomic-add",
-  1
- ],
- [
   "no emitter for memory-fence",
   1
  ],
@@ -316,11 +304,11 @@
   1
  ],
  [
-  "no emitter for block-select",
+  "no emitter for atomic-add",
   1
  ],
  [
-  "no emitter for key-zero",
+  "no emitter for block-select",
   1
  ],
  [
@@ -332,6 +320,10 @@
   1
  ],
  [
+  "no emitter for key-zero",
+  1
+ ],
+ [
   "no emitter for read-line",
   1
  ],
@@ -340,11 +332,11 @@
   1
  ],
  [
-  "unresolved type variable T82 of hamt-node-remove",
+  "unresolved type variable T83 of collision-remove",
   1
  ],
  [
-  "unresolved type variable T83 of collision-remove",
+  "unresolved type variable T82 of hamt-node-remove",
   1
  ],
  [
@@ -352,19 +344,7 @@
   1
  ],
  [
-  "unresolved type variable T82 of hamt-remove",
-  1
- ],
- [
-  "unresolved type variable T86 of hamt-size",
-  1
- ],
- [
-  "unresolved type variable T95 of hamt-to-list",
-  1
- ],
- [
-  "unresolved type variable T78 of make-single-branch",
+  "unresolved type variable T73 of hamt-get",
   1
  ],
  [
@@ -376,11 +356,23 @@
   1
  ],
  [
+  "unresolved type variable T82 of hamt-remove",
+  1
+ ],
+ [
   "unresolved type variable T74 of hamt-node-get",
   1
  ],
  [
-  "unresolved type variable T88 of hamt-fold",
+  "unresolved type variable T95 of hamt-to-list",
+  1
+ ],
+ [
+  "unresolved type variable T86 of hamt-size",
+  1
+ ],
+ [
+  "unresolved type variable T78 of make-single-branch",
   1
  ],
  [
@@ -388,7 +380,7 @@
   1
  ],
  [
-  "unresolved type variable T73 of hamt-get",
+  "unresolved type variable T88 of hamt-fold",
   1
  ],
  [
@@ -400,11 +392,11 @@
   1
  ],
  [
-  "unresolved type variable T56 of hamt-contains",
+  "unresolved type variable T74 of hamt-contains",
   1
  ],
  [
-  "unresolved type variable T57 of hamt-size",
+  "unresolved type variable T75 of hamt-size",
   1
  ],
  [
@@ -412,23 +404,23 @@
   1
  ],
  [
-  "unresolved type variable T4 of ilist-append",
+  "unresolved type variable T43 of ilist-append",
   1
  ],
  [
-  "unresolved type variable T6 of ilist-length",
+  "unresolved type variable T44 of ilist-reverse",
   1
  ],
  [
-  "unresolved type variable T5 of ilist-reverse",
+  "unresolved type variable T45 of ilist-length",
   1
  ],
  [
-  "unresolved type variable T53 of swap-tup",
+  "unresolved type variable T74 of swap-tup",
   1
  ],
  [
-  "unresolved type variable T54 of swap-tup",
+  "unresolved type variable T75 of swap-tup",
   1
  ],
  [
@@ -436,31 +428,31 @@
   1
  ],
  [
-  "unresolved type variable T8 of cl-tail",
+  "unresolved type variable T63 of cl-drop",
   1
  ],
  [
-  "unresolved type variable T23 of cl-take",
+  "unresolved type variable T48 of cl-length",
   1
  ],
  [
-  "unresolved type variable T6 of cl-is-empty",
+  "unresolved type variable T49 of cl-length-acc",
   1
  ],
  [
-  "unresolved type variable T10 of cl-length-acc",
+  "unresolved type variable T59 of cl-append",
   1
  ],
  [
-  "unresolved type variable T9 of cl-length",
+  "unresolved type variable T47 of cl-tail",
   1
  ],
  [
-  "unresolved type variable T20 of cl-append",
+  "unresolved type variable T62 of cl-take",
   1
  ],
  [
-  "unresolved type variable T24 of cl-drop",
+  "unresolved type variable T45 of cl-is-empty",
   1
  ],
  [
@@ -500,19 +492,19 @@
   1
  ],
  [
-  "no emitter for vec-mul",
-  1
- ],
- [
-  "no emitter for vec-sub",
-  1
- ],
- [
   "no emitter for vec-div",
   1
  ],
  [
   "no emitter for vec-add",
+  1
+ ],
+ [
+  "no emitter for vec-mul",
+  1
+ ],
+ [
+  "no emitter for vec-sub",
   1
  ],
  [
