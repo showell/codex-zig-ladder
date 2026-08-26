@@ -304,9 +304,34 @@ corpus scale; where it bit was the self-host.
    pin, since all eight prior PRs landed. **The harness lift is OURS and does
    NOT ride it.** Cold-read before sending; three outbound artifacts in a row
    had the wrong headline claim.
-2. **Decide which HEAD the rebank runs on.** The fix branch is not the
-   release, and a bank taken with our patch under it is not a bank of Update
-   50. First time that question has had teeth.
+2. **DECIDED 2026-08-26: the rebank runs on the FIX branch,
+   `zig-plug-tvar-not-an-answer` (`a961dcb6`).** The question looked like it
+   had teeth and it does not, once two things are checked.
+
+   `ast/rebank_all.sh` does two halves: bank the 14 bare-metal truths
+   through the seed, then rebuild the zig plug and sweep against them.
+
+   **The truths cannot move.** The fix branch differs from the pin in
+   exactly ONE file, `codex/plugs/zig/ZigEmitter.codex`, and bare metal
+   never runs the plug. The check that could have broken that argument is
+   whether any RUNG SUBJECT bundles ZigEmitter -- it would then be part of
+   what gets compiled -- and none does: `bundle_codexzig.ps1` and
+   `bundle_ringplug.ps1` are the only two that carry it, and neither is one
+   of the fourteen (`lex parse desugar scope check lower ir_to_codex
+   ir_to_codex_roundtrip lir_to_x86 ir_to_wire ir_to_x86_on_fib
+   ir_to_x86_on_cce passes_to_x86_on_mid passes_to_x86_on_arith`).
+
+   **The sweep half cannot run on the pin at all.** That is what the 47
+   `T38`s are: `native_build.sh` does not get through them on the bare
+   release. Banking on the pin buys a correctly-labelled bank and a dead
+   second half.
+
+   So the only argument for the pin was the label, and the label is what
+   the standing rule already covers: measure against OUR FORK'S STACK and
+   NAME it. Here the stack is one commit, and it is the one about to be a
+   PR. **Bookkeeping owed with the bank: record that the tree carried
+   `a961dcb6`**, alongside the seed and harness-content the sidecars keep
+   already.
 3. **`ast/allcycles.sh` is still UNPAID**, and it is owed to the rebank, not
    to a chain: `restore_truths.py` answers "NO BANK for this seed" because
    `truth/u50` does not exist, and the sweep dies at rung one, 0/14. Nothing
