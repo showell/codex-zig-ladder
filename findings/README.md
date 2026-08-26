@@ -1349,8 +1349,35 @@ binding from the prelude of an emitted program:
 these are ordinary names for an ordinary definition. Two programs hit it
 today because two programs happened to define `l` and `base`.
 
-**Fixed: the two instances**, by renaming those prelude locals to
-`cx_l`, `cx_acc`, `cx_base`, `cx_e`. **Not fixed: the other 43.**
+**MEASURED AGAIN 2026-08-26 22:32, after the rename was built, and the
+first measurement was WRONG in a way the fix exposed.** Both programs
+still refuse -- the error moved one line and changed kind:
+
+    before   dns-answer-count.zig:22:11  local constant shadows declaration of 'l'
+    after    dns-answer-count.zig:26:15  function parameter shadows declaration of 'l'
+
+**The surface is 66 names, not 45.** The first extraction searched for
+`const` and `var` bindings and never looked at prelude function
+PARAMETERS, which shadow exactly the same way. Nineteen more names, and
+they are worse than the first batch because they are the commonest
+parameter names there are:
+
+    a, alignment, bits, bytes, ctx, d, e, h, hi, len, lo, memory,
+    new_len, path_cce, ra, sep, vs, x, y
+
+`x`, `y`, `d`, `e`, `len`, `ctx`, `a`. A Codex program defining a
+top-level `x` cannot be compiled by this plug.
+
+**So the two instances are NOT fixed** and the prediction that they would
+move was wrong. What the rename bought was the discovery that the class
+is half again as big as filed -- the fix moved the error to the next
+shadow of the same name, which is the loudest possible way to say the
+first measurement was incomplete.
+
+**The class fix is now clearly the only fix**, and it is bigger than
+before: renaming 66 prelude identifiers, locals and parameters both. The
+`check_*.py` guard that re-derives the surface must count parameters
+too, or it will certify the same incomplete list.
 
 **Why the whole class was not fixed tonight, stated rather than
 skipped.** There are two routes and both are too big for a piggyback:
