@@ -15,7 +15,7 @@ program and diffs against its `.expected` rather than counting markers:**
 ```
 corpus match      183  ->  269
 corpus refused    112  ->   24
-ast/allcycles.sh  14/14 on every chain
+ast/allcycles.sh  14/14 on every chain, final sweep 23:05
 ```
 
 Four verification chains, six legs each (natives, a type-variable case
@@ -83,4 +83,4 @@ wave of newly-visible failures behind the 40 it unblocked and got two,
 and 1.90's predicted two programs would start passing and they did not,
 which is how the 66-name surface surfaced at all.
 
-Ladder: `TAG`
+Ladder: `u50-emitter-batch`
