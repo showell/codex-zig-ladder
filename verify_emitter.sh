@@ -60,7 +60,7 @@ leg leg0-natives ./native_build.sh
 # Inline rather than a leg, because its verdict is three lines of prose and
 # not an exit code: what matters is WHICH outcome case (g) reaches.
 say "leg1-tvar-matrix START"
-python3 - <<'PY' 2>&1 | tee "$S/leg1-tvar-matrix.log" | tail -4 | tee -a "$STATUS"
+python3 - <<'PY' 2>&1 | tee "$S/leg1-tvar-matrix.log" | tail -5 | tee -a "$STATUS"
 import subprocess, sys, re, pathlib, os
 sys.path.insert(0, os.getcwd())
 import corpus_run
@@ -72,16 +72,25 @@ zg = subprocess.run(['native/zigemit'], input=ir.stderr, capture_output=True, ti
 z = zg.stderr.decode(); pathlib.Path('probe.zig').write_text(z)
 marks = sorted(set(re.findall(r'zig plug: [^"]*', z)))
 print('  matrix markers:', marks or 'NONE')
+tvar = [m for m in marks if 'type variable' in m]
 p = subprocess.run(corpus_run.BOUNDED + ['timeout', '300', 'zig', 'run', 'probe.zig'],
                    capture_output=True, timeout=330)
+err = p.stderr.decode()
+pathlib.Path('probe-build.log').write_text(err)
 if p.returncode == 0:
     print('  matrix RUNS ->', p.stderr.decode().split())
     print('  (cases a-f answer 7 11 42 5 3 42; case g must NOT reach here silently)')
+    print('  leg1-tvar-matrix RED (case g built and ran; the refusal never fired)')
 else:
-    err = p.stderr.decode()
     first = next((l for l in err.splitlines() if 'error:' in l), '')
-    print('  matrix DOES NOT BUILD ->', first.split('error:')[-1].strip()[:70])
-    print('  (a DIAGNOSTIC here is the intended outcome for case g)')
+    detail = first.split('error:')[-1].strip()
+    print('  matrix DOES NOT BUILD ->', detail[:70])
+    if not tvar:
+        print('  leg1-tvar-matrix RED (no type-variable marker; case g is not diagnosed)')
+    elif 'zig plug:' in err:
+        print('  leg1-tvar-matrix GREEN (zig reports the plug marker itself)')
+    else:
+        print('  leg1-tvar-matrix RED (marker is in the file, zig reports "%s" instead)' % detail[:40])
 PY
 
 leg leg2-corpus ./corpus_run.py --run
