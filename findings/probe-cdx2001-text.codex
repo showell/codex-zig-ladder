@@ -1,0 +1,26 @@
+Chapter: Pr2001Text
+  cites Foreword chapter Console
+
+ Narrowing probe for the CDX2001 loss. `probe-pr87-alias` and
+ `probe-pr87-direct` both show bare metal reporting CDX2001 "Integer vs
+ Fun" where our zig-built compiler reports nothing. This asks whether the
+ whole diagnostic is gone or only that shape: a Text where an Integer is
+ declared is CDX2001 by a completely different route -- no function
+ types, no arity, no self-reference.
+
+ PREDICTION: bare metal refuses with CDX2001. If OUR ARM also refuses,
+ the loss is specific to the Fun comparison and the hunt is narrow. If
+ our arm accepts this too, CDX2001 is not being reported at all and the
+ hunt is at the reporting site rather than the comparison.
+
+Section: Functions
+
+  m : Integer
+  m = "not an integer"
+
+Section: Entry
+
+  opening : [Console] Nothing
+  opening = act
+   print-line-uni (show m)
+  end
