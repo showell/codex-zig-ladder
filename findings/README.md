@@ -1108,10 +1108,35 @@ failed: a fourteen-line subject with no lambda in it, which fires the marker
 against pre-fix natives with 0 `__lam` defs in its IR. Both earlier versions
 predicted that program would be fine.
 
-**Confidence: HIGH on the diagnosis** -- the missing arms are read directly
-from the source, the failing match was traced through real IR, and the two
-competing explanations were each refuted by evidence rather than replaced.
-**UNVERIFIED on the fix.**
+**VERIFIED 2026-08-26 18:20, and the reach is the strong version.** Natives
+rebuilt against the fix, 597 programs re-transpiled:
+
+    unresolved type variable markers   40 -> 0 distinct, 51 -> 0 program-hits
+    all emitter gaps                  135 -> 95 distinct, 40 gone, 0 NEW
+    programs transpiling clean        326 -> 334
+
+**The prediction this finding refused to assume is confirmed.** It said "one
+confirmed mechanism is not a confirmed cause for all forty" and named the
+diff of `gaps.json` as the measurement. The measurement says all forty, with
+zero new markers and no program carrying a type-variable marker of any kind.
+`typeclass-smoke`'s `T44` went with them despite the caveat that it might
+fail for a different reason -- so that caveat was wrong, and it was cheaper
+to be wrong in writing than to have guessed right without checking.
+
+**A process note worth keeping.** The chain's per-program readout queried
+`census.json`, which `corpus_run.py --transpile` does NOT rewrite -- only
+`--bank` does -- so it printed the stale bank and appeared to say
+`roc-iter-map` still carried its markers. `gaps.json` and `transpile.json`
+are the files `--transpile` rewrites and they are the authority. A
+contradiction was one quote away.
+
+**Confidence: HIGH, and the fix is measured** -- the missing arms were read
+from the source, the failing match traced through real IR, both competing
+explanations refuted by evidence rather than replaced, and the reach
+measured over the whole corpus rather than asserted.
+
+**Still owed:** the `codexzig` fixed point and the sweep an emitter change
+requires, both in flight.
 
 ## 46. A type variable is not an answer, and taking one as an answer put `T23` in a scope that declares no such name
 
