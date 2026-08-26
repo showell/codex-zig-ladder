@@ -174,54 +174,53 @@ loop unless it says otherwise.
 
 ---
 
-## 1. Finding 47: the return type is where the answer is
+## 1. Finding 47 is two thirds fixed, and the last third is a decision
 
-**Objective: HUNTING carried into a FIX. KEYBOARD throughout -- it is one
-recovery site in `ZigEmitter.codex` and a corpus program that proves it.**
-(Steve, 2026-08-26: depth-first -- the moment a port unleashes a finding,
-that finding is the top of this list.)
+**Objective: a FIX carried to OUTBOUND. KEYBOARD, but the remaining step is a
+REFACTOR and Steve's call.**
 
-**OURS, and the first filing of this item said UPSTREAM.** That was wrong
-and it is worth saying why, because the wrong version nearly went to Damian
-as a compiler-backlog row. `CSharpEmitter.codex:534-541` states upstream's
-position outright: a `__lam_N` reaches a plug with unresolved type
-variables in its signature, "the compiler's IR-CCE lift runs after the
-resolve pass", and **the IR is well-typed**. C# answers `dynamic`. A signature
-carrying `(tvar 16)` beside a body building the concrete type is the
-intended shape of that wire, not a contradiction. The refutation came from
-reading our own fix commit's message, which cites that prose -- three
-outbound artifacts in a row have had the wrong headline claim and this
-would have been the fourth.
+**What the fix does, measured 2026-08-26 19:02 by a corpus run that BUILDS
+rather than a marker census:**
 
-**The actual defect is small and named.** `zig-closure-make`'s own prose
-says it recovers from two places: the arguments already supplied, and the
-PARAMETER types of the function type the closure stands in for. A type
-variable occurring only in the lifted lambda's RETURN type is in neither --
-and `pty`, the value it already holds, carries the answer in its return
-half. For `range-to : Integer, Integer -> Iter Integer` the field's type is
-`Integer -> Step Integer`, so `T16` is `Step Integer`.
+    tvar markers            40 -> 8 distinct over 10 program-hits
+    match                   183 -> 184, nothing that matched stopped matching
+    tvar-in-declared-type   (new) -> MATCH, answers 73
+    hamt-test, kvstore-test, inductive-list   markers -> refused
 
-**The work.**
+**The first write-up of this said "verified, clears all forty" and used the
+wrong metric.** A marker count is the emitter's self-report about itself;
+`--transpile` builds nothing. Three programs had traded a diagnostic for a
+build failure and the count could not see it. **`corpus_run.py --run` is the
+measurement for anything in this family.**
 
-1. **Extend the recovery to `pty`'s return type**, alongside
-   `zig-fn-param-type-list`. Finding 46's `zig-prefer-concrete` ordering
-   already says what to do when two sources disagree: concrete beats
-   variable, variable beats nothing.
-2. **The tier row FIRST, and it has to fail.** That is the order the ladder
-   requires and PR 85 is the template: a row that is red before the fix and
-   green after is the only thing that proves the fix did it.
-   `roc-iter-map` is the corpus reproducer; a tier row is the small one.
-3. **Then the chain**: natives, `codexzig_build.sh` for the fixed point,
-   `tiers_run.py`, `corpus_run.py`, sweep.
-4. **Then the PR**, and it rides with finding 46's or just behind it --
-   same file, same machinery, and the second is the gap the first left.
+**Three emission paths carry an out-of-scope type variable. Two are closed.**
+`zig-resolve-tvar` gets a scope test (`bbf339c0`), and a closure whose type
+names a variable the site does not declare is refused whole (`8b493672`).
+The third is a callee's variable emitted untranslated into a caller --
+`cx_ll_of(HamtEntry(T25), ...)` inside a function whose scope declares
+`T70` -- and it is why `hamt-test` and `kvstore-test` still fail.
 
-**What the earlier measurement is still good for.** The Update 50 seed
-under QEMU and `native/codexir` agree byte for byte on all three lifted
-definitions in that program, differing only in the unit name the driver
-hard-codes. It was aimed at the wrong question and it answers a good one:
-our harness reproduces the driver exactly on a program with three lifted
-lambdas, which is the strongest check yet on the harness lift.
+**THE DECISION, and it is why this stopped rather than continuing.** Patching
+the third site would be the third patch, and the emitter memory named this
+shape in advance: "six sites had to learn independently that a generic name
+must be applied; expect a seventh." The structural answer is a guard in
+`emit-zig-type` -- and there is nowhere to put one: it is `CodexType -> Text`,
+no context, **35 call sites**. Threading context through it is a refactor
+with a real blast radius, and it is the difference between fixing this class
+once and fixing it a site at a time forever.
+
+**Where that leaves the branch.** Against the pin it buys one program that
+builds and answers correctly and costs three their diagnostic. By
+"fail-loud is the floor" that trade is not obviously worth taking, so **the
+row should not ship** until the third path is closed or the three are
+understood. `inductive-list` is already understood: it is finding 48, and its
+marker was masking it.
+
+**The instrument is `findings/probe-tvar-recovery.codex`**, seven cases, one
+function each, bare metal as the oracle. It earned itself immediately: case
+(f) was written believing it captured the failing shape and does not, and only
+case (g) -- a closure returning a declared generic type -- reproduces it.
+**Any change in this area is gated on that row and on `--run`.**
 
 ## 2. Send the emitter fix, and decide which HEAD the rebank runs on
 
