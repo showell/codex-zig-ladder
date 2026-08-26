@@ -127,9 +127,10 @@ Three efforts are live at once. They are ordered here, and the ordering is
 the whole point of writing them down:
 
     1  finding 47        guard written, NOTHING BUILT             -> item 1
-    1a finding 49        our corpus gate is blind, fix is known    -> item 1a
+    1a finding 50        show has 5 cases, plug has 1; 42 programs -> item 1a
+    1b finding 49        our corpus gate is blind, fix is known    -> item 1b
     2  finding 46's PR   fix done and verified, not sent          -> item 2
-    3  the Roc ports     4 of ~12 written, 1 never run            -> item 3
+    3  the Roc ports     11 ported, run: 2 match 9 refuse        -> item 3
 
 **THE REBANK STALLED ONCE, RESUMED, AND IS SWEEPING.**
 `~/runs/20260826T171739Z-u50-rebank-tvar`, on `zig-plug-tvar-not-an-answer`
@@ -223,12 +224,20 @@ or misspelling a name passes it silently, which is finding 49. The row is
 `findings/probe-tvar-recovery.codex` case (g) plus `corpus_run.py --run`,
 and both want the box.
 
-**What the last measured state was**, `bbf339c0` only, chain
-`~/runs/20260826T185412Z-scope-gate`: markers 40 -> 8, match 183 -> 184,
-`tvar-in-declared-type` new and matching, and `hamt-test`, `kvstore-test`,
-`inductive-list` markers -> refused. That chain's leg4 sweep was still
-running when the refactor was written, so it is a verdict on the first patch
-and not on HEAD. `inductive-list` is understood: finding 48, and its marker
+**The chain FINISHED GREEN on `bbf339c0`**, 19:37:17,
+`~/runs/20260826T185412Z-scope-gate`: natives, the case matrix, corpus
+`--run`, the codexzig gate including its fixed point, and **`allcycles.sh`
+14 of 14 rungs**. Markers 40 -> 8, match 183 -> 184,
+`tvar-in-declared-type` new and matching, `hamt-test`, `kvstore-test`,
+`inductive-list` markers -> refused. **That is a verdict on the FIRST PATCH
+and not on HEAD** -- the sandbox copied codex at 18:54 and `8b493672` landed
+at 19:01, `d4ba6e75` at 19:20.
+
+**Three new subjects arrived for this item after that run**, from the Roc
+ports: `roc-iter-map`, `roc-iter-keep-if` and `roc-iter-drop-if` all refuse
+with `use of undeclared identifier 'T16'`, which is this class. They are
+independent of the depot and they were not written by anyone who knew what
+the emitter does. Put them on the row. `inductive-list` is understood: finding 48, and its marker
 was masking it.
 
 **Where that leaves the branch.** Until the guard is measured, the trade on
@@ -243,7 +252,34 @@ function each, bare metal as the oracle. It earned itself immediately: case
 case (g) -- a closure returning a declared generic type -- reproduces it.
 **Any change in this area is gated on that row and on `--run`.**
 
-## 1a. The corpus measurement cannot see a compiler error, and it is the same gate as this morning's
+## 1a. `show` has five type cases and the plug implements one, which is 37% of every corpus refusal
+
+**Objective: a FIX carried to OUTBOUND. KEYBOARD to write
+(`ZigEmitter.codex:852` plus two prelude functions), BOX to verify
+(`./native_build.sh`, then `./corpus_run.py --run`).**
+
+Finding 50, found by a Roc port on its first run. `show : forall a. a ->
+Text`; bare metal dispatches five ways at `Emit/X86_64.codex:1652` (f32
+real, other real, `TextTy`, `BooleanTy`, `otherwise` to `__itoa`) and the
+plug is one line that always emits `cx_show_int`.
+
+**Measured over the 2026-08-26 corpus run**: 40 refusals are
+`expected type 'i64', found 'bool'` and 2 are `found 'f64'` -- **42 of 113
+refusals, the largest single class in the corpus**. The site was read at the
+call in three of the forty rather than inferred from the message, because a
+marker name is not a mechanism.
+
+It is loud, so nothing ships a wrong answer; 42 programs simply cannot
+build. The `TextTy` case is predicted from source and NOT measured -- no
+corpus program produced that mismatch -- so it wants one probe before the
+fix claims to cover it.
+
+**ORDER: this goes after item 1 and before item 1b.** Item 1's guard is
+written and unmeasured, and its chain is the next BOX job; running two
+emitter changes into one natives build would leave neither measured. Item
+1b moves the instrument, so it comes after both.
+
+## 1b. The corpus measurement cannot see a compiler error, and it is the same gate as this morning's
 
 **Objective: INSTRUMENT. KEYBOARD to write (`ast/CodexIrHarness.codex`), BOX
 to verify (`./native_build.sh`, then `./corpus_run.py --run`).**
@@ -260,7 +296,7 @@ corpus program that does not compile is scored on the zig its broken IR
 produced. When the same blind spot was opened in the codexzig path it showed
 41 of 593.
 
-**It goes AFTER item 1, and that ordering is the point.** Item 1's verdict is
+**It goes AFTER items 1 and 1a, and that ordering is the point.** Item 1's verdict is
 a DELTA against a bank taken with this instrument. Change the instrument
 first and the comparison is gone -- the tree is part of the measurement, and
 so is the harness. Run item 1's chain, then fix the gate, then re-measure
@@ -500,20 +536,33 @@ thing to keep in step.
 finding, the finding goes to the top of the queue and this item waits.** So
 finding 47 is item 1 and this resumes after it.
 
-**`roc-iter-keep-if` is WRITTEN AND HAS NEVER RUN** (codex `c4ecd929`,
-2026-08-26). Its `.expected` says 2 on ROC's authority; nothing has compiled
-it on either arm. It is committed unexercised on purpose -- a subject is
-worth more in git than in a working tree -- and it is not a measurement
-until it has been through `roc_ports_run.py`. What it asks that
-`roc-iter-map` does not is the REJECT branch: keep_if's else-branch builds a
-fresh iterator and immediately enters it, so the recursion goes through a
-record field of a value constructed one expression earlier and never bound.
-Findings 38 and 40 territory.
+### ELEVEN PORTS NOW, AND THE FIRST RUN OF THE SET
 
-**Nine or so left in the closure/recursion cluster**, and they are the ones
-worth doing: the three iterator-like cases (`map` is ported, `keep_if` is
-written but unrun, `drop_if` remains and is the same lazy-stream shape with
-a predicate), the
+Six landed 2026-08-26 (codex `4ea012e0`): the four inline-fold lambdas,
+`roc-recursive-var`, `roc-early-return-predicate` and `roc-iter-drop-if`.
+`roc_ports_run.py` over all eleven, natives of 16:44:
+
+    match     roc-recursive-var, roc-returned-closure
+    refused   4 folds + closure-captures-list          ErrorTy -- H2
+    refused   iter-map, iter-keep-if, iter-drop-if     undeclared T16 -- item 1
+    refused   early-return-predicate                   show on a Boolean -- finding 50
+
+**Two of eleven match and that is not a disappointment, it is the yield.**
+Nine refusals across three distinct classes, one of which (finding 50) was
+not on this list at all and is 37% of the corpus refusal pile. The suite is
+doing exactly what item 3 says it is for.
+
+The four folds refuse identically, which is why running all four was worth
+it: they widened H2 off the let-bound case it was raised on -- an
+immediately-applied lambda literal reaches the plug with `ErrorTy` for its
+parameters too.
+
+**NOT PORTED, recorded so nobody re-derives it:** "simple early return from
+function via bool". `f = |x| if x { return True } else { False }` is
+`if x then True else False` in Codex and there is nothing of the case left.
+
+**Eight or so left in the closure/recursion cluster**, and they are the ones
+worth doing: the
 four inline-fold lambdas, "recursive function with var keeps outer binding",
 the two early-return-via-predicate cases, and the closure-captures-list
 pair. The rest of the file's ~118 cases are list, record and tag inspection,

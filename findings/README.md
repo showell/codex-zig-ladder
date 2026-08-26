@@ -52,7 +52,7 @@ A finding with no such line is a finding nobody tried to break.
 
 *Not findings. Each carries what would refute it and what that costs.*
 
-### H2. A let-bound lambda reaches the plug### H2. A let-bound lambda reaches the plug with `ErrorTy` for its parameter and its return, and nothing diagnoses it
+### H2. A lambda whose type no DECLARATION fixes reaches the plug with `ErrorTy` for its parameters and its return, and nothing diagnoses it
 
 Raised 2026-08-26 18:30 by `codex/test/roc-closure-captures-list.codex`, the
 third Roc port. It refuses with `zig plug: no zig type for this codex type`
@@ -75,8 +75,27 @@ information exists somewhere.
 **Why it is not the unused parameter, which was the first guess.** Variant C
 uses its parameter and behaves identically. **Why it is not every lambda:**
 `roc-returned-closure`'s `\x -> 9` also ignores its parameter and is clean,
-because `wrap : (Integer -> Integer) -> Wrapped` constrains it. The trigger
-looks like a let-bound lambda with nothing constraining it.
+because `wrap : (Integer -> Integer) -> Wrapped` constrains it.
+
+**WIDENED 2026-08-26 19:40 by four more Roc ports, and the binding form is
+NOT the trigger.** The four inline-fold ports apply a lambda LITERAL in
+function position -- nothing is let-bound -- and refuse identically. The
+sharpest read yet is `roc-fold-sum`, one IR definition:
+
+    (def "__lam_0" (params (param "xs" (list int-default))
+                           (param "base" int-default)
+                           (param "step" error))
+      ... (name "fold-loop" (fn (list int-default) (fn int-default
+              (fn (fn int-default (fn int-default int-default)) ...))))
+
+`step` is `error` in the parameter list of the same definition whose body
+holds `fold-loop`'s declared type, which says exactly what `step` is, one
+node away. Its argument `\acc x -> acc + x` is worse: `(param "acc" error)`
+while the body reads `(name "acc" int-default)`.
+
+So the trigger is a lambda whose type is fixed only by INFERENCE from its
+context, and never by a declaration -- `let`-bound or applied on the spot
+makes no difference. Reworded above accordingly.
 
 **What tilts it upstream.** No plug mentions `ErrorTy` -- not the zig
 emitter, not the C# one -- while `IRTextParser.codex:276` parses `"error"`
@@ -116,7 +135,7 @@ census taught this morning -- a marker name is not a mechanism.
 So the candidate population is four depot programs plus one Roc port, all
 sharing the shape, against a post-47 histogram of 95 distinct gaps.
 
-### H1. FALSIFIED### H1. FALSIFIED 2026-08-26 17:52 -- Update 50 made the largest ladder unit uncompilable to IR-CCE in a 3 GB guest
+### H1. FALSIFIED 2026-08-26 17:52 -- Update 50 made the largest ladder unit uncompilable to IR-CCE in a 3 GB guest
 
 Raised 2026-08-26 17:42, when `ast/rebank_all.sh` died at 11/12 on
 `passes_to_x86` -- 2.65 MB of source, the largest unit. Its CDX compile
@@ -1053,6 +1072,71 @@ no python arm has been run, so whether any real program reaches the
 shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
+
+## 50. The zig plug implements one of `show`'s five type cases and maps the other four onto it, and that is 37% of every corpus refusal
+
+Found 2026-08-26 by `codex/test/roc-early-return-predicate.codex`, a Roc
+port, on its first run. **OURS**, `codex/plugs/zig/ZigEmitter.codex:852`.
+Not fixed.
+
+`show : forall a. a -> Text` (`Types/Builtins.codex:69`), and the plug is
+one line:
+
+    ZigBuiltinEmitter { name = "show",
+      emit = \args ctx d ty -> "cx_show_int(" & emit-zig-expr ... & ")" }
+
+**Bare metal dispatches five ways** (`Emit/X86_64.codex:1652`):
+
+    f32 real       emit-show-real-approx
+    other real     __real_to_text
+    TextTy         the expression itself
+    BooleanTy      emit-show-bool
+    otherwise      __itoa
+
+The C# plug dispatches too, on TextTy against everything else, and leans on
+`Convert.ToString` for the rest. The zig plug implements the `otherwise`
+arm and sends the other four to it.
+
+**Reach, measured over the 2026-08-26 corpus run** (`run.jsonl`, 329
+programs, 113 refusals):
+
+    40  expected type 'i64', found 'bool'    show on a Boolean
+     2  expected type 'i64', found 'f64'     show on a Real
+    ----
+    42  of 113 refusals -- 37%, the largest single refusal class in the corpus
+
+The 40 include `arithmetic`, `tls-test`, `poly1305`, `ecdsa-p256`,
+`dtls-record` and 35 more; the two Reals are `factorial` and
+`geometry-test`.
+
+**Falsification attempted, because a message match is not a mechanism** --
+that is the mistake the census taught this morning. The refusal site was
+read in three of the forty rather than inferred from the error text, and
+all three are the call itself:
+
+    cx_show_int((true and false))                      arithmetic
+    cx_show_int(cce_is_continuation(0))                cce-tier1
+    cx_show_int(((ones > 96) and (ones < 160)))        mix-bits
+
+**It is LOUD, and that is the good news.** Zig types `cx_show_int(n: i64)`,
+so a Boolean or a Real argument is a compile error and no program ships a
+wrong answer. The plug's own rule -- never map an unhandled construct onto a
+valid-but-different one -- is broken here in the form that fails at the
+build rather than in the form that fails silently.
+
+**The Text case is PREDICTED, NOT MEASURED.** Bare metal returns the
+expression itself for `TextTy`; the plug would emit `cx_show_int` on a
+`[]const u8`. No corpus program produced that mismatch, so either nothing
+calls `show` on a Text or something upstream removes it. Worth one probe
+before the fix claims to cover it.
+
+**Confidence: HIGH.** One line of source against a five-way dispatch in
+the oracle, and 42 programs whose refusal was read at the call site.
+
+**Why it matters more than its severity suggests.** These 42 have been
+sitting in the refused pile as 42 separate-looking failures. `show` is not
+an exotic construct and the fix is a `when ir-expr-type` plus two prelude
+functions -- one of the cheapest large moves available on the emitter.
 
 ## 49. `native/codexir` emits IR for a program with compiler errors and says nothing, because its harness never consults the diagnostic bag
 
