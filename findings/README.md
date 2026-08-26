@@ -899,77 +899,89 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
-## 47. Lambda lifting on the plug-facing path promotes an UNBOUND type variable into a lifted definition's signature, and the same definition's body contradicts it
+## 47. `zig-closure-make` recovers a lifted lambda's type variables from the supplied arguments and from the parameter types it stands in for -- never from the RETURN type, where the answer is sitting
 
 Found 2026-08-26 on the ladder droplet, by the second snippet ported from
-Roc's closure/recursion suite (PRIORITIES item 6), on its first run.
-**UPSTREAM**, `codex/compiler/opening.codex`, and **new at Update 50** --
-before it, `emit-ir-cce` did not lift, so no text plug ever received a
-`__lam_N` and this could not be reached.
+Roc's closure/recursion suite (PRIORITIES item 3), on its first run.
+**OURS**, `codex/plugs/zig/ZigEmitter.codex`, and a gap that finding 46's
+own fix left behind.
 
-**The reproducer is a corpus program**, `codex/test/roc-iter-map.codex` on
-branch `roc-corpus-ports`: a lazy stream as a record holding a closure,
-mapped over, first two items read. Roc expects 24.
+**The first filing of this said UPSTREAM and that was WRONG.** It is
+corrected here rather than quietly, because the wrong version was written
+into PRIORITIES as item 1 and nearly went to Damian as a compiler-backlog
+row. What refuted it is upstream's own prose, `CSharpEmitter.codex:534-541`:
 
-**What the wire carries.** Both of the lifted lambdas come out with a return
-type that is a type variable bound NOWHERE, while the body of the same
-definition uses the concrete type. The sharpest of the two needs no
-generics at all -- `range-to : Integer, Integer -> Iter Integer` is
-monomorphic:
+> A lifted lambda reaches this plug with UNRESOLVED type variables in its
+> signature: the compiler's IR-CCE lift runs after the resolve pass, so a
+> `__lam_N` def carries the expected types its lambda was handed, not the
+> resolved ones. [...] the IR is well-typed.
+
+So a `__lam_N` whose signature carries `(tvar 16)` while its body builds
+the concrete type is **the documented, intended shape of that wire**, not a
+contradiction. C# meets it with `dynamic`. The zig plug has to RECOVER the
+type, which is what finding 46 built the machinery for. What was reported
+as "the definition contradicts itself" is the resolved and unresolved views
+of one well-typed IR sitting side by side, exactly as designed.
+
+**The real defect, and it is small.** `zig-closure-make`'s own prose names
+the two places it recovers from:
+
+> The types to recover FROM are in two places [...] the arguments already
+> supplied carry theirs, and the parameters the trampoline is about to take
+> are named by the function type this closure stands in for.
+
+A type variable that occurs **only in the lifted lambda's RETURN type** is
+in neither. Nothing at the call site mentions it, and
+`zig-fn-param-type-list` reads `pty`'s parameters. **But `pty` is the whole
+function type, and its return half is the answer.** For
+`range-to : Integer, Integer -> Iter Integer` the field's declared type is
+`Integer -> Step Integer`; `T16` is `Step Integer`, one field along in a
+value the function already holds.
+
+**The reproducer**, `codex/test/roc-iter-map.codex` on branch
+`roc-corpus-ports`, via `./roc_ports_run.py roc-iter-map`. The sharpest of
+its two instances needs no generics at all -- `range-to` is monomorphic:
 
     (def "__lam_1" "" (params (param "start" int-default)
                               (param "stop" int-default)
                               (param "ignored" int-default))
       (fn int-default (fn int-default (fn int-default
-        (ctd "Step" (args (tvar 16))))))          <-- the SIGNATURE
+        (ctd "Step" (args (tvar 16))))))
       (if (binary eq ...)
-        (name "Done" (ctd "Step" (args int-default)))   <-- the BODY
+        (name "Done" (ctd "Step" (args int-default)))
         ...))
 
-`tvar 16` appears in the signature and in no parameter, so no call site can
-supply it; `int-default` is sitting in the body two lines down. The
-definition contradicts itself.
+and what the plug emits for it:
 
-**It is the RELEASE COMPILER's own wire, not our harness's.** Measured by
-running the cite-resolved unit through the Update 50 seed under QEMU
-(`ring_compile.py`, IR-CCE mode) and decoding with `cce.py`. That wire and
-`native/codexir`'s output differ in exactly one token -- the unit name the
-driver hard-codes, `(chapter "Program")` against `(chapter "RocIterMap")` --
-and agree on all three lifted definitions including `(tvar 16)`. 7148 chars
-against 7151.
+    fn __lam_1(comptime T16: type, start: i64, stop: i64, ignored: i64) Step(T16)
+    ... __lam_1(@compileError("zig plug: unresolved type variable T16 of __lam_1"), ...)
 
-**What it costs a statically typed plug.** The zig plug does the right thing
-and refuses loudly, which is finding 46's rule working: it emits
-`fn __lam_1(comptime T16: type, ...) Step(T16)` and, at the call site,
-`@compileError("zig plug: unresolved type variable T16 of __lam_1")`. The
-program does not build. **A dynamically typed target would drop the
-annotation and run**, which is why this is worth filing rather than
-shrugging at -- the wire is wrong for everyone and only some targets say so.
+**The @compileError is finding 46's marker working.** The plug refuses
+loudly rather than emitting a variable it cannot name, which is exactly the
+rule that finding installed. A dynamically typed target would drop the
+annotation and never notice.
 
-**Hypothesis for the cause, read from source and NOT yet measured.** The two
-frontends disagree about the order of RESOLVE and LIFT.
-`compile-frontend-cdx` resolves first (`opening.codex:833-835` builds the
-type-def map and runs `rewrite-ir-defs`) and lifts afterwards (`:843`).
-`compile-frontend-ir` -- the sequence behind `emit-ir-cce`, and the one that
-feeds every text plug -- never resolves at all, by design, and
-`emit-ir-cce` lifts on top of that unresolved IR (`:1713-1720`). An
-unresolved annotation is harmless on an inline lambda and becomes a
-SIGNATURE the moment that lambda is lifted. **Test before filing upstream:**
-generate a harness with `frontend_source(resolve=True, lift=True)` and see
-whether `tvar 16` becomes `int-default`. That is a bundle and a seed compile,
-and it names the fix if it holds.
+**Still true and still worth having: the wire was read from the release
+compiler, not from our harness.** The Update 50 seed under QEMU
+(`ring_compile.py`, IR-CCE mode, decoded with `cce.py`) and
+`native/codexir` differ in ONE token -- `(chapter "Program")` against
+`(chapter "RocIterMap")`, the unit name the driver hard-codes -- and agree
+on all three lifted definitions. 7148 chars against 7151. That measurement
+was aimed at the wrong question but it answers a good one: **our harness
+reproduces the driver byte for byte on a program with three lifted
+lambdas**, which is the strongest check yet on the 2026-08-26 harness lift.
 
-**Why nothing caught it.** Update 50 turned the lift on for this path and the
-depot's own corpus did not move, because nothing in it builds a record whose
-field is a closure over a locally-typed constructor. Our side could not have
-caught it either: `ast/CodexIrHarness.codex` had no lift until 2026-08-26,
-so `native/codexir`, `corpus_run.py`, `tier_run.py --zig` and the whole tier
-set were structurally blind to every defect needing a lifted lambda. Both
-blind spots closed the same week and this was the first thing through.
+**Why nothing caught it.** `ast/CodexIrHarness.codex` had no lift until
+2026-08-26, so `native/codexir`, `corpus_run.py`, `tier_run.py --zig` and
+the whole tier set were structurally blind to every defect needing a lifted
+lambda. Finding 46 was found the same week by the one path that did lift --
+the driver's, through `codexzig_build.sh` -- and its machinery was built
+against the cases that path produced, all of which had their variables in
+parameter position.
 
-**Confidence: HIGH** on the defect -- reproduced from the release compiler
-itself, minimal, and self-contradictory within one definition.
-**Confidence: MEDIUM** on the cause above, which is a source reading.
+**Confidence: HIGH.** Reproducible from a corpus program, the mechanism is
+named in the plug's own prose, and the answer is demonstrably present in a
+value the function already holds.
 
 ## 46. A type variable is not an answer, and taking one as an answer put `T23` in a scope that declares no such name
 

@@ -204,55 +204,54 @@ loop unless it says otherwise.
 
 ---
 
-## 1. Finding 47: nail the cause, then send it
+## 1. Finding 47: the return type is where the answer is
 
-**Objective: HUNTING, carried through to OUTBOUND. KEYBOARD to read, BOX
-to prove.** (Steve, 2026-08-26: depth-first -- the moment a port unleashes
-a finding, that finding is the top of this list.)
+**Objective: HUNTING carried into a FIX. KEYBOARD throughout -- it is one
+recovery site in `ZigEmitter.codex` and a corpus program that proves it.**
+(Steve, 2026-08-26: depth-first -- the moment a port unleashes a finding,
+that finding is the top of this list.)
 
-**UPSTREAM, new at Update 50, and reproduced from the release compiler
-itself.** `emit-ir-cce` lifts a lambda into a top-level definition whose
-return type is a type variable bound NOWHERE, while the body of that same
-definition uses the concrete type. Finding 47 has the account; the
-reproducer is `codex/test/roc-iter-map.codex` on branch `roc-corpus-ports`,
-and `./roc_ports_run.py roc-iter-map` is the one-line way to see it.
+**OURS, and the first filing of this item said UPSTREAM.** That was wrong
+and it is worth saying why, because the wrong version nearly went to Damian
+as a compiler-backlog row. `CSharpEmitter.codex:534-541` states upstream's
+position outright: a `__lam_N` reaches a plug with unresolved type
+variables in its signature, "the compiler's IR-CCE lift runs after the
+resolve pass", and **the IR is well-typed**. C# answers `dynamic`. A signature
+carrying `(tvar 16)` beside a body building the concrete type is the
+intended shape of that wire, not a contradiction. The refutation came from
+reading our own fix commit's message, which cites that prose -- three
+outbound artifacts in a row have had the wrong headline claim and this
+would have been the fourth.
 
-The sharpest instance needs no generics at all -- `range-to : Integer,
-Integer -> Iter Integer` is monomorphic:
+**The actual defect is small and named.** `zig-closure-make`'s own prose
+says it recovers from two places: the arguments already supplied, and the
+PARAMETER types of the function type the closure stands in for. A type
+variable occurring only in the lifted lambda's RETURN type is in neither --
+and `pty`, the value it already holds, carries the answer in its return
+half. For `range-to : Integer, Integer -> Iter Integer` the field's type is
+`Integer -> Step Integer`, so `T16` is `Step Integer`.
 
-    signature   (fn int-default (fn int-default (fn int-default
-                  (ctd "Step" (args (tvar 16))))))
-    body        (name "Done" (ctd "Step" (args int-default)))
+**The work.**
 
-**Attribution is SETTLED and did not rest on our harness.** The Update 50
-seed under QEMU (`ring_compile.py`, IR-CCE mode, decoded with `cce.py`)
-emits the same three lifted definitions with the same bad `tvar 16`. Its
-wire and `native/codexir`'s output differ in ONE token -- `(chapter
-"Program")` against `(chapter "RocIterMap")`, the unit name the driver
-hard-codes. 7148 chars against 7151.
+1. **Extend the recovery to `pty`'s return type**, alongside
+   `zig-fn-param-type-list`. Finding 46's `zig-prefer-concrete` ordering
+   already says what to do when two sources disagree: concrete beats
+   variable, variable beats nothing.
+2. **The tier row FIRST, and it has to fail.** That is the order the ladder
+   requires and PR 85 is the template: a row that is red before the fix and
+   green after is the only thing that proves the fix did it.
+   `roc-iter-map` is the corpus reproducer; a tier row is the small one.
+3. **Then the chain**: natives, `codexzig_build.sh` for the fixed point,
+   `tiers_run.py`, `corpus_run.py`, sweep.
+4. **Then the PR**, and it rides with finding 46's or just behind it --
+   same file, same machinery, and the second is the gap the first left.
 
-**THE NEXT STEP, and it is a BOX job of about ten minutes.** The cause in
-finding 47 is a source reading, not a measurement, and three outbound
-artifacts in a row have had the wrong headline claim. The hypothesis:
-`compile-frontend-cdx` resolves before it lifts (`opening.codex:833-835`,
-then `:843`), and `compile-frontend-ir` -- the sequence behind
-`emit-ir-cce`, the one that feeds every text plug -- never resolves at all,
-so `:1713-1720` lifts on top of unresolved annotations. An unresolved
-annotation is harmless on an inline lambda and becomes a SIGNATURE the
-moment it is lifted.
-
-**The test:** generate a one-off harness with
-`frontend_source(resolve=True, lift=True)`, bundle it, seed-compile it, and
-read whether `tvar 16` comes back as `int-default`. If it does, the fix has
-a name and the PR writes itself. **Do not ship that harness** -- it must
-mirror the driver, and the driver does not resolve on this path. It is a
-diagnostic only.
-
-**Then the PR.** Compiler backlog (this is `opening.codex`, not a plug),
-`Ladder:` line, the reproducer inline, and NAME THE STACK. Say plainly that
-a dynamically typed target drops the annotation and runs, so the wire is
-wrong for everyone and only some targets say so.
-
+**What the earlier measurement is still good for.** The Update 50 seed
+under QEMU and `native/codexir` agree byte for byte on all three lifted
+definitions in that program, differing only in the unit name the driver
+hard-codes. It was aimed at the wrong question and it answers a good one:
+our harness reproduces the driver exactly on a program with three lifted
+lambdas, which is the strongest check yet on the harness lift.
 
 ## 2. Send the emitter fix, and decide which HEAD the rebank runs on
 
