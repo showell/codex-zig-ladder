@@ -783,6 +783,22 @@ tag `uNN-14of14`; then rebase the branches, natives, tiers, census. u49
 took one evening end to end and Update 50's interim absorb took two
 sittings of a single day, most of it unattended.
 
+**A DETACHED JOB IS RUNNING as of 2026-08-26 14:12 UTC. Read its verdict
+before starting anything on the box:**
+
+    tail -5 /home/steve/runs/20260826T141210Z-u50-natives-tiers/CHAIN-STATUS.txt
+
+Three legs: `native_build.sh`, `tiers_run.py --bare`, `tiers_run.py --zig`,
+each with its own log beside that file. It holds the compute lock while it
+runs. **Leg 1 is the cheap experiment that decides the `T38` item's
+diagnosis** -- codexzig joins codexir's chapters to ZigEmitter in ONE unit
+and `native_build.sh` builds those two SEPARATELY from the same pin and
+seed, so both green means the leak needs them joined (the round trip,
+finding 44) and either one red with `T38` means a plain Update 50 emitter
+regression. **Leg 2 writes `findings/gold/u50/` into a DETACHED sandbox
+worktree: carry it back and commit it**, or the next `--zig` run pays QEMU
+again for columns already measured.
+
 **Update 50 ITSELF landed 2026-08-26 (`8cc80685`, seed `C45E5825`), and
 its ceremony is STOPPED AT THE GATE.** Do not restart it below the `T38`
 item at the top of this file.
