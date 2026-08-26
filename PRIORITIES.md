@@ -133,16 +133,28 @@ rebank, and it is blocked on a decision rather than on the box -- see item 2.
   locally keeps the upstream it was created with, and nothing warns you.**
 - **`roc-corpus-ports` was cut off the FIX branch, not the pin**, so it
   carries `a961dcb6` underneath. Deliberate -- Steve's "off the latest and
-  greatest for now" -- but a PR cut from it would drag the emitter fix along,
-  so rebase onto the pin before any of it goes out.
-- **`corpus/census.json` is still the 2026-08-25 bank.** The harness-lift
-  chain measured a newer one (594 programs, 133 gaps, the five that moved)
-  and nothing banked it. `corpus_run.py --run --bank` is what writes it; it
-  should ride the rebank -- see "The census wants a re-bank".
+  greatest for now" -- and SMALLER than it first reads: the port commits
+  touch `codex/test/` only, four files, pure additions. `git diff
+  u50-rebank..roc-corpus-ports` shows the 191-line `ZigEmitter.codex` fix
+  because of the BASE, not because any port commit contains it, so
+  cherry-picking the ports onto the pin is mechanical whenever they go out.
+  Nothing to do now; keep the commits test-only and it stays that way.
+- **`corpus/census.json` was still the 2026-08-25 bank; being re-banked
+  2026-08-26 17:0x** (`corpus_run.py --changed --bank`, ~25 min, compute
+  lock, no QEMU). The census item said it was waiting on the T38 item at the
+  top of this file, and that item is DONE, so the blocker it named is gone.
+  It banks against the CURRENT stack -- the pin plus finding 46's fix, with
+  post-lift natives `939d57187a37` -- which is the standing rule (measure
+  against our fork's stack and NAME it), and the census's own `meta` records
+  both tool fingerprints, so the bank says what produced it.
 - **`native/` in the main checkout was replaced 2026-08-26 16:44** with the
   binaries from `~/runs/20260826T160728Z-u50-harness-lift/ladder/native`
-  (post-T38-fix, post-lift). The tree's own were stale by a morning. Nothing
-  records that but this line, because `native/` is gitignored.
+  (post-T38-fix, post-lift); the tree's own were stale by a morning. **The
+  identity was already machine-checkable and matches**: `natives_stamp()` is
+  `939d57187a37` in the main tree, in the sandbox it came from, and in that
+  sandbox's tier log. What was missing is the PROVENANCE behind the stamp,
+  now written to `native/PROVENANCE`, with the durable fix filed in
+  ERGONOMICS.md ("native_build.sh should stamp what it built").
 - **`roc_ports_run.py` is RED and should stay red.** `roc-iter-map` refuses,
   and the refusal is finding 47. There is no admission ledger like
   `gold/EXPECTED.txt` and one should not be added until a second port needs
