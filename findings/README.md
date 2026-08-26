@@ -548,7 +548,7 @@ generator, then run the `.cdx`. That is one VM boot per generator instead of one
 for the set, which is the cost the batch runner exists to avoid, so it is a
 workaround and not a fix.
 
-## 17. Unit families have no hosted-plug mapping; 8 census refusals are this one gap
+## 17. Unit families are handled three different ways in three emission paths, and none of them is right -- 16 corpus programs, three error messages, one gap
 
 **Found 2026-08-19 by triaging the census's undeclared-identifier refusal
 family. Characterized from IR and emitter source; fix not yet applied.**
@@ -585,6 +585,47 @@ expression, so the type-level mapping may be the whole fix; whether the
 front end folds scale conversions into plain arithmetic is the thing the
 rerun will answer.
 
+
+**REACH RE-MEASURED 2026-08-26 21:4x by the corpus reading pass, and it
+is 16 programs, not 8 -- because the gap wears three different error
+messages and only one of them was being counted.**
+
+    11  use of undeclared identifier 'Frequency' / 'Timestamp' / 'Duration'
+     3  expected type 'void', found 'comptime_int'
+     2  invalid operands to binary expression: 'void' and 'void'
+
+All sixteen are unit-family subjects. `unit-family`, `units-foreword`,
+`unit-smoke` and `implicit-convert` are the four that were never counted,
+and their names say what they are.
+
+**The three messages are three emission paths disagreeing with each
+other about the same type:**
+
+- **The type mapping erases it.** `emit-zig-type` maps `UnitTy` to
+  `"void"` (`ZigEmitter.codex:296`). A `Length` parameter becomes a zig
+  `void`, so `(w +% h)` becomes `void +% void` -- that is
+  `unit-family.zig:842`, and it is the `invalid operands` message.
+  `unit-smoke` is the same erasure meeting a literal: `const built = 99`
+  against a `void`, which is `expected type 'void', found comptime_int`.
+- **The record-field path emits the NAME.** `sound-test.zig:844` reads
+  `ob_sample_rate: Frequency,` -- the family name, verbatim, undeclared
+  in zig. That is the message the original finding counted.
+- **The constructor path emits a real function.** `fn Meter` IS present
+  in `unit-family.zig`, so constructors survive while the type they
+  construct does not.
+
+So the plug does not simply lack a mapping. It has three, they are
+inconsistent, and the loudest of them (the bare name) is the one that got
+noticed while the erasure quietly turned typed arithmetic into `void`
+arithmetic.
+
+**UNVERIFIED:** which path emits the record field, and whether the
+constructor functions have coherent bodies. Both are one read of the
+emitter away and neither changes the count.
+
+**Why this matters for ranking:** at 16 it is the second-largest cause in
+the corpus behind finding 53, ahead of everything else. The earlier
+number put it fourth.
 ## 20. `IrApproxEq` emits `==`; the 4-ULP band has zero width on the zig arm
 
 **Found 2026-08-18 by an emitter audit (probe written then, blocked on the
