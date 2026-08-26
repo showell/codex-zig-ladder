@@ -899,6 +899,99 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
+## 46. A type variable is not an answer, and taking one as an answer put `T23` in a scope that declares no such name
+
+Found 2026-08-26 on the ladder droplet, on the first Update whose ceremony ran
+the codexzig gate. **OURS**, `codex/plugs/zig/ZigEmitter.codex`, and FIXED the
+same day. This is the diagnosis of the forty-seven undeclared `T38`s that
+stopped Update 50, and it answers that item's own question -- *is the wire
+carrying `T38`, or is the emitter writing it?* -- with the second: **the wire
+is right and the emitter is wrong.**
+
+**The whole defect is five lines of IR.** `warmups/lamtvar.codex` is thirty
+lines of Codex whose two rows differ in one thing, and the IR shows why:
+
+    map-list      : (tvar 23 -> tvar 24) -> (List (tvar 23) -> List (tvar 24))
+    mapped-named  : apply (apply map-list bump)     xs   -- bump : int -> int
+    mapped-lambda : apply (apply map-list __lam_0)  xs   -- xs   : List int
+    __lam_0       : (params (param "x" (tvar 23))) (fn (tvar 23) int-default)
+
+`__lam_0`'s parameter carries the type it was HANDED -- map-list's own `a`,
+still a variable. That is not a compiler defect. The driver lifts lambdas
+AFTER the resolve pass, and CSharpEmitter.codex states it outright above
+`is-lam-def`: "a `__lam_N` def carries the expected types its lambda was
+handed, not the resolved ones". C# answers `dynamic`. Zig has no `dynamic`,
+so this plug has to recover the type, and it has the machinery to: it walks
+each declared parameter type against the type actually supplied and answers
+with what sits where the variable sits.
+
+**The bug is the sentinel.** "Not found" was the empty string in one walk and
+`VoidTy` in the other. Matching map-list's declared `(a -> b)` against
+`__lam_0`'s `(tvar 23 -> Integer)` answers `a = tvar 23` -- which is neither
+sentinel, so the scan **stopped there**, satisfied, and never read the list
+argument one place along, whose `List a` against `List Integer` is the answer
+that was wanted. The variable was then emitted as the literal text `T23` into
+a caller that declares nothing of the kind:
+
+    fn mapped_named(xs: *CxList(i64)) *CxList(i64) {
+        return map_list(i64, i64, ... p0: i64 ... return bump(p0);      ... CxFn1(i64, i64) ...);
+    }
+    fn mapped_lambda(xs: *CxList(i64)) *CxList(i64) {
+        return map_list(T23, i64, ... p0: T23 ... return __lam_0(p0);   ... CxFn1(T23, i64) ...);
+    }
+
+**The emitter had built a marker for exactly this gap and it could not fire.**
+`zig-resolve-tvar` ends in `@compileError("zig plug: unresolved type variable
+T<id> of <callee>")`, and the note above it explains, at length, why a marker
+beats the `anyopaque` it replaced. A variable answer looked like success, so
+the code path that reaches the marker was never taken. **A gap detector that
+a plausible wrong answer walks past is not a detector** -- the same shape as
+finding 45's advisory reservation, one register up.
+
+**There were two mechanisms and they needed the same rule**, which is the
+lesson this file has now recorded three times (`zig-renamed-scan` against
+`zig-subst-all`, and the emitter's own note says "when a fix turns out to be a
+scan direction, go look for the sibling mechanism"). One walk answered Text
+for the type-argument list, one answered CodexType for substitution; the prose
+above them claimed "the walk is shared and only the answer differs" and it was
+not shared, it was copied. They are one walk now, and the fix was written once.
+
+**And a second half, from the same root.** With `a` recovered, the emitted
+`p0: T23` and `CxFn1(T23, i64)` still had to go: `emit-zig-name` handed the
+lambda's raw type to `zig-closure-make` without reading it through the
+enclosing call's own type bindings. And `__lam_0` is emitted GENERIC -- its
+parameter really is a variable -- so `fn __lam_0(comptime T23: type, x: T23)
+i64` was being called as `__lam_0(p0)`, one argument against two. The
+trampoline is a call site like any other and had never applied a generic
+callee. It does now, and the types come from two places: the arguments
+already supplied, and the parameters the trampoline is about to take, which
+the function type it stands in for is the only thing that names. That is the
+seventh site of "A GENERIC NAME MUST BE APPLIED, and nothing enforces it
+centrally", which the emitter's own prose predicted in as many words.
+
+**Why nothing caught it, and this is the part worth keeping.** The IR pipeline
+does not lift lambdas -- `lift-lambdas` is called by the DRIVER
+(`opening.codex:1716`), not by `default-ir-pipeline`. So `native/codexir`
+never produces a `__lam_N` at all, and **every runner built on the natives is
+structurally blind to this**: `corpus_run.py`, `tier_run.py --zig`, and with
+them the entire tier set, which stayed green through the whole failure. The
+first thing to meet it was the ceremony, on a real release, through the seed.
+The reproducer had to be routed through the seed for the same reason, and
+`warmups/regen.sh` had to learn cite resolution before a warmup could reach a
+foreword definition at all.
+
+**Reproducer:** `./warmups/regen.sh lamtvar` then `./cycle.sh lamtvar`. Red
+before the fix with one `use of undeclared identifier 'T23'` against 39,703
+bytes of otherwise-fine zig; green after, and the two rows come out identical
+but for the callee name, with `__lam_0(i64, p0)` applying the generic. Bare
+metal answers `4` and `4` and the warmup diffs against it, so this is an
+oracle match rather than an eyeball.
+
+**Residue, not fixed here.** `zig-subst-arg-type` has no callers -- it
+duplicates the resolver's substitution loop and nothing reaches it. It was
+updated to keep compiling rather than deleted, because a bug fix is not the
+place to remove upstream code.
+
 ## 45. The deck reservation is advisory: overrunning it is detected, printed, ignored, and then faults 200% in
 
 Found 2026-08-25 on the ladder droplet against our fork's stack. **THEIRS**,
