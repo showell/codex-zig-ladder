@@ -1,3 +1,23 @@
+# CLOSED -- sent, answered in full
+
+**Sent by Steve over Gmail 2026-08-26. Answered the same evening by the
+Cobblestone compiler lane, measured against seed C3181693 (main 19889),
+seven arms compiled.**
+
+Answers: **Q1 no** (the shape needs an infinite type; six of seven arms
+refuse, the seventh is a full-arity call whose result is a function --
+and it is the shape PR 87's own reproducer had). **Q2 yes**, and it was
+the unexpected one: the TCO pass is arity-blind on BARE METAL too, so
+the safety comes from the type checker one stage earlier, not from the
+pass. **Q3 no distinct self-tail-call node exists at all**; saturation is
+unmarked on the wire and the plug-side parser performs no arity check.
+
+Consequences on our side: the original row withdraws, our finding 36 was
+wrong about which component was at fault and is re-framed, and the
+trust-model version of the row is drafted in
+`DRAFT-pr87-rescope.md` -- which they said is the version they would
+find worth having.
+
 # Draft: questions about PR 87, for Damian's agents
 
 Context: Steve's note on `where-the-ladder-stands`, paragraph 52 —
