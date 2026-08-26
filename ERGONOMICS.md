@@ -93,3 +93,29 @@ laptop-era habit of holding everything until the box went quiet is
 retired -- **what still holds is one COMPUTE job at a time**, which
 `compute_lock.py` enforces, and not one TASK at a time. `PRIORITIES.md`
 orders its queue on this: items there are marked KEYBOARD or BOX.
+
+## native_build.sh should stamp what it built
+
+`native/` is gitignored, so nothing in git says which build is sitting in a
+tree. `tiers_run.natives_stamp()` hashes the two binaries and every zig-arm
+tier run prints the result, so the identity is machine-checkable -- what no
+artifact records is the PROVENANCE behind that identity: which ladder
+commit, which codex commit, which sandbox, when.
+
+That gap bit on 2026-08-26. The main checkout's natives were a morning
+stale (pre-lambda-lift) while a verified post-lift set sat in a finished
+sandbox; the fix was `cp`, and afterwards the only record of what had
+happened was a sentence in PRIORITIES. `native/PROVENANCE` is that record,
+written by hand, which is exactly the kind of file that goes stale the next
+time somebody copies binaries in a hurry.
+
+**The fix is small:** `native_build.sh` writes `native/PROVENANCE` at the
+end of a successful build -- stamp, ladder HEAD, codex HEAD and branch,
+timestamp, and the tree it was built in. Then a hand-copy is the thing that
+has to remember, rather than the normal path, and a stale file is visibly
+inconsistent with the stamp beside it.
+
+**Not worth more than that.** A signed manifest or a stamp baked into the
+binaries would be the thorough version and neither is warranted: the stamp
+already catches "are these the binaries I think", and this only has to
+answer "where did they come from".
