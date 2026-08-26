@@ -1,0 +1,27 @@
+Chapter: Pr87Direct
+  cites Foreword chapter Console
+
+ The CONTROL for finding 56. `probe-pr87-alias.codex` compiles when it
+ was predicted to refuse, and the conclusion drawn from that -- the
+ let-bound alias is what stops the checker asking -- rests on the
+ Cobblestone lane's arm A refusing, which was measured on their tree and
+ not on ours.
+
+ This is the same definition with the alias removed. One variable
+ changed.
+
+ PREDICTION: CDX2001, Integer against a function type. If this ALSO
+ compiles then the alias is not the trigger, finding 56 is misattributed,
+ and what we have is a plain return-type check that does not run.
+
+Section: Functions
+
+  fx : Integer, Integer -> Integer
+  fx (x) (y) = fx x
+
+Section: Entry
+
+  opening : [Console] Nothing
+  opening = act
+   print-line-uni (show (fx 1 2))
+  end

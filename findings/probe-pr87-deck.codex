@@ -5,6 +5,12 @@ Chapter: Pr87Deck
  call at non-full arity wrapped in `deck-record`, which is typed
  `a -> a` and so does not change the expression's type.
 
+ RENAMED 2026-08-26 22:2x: this probe was called `fd`, and our own
+ prelude has a local named `fd` (finding 54), so zig refused on the
+ shadow before reaching anything this probe is about. The compiler
+ verdict was clean and stands; the zig half was masked and is what the
+ rename recovers.
+
  PREDICTION: CDX2001, for the same reason their arm E refused --
  wrapping the self-application in anything at all stops it being a bare
  self-application in tail position, and the type is unchanged, so the
@@ -12,12 +18,12 @@ Chapter: Pr87Deck
 
 Section: Functions
 
-  fd : Integer, Integer -> Integer
-  fd (x) (y) = deck-record (fd x)
+  deck-self : Integer, Integer -> Integer
+  deck-self (x) (y) = deck-record (deck-self x)
 
 Section: Entry
 
   opening : [Console] Nothing
   opening = act
-   print-line-uni (show (fd 1 2))
+   print-line-uni (show (deck-self 1 2))
   end

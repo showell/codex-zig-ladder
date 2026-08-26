@@ -12,7 +12,7 @@ set -u
 cd "$(dirname "$0")"
 : "${CODEX_ROOT:?set CODEX_ROOT}"
 
-for probe in alias deck armb; do
+for probe in alias direct deck armb; do
   src="findings/probe-pr87-${probe}.codex"
   echo "############ ${probe}  (${src})"
   python3 - "$src" "$probe" <<'PY'
