@@ -60,6 +60,21 @@ our 326 "clean" programs are in that state. The gated harness found 41 of
 **What we owe you and are not sending:** a reproducer, because there is
 nothing to reproduce.
 
+**What we have done about it.** The gate is written and building as this
+goes out. It is the one our other harness already had, and we took it
+from a single shared place rather than copying it, because a copied list
+is what this tree keeps paying for: our IR emit-roots list had already
+drifted from your six to four in BOTH harnesses at once, which no oracle
+could see -- being wrong together looks exactly like being right. The
+gated harness regenerates byte-identical after the refactor, so that half
+is provably inert. There is now a check that compares both harnesses to
+each other AND to `opening.codex`, since agreeing with each other is
+necessary and not sufficient.
+
+We expect our corpus clean count to FALL when it lands, and we will tell
+you by how much. Our gated harness found 41 of 593 when its gate was
+first switched on; this one has never been asked.
+
 **What the exchange cost you:** a triage round and a four-seed sweep. We
 are sorry for that specifically — you asked for our exact pin before
 concluding anything, which was the right instinct, and the thing your pin
