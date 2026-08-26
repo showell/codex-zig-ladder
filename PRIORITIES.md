@@ -279,9 +279,23 @@ which had been on disk for hours. All 112 refusals classified by cause:
 had never been filed -- its only trace in the register was an aside
 inside finding 42.
 
-**After the f50/f51 build the pile is 69, not 112**, so this table wants
-re-running against the new `run.jsonl` before it is used to rank work.
-That is one script invocation, no compute.
+**RE-CLASSIFIED 2026-08-26 21:2x against the f50/f51 `run.jsonl`.** The
+pile is 70 (69 refused + 1 crashed), and it is more concentrated than
+before, not less:
+
+     40  startFn return type (thread entry)      finding 53   fix staged
+     11  undeclared Frequency/Timestamp/Duration finding 17   unit families
+      3  expected type 'void', found comptime_int             unclassified
+      2  undeclared identifier 'True'            finding 52   fix staged
+      2  expected 1 argument(s), found 0                      unclassified
+      2  invalid operands: 'void' and 'void'                  unclassified
+     10  singletons (shadowing, switch exhaustiveness, sin, CxFn1, ...)
+
+The `found 'bool'` class (41) is GONE and the `found 'f64'` class (2) has
+become named markers -- both fixes in that build confirmed from a second
+angle. **The two staged fixes target 42 of the 70**, and `startFn` alone
+is now 57% of the pile, up from 36%: the same defect with a bigger share,
+because everything around it moved.
 
 **What is left:**
 - Re-classify the 69 and update this table.
