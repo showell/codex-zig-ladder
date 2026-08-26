@@ -118,11 +118,20 @@ rebank, and it is blocked on a decision rather than on the box -- see item 2.
 
 ### Loose ends, so they stop living in somebody's head
 
-- **The depot is backed up again, 2026-08-26.** `u50-rebank` (`8cc80685`,
-  the pin), `zig-plug-tvar-not-an-answer` (`a961dcb6`, the finding-46 fix)
-  and `roc-corpus-ports` (`f151d3ea`, the ports) had no remote at all and
-  were the only copy of themselves; Steve pushed all three and every local
-  branch now tracks its own `origin/` counterpart.
+- **The depot is MOSTLY backed up again, 2026-08-26, and the count was
+  wrong when it was first written here.** Three branches were named and
+  pushed -- `u50-rebank` (`8cc80685`, the pin),
+  `zig-plug-tvar-not-an-answer` (`a961dcb6`, the finding-46 fix) and
+  `roc-corpus-ports` (`f151d3ea`, the ports) -- and all three now track
+  their own `origin/` counterpart. **A FOURTH was missed: `u50-stack`
+  (`7aad6301`), still on no remote.** It is "our open PRs, applied: the
+  stack we measure against", cut from the INTERIM `0c4327d5` and superseded
+  when the release absorbed all eight PRs, so it is history rather than
+  working state -- but it is the only copy of a commit that took real work,
+  and deleting an unbacked unique commit is the irreversible direction.
+  **Push it before deciding whether to retire it:**
+  `git -C ~/showell_repos/NewRepository push origin u50-stack`.
+
 - **One upstream said the wrong thing and it was a live foot-gun.**
   `seed-6cf4a8e0-rebank` -- the INTERIM, `0c4327d5` -- had its upstream set
   to `origin/u50-rebank`, which the push moved to the RELEASE `8cc80685`. A
@@ -155,6 +164,11 @@ rebank, and it is blocked on a decision rather than on the box -- see item 2.
   sandbox's tier log. What was missing is the PROVENANCE behind the stamp,
   now written to `native/PROVENANCE`, with the durable fix filed in
   ERGONOMICS.md ("native_build.sh should stamp what it built").
+- **NOT a loose end, checked 2026-08-26: sandbox accumulation.** 23 of them
+  in `~/runs`, 11 GB, on a disk that is 21% full with 123 GB free.
+  `sandbox.sh --prune` exists and keeps the newest 10; there is no reason to
+  run it yet, and the logs of a finished chain are worth more than the space
+  they cost. Recorded so the next person does not re-derive it.
 - **`roc_ports_run.py` is RED and should stay red.** `roc-iter-map` refuses,
   and the refusal is finding 47. There is no admission ledger like
   `gold/EXPECTED.txt` and one should not be added until a second port needs
