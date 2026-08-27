@@ -1195,13 +1195,43 @@ never builds a dictionary -- the wire had no `Tellable-dict-*` in it at all. A
 CONSTRAINED generic function (`announce : Tellable a => a -> Text`) is required
 to force one. Recorded in the probe's own prose.
 
-**The fix shape, and one caveat.** Give the synthesised definition a
-`declared-type` of `<Class>Dict <head-type>`; `id.type-name` is in hand two
-lines above. The caveat is compound heads -- `instance Showable (List Integer)`
--- where the head is not a single named type, and `token-text (id.type-name)`
-may not carry enough to rebuild it. **Not attempted here.** Reasoning about
-this construct has already been wrong once today and the next step is to
-measure what a compound head actually carries, not to write the obvious line.
+**THE FIX IS TWO FIXES, and measuring said so where writing the obvious line
+would not have.** A compound head's argument is discarded AT PARSE TIME, by a
+function that says so in its own name:
+
+    parse-instance-type-head (st) =
+     if is-left-paren (current-kind st)
+      then let st1 = advance st
+       in (current st1, skip-to-close-paren (advance st1) 1)
+     else (current st, advance st)
+
+For `instance Showable (List Integer)` it returns the **`List` token** and
+`skip-to-close-paren`s the rest. `Integer` is gone before the desugarer runs,
+and `InstanceDef` could not hold it regardless:
+
+    InstanceDef = record { class-name : Token, type-name : Token, methods : ... }
+
+`type-name` is a single TOKEN. The def name `to-text-List` on the wire is that
+token and nothing else.
+
+So:
+
+- **SIMPLE heads** (`instance Showable Integer`) are fixable where finding 65
+  says: give the synthesised definition a `declared-type` of
+  `<Class>Dict <type-name>`, which is in hand two lines above.
+- **COMPOUND heads** (`instance Showable (List Integer)`) cannot be, because
+  the CST never carried the argument. Fixing those means `InstanceDef.type-name`
+  becoming a type EXPRESSION rather than a token, and
+  `parse-instance-type-head` keeping what it currently skips.
+
+**That second half is COMPILER-30's shape exactly** -- a CST node too weak to
+carry what the source plainly says, so a fact the programmer wrote down cannot
+reach the code that needs it. COMPILER-30 was `LambdaExpr` with no span; this
+is `InstanceDef` with a token where a type belongs.
+
+Neither is attempted here. The simple half is a small change with a measurable
+target; the compound half is a parser and node change and should be argued
+before it is written.
 
 ## 64. WITHDRAWN AS DIAGNOSED, and re-stated: an instance DICTIONARY's type argument is never instantiated, and the method lambda's parameter is a symptom
 
