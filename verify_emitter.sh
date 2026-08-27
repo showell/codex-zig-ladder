@@ -111,14 +111,16 @@ import subprocess, sys, re, pathlib, os
 sys.path.insert(0, os.getcwd())
 import corpus_run
 
-# Cases a and g REFUSE BY DESIGN: a's parameter is unused and only its
-# binding is applied, which is a source no walk in the plug has, and g's is
-# unconstrained by construction. One @compileError anywhere takes the whole
-# zig file down, so a values comparison is unreachable while either stands.
-# The first version of this leg compared values only, which made it
-# structurally always-RED against the branch it was written for. The
-# allowlist is the verdict; the values are compared when they can be.
-EXPECT_REFUSED = {'i', 'k'}
+# STRICT since 2026-08-27, and the allowlist is GONE. It existed because a
+# plug-side recovery walk could not answer cases a and g, and that walk is
+# deleted -- H2 is fixed in the compiler, so every lambda parameter arrives
+# typed and the emitter owes a real answer for all of them. An allowlist here
+# let this leg report GREEN through a zig file that does not build, which it
+# did on the very run that retired it.
+#
+# Requires a compiler carrying the lambda-span fix. Against one without it,
+# six cells arrive as `error` and this leg is RED -- which is the correct
+# reading of that tree, not a fault in the leg.
 
 src = pathlib.Path('findings/probe-h2-lambda-types.codex')
 want = [l for l in pathlib.Path('findings/probe-h2-lambda-types.expected').read_text().splitlines() if l != '']
@@ -146,12 +148,6 @@ wrappers = sum(l.count('@compileError') for l in z.splitlines() if 'fn call(' in
 print('  lifted lambdas: %d, unanswered parameters: %s'
       % (len(sigs), sorted(refused) or 'none'))
 print('  closure-wrapper markers: %d' % wrappers)
-unexpected = refused - EXPECT_REFUSED
-recovered = EXPECT_REFUSED - refused
-if recovered:
-    print('  NOTE: %s now recovers; it was on the expected-refusal list.'
-          % sorted(recovered))
-    print('  Update EXPECT_REFUSED in this leg -- a shrinking list is progress, not a pass.')
 
 p = subprocess.run(corpus_run.BOUNDED + ['timeout', '300', 'zig', 'run', 'probe-h2.zig'],
                    capture_output=True, timeout=330)
@@ -169,13 +165,12 @@ else:
     print('  does not build ->', first.split('error:')[-1].strip()[:70])
     values_ok = None
 
-if unexpected:
-    print('  leg1b-h2-matrix RED (unanswered outside the allowlist: %s)' % sorted(unexpected))
+if refused:
+    print('  leg1b-h2-matrix RED (unanswered parameters: %s)' % sorted(refused))
+elif values_ok is None:
+    print('  leg1b-h2-matrix RED (every parameter answered, but the zig does not build)')
 elif values_ok is False:
     print('  leg1b-h2-matrix RED (built, but the values disagree)')
-elif values_ok is None:
-    print('  leg1b-h2-matrix GREEN (every unanswered parameter is an expected one;')
-    print('   values unreachable while a or g refuses, which is the designed answer)')
 else:
     print('  leg1b-h2-matrix GREEN (all seven values, case f recovered not defaulted)')
 H2PY
