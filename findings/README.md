@@ -1772,10 +1772,27 @@ their lane spent a four-seed refusal sweep with a positive control
 telling us we were wrong. It was also used as the oracle for every probe
 run that night.
 
-**What it may still be hiding:** `corpus_run.py` runs this tool. Expect
-the corpus clean count to FALL when the gate lands -- that is the point.
-`codexzig`'s gate found 41 of 593 when it was switched on; this one has
-never been asked.
+**MEASURED 2026-08-27 00:05, chain `f49-gate2`, codex `cab52a35` with the
+gate as the only delta. 13 corpus programs carry compiler errors.**
+
+    before   clean 326, markers 264, unresolved 16 | match 269, no-expected 30
+    after    clean 317, markers 260, unresolved 16, zigemit 13 | match 267, no-expected 23
+
+Nine left the clean set: `quotes-gate` and `quotes-parse` were scoring
+**match**, and seven had no `.expected` and so asserted nothing
+(`class-op-no-instance`, `effect-launder-fork/map/record`,
+`let-effectful-bug`, `mutable-alias`, `parser-resync`). **Exactly two
+verdicts were contaminated.** Zero movers among the programs that stayed
+-- the whole diff is nine removals.
+
+**An independent check, free:** `codexzig`'s gate finds 13 halts on this
+corpus after the morning's `cite_resolve` fix took it 41 -> 13. This
+gate, in a different harness, independently finds 13. Two gates, same
+number, which is the agreement that was absent all night.
+
+**Reported to PR 92** as a corrected headline (`match 183 -> 267`); the
+six emitter findings' reach numbers are counted by error signature
+rather than by the clean set and are unaffected.
 ## 48. A self-recursive type that is also GENERIC is emitted with no indirection, so zig says it contains itself
 
 Found 2026-08-26 on the ladder droplet. **OURS**,

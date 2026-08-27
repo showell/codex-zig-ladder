@@ -238,7 +238,7 @@ loop unless it says otherwise.
 
 ---
 
-## 1z. FINDING 49 -- FIXED (7a6071d), BUILDING; read the corpus count when it lands
+## 1z. FINDING 49 -- FIXED, MEASURED, REPORTED. 13 programs, 2 contaminated verdicts
 
 **Objective: INTEGRITY. Fix written and committed `7a6071d`; chain
 `f49-gate2` running on codex `cab52a35` so the gate is the ONLY delta.
