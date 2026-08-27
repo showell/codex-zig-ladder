@@ -1516,6 +1516,39 @@ it: read the call site's own instantiated type and pass it. It is also the
 case that a specialisation engine would find hardest, because there is no
 argument to specialise ON.
 
+## 63. OURS, and PRE-EXISTING. An unused `let` whose value is a CALL THAT INLINES to a bare name still emits a pointless discard
+
+**Found 2026-08-27 by Roc case 20, which was ported as a CONTROL for finding
+60 and did its job by failing.** Confirmed pre-existing: it refuses
+identically on the `8f1b202a` tree, before findings 59, 60 and 61.
+
+    let x = [1, 2] in let a = ident2 x in let b = ident2 x in list-at a 0
+
+    const a = x; ... _ = x; ... cx_list_at(a, 0)
+    zig: error: pointless discard of local constant
+
+`ident2` is the identity function, so `ident2 x` INLINES to a bare `x`. The
+binding `b` is unread, so the emitter discards its value -- and the value's
+emitted text is now a plain name that is read elsewhere, which is exactly the
+condition zig refuses.
+
+**Why finding 60's fix does not cover it, and this is the transferable part.**
+`zig-let-discard` inspects the IR NODE. Here the node is an `IrApply`, so it
+takes the "keep the discard" branch, which is right for a call in general and
+wrong for this call. **The condition zig imposes is on the EMITTED TEXT, and
+the predicate is written against the IR.** Those agree until something --
+inlining, here -- makes an apply emit as a name.
+
+That is the fourth distinct way this one discard has been got wrong today
+(three in finding 60, this one on top), and every one of them is the same
+mismatch in a different costume: a rule about generated text expressed as a
+rule about the tree it was generated from.
+
+**Not fixed.** The honest fix tests the emitted string rather than the node,
+and that is a bigger change than it sounds -- it needs the value emitted
+before the decision, and the body's emitted text to answer "read elsewhere".
+Worth doing deliberately rather than as a fifth patch on a tired afternoon.
+
 ## 62. The `is not declared at this site` marker covers TWO causes, and only one of them is finding 59
 
 **Recorded 2026-08-27 because a prediction was wrong**, and the wrongness was
