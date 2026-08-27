@@ -1145,6 +1145,64 @@ it: read the call site's own instantiated type and pass it. It is also the
 case that a specialisation engine would find hardest, because there is no
 argument to specialise ON.
 
+## 65. An instance's HEAD TYPE names the dictionary it synthesises and never types it, so the dictionary's type argument is whatever the METHOD BODIES happen to pin
+
+**Found 2026-08-27 by instrument, after reasoning about the same code was
+wrong once** (finding 64). Blocks `typeclass-smoke` and `typeclass-poly`, and
+is half of `lang-smoke`.
+
+**The source, and it is explicit.** `synth-instance-defs`
+(`Ast/Desugarer.codex`) reads the head type and uses it for the NAME only:
+
+    in let type-name = token-text (id.type-name)
+    in let def-name = make-name (class-name & "-dict-" & type-name)
+    ...
+    in let def = deck-record (ADef {
+     name = def-name,
+     params = [],
+     declared-type = [],          <-- the head type reaches the name, not this
+     body = body,
+
+With no declared type, the dictionary's type argument is inferred from its
+record body alone -- so it is pinned by whatever the METHOD BODIES constrain
+and by nothing else. `instance Showable Integer` asserts the type and the
+synthesised definition does not carry the assertion.
+
+**The instrument: `findings/probe-instance-head-type.codex`**, a one-respect
+pair. Same class, same arity, same return type; the ONLY difference is whether
+the method body uses its parameter in a way that pins it.
+
+    instance Tellable Integer   tell (x) = "int"                  ignores it
+    instance Tellable Boolean   tell (b) = if b then ... else ... branches on it
+
+    Tellable-dict-Integer    args (tvar 289)     FREE
+    Tellable-dict-Boolean    args boolean        CONCRETE
+
+**If the head type reached the dictionary both would be concrete.** Only the
+one whose body pins it is.
+
+**It explains every instance in `typeclass-smoke` without exception**, which is
+what raised it:
+
+    Showable Integer        to-text (x) = show x                 show is polymorphic  -> FREE
+    Showable Boolean        to-text (b) = if b then ...          pins Boolean         -> CONCRETE
+    Showable (List Integer) to-text (xs) = ... list-length xs    list-length is poly  -> FREE
+    Equatable Integer       is-equal (x) (y) = x == y            == does not pin      -> FREE
+
+**A NOTE ON THE PROBE, because the first version answered nothing.** Calling
+the class method directly at each type resolves to the specialised method and
+never builds a dictionary -- the wire had no `Tellable-dict-*` in it at all. A
+CONSTRAINED generic function (`announce : Tellable a => a -> Text`) is required
+to force one. Recorded in the probe's own prose.
+
+**The fix shape, and one caveat.** Give the synthesised definition a
+`declared-type` of `<Class>Dict <head-type>`; `id.type-name` is in hand two
+lines above. The caveat is compound heads -- `instance Showable (List Integer)`
+-- where the head is not a single named type, and `token-text (id.type-name)`
+may not carry enough to rebuild it. **Not attempted here.** Reasoning about
+this construct has already been wrong once today and the next step is to
+measure what a compound head actually carries, not to write the obvious line.
+
 ## 64. WITHDRAWN AS DIAGNOSED, and re-stated: an instance DICTIONARY's type argument is never instantiated, and the method lambda's parameter is a symptom
 
 **The first version of this entry said this was COMPILER-30's second site and

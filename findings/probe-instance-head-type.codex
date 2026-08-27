@@ -1,0 +1,54 @@
+Chapter: ProbeInstanceHeadType
+  cites Foreword chapter Console
+
+ Does an instance's HEAD type reach the dictionary it synthesises, or only its
+ NAME?
+
+ `synth-instance-defs` (`Ast/Desugarer.codex`) reads
+ `token-text (id.type-name)` and uses it to build `def-name`
+ -- `Showable-dict-Integer` -- then emits the definition with
+ `declared-type = []`. If that is the whole story, the dictionary's type
+ argument is pinned by whatever the METHOD BODIES happen to constrain and by
+ nothing else, and an instance head naming a concrete type buys nothing.
+
+ ONE RESPECT DIFFERS between the two instances below: whether the method body
+ uses its parameter in a way that pins the type. Same class, same arity, same
+ return type, same shape.
+
+   tell-a  ignores its parameter entirely      -> nothing pins it
+   tell-b  branches on it as a Boolean         -> the body pins it
+
+ If the head type reached the dictionary, BOTH would be concrete. If only the
+ name reaches it, `Tellable-dict-Integer` carries a free type variable and
+ `Tellable-dict-Boolean` does not -- and the asymmetry is the answer.
+
+ Read the `(record-ty "TellableDict" (args ...))` on each synthesised
+ `Tellable-dict-*` definition. This probe answers a question about the WIRE and
+ its printed output is incidental.
+
+class Tellable where
+  tell : a -> Text
+
+instance Tellable Integer where
+  tell (x) = "int"
+
+instance Tellable Boolean where
+  tell (b) = if b then "yes" else "no"
+
+ A CONSTRAINED generic function is required or no dictionary is built at all.
+ The first version of this probe called `tell` directly at each type, got no
+ `Tellable-dict-*` definitions in the wire, and answered nothing -- a direct
+ call resolves to the specialised method and never needs a dictionary.
+
+Section: Generic Functions
+
+  announce : Tellable a => a -> Text
+  announce (v) = "<" & tell v & ">"
+
+Section: Entry
+
+  opening : [Console] Nothing
+  opening = act
+   print-line-uni (announce 1)
+   print-line-uni (announce True)
+  end
