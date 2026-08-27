@@ -192,8 +192,46 @@ is whether that floor is live today. It is not: **`CodexType` declares
 26 variants and `ir-emit-type` has 26 `is` arms, one per variant, with
 no variant missing and no arm naming a non-variant.** The `otherwise`
 arm is unreachable, so an `error` atom on this wire can only have come
-from `ErrorTy` itself. The checker assigned its ERROR type to those
-parameters -- this is not a serialisation gap.
+from `ErrorTy` itself. This is not a serialisation gap.
+
+**CORRECTION, same day: it is not a CHECKER verdict either, and the
+sentence that stood here saying so was wrong.** A cold read found the
+mechanism in shared compiler source and every citation below was
+re-verified by hand at the `012a9d2e` pin:
+
+- **The checker never assigns `ErrorTy` to a lambda parameter.**
+  `bind-lambda-params` binds each one to a FRESH TYPE VARIABLE via
+  `fresh-and-advance` (`Types/TypeCheckerInference.codex:507-516`).
+- **Lowering manufactures it, as a sentinel meaning "no expected type".**
+  A `let`'s bound value is lowered with expected type `ErrorTy`
+  (`IR/Lowering.codex:689`, and `:707` for the second and later binds).
+- **`lower-lambda` peels its parameters off that expected type**
+  (`IR/Lowering.codex:722-724` into `lower-lambda-params-acc:802-812`),
+  and `peel-fun-param` answers `ErrorTy` for anything that is not a
+  `FunTy` (`Types/CodexTypeHelpers.codex:4-10`). `ErrorTy` in, `ErrorTy`
+  out, once per parameter.
+- **`lambda-recorded-ty` then records it verbatim**, because it returns
+  `ty` unchanged when `ty` carries no type variables and `ErrorTy`
+  carries none (`IR/Lowering.codex:743-747`).
+- **The unifier's answer exists and is never asked for.**
+  `deep-resolve (ctx.ust)` is called at `Lowering.codex:690` for the
+  let's own value type and all through name lowering, and appears
+  **zero times** inside `lower-lambda-params-acc`.
+
+So the defect is in LOWERING, it is upstream's, and it has a file:line.
+The checker solved these types; nothing wrote the solution back onto the
+binder. **This was derivable with no machine time at all**, which is the
+uncomfortable part: H2 stood a day budgeted at three guests while the
+answer sat in five lines of `Lowering.codex`.
+
+**What this costs the matrix.** Cases a, b and c are three spellings of
+ONE call site (`Lowering.codex:707`), not three shapes -- at the level the
+measurement reads, b's and c's cells are byte-identical. Case a's only
+unique contribution is its CAPTURE cell, which arrives from a different
+pass (`IR/LambdaLifting.codex:288-296`, captures ordered before lambda
+params). The matrix holds three distinct expected-type sources, not five:
+the `ErrorTy` sentinel (a, b, c, and d's `step`), a concrete argument type
+(d's `base`), and a declared arrow (e).
 
 **THE FALSIFICATION MATRIX EXISTS: `findings/probe-h2-lambda-types.codex`,
 five cases in one chapter, one guest.** Written 2026-08-27 because H2's
@@ -224,14 +262,52 @@ also reproduces the two-source split: `base` arrives typed from the
 argument and `step` does not, because its argument is itself an untyped
 literal.
 
-**What is still owed is one guest, and the mode is the point.**
-`run_seed_probe.sh` frames its blob `CDX map`, which answers falsifiers 1
-and 2 (does the seed refuse case c, is a diagnostic being discarded) and
-CANNOT answer falsifier 3, the decisive one: what the seed's own IR-CCE
-wire carries. That mode exists -- `oracle_lib.sh:177` writes
-`IR-CCE<flags>\n<src>\x04` for every truth arm -- and it is the same
-transport. Until it is run, every `error` cell above is a reading of OUR
-backend and H2 stays a hypothesis.
+**`run_seed_probe.sh` reads both modes since `9240b79`**, so falsifier 3
+-- what the seed's own IR-CCE wire carries -- is answerable by the same
+one invocation that answers falsifiers 1 and 2. What that run now buys is
+narrower than it was: the mechanism above lives in compiler source that
+BOTH arms execute, so the run confirms our backend reproduces it
+faithfully rather than settling what the compiler does. Worth having under
+the standing "which arm are you standing on" rule; no longer the thing the
+hypothesis turns on.
+
+**THREE DEFECTS IN THE MATRIX ITSELF, found by the same cold read.**
+
+1. **Case e is NOT a control.** The prose claims it differs from case d
+   "only in that the receiver `twice` is DECLARED" -- and `twice` is
+   declared in BOTH arms; case d's body IS `twice step base`. The
+   undeclared thing in d is the receiver LAMBDA's parameter `step`. It
+   also differs in receiver kind, in which literal it passes
+   (`\y -> y + 1` against `\y -> y * 2`), in argument position (second
+   against first), and in distance from a declared arrow -- and that last
+   one is what actually produces the result. So a clean e beside a dirty d
+   cannot attribute the difference between "the receiver is undeclared"
+   and "the literal is not directly at a declared parameter", which imply
+   different fixes. A one-respect control costs three lines: declare the
+   receiver as `d-recv : Integer, (Integer -> Integer) -> Integer`.
+2. **The numbers are never read.** `run_seed_probe.sh` compiles and never
+   BOOTS the image -- `codex_vm.run_cdx` is what executes one, and the
+   script does not call it -- so the chapter's "bare metal is the oracle"
+   describes an oracle the planned run does not consult, and there is no
+   `.expected` beside the chapter either. With `f` bound at `ErrorTy` in
+   three of five cases, a silently wrong VALUE is exactly the finding-42
+   class, and nothing here would see it. Expected, hand-derived: 3, 5, 9,
+   7, 20.
+3. **Only parameter cells are read, and H2 is worded "for its parameters
+   AND ITS RETURN".** The return half is visible in the artifact already
+   -- `__lam_0`'s type is `(fn (list int-default) (fn error error))` while
+   its body plainly returns a list -- and the instrument counts params
+   only.
+
+**What the matrix does not cover**, and the first is the sharpest: every
+case's true answer is `Integer`, which is also the language's default, so
+a recovery rule that simply defaults an `error` parameter to `Integer`
+passes the whole matrix. One `Text` case separates recovered from guessed
+right. Also absent: a lambda bound and never applied (the only shape where
+the type is genuinely unknowable, and the one that would give falsifier 2
+something to be about), a control for case a's capture, the desugarer's
+`for x in xs ->` lambda, and nested `\a -> \b ->` which
+`LambdaLifting.codex:243-245` merges into one lifted definition.
 ### H1. FALSIFIED 2026-08-26 17:52 -- Update 50 made the largest ladder unit uncompilable to IR-CCE in a 3 GB guest
 
 Raised 2026-08-26 17:42, when `ast/rebank_all.sh` died at 11/12 on
