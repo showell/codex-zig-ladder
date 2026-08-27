@@ -47,6 +47,17 @@ the text is recoverable from git by the commit that removed it.
   upstream in Update 50's interim push, main 19131.**
 - **44.** The AST does not carry a record's implicit type parameters. THEIRS,
   sent as PR 90 (COMPILER-20). **Update 51 makes the AST carry it.**
+- **47.** The type-variable recovery walk knows `List a` and `a -> b` and
+  nothing the subject declares. OURS, closed by PR 92. **Verified 2026-08-27:
+  its own smallest reproducer `codex/test/tvar-in-declared-type.codex` is
+  `stage=clean, verdict=match` in the banked census, and `ZigEmitter.codex`
+  carries the `ConstructedTy`/`SumTy`/`RecordTy` arms the finding said were
+  missing.**
+- **50.** The zig plug implements one of `show`'s five type cases and maps the
+  other four onto it. OURS, closed by PR 92. **Verified 2026-08-27: the Boolean
+  half is `clean/match` across every program the finding names.** The 15-program
+  residue is the Real half, which is item 1c and a subset of this finding, not a
+  competing owner.
 - **52.** A `when` on a Boolean reaches the plug as the SPELLING `True`. OURS,
   closed by PR 92, **verified 2026-08-27 at the pin: zero run failures and zero
   markers across 606 programs.**
