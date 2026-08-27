@@ -1544,7 +1544,37 @@ into.
 scoping pass that produced the nine-program estimate grouped by message, and
 that is why one of the three predicted programs did not move.
 
-## 60. OURS. An unused `let` whose value is a bare name emits `_ = x;`, which zig refuses as a pointless discard
+## 60. OURS. An unused `let` whose value is a LOCAL emits `_ = x;`, which zig refuses as a pointless discard
+
+**THE FIRST FIX WAS WRONG AND PRODUCED A WRONG ANSWER. Recorded first because
+it is the more useful half of this entry.** `af119cc5` tested for `IrName` and
+dropped the discard for every one. An `IrName` with arity 0 is emitted by
+`emit-zig-name` as `zig-sanitize n & "()"` -- a CALL -- so the discard of an
+effect was dropped:
+
+    deck-bracket-contract   match -> DIFFER     lost `_ = cx_deck_enter();`
+    const-narrow-proven     match -> refused
+
+Measured against the `8f1b202a` tree; the u51 bank would not have shown it,
+and the new bank-identity banner is what said so. **A refusal would have been
+survivable. A silently wrong deck-bracket count is the exact failure this tree
+exists to catch, and it shipped into a build.**
+
+**What caught it was the blast radius, not the plan.** The pre-registration
+predicted a small, explicable set of moved `.zig` files. It was 56, dominated
+by `e1000-*`, `dhcp-*` and `web-mux-*` programs with no lists and no unused
+lets in sight. That mismatch is what forced running all 56, and running them
+is what found the wrong answer. **An unexplained blast radius is a stronger
+signal than any of the wins it comes packaged with, and it should be checked
+BEFORE the wins are celebrated.**
+
+The corrected predicate is `zig-name-is-local`, which mirrors `emit-zig-name`'s
+own precedence and answers True only where that function falls through to a
+plain identifier.
+
+---
+
+### The original entry
 
 **Found 2026-08-27 by porting Roc case 10 sequentially**, which is the whole
 argument for porting a suite in its own order rather than cherry-picking the
