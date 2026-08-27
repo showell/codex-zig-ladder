@@ -64,7 +64,8 @@ the text is recoverable from git by the commit that removed it.
 - **53.** `main` spawns `opening` on a thread and zig refuses a thread entry
   that returns a value. OURS, closed by PR 92, **verified the same way** -- the
   40 programs that once carried it are all clean.
-- **H2.** A lambda whose type no declaration fixes reaches the plug with
+- **H2.** *(Also cited in issue 94 section 1, as the pattern's first instance
+  and the thing that dates it.)* A lambda whose type no declaration fixes reaches the plug with
   `ErrorTy` for its parameters. THEIRS, root-caused to the CST lambda having
   no span, sent as PR 93. **Absorbed 2026-08-27 as main CL 20184 with a new
   seed in CL 20189**, recorded upstream as COMPILER-30.

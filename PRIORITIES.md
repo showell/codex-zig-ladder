@@ -304,11 +304,29 @@ tree two commits behind. The hand-written plan omitted leg 1b -- the H2 matrix,
 **the only leg with a bare-metal-banked `.expected`, i.e. the only correctness
 oracle in the chain** -- plus the tvar matrix and the codexzig fixed point.
 
-**B4. MONOMORPHISATION -- the three `iter-*` ports ONLY.** `typeclass-smoke` is
-NOT in this bucket; `findings/h2-wire/SEPARATION-unconstrained.md` and finding
-64 both place it under COMPILER-30's second site, which is B1. **`lang-smoke`
-has no owner on this queue and needs one** -- the separation doc calls it probe
-case B and "really what blocks a core smoke test".
+**B4. MONOMORPHISATION -- TOMORROW'S FIRST BOX ITEM. It is EXECUTION, not
+research.** The three `iter-*` ports, and only those: `typeclass-smoke` is NOT
+in this bucket (finding 64/65 own it) and `lang-smoke` is probe case B.
+
+**Every design question under it is already answered by measurement:**
+
+- **The emitter is already committed to the approach.** Its own prose: *"A TYPE
+  VARIABLE IS A ZIG COMPTIME PARAMETER AND NOTHING ELSE."* It emits
+  `__lam_7(comptime T305: type, k: T305)` today. There is no architecture to
+  choose.
+- **Codex permits POLYMORPHIC RECURSION** (`findings/probe-poly-recursion.codex`,
+  measured), so the instantiation set is infinite in general and emitter-side
+  specialisation cannot terminate without an arbitrary cap. That settles
+  comptime over specialisation on evidence rather than taste.
+- **The IR carries the instantiation at the call site** -- verified on
+  `roc-iter-map`, where `iter-map` is typed
+  `(fn (ctd "Iter" (args int-default)) ...)`. The information is present.
+- **Finding 61 already did the nullary half** and is on the branch.
+
+What is left is threading the type argument at an ENTERED lambda's call site,
+which is the half finding 61 did not cover. **Cost is a guest per iteration**,
+because an emitter change rebuilds `zigemit` through the seed -- so batch and
+pre-register, exactly as tonight.
 
 **HAZARD, recorded because rebasing it silently undoes a deletion.**
 `7de07cf0` (finding 55, 12 programs) is committed, unbuilt, and sits on

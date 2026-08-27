@@ -1117,6 +1117,8 @@ upstream.
 
 ## 61. OURS. A generic function whose type parameter appears ONLY in its return type is called with no type argument, though the IR carries the instantiation
 
+**REPORTED UPSTREAM: issue 94 section 4 -- included as OURS and already fixed, as evidence about where the wire is thin rather than as a request.**
+
 **Found 2026-08-27**, when finding 59 cleared `hamt-test` and `kvstore-test`
 to `clean` and they then failed the zig build. **This is the next gap, not a
 regression** -- both were `markers` before and had never been built.
@@ -1146,6 +1148,8 @@ case that a specialisation engine would find hardest, because there is no
 argument to specialise ON.
 
 ## 65a. The finding 65 fix WORKS on plain classes and ADDS A MARKER on a superclass chain -- NOT READY TO SHIP
+
+**REPORTED UPSTREAM: issue 94, "Leads, explicitly not findings" -- sent as a LEAD, with the superclass failure stated as a failure and the fix explicitly not offered.**
 
 **Built and measured 2026-08-27 21:01, against the pre-fix baseline taken the
 same hour.**
@@ -1187,6 +1191,8 @@ synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
 ## 65. An instance's HEAD TYPE names the dictionary it synthesises and never types it, so the dictionary's type argument is whatever the METHOD BODIES happen to pin
+
+**REPORTED UPSTREAM: issue 94 section 2 -- the second leg of the argument, MEASURED. The fix is not offered there; see 65a for why.**
 
 **Found 2026-08-27 by instrument, after reasoning about the same code was
 wrong once** (finding 64). Blocks `typeclass-smoke` and `typeclass-poly`, and
@@ -1416,6 +1422,8 @@ tree -- is now known to be solving the wrong problem, since the node was an
 `IrName` all along.
 
 ## 62. The `is not declared at this site` marker covers TWO causes, and only one of them is finding 59
+
+**REPORTED UPSTREAM: issue 94, "The question we cannot answer from outside" -- this entry is the evidence that a marker string cannot attribute a cause, which is why that section asks for a wire distinction rather than a patch.**
 
 **Recorded 2026-08-27 because a prediction was wrong**, and the wrongness was
 the useful part: `list-test` was predicted to clear with `hamt-test` and
