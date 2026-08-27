@@ -113,41 +113,92 @@ time.
 
 ## RUNNING RIGHT NOW -- read this before starting anything
 
-**The Update 51 rebank is on the box, detached, launched 2026-08-27
-01:09.** Nothing else may compute until it finishes or is killed.
+**The u51-emitter sweep is on the box, launched 2026-08-27 01:58.**
+Nothing else may compute until it finishes or is killed.
 
-    sandbox   ~/runs/20260827T010113Z-u51-rebank      (ladder 980a893+, codex 7a6c5682)
-    pid       257245
-    log       <sandbox>/ladder/logs/rebank-20260827-010941.log
-    expect    ~39 min for the truth arms, then a sweep
+    sandbox   ~/runs/20260827T015643Z-u51-emitter-sweep
+              ladder 985b8ed (master), codex 9f9cfafe (branch u51-emitter)
+    pid       260555   (allcycles.sh; nohup'd, SIGHUP ignored, survives the console)
+    log       <sandbox>/allcycles.log
+    expect    12 ensure_ir rebuilds, then 14 rung cycles
 
-**When it lands, in order:**
+This sweeps OUR emitter against the u51 bank. A green here says the plug
+reproduces the BANK -- not that bare metal was re-measured, which it was
+not: the truths are restored, and `ensure_ir` rebuilt every `.ir` from
+source, so the log will also say `CENSUS NOT COMPARED`. Both are expected
+and neither is drift.
 
-1. `bank_truth.py` -- the truths are in the SANDBOX, not the checkout.
-   Bank them, and confirm the slug is `u51` (the sandbox carries the
-   `seed_identity` fix; a sandbox cut before 00:49 does NOT and would
-   bank `seed-c3181693`, which is the wrong label baked into 28
-   filenames with no flag to override).
-2. `bank_diff.sh` -- what moved from u50.
-3. **Correct the README's banked-against table to u51.**
+**The 01:09 rebank was KILLED at 01:52 (Steve's call), 3/14 rungs green.**
+It was measuring the bare pin, whose emitter carries none of PR 92's
+fixes, so every failure was `use of undeclared identifier T26/T36/T38/T42`
+-- the type-variable class our guard closes. Nothing was lost: its truth
+arm had already finished (12 units, 14 truths, 1628s), and those truths
+are now the u51 bank.
+
+**The u51 bank is TAKEN and PUSHED (`985b8ed`).** 14 truths + 14 sidecars
+under `truth/u51`, seed `c3181693`, `--keep 3` pruned u48. It had to be
+banked by hand because `allcycles.sh` only reaches the bank step when the
+sweep is green, and the sweep was not. The truths are a bare-metal
+measurement and do not depend on the plug.
+
+## PR 92's PLUG CODE IS NOT IN THE PUBLIC MIRROR
+
+Reported to Damian by Steve on 2026-08-27 ~02:00, as a GitHub comment on
+`a0425e10`. Measured, not inferred:
+
+- The ENTIRE zig-plug delta across all of Update 51 -- release `7a6c5682`
+  AND addendum `a0425e10` -- is **12 insertions, 2 deletions** in
+  `ZigEmitter.codex`, and they are Damian's own `zig-bool-lit-text`.
+- `zig-lit-pat-text`, `zig-stray-tvar`, `zig-first-stray-tvar` and
+  `zig-tvar-scope-refusal` are **absent from the code** at `a0425e10`.
+  `zig-lit-pat-text` appears only in `GitHubUpdate51.md` and
+  `GitHubUpdate52.md` -- the docs describe a fix the tree does not have.
+- `ZigEmitter.codex` is the only file at `a0425e10` defining
+  `emit-zig-type` or naming `zig-resolve-tvar`. There is no second copy
+  and no generated bundle: the code simply is not there.
+- The twelve test pairs, the backlog rows and the release notes DID land.
+
+**How it went unnoticed, and this is the part worth telling him:** the
+addendum says every `.expected` was "re-measured on bare metal ... 12 of
+12 matching". Bare metal does not exercise the zig emitter, so that check
+passes identically whether or not the fixes are present. The tests added
+to prove six zig-plug fixes landed were validated on the one arm that
+cannot observe them. That gap outlives the mirror mistake.
+
+**Expect this to be re-pushed overnight, possibly as Update 52.** When it
+is: re-pin, rebase `u51-emitter` onto the new tip, and re-run. The rebase
+is cheap and already done once (below).
+
+## `u51-emitter` -- the branch the sweep is measuring
+
+19 commits on `a0425e10`, in the codex tree, branch `u51-emitter`. The
+five corpus commits dropped as already-upstream (Damian's twelve tests are
+the same programs). One conflict, at the two `IrLitPat` sites: our
+`zig-lit-pat-text` against his `zig-bool-lit-text`. Resolved for ours,
+which is his own published ruling ("his dispatches on the pattern's type
+and ours did not"). That orphaned `zig-bool-lit-text` to a definition with
+zero call sites, so it and its now-dangling prose were removed. **Steve
+has not reviewed that removal** -- it is the one judgment call in the
+rebase and it is flagged for him.
+
+**When the sweep lands, in order:**
+
+1. `bank_diff.sh` -- what moved from u50.
+2. **Correct the README's banked-against table to u51.**
    `check_paths.py` prints a WARN naming this exact debt.
-4. `tiers_run.py --zig` if the zig arms are wanted; the bare columns are
+3. `tiers_run.py --zig` if the zig arms are wanted; the bare columns are
    already banked (21, SET GREEN, `findings/gold/u51/`).
 
 **Ceremony steps DONE:** 1 (registers + surfaces -- no host contract
 moved; `X86_64Boot.codex`'s only change is COMPILER-25's byte-order fix,
 same length), 2 (both seeds probed: new boots, ring verified, `SIZE:`
 parses; diagnostics identical to the old seed; output 496 bytes smaller
-for the same input), 3 (pin `u51-rebank` at `7a6c5682`, clean tree,
-`seed_identity` says Update 51, gold banked).
+for the same input), 3 (pin at `7a6c5682`, `seed_identity` says Update 51,
+gold banked, truth banked).
 
-**Ceremony step 4 is UNDECIDED and it is Steve's call:** what the zig
-arms measure. Our stack is 23 commits and is NOT in Update 51 (PR 92 was
-absorbed to their Perforce after the release). Rebasing it is small --
-Update 51's whole plug delta is 12 insertions, their `zig-bool-lit-text`,
-at the two sites our `zig-lit-pat-text` touches, and they have already
-ruled ours the better fix. The truth arms do not care; only the sweep
-does.
+**Ceremony step 4 is ANSWERED:** the zig arms measure our stack rebased
+onto the depot tip, named in the PR -- which is the standing rule anyway.
+`u51-emitter` is that stack.
 
 **`check_paths.py` FAILs in a fresh sandbox** and that is expected:
 `build-output/zig-plug.cdx` is a built, untracked artifact. Run it in the
