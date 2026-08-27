@@ -51,3 +51,30 @@ fires when a type has variables to learn, and finding 58 only when a list
 literal is empty AND the context supplied no type, so the set that moves
 should be small and every member of it should be explicable. A large diff
 means one of these fires somewhere it was not meant to.
+
+---
+
+## Added 17:49Z, still before any result (build started 17:46, status file has only its START line)
+
+**Steve asked why the port count says eleven when he remembered twelve. It
+never dropped**: `git log --diff-filter=AD -- codex/test/roc-*` shows only
+additions since `4ea012e0`, "the first run of all eleven". The twelve is
+DAMIAN'S GRADING SET -- the eleven `roc-*` ports plus **`tvar-in-declared-type`**,
+which is not named `roc-*` and so falls outside the glob `roc_ports_run.py`
+uses deliberately.
+
+**That twelfth pair is a REGRESSION RISK for finding 57, not a win, and this
+chain does not run it.**
+
+    Pair (a) = record { fst : a, snd : a }
+    pair-swap : Pair a -> Pair a
+
+It is a `RecordTy` carrying a type parameter -- precisely the variant
+`dabd84e7` added an arm for -- and it **already scores `match`**. So:
+
+    tvar-in-declared-type    match -> MATCH, unchanged, answering 73
+
+If it moves at all, the `RecordTy` arm is doing something to a program that
+was already correct, and that outranks any of the four ports this work is
+for. The full-corpus blast-radius diff below will show it as a moved `.zig`
+even though the chain never runs it; check that list for this name first.
