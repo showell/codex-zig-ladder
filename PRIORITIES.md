@@ -215,6 +215,34 @@ that is a guess, and the instrument is what settles it.
 alone is worth sending; the two together are worth less than the
 diagnosis.
 
+**WHAT INSTRUMENTING LOWERING ACTUALLY BUYS, because "progress on the Roc
+ports" over-promises and the arithmetic should be on the page.** Of the
+eight ports that do not run:
+
+- **Five are this defect** (`fold-sum`, `fold-count`, `fold-product`,
+  `fold-empty`, `closure-captures-list`). It is UPSTREAM's to fix. A
+  perfect PR does not make them run here -- they run when Damian ships a
+  compiler carrying it, which is an Update away at best.
+- **Three are a different class entirely** (`iter-map`, `iter-keep-if`,
+  `iter-drop-if`): type variables reaching the plug from polymorphic
+  definitions -- `(fn (tvar 44) (tvar 45))`, `(ctd "Step" (args (tvar
+  16)))` -- which is monomorphisation, and OURS. **Nothing written covers
+  them.** `7de07cf0` says so itself: "Does NOT fix finding 55's other
+  half: a source-level type variable reaching the same fallback."
+
+So no item on this list makes the Roc ports run this week, and it is
+better to say that than to discover it.
+
+**The reason to instrument first is stronger than the ports anyway: the
+inert fix threatens the DIAGNOSIS, not just the repair.** The diagnosis
+rests on `lower-let` handing `ErrorTy` down as the expectation
+(`Lowering.codex:689`). If the instrument says the `is ErrorTy` arm never
+fired, that reading is wrong and the whole chain needs re-deriving before
+a word of it goes to Damian. A patch that produces byte-identical output
+usually means something structural is misunderstood, and here the
+misunderstanding could be load-bearing. That is what makes it top
+priority -- not the ports.
+
 ## THE PR 92 EMITTER REPAIR LANDED -- `012a9d2e`, and it is OUR CODE VERBATIM
 
 The report went to Damian at ~02:00; `012a9d2e` was pushed the same
