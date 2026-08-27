@@ -185,15 +185,19 @@ matrix, one lambda shape per case, with two genuine one-respect control pairs
 (a lambda at a *declared* parameter is correct today; the same lambda
 `let`-bound is not). Its expected values are banked from bare metal. Case f
 is a `Text` so that defaulting fails visibly; case g is unconstrained by
-construction, so `error` is the honest answer there and the only place it
-should appear.
+construction, so it is the one case where no concrete type is the honest
+answer.
 
 Compiling it in `IR-CCE` mode and reading the `(param ...)` cells of the
 lifted `__lam_N` definitions is the whole measurement.
 
 ## What would help
 
-Not a specific patch — a ruling on the architecture. Should the IR carry the
+A ruling, and then the patch is yours if you want it. Should the IR carry the
 checker's solved types on lambda parameters, and should `ErrorTy` on the wire
-be reserved for actual type failures? If the answer is yes, we would rather
-help with that than keep teaching one plug to guess.
+be reserved for actual type failures?
+
+If yes, we will send the five-site branch as a PR against whichever base you
+name, with a `compiler-backlog.md` row. We would rather fix it here than
+teach one plug to guess, and we are not interested in carrying a workaround
+in the zig plug for a fact the compiler already has.
