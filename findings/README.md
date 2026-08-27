@@ -352,6 +352,42 @@ it -- so even the genuinely-unknown case is mislabelled, because the path
 that would have said `(tvar N)` is the path that is never consulted. **A
 plug cannot do the right thing locally here**, and that is the argument
 for fixing lowering rather than teaching every plug to guess.
+
+**THE FIX IS WRITTEN AND BUILDING, and here is what it must produce.**
+Codex branch `h2-lowering-fix` (`22e9b2cc`, a child of the `012a9d2e`
+pin), two changes reusing machinery already in place: `infer-lambda`
+records the lambda's own type against its span via `record-expr-type` --
+the table `lower-dict-placeholder` already reads -- and `lower-lambda`
+asks for it when, and only when, its expectation is `ErrorTy`. When the
+context supplied a type, `expected` is `ty` and every line below is
+unchanged.
+
+**Written down BEFORE the natives finished, so the result cannot be
+fitted to it.** Re-reading the matrix through the patched `codexir` must
+give:
+
+    __lam_0  a  (param "i" int-default)                MOVES
+    __lam_1  b  (param "i" int-default)                UNCHANGED -- control
+    __lam_2  c  (param "i" int-default)                MOVES
+    __lam_3  d  (param "step" (fn int-default int-default))  MOVES
+    __lam_4  d  (param "y" int-default)                MOVES
+    __lam_5  e  (param "y" int-default)                UNCHANGED -- control
+    __lam_6  f  (param "s" text)                       MOVES, and NOT to int
+    __lam_7  g  (param "k" (tvar N))                   MOVES, to a VARIABLE
+
+and `__lam_0`'s recorded type must become
+`(fn (list int-default) (fn int-default (list int-default)))`, its return
+included.
+
+Three of those rows are the ones that can refute it. **A control that
+moves** means the change is not confined to the no-expectation path and
+the patch is wrong whatever else it fixes. **`__lam_6` coming back
+`int-default`** would mean something is defaulting rather than recovering,
+which is the failure case f exists to catch. **`__lam_7` coming back
+concrete** would mean a type was invented for a parameter nothing
+constrains; the honest answer there is a type VARIABLE, and getting one
+is the sharpest evidence the checker's own solution is what arrived,
+since no defaulting rule would produce it.
 ### H1. FALSIFIED 2026-08-26 17:52 -- Update 50 made the largest ladder unit uncompilable to IR-CCE in a 3 GB guest
 
 Raised 2026-08-26 17:42, when `ast/rebank_all.sh` died at 11/12 on
