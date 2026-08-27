@@ -223,14 +223,19 @@ A cold agent reviewed the first version read-only and its three heaviest
 findings were verified by hand before this rewrite. **All three held.** What
 follows replaces it.
 
-**K0. KEYBOARD, DO FIRST, NO BOX. Fix the branch topology, because the
-headline numbers are not reproducible.** `roc-ports-type-recovery` (fixes) and
-`roc-ports-batch2` (ports) are **SIBLINGS**: `git merge-base` is `8f1b202a`,
-so the ports branch does not even contain findings 59, 60 or 61. Every "24 of
-29 Roc ports match" number was measured in the `roc60c` sandbox with 29 port
-files **untracked in its working tree** -- a 624-program population that no git
-ref describes and that cannot be rebuilt from either tip. Rebase the ports onto
-the fixes (or merge), then re-derive the number from a ref.
+**K0. DONE 2026-08-27. The branch topology is fixed and the measurement tree
+is a ref again.** `roc-ports-batch2` was a SIBLING of `roc-ports-type-recovery`
+(merge-base `8f1b202a`), so it did not even carry findings 59, 60 or 61, and
+every "24 of 29 Roc ports match" number was measured by copying 29 port files
+into a sandbox UNTRACKED -- 624 programs that no ref described.
+
+Rebased: `roc-ports-batch2` is now a child of `roc-ports-type-recovery`, so it
+is **fixes + ports**, 29 ports tracked, `git status` on `codex/test` clean.
+**That branch is the MEASUREMENT tree from here on; the fixes branch is what
+the PR carries.** The split still earns its keep for sending -- three outbound
+units, compiler fixes, plug fixes and corpus ports -- but it must be a stack,
+never a fork. `corpus_run.py` now prints whether a ref describes its population,
+so this cannot recur silently.
 
 **K1. KEYBOARD, OWED UPSTREAM, NO BOX. Send the probe.** Damian, 19:48Z:
 *"Yes to the probe, please."* Their instrument is `build/ir-fidelity` and
