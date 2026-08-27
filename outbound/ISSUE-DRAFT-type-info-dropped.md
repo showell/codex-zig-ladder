@@ -109,44 +109,74 @@ something it cannot use, all found in one afternoon on one small test suite:
 Each is harmless for an erasing backend and fatal for a typed one. That
 correlation is the whole of our claim.
 
-## What we tried, and what it cost
+## The fix, measured
 
-We built the local workaround first, because it was available to us without
-touching your compiler: recover a lambda parameter's type from a typed use in
-the lambda's own body, or from the callee's declared parameter when the
-argument is only passed onward. It works. Against the depot's own test
-corpus it moved four programs from "refuses to emit" to "runs and matches
-the expected output", including two ported Roc snippets checked against
-Roc's own expected values.
+`infer-lambda` should record the type it already computes, and `lower-lambda`
+should ask for it when — and only when — its expectation is `ErrorTy`. That
+is four lines, and on its own it does nothing at all: we wrote it and it
+produced **byte-identical IR**.
 
-**We do not think it is the right fix, and the reason is what did NOT move.**
-Three programs still refuse, and each needs a *different* new inference rule:
+The reason is one line further out, and it is the actual root cause:
 
-- a parameter that is never used and never passed (`\ignored -> xs`) — its
-  type is only visible from how the *binding* is applied, elsewhere;
-- a parameter that is ignored inside the lambda but whose full arrow type is
-  known at the site where the closure is *passed* — the definition does not
-  know what its own caller knows;
-- an empty list's element type, which is not a lambda parameter at all.
+    Syntax/SyntaxNodes.codex:23    | LambdaExpr (List Token) (Expr)
 
-Local recovery does not converge, because the information is not local. It
-was global, the checker had it, and it was dropped. Every plug that wants it
-must now re-derive it independently, with its own bugs — and two plugs have
-already got it wrong.
+**The lambda is the only expression node in the CST with no span.** Its
+neighbours all carry one — `ListExpr` has a span field, and
+`RecordExpr`/`FieldExpr`/`HandleExpr`/`WithTimeoutExpr`/`TryExpr` each carry
+their keyword token. So `Ast/Desugarer.codex:55` has nothing to pass and
+writes `synthetic-span`, and `is-synthetic-span` is `span.file-id == 0`,
+which gates **both** ends of the mechanism:
+
+    Types/Unifier.codex:147   record-expr-type   if is-synthetic-span sp then st
+    Types/Unifier.codex:178   lookup-expr-type   if is-synthetic-span sp then ErrorTy
+
+Every lambda in the language is filed under file-id 0, which is to say not
+filed, and any lookup against it returns `ErrorTy`. The side channel
+`lower-dict-placeholder` already uses successfully twenty lines above
+`lambda-expected-ty` is structurally unavailable to lambdas, and has been the
+whole time.
+
+Give the CST node its lambda token the way its neighbours carry theirs, pass
+`token-span` in the desugarer, and the four lines start working. Our branch
+is five sites: the node, its `copy-sx` arm, an or-pattern in `ParserCore`,
+the two parser construction sites, and the desugarer.
+
+**Result on the seven-case matrix**, `(param ...)` cells of the lifted
+lambdas, before and after:
+
+| | before | after |
+|---|---|---|
+| cells reading `error` | 6 of 11 | **0 of 11** |
+| case c, `\i -> i` applied to an Integer | `error` | `int-default` |
+| case d, a lambda literal's function argument | `error` | `(fn int-default int-default)` |
+| **case f, `\s -> s & "!"` applied to a `Text`** | `error` | **`text`** |
+| case g, bound and never applied | `error` | `(tvar 305)` |
+
+Case f is the one that matters: every other case's true answer is `Integer`,
+which is also the language default, so it is the only cell that distinguishes
+recovering the checker's answer from defaulting to a plausible one. It
+recovers.
+
+Case g is the one that should *not* recover — nothing constrains that
+parameter — and it does not. It comes back as an unsolved type variable,
+which is what an unconstrained parameter is. That is strictly more honest
+than `ErrorTy`, which claims a type failure in a program you report as clean.
+
+Both control cases — the same lambda at a *declared* parameter, which is
+correct today — are byte-identical before and after, so the change reaches
+exactly what it claims to.
 
 ## What we are not claiming
 
-- **We have not fixed it.** We wrote a patch — record the lambda's own type
-  in `infer-lambda` against its span, and have `lower-lambda` ask for it when
-  and only when its expectation is `ErrorTy` — and it produced **byte-identical
-  IR**, with the patch measured to be in the build. We do not yet know why,
-  and we are instrumenting rather than guessing. We may be wrong about where
-  the right seam is.
-- **We have not tested core-compiler changes properly.** We have no depot
-  gate, and a change in `Lowering.codex` touches every backend. Anything we
-  propose here needs your verification, not ours.
+- **We have not tested this the way you would.** We have no depot gate, and a
+  change in `Lowering.codex` touches every backend. The measurement above is
+  the IR wire for one seven-case matrix, not your test suite.
 - **We are not speaking for the other plugs.** The Ada and Fortran readings
-  above are source reads, not runs. We have not built either.
+  are source reads. We have not built either.
+- **The two other lambda sites still desugar synthetic** — `ForExpr`'s
+  `map-list` lambda and instance-method synthesis. Each has a real token
+  available and neither is in our branch, because our matrix does not measure
+  them.
 
 ## Reproducing it
 
