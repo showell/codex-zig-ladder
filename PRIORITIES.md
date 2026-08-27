@@ -207,41 +207,67 @@ not in the checkout. Gold is keyed to the seed, which has not moved.
 
 ## What to pick up next
 
-**Post-PR-92 queue, 2026-08-26 23:3x. In order.**
+**Post-repair queue, re-sorted 2026-08-27 12:2x. In order.**
 
-1. **FINDING 49 -- the IR harness reads no diagnostic bag** (item 1z).
-   Settled the finding-56 question by producing three wrong attributions
-   in a row, and it is the integrity of `corpus_run.py` as well. Top of
-   the list.
-2. **Send the finding-56 withdrawal** -- `outbound/` carries the drafts.
-   It is a full retraction, not a narrowing: no soundness hole, no
-   miscompile, our harness was deaf. They ran a four-seed sweep for us
-   and are owed the answer promptly.
-3. **Units part B / finding 55** (item 1f) -- one `else` in
+**The first two items of the 08-26 23:3x queue were already DONE when it
+was written down, and it stood stale for thirteen hours.** Both are
+recorded here rather than deleted, because the queue claiming owed work
+that was already sent is the kind of error that gets an apology written
+twice:
+
+- ~~FINDING 49, the IR harness reads no diagnostic bag~~ -- **CLOSED**.
+  Fixed (`7a6071d`), measured (`2286fcf`), swept 14/14, and the
+  corrected headline went to PR 92 at 00:06Z. Item 1z has the account.
+- ~~Send the finding-56 withdrawal~~ -- **SENT ~00:0xZ and ACCEPTED the
+  same night** (`f9a66db`). *"A deaf instrument is the best possible
+  ending for this thread: three wrong attributions, zero wrong
+  compilers, and every kill was a measurement."* Their four-seed sweep
+  is a standing reference arm now. Nothing owed.
+
+**The outbound queue is EMPTY.** PR 92 is CLOSED, its emitter is
+upstream, and its last comment (07:25Z) carries no ask. Verified against
+GitHub, not against our own files -- which is the check that would have
+caught the two stale items above.
+
+1. **Units part B / finding 55** (item 1f) -- one `else` in
    `emit-zig-atype`. `7de07cf0` is WRITTEN and unbuilt; it declares the
    unit family instead of resolving the name. 11 programs, and the same
    `else` also emits a type variable verbatim, which it does NOT fix.
-4. **The prelude shadowing class** (finding 54) -- 66 names, both
+2. **The prelude shadowing class** (finding 54) -- 66 names, both
    candidate fixes costed in row 1.90 and neither taken. Wants its own
    sitting plus a check that re-derives the surface AND counts
    parameters.
-5. **The H2 recovery rule** (`3f0f42e5`) -- written, never built, and it
+3. **The H2 recovery rule** (`3f0f42e5`) -- written, never built, and it
    carries a KNOWN GAP in its own prose: match binders are not guarded
    against rebinding, which yields a wrong recovered type rather than a
    refusal. Close the gap, then a cold read, then a chain of its own.
-6. The rest of the reading pass (item 1e): 24 corpus refusals left, of
+4. The rest of the reading pass (item 1e): 24 corpus refusals left, of
    which 11 are item 2 above and 5 are a concurrency cluster nobody has
    read.
 
-7. ~~**Verify the Roc ports' `.expected` against BARE METAL**~~ -- **DONE
+5. ~~**Verify the Roc ports' `.expected` against BARE METAL**~~ -- **DONE
    2026-08-27 BY DAMIAN'S LANE, 12 of 12 match** against the shipped seed
    `C3181693`. They are now depot tests and gate with everything else. So
    the adaptations were sound and Roc's values agree with Codex bare
    metal on all twelve; the two-way-oracle question does not arise for
-   this batch. Nothing owed. (Superseded item text below for the
+   this batch. Nothing owed.
+
+   **And OUR arm independently agrees on the split, which nobody has
+   written down.** His grading of the repaired emitter -- "4 of 12 pairs
+   run and match, 8 refuse with the designed clean markers" -- is
+   `f49-gate2`'s leg 4 exactly: `roc_ports_run.py` says `3 match, 8 not`
+   over the eleven Roc ports (`roc-early-return-predicate`,
+   `roc-recursive-var`, `roc-returned-closure`), and the twelfth pair is
+   `tvar-in-declared-type`, which the corpus leg scored `match`. Same
+   twelve pairs, same four matches, same eight refusals, two gradings
+   built by people who did not compare notes. **Leg 4's `RED` is a
+   labelling artifact**: `roc_ports_run.py` scores a designed clean
+   marker as `not`, so the leg reports red on a result that is the
+   expected one. Worth fixing before it is read as a regression.
+   (Superseded item text below for the
    reasoning, which still applies to any FUTURE port.)
 
-8. **Verify FUTURE Roc ports' `.expected` against BARE METAL** -- owed,
+6. **Verify FUTURE Roc ports' `.expected` against BARE METAL** -- owed,
    and we have not done it. Their values come from Roc, adapted, and
    every run we made compared them against OUR ARM (`codexzig`,
    `corpus_run.py`), never against the seed. Damian's review says it
