@@ -166,6 +166,22 @@ Both control cases — the same lambda at a *declared* parameter, which is
 correct today — are byte-identical before and after, so the change reaches
 exactly what it claims to.
 
+**And on your own test corpus**, 606 programs of `codex/test` transpiled
+through the identical plug on both sides, with only the compiler source
+differing:
+
+    stage         before    after
+    clean            318      324   (+6)
+    markers          259      253   (-6)
+    unresolved        16       16
+    zigemit           13       13
+
+Six programs move from "emits a refusal marker" to "emits clean", nothing
+moves the other way, and no program gains a marker. All six lose the same
+one — `no zig type for this codex type` — which is this defect's signature.
+Two are your tests (`ir-check-clean`, `linear-capture-once`); four are Roc
+snippets we ported, including the one that surfaced this in the first place.
+
 ## What we are not claiming
 
 - **We have not tested this the way you would.** We have no depot gate, and a
