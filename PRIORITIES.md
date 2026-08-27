@@ -139,12 +139,78 @@ natives and codexzig. **It is the only sandbox on the box** and it is
 worth keeping until the next item is measured, because that item needs
 exactly these natives.
 
-## TOP PRIORITY: BUILD `3f0f42e5`. IT IS OURS AND IT IS ALREADY WRITTEN.
+## TOP PRIORITY: THE H2 CANARY. THE DIRECTION IS UNDER TEST, NOT DECIDED.
 
-**H2 reversed direction on 2026-08-27 and this section replaces what
-stood here.** Steve asked why anything upstream needed changing when bare
-metal runs all twelve Roc programs, and whether our pipeline was simply
-failing to pull in a solution that already existed. It was.
+**Steve, 2026-08-27 afternoon, on reading the essay: "I don't think it's
+necessarily up to the zig emitter to work around the fact that the compiler
+throws away useful type info ... inferring types from surrounding code feels
+fragile and clumsy to me."** He is right that it is a fair description of
+what the plug-side recovery does, and the argument that reversed this file
+this morning is weaker than it was written to sound:
+
+- **"Four sibling plugs answer `ErrorTy`, so it is a contract"** does not
+  survive being looked at. C# `object` and Rust `Box<dyn Any>` are plugs
+  ERASING a type into a universal dynamic one their targets happen to have;
+  that says nothing about whether the wire should carry it. Ada
+  `Long_Long_Integer` and Fortran `integer(8)` are GUESSES, and case f of
+  our own matrix refutes the guess. **Nobody recovers.** Four workarounds,
+  two of them wrong, is not a contract.
+- **The cost of being wrong is asymmetric.** A plug-side recovery that
+  ships and is then fixed upstream becomes a workaround with no live
+  finding under it -- the `deck-record` shape, which outlived the finding
+  Update 43 closed and disabled the seed's deck discipline for weeks. This
+  tree has paid that twice.
+- **Whoever writes this section is on their third opinion** (upstream,
+  ours, upstream). That is the point at which this tree stops reading and
+  measures.
+
+**So the decision rests on the canary, not on another reading.** Branch
+`h2-lowering-canary` (`c6cd236a`), a child of the parked patch `22e9b2cc`
+which is a child of the `012a9d2e` pin. `lambda-expected-ty` answers
+`TextTy` when the arm fires AND the lookup misses; `Text` because no
+defaulting rule in this compiler produces it. Read with `h2_wire.py`, which
+is new and prints the `(param ...)` cell of every lifted lambda with no zig
+generated and no plug opinion involved. **Pre-registered before the build:**
+any `text` means the arm fires and the lookup misses; every cell still
+`error` means the arm never fires; real types mean the byte-identical
+earlier result was not measuring what it was believed to. Case f is
+unreadable here -- its true answer IS `text` -- so read a, c, d and g.
+
+**If the compiler fix is available, the plug-side recovery is DELETED, not
+kept beside it.** Two answers to one question is the state this whole
+session has been chasing out of the emitter, and keeping a dead recovery
+walk "just in case" would be the same mistake at the level of the tree.
+
+## WHAT WAS BUILT WHILE THE DIRECTION WAS STILL `3f0f42e5`
+
+**Branch `zig-plug-h2-recovery`, cut from the `012a9d2e` pin. Measured, in
+three chains, each step found by the previous step's build rather than
+predicted.** It is real work and it is not wasted whatever the canary says:
+the definition/wrapper disagreement it uncovered is wrong with or without
+`ErrorTy` on the wire. Whether it SHIPS is the open question.
+
+    fe64fcb4  definitions recover        corpus 318/268/24 unchanged
+    ad482a41  wrapper parameters recover corpus 318/268/24 unchanged
+    6ed21f19  wrapper returns recover    wrapper markers 14 -> 4
+
+The recovery works where it can: `__lam_3` came out
+`(base: i64, step: CxFn1(i64, i64))` from the callee slot, and `__lam_6`
+came out `[]const u8` -- case f, the cell that separates recovery from a
+lucky `Integer`. Cases a and g keep their refusals by design, and leg 1b's
+allowlist is built around exactly those two.
+
+**Three defects were found in it, and the pattern is worth keeping.** One
+lambda gets typed in three places -- its definition, its closure wrapper's
+parameters, its closure wrapper's result -- and all three had to be made to
+agree, one arrow further down each time. A cold read caught a fourth: the
+wrapper's slots start at the first UNSUPPLIED parameter, and indexing from
+zero handed a partially-applied trampoline the type of a parameter already
+consumed. A WRONG type, not a refusal, written by the same session that had
+spent the morning building guards against exactly that.
+
+**The argument this section used to make, kept because it is what has to be
+answered:** bare metal runs all twelve Roc programs, so nothing upstream
+blocks them.
 
 **Four sibling plugs answer `ErrorTy` and ours does not:**
 
