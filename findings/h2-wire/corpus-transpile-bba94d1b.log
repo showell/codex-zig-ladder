@@ -1,0 +1,52 @@
+hardware-only: 2 programs classify instead of running (hardware-only.txt)
+corpus: 606 programs from /home/steve/runs/20260827T161748Z-h2-span/codex/codex/test
+  100/606
+  200/606
+  300/606
+  400/606
+  500/606
+  600/606
+
+606 programs: clean 324, markers 253, unresolved 16, zigemit 13
+
+emitter gaps, by how many programs hit them (105 distinct):
+    123  no emitter for poke-32
+    119  no emitter for peek-32
+     95  no emitter for poke-byte
+     57  no emitter for poke-16
+     53  no emitter for alloc-bytes
+     46  no emitter for bit-not
+     41  no emitter for port-in-32
+     41  no emitter for port-out-32
+     24  no emitter for block-read-sector
+     19  no emitter for poke-mmio-32
+     18  no emitter for process-get-scope
+     17  no emitter for read-mmio-32
+     15  no emitter for block-write-sector
+     14  show on a Real needs __real_to_text, which this plug does not have
+     13  no emitter for net-recv-raw
+     13  no emitter for atomic-load
+     13  no emitter for real-to-int
+     12  no emitter for real-from-int
+     12  no emitter for process-spawn
+     12  no emitter for vec-splat
+     10  no emitter for net-send-raw
+     10  no emitter for process-wait
+      8  no emitter for raw-bytes-to-text
+      8  no emitter for atomic-store
+      8  no emitter for gpu-mem-write
+      7  effect handlers not supported
+      7  no emitter for uefi-read-key
+      6  no emitter for process-get-cap
+      6  no emitter for poke-mmio
+      6  no emitter for uefi-read-key-ex
+      5  no emitter for port-in-byte
+      5  no emitter for process-get-network-scope
+      5  no emitter for peek-16
+      5  no emitter for gpu-out
+      5  no emitter for port-out-byte
+      4  no emitter for process-restrict-cap
+      4  no emitter for block-sector-count
+      4  no emitter for read-text
+      4  unresolved type variable T16 of __lam_1
+      4  unresolved type variable T16 of __lam_0
