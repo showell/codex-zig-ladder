@@ -47,6 +47,12 @@ the text is recoverable from git by the commit that removed it.
   upstream in Update 50's interim push, main 19131.**
 - **44.** The AST does not carry a record's implicit type parameters. THEIRS,
   sent as PR 90 (COMPILER-20). **Update 51 makes the AST carry it.**
+- **52.** A `when` on a Boolean reaches the plug as the SPELLING `True`. OURS,
+  closed by PR 92, **verified 2026-08-27 at the pin: zero run failures and zero
+  markers across 606 programs.**
+- **53.** `main` spawns `opening` on a thread and zig refuses a thread entry
+  that returns a value. OURS, closed by PR 92, **verified the same way** -- the
+  40 programs that once carried it are all clean.
 - **H2.** A lambda whose type no declaration fixes reaches the plug with
   `ErrorTy` for its parameters. THEIRS, root-caused to the CST lambda having
   no span, sent as PR 93. **Absorbed 2026-08-27 as main CL 20184 with a new

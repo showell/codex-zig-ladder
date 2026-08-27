@@ -217,34 +217,31 @@ That is independent confirmation, and it also means **the STANDING PROPERTY
 item in this file now has an upstream counterpart** -- coordinate with it
 rather than build a second one.
 
-## SETTLE THE FIVE CONTESTED FINDINGS -- one corpus run, four minutes
+## SETTLE THE LAST TWO CONTESTED FINDINGS -- 47 and 50, by REPRODUCER not by corpus
 
-**Objective: INTEGRITY.** Entry point: BOX, but the cheapest kind -- no guest,
-no natives build, just `corpus_run.py --run` on an existing sandbox.
+**Objective: INTEGRITY.** Entry point: KEYBOARD plus one short native run.
+**Three of the original five are settled and gone**; this is the residue.
 
-**Findings 47, 50, 51, 52 and 53 are neither open nor closed**, because two of
-our own records disagree. The PR 92 note recorded all five as closed by it;
-their register entries say 50 and 53 are "Not fixed" and 47 is "not yet
-verified". Every one was found on 2026-08-26 and PR 92 shipped on 2026-08-26,
-so the entries may simply predate their own fixes -- which makes PRIORITIES the
-likelier of the two, and still not evidence.
+Settled 2026-08-27 from data already on the box -- the honest re-bank's
+`run.jsonl` (318 programs built and run at the pin, which contains PR 92) plus
+the banked census's markers, which between them cover both stages:
 
-**Why it is worth a run rather than a reading.** 52 and 53 fail at RUN stage,
-so transpile markers cannot see them; only a run answers. And the single
-full-corpus `run.jsonl` on this box is the STALE one that produced 94 phantom
-flips on 2026-08-27, so it is worse than having none.
+    52  Boolean spelling 'True'   0 run failures, 0 markers  CLOSED, deleted
+    53  thread entry startFn      0 run failures, 0 markers  CLOSED, deleted
+    51  stranded parameters       0 run failures             closed, left in place
 
-**The cost is small and was measured today:** the honest re-bank built and ran
-all 318 clean programs in under four minutes.
+**47 and 50 need a different test, and this is the useful part.** Their
+signatures OVERLAP live work, so no amount of corpus data attributes them:
+`not declared at this site` is also finding 55's marker and covers two distinct
+causes (finding 62), and `__real_to_text` is item 1c, a separate live gap.
+**Run each finding's own reproducer and read that**, which is minutes and does
+not need a fresh corpus at all.
 
-**What it buys.** Five entries either leave this register for a one-line stub
-in `CLOSED.md`, or get their "Not fixed" confirmed and stop being cited as
-closed. It also removes the reason the 2026-08-27 prune stopped where it did:
-these five are the whole of what was left on the table.
-
-**Do it against a tree whose provenance is stated** -- after the mirror push
-moves the pin, not before, or the answer describes a compiler nobody is
-running.
+**The first version of this item asked for a full corpus run.** That was the
+wrong instrument for the two that are left -- more of the same data cannot
+separate two findings that share a marker string. Recorded because reaching for
+a bigger measurement when the problem is attribution is a mistake worth not
+repeating.
 
 ## THE SEED IS MOVING, SO A REBANK IS OWED
 

@@ -48,7 +48,7 @@ box is busy.
 
 A finding with no such line is a finding nobody tried to break.
 
-## FIVE ENTRIES HAVE CONTESTED STATUS -- do not read 47, 50, 51, 52 or 53 as settled
+## THREE ENTRIES HAVE CONTESTED STATUS -- 47, 50 and 51. 52 and 53 are SETTLED and gone
 
 **Found 2026-08-27 while pruning this file, and it stopped a bad deletion.**
 Two of our own records disagree about whether PR 92 closed these:
@@ -65,15 +65,27 @@ saying "Not fixed" may simply predate its own fix by hours and never have been
 revisited. That is the ordinary way a register goes stale, and it is why this
 file is orientation rather than evidence.
 
-**What settles it: one clean full-corpus `--run`, and it is a coffee break.**
-The honest re-bank on 2026-08-27 built and ran all 318 clean programs in under
-four minutes. 52 and 53 fail at RUN stage, so transpile markers are blind to
-them and only a run answers. **The one run.jsonl on this box that covers the
-whole corpus is the stale one that produced 94 phantom flips**, so it must not
-be used for this.
+**SETTLED 2026-08-27 for two of the five, from data already on the box.** The
+honest re-bank's `run.jsonl` -- all 318 clean programs built and run at the
+pin, which contains PR 92 -- plus the banked census's markers, together cover
+both stages:
 
-Until then these five are neither open nor closed here, and **nothing should be
-deleted, cited or reported on the strength of either record.**
+    52  Boolean spelling 'True'    0 run failures, 0 markers   -> CLOSED, deleted
+    53  thread entry startFn       0 run failures, 0 markers   -> CLOSED, deleted
+    51  stranded parameters        0 run failures              -> closed on the
+                                                                  evidence there is
+    47  tvar not declared          12 programs carry a marker  -> UNSETTLED
+    50  show / Real                15 programs carry a marker  -> UNSETTLED
+
+**47 and 50 are unsettled for a reason a corpus run will not fix.** Their
+signatures OVERLAP other live work: `not declared at this site` is also finding
+55's marker and, per finding 62, covers two distinct causes; `__real_to_text`
+is item 1c, a separate live gap. A corpus scan cannot attribute those markers
+to a finding. **Settling them needs each finding's own reproducer run, not more
+corpus data**, which is a smaller and different job than the one first queued.
+
+51 is closed on the only evidence available and is left in place at lower
+confidence rather than deleted on it.
 
 ## Hypotheses
 
@@ -1667,240 +1679,9 @@ emitted `.zig` after the rename and assert it is empty of unprefixed
 names -- the same shape as the ladder's other `check_*.py` guards, so
 the class cannot come back silently.
 
-## 53. `main` spawns `opening` on a thread, and zig refuses a thread entry that returns a value -- 40 corpus programs, and the value was the answer
-
-**STATUS CONTESTED -- see "FIVE ENTRIES HAVE CONTESTED STATUS" at the top of
-this file. PRIORITIES recorded PR 92 as closing this; this entry disagrees;
-neither has been re-checked. Do not cite either way.**
-
-
-Found 2026-08-26 21:0x by the corpus reading pass. **OURS**,
-`codex/plugs/zig/ZigEmitter.codex`. Not fixed.
-
-**40 of 112 corpus refusals, the second-largest class**, and until now it
-was not a finding -- the only mention anywhere in this register is a
-passing aside inside finding 42, naming it as a reason one program stayed
-refused. A class this size going unfiled is what the reading pass was for.
-
-    /home/steve/zig-0.16.0/lib/std/Thread.zig:427:17: error: expected return
-    type of startFn to be 'u8', 'noreturn', '!noreturn', 'void', or '!void'
-
-Every emitted program carries the same `main`:
-
-    pub fn main() void {
-        const stack_bytes: usize = 512 * 1024 * 1024;
-        const t = std.Thread.spawn(.{ .stack_size = stack_bytes }, opening, .{}) catch @panic("spawn");
-        t.join();
-    }
-
-The difference between the 40 and the rest is one line of the subject:
-
-    opening : [Console] Nothing   ->  fn opening() void   ->  runs
-    opening : Integer             ->  fn opening() i64    ->  zig refuses
-
-**The thread is not gratuitous.** It is the only way to ask for a stack
-bigger than the default, and Codex source assumes bare metal's. The C#
-plug carries the same workaround and its comment gives the case: the
-compiler's own lexer cycles `scan-token -> skip-prose-line -> scan-token`,
-which self-TCO cannot flatten, and a 96-byte chapter overflows a 1 MB
-stack. Removing the thread is not the fix. This is downstream of finding
-33 -- no tail calls on this arm -- and will be until that changes.
-
-**The returned value is the program's OUTPUT, not a status.**
-`ble-att-encode.codex` ends `in a + b + c + d + e` and its `.expected`
-holds `5`. `corpus_run.py` compares the process's stderr text against
-`.expected`, so a shim that discards the value would turn 40 refusals into
-40 silent mismatches -- strictly worse, because a refusal is loud.
-
-**The C# plug already has the rule** (`opening-call-text`), dispatching on
-`opening`'s return type: Nothing, Void, Effectful, Proof and PropEq are
-called and discarded; a Text is printed through the CCE decoder;
-everything else is printed. The zig plug has no such dispatch and spawns
-whatever it finds.
-
-**Falsification attempted:** the alternative was that these 40 share a
-cause with the other refusal classes -- that the value-returning entry is
-incidental and something else breaks them. Refuted by the signature: all
-40 fail inside `std/Thread.zig` at the spawn, before any of the subject's
-own code is analysed, and the two `opening` spellings above separate the
-40 from the 289 that build.
-
-**PREDICTIONS, written before the build (2026-08-26 21:2x, fix `3b7cc358`,
-unbuilt).** Recorded first so the result cannot be rationalised after.
-
-1. All 40 leave the `startFn` class. If any remain, the shim is not
-   reaching them and the entry lookup is wrong.
-2. **They will NOT all reach `match`, and that is not a failure.** The
-   `startFn` error fires inside `std/Thread.zig` before a line of the
-   subject is analysed, so these 40 programs have never had their own
-   emitted zig checked by anything. Expect new refusal classes to appear
-   as they are examined for the first time. A result of "40 moved, 15
-   matched, 25 newly refused" is the fix working and exposing the next
-   layer -- the `inductive-list` shape, at 40x the size.
-3. The corpus total moves off 69 refusals by roughly 40 minus whatever
-   new classes appear.
-4. Programs whose `opening` returns Nothing are untouched: their shim is
-   a plain call and their emitted `main` differs only by the extra
-   `cx_entry` frame.
-5. `factorial` and `geometry-test` already refuse on the Real marker for
-   `show`; if either also has a Real `opening` it will now refuse at the
-   entry instead, which is the same gap in a second place, not a new one.
-
-**Cost of the fix:** a return-type dispatch in the entry emitter plus a
-void shim for the thread to enter. The Real arm wants item 1c's
-`cx_real_to_text` and should refuse until it exists.
-
-
-**BUILT AND MEASURED 2026-08-26 21:43 (`f52-f53`, codex `31be533e`).
-FIXED.** **Zero `startFn` refusals remain.** Corpus match 225 -> 263,
-refused 69 -> 30, all 326 programs rebuilt.
-
-**Prediction 2 was WRONG, and wrong in the good direction.** It said
-"they will NOT all reach match, expect new refusal classes as these 40
-are examined for the first time -- inductive-list at 40x the size."
-They essentially all reached match. Exactly TWO new refusals surfaced
-(`fork-nested` and `par-map`, `invalid operands: 'struct' and
-'struct'`), not the 25 the prediction braced for. The hedge toward
-pessimism was the wrong call and the fix was cleaner than its author
-expected. Recorded because a prediction that is only ever checked when
-it is right is not a prediction.
-
-`neg-real-repro` moved `refused -> markers`: the entry Real refusal
-firing with its own message, as designed.
-## 52. A `when` on a Boolean reaches the plug as the SPELLING `True`, and the plug emits it into zig, which has no such identifier
-
-**STATUS CONTESTED -- see "FIVE ENTRIES HAVE CONTESTED STATUS" at the top of
-this file. PRIORITIES recorded PR 92 as closing this; this entry disagrees;
-neither has been re-checked. Do not cite either way.**
-
-
-Found 2026-08-26 21:0x by classifying all 112 corpus refusals by cause --
-the reading pass, from a `run.jsonl` that had been on disk for hours.
-**OURS**, `codex/plugs/zig/ZigEmitter.codex`. Fixed, not built.
-
-    corpus/when-bool-cross.zig:870:33: error: use of undeclared identifier 'True'
-    corpus/when-bool-pattern.zig:842:37: error: use of undeclared identifier 'True'
-
-The emitted switch:
-
-    switch ((_tl_n == 0)) { True => { return _tl_acc; }, False => { ... } }
-
-**The requirement is written down, in a test the compiler ships.**
-`codex/test/when-bool-cross.codex` opens by stating it:
-
-    A `when` on a Boolean scrutinee reaches the plug as an IrLitPat whose
-    value is the spelling `True` or `False`; the plug must read those as 1
-    and 0. Reading them with a plain integer parse yields 0 for both and
-    inverts the arms, so `frm` returned its initial accumulator (100)
-    instead of 150.
-
-That is a cross-backend regression, written because some other backend
-got it wrong and returned a wrong ANSWER. This plug never got that far:
-it emits an identifier zig does not have, so it fails loudly. The luck is
-worth naming -- the failure mode the test was written to catch is silent,
-and we avoided it by being wrong in a noisier way.
-
-**Bare metal decodes through a shared compiler function**
-(`Syntax/Token.codex:149`), whose entire body is the rule:
-
-    pat-lit-to-integer (t) =
-     if t == "True" then 1
-     else if t == "False" then 0
-     else lit-text-to-integer t
-
-**The fix** is `zig-lit-pat-text`, the same rule spelled for a language
-whose scrutinee here is already `bool`: `true` and `false` rather than 1
-and 0. Applied at both `IrLitPat` sites, the switch arm and the if-chain.
-
-**Falsification attempted:** the alternative was that this is finding
-50's class arriving somewhere else -- both are Booleans the plug got
-wrong. It is not. Finding 50 is `show` picking a conversion by the
-argument's type and is fixed in the builtins table; this is a pattern
-decoder in the match emitter, and the two fixes touch no common code.
-
-**PREDICTIONS, written before the build (2026-08-26 21:2x, fix
-`a2d4646c`, unbuilt).**
-
-1. `when-bool-cross` and `when-bool-pattern` move `refused -> match`,
-   printing `spin2: 150 / spin3: 150 / cross: 115 / frm: 150` and
-   `bare-true: 1 / bare-false: 1 / computed: 1 / both-arms-named: 9 /
-   if-control: 1 / int-control: 1 / char-control: 1` respectively.
-2. **A `differ` verdict on either would be the worse outcome**, not a
-   smaller one: it would mean the arms are inverted, which is the silent
-   wrong answer `when-bool-cross` was written to catch. Its header
-   records the number a backend produced when it got this wrong -- 100
-   instead of 150 -- so a `frm: 100` is the signature to watch for.
-3. No other corpus program should move from this change alone. If one
-   does, the spelling appeared somewhere unexamined and the two-site fix
-   is incomplete.
-
-**AND OUR FIX WON THE MERGE, 2026-08-27.** Their compiler lane had landed
-its own `zig-bool-lit-text` independently after our lead. Ours replaced
-it on absorb *"because it dispatches on the pattern's TYPE first, so a
-genuine Text literal pattern passes through where our unconditional
-spelling swap would have corrupted it."*
-
-**That guard exists only because a cold read demanded it.** The first
-version of our fix swapped the spelling unconditionally; the reviewer
-called the `TextTy` case a trap for later, since both spellings refuse
-loudly today and nothing is wrong *now*. It was added on that argument
-alone, with no failing test behind it, and it turned out to be the
-difference between the two fixes within twenty-four hours.
-
-**CONFIRMED IN C# 2026-08-26 by the Cobblestone project agent**, from the
-lead we sent over Gmail. It is **three sites, not one**: `cs-tco-lit-text`
-(`CSharpEmitter.codex:403`), and the ordinary match path does the same in
-`emit-pattern` and `emit-sub-pattern`
-(`CSharpEmitterExpressions.codex:1239` and `:1259`). A Boolean literal
-pattern lands in C# as the identifier `True` rather than the keyword
-`true`. Runtime consequence is unmeasured on their side; the fix and the
-measurement are assigned, pinned to `when-bool-cross` and
-`when-bool-pattern`, with credit to us in the changelist.
-
-**MEASURED ACROSS PLUGS 2026-08-26 22:1x, and the reach was THREE plugs,
-not one.** The Cobblestone lane reproduced it by RUNNING the emitted
-programs rather than by reading:
-
-- **csharp** -- the three sites we named.
-- **javascript** -- not predicted by us at all.
-- **their absorbed copy of the zig plug** -- our fork carried our fix,
-  their copy did not.
-
-All three fixed on main, pinned to `when-bool-cross` and
-`when-bool-pattern`, 11 rows green per plug, credit to us in the
-changelist.
-
-**The sweep we suggested found two defects nobody had reported**, which
-is the return on reading a class across plugs rather than fixing one:
-
-- the **csharp** TCO match emits an unreachable catch-all that Roslyn
-  refuses as CS8510;
-- the **javascript** plug's `CharTy` literals were missing the BigInt
-  suffix, **so every char arm fell through silently.**
-
-That second one is a silent wrong answer -- the class we care most about
-and the one a source read does not find. It was reachable only because
-the fix was measured by execution.
-
-**The original read-across-plugs suggestion was taken literally:** the same lane
-sweeps the remaining wired plugs, and the wasm plug gets the two cross
-tests gated early. Findings 50 and 36 are queued upstream as leads from
-the same table.
-
-Worth recording that our lead UNDERCOUNTED. We named the one site we
-happened to read and hedged it twice; the class was three times bigger.
-Hedging the confidence was right and the scope estimate was still low --
-those are different things, and only the first was hedged.
-
-
-**BUILT AND MEASURED 2026-08-26 21:43 (`f52-f53`, codex `31be533e`).
-FIXED.** `when-bool-cross` and `when-bool-pattern` both `refused ->
-match`, printing exactly the predicted values. No `frm: 100` -- the
-inverted-arms answer this program was written to catch did not appear.
-No other corpus program moved from this change, as predicted.
 ## 51. A refusal that replaces an EXPRESSION strands the parameters that fed it, and zig reports the stranding, never the refusal
 
-**STATUS CONTESTED -- see "FIVE ENTRIES HAVE CONTESTED STATUS" at the top of
+**STATUS CONTESTED -- see "THREE ENTRIES HAVE CONTESTED STATUS" at the top of
 this file. PRIORITIES recorded PR 92 as closing this; this entry disagrees;
 neither has been re-checked. Do not cite either way.**
 
@@ -1955,7 +1736,7 @@ body, so it is the one place that can see both.
 
 ## 50. The zig plug implements one of `show`'s five type cases and maps the other four onto it, and that is 37% of every corpus refusal
 
-**STATUS CONTESTED -- see "FIVE ENTRIES HAVE CONTESTED STATUS" at the top of
+**STATUS CONTESTED -- see "THREE ENTRIES HAVE CONTESTED STATUS" at the top of
 this file. PRIORITIES recorded PR 92 as closing this; this entry disagrees;
 neither has been re-checked. Do not cite either way.**
 
@@ -2163,7 +1944,7 @@ stopped at a marker, which is the same blind spot that hid this one.
 
 ## 47. The type-variable recovery walk knows `List a` and `a -> b` and nothing the subject declares, so a variable inside `Step a` cannot be recovered from any position
 
-**STATUS CONTESTED -- see "FIVE ENTRIES HAVE CONTESTED STATUS" at the top of
+**STATUS CONTESTED -- see "THREE ENTRIES HAVE CONTESTED STATUS" at the top of
 this file. PRIORITIES recorded PR 92 as closing this; this entry disagrees;
 neither has been re-checked. Do not cite either way.**
 
