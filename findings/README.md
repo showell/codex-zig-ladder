@@ -178,6 +178,60 @@ are needed for these five ports, and neither exists today.**
 This also settles where the rule does NOT go: `emit-zig-atype` (finding
 55) is a different path with a different input, and a recovery rule
 written there would not see an IR body at all.
+
+**`error` ON THE WIRE IS DEFINITIVELY `ErrorTy`, 2026-08-27, read at the
+`012a9d2e` pin.** This removes an ambiguity `IRTextEmitter.codex`'s own
+prose raises against itself and it is the leg H2 was missing. That prose
+says `ProofTy`, `PropEqTy`, `TypeCon` and `TypeApply` fell through to
+`ir-emit-type`'s `otherwise` arm until 2026-08-04 and emitted "the same
+`error` atom `ErrorTy` emits", so "whether the lowering assigned
+`ErrorTy` or a `TypeApply` this emitter had no arm for cannot be read
+off the artifact while both spell it the same way" -- and it keeps the
+`otherwise` arm "as a floor for a variant added later". So the question
+is whether that floor is live today. It is not: **`CodexType` declares
+26 variants and `ir-emit-type` has 26 `is` arms, one per variant, with
+no variant missing and no arm naming a non-variant.** The `otherwise`
+arm is unreachable, so an `error` atom on this wire can only have come
+from `ErrorTy` itself. The checker assigned its ERROR type to those
+parameters -- this is not a serialisation gap.
+
+**THE FALSIFICATION MATRIX EXISTS: `findings/probe-h2-lambda-types.codex`,
+five cases in one chapter, one guest.** Written 2026-08-27 because H2's
+three falsifiers had stood NOT YET RUN since 18:30 the previous evening
+and none of them needs three guests. Cases a to d are the shapes that
+refuse (captured list, integer body, parameter USED, and `roc-fold-sum`'s
+immediately-applied literal); **case e is a POSITIVE CONTROL** -- the same
+lambda literal in the same argument position, differing only in that the
+receiver `twice` is DECLARED. A matrix that cannot come back clean
+anywhere proves nothing about what it measures, and this one can.
+
+**The matrix discriminates, measured on OUR arm** (the f49-gate2
+sandbox's `native/codexir`, which is the compiler as our own backend
+renders it and therefore answers nothing about the compiler):
+
+    __lam_0  (case a)  (param "xs" (list int-default)) (param "i" error)
+    __lam_1  (case b)  (param "i" error)
+    __lam_2  (case c)  (param "i" error)
+    __lam_3  (case d)  (param "base" int-default) (param "step" error)
+    __lam_4  (case d)  (param "y" error)
+    __lam_5  (case e)  (param "y" int-default)          <- CONTROL, CLEAN
+
+Five error-typed parameters across a to d and a clean one in e, from one
+compile the gated harness reports clean. **So the trigger is exactly as
+H2 words it** -- a lambda whose type no DECLARATION fixes -- and not the
+wider claim that expected types never reach a lambda literal at all. It
+also reproduces the two-source split: `base` arrives typed from the
+argument and `step` does not, because its argument is itself an untyped
+literal.
+
+**What is still owed is one guest, and the mode is the point.**
+`run_seed_probe.sh` frames its blob `CDX map`, which answers falsifiers 1
+and 2 (does the seed refuse case c, is a diagnostic being discarded) and
+CANNOT answer falsifier 3, the decisive one: what the seed's own IR-CCE
+wire carries. That mode exists -- `oracle_lib.sh:177` writes
+`IR-CCE<flags>\n<src>\x04` for every truth arm -- and it is the same
+transport. Until it is run, every `error` cell above is a reading of OUR
+backend and H2 stays a hypothesis.
 ### H1. FALSIFIED 2026-08-26 17:52 -- Update 50 made the largest ladder unit uncompilable to IR-CCE in a 3 GB guest
 
 Raised 2026-08-26 17:42, when `ast/rebank_all.sh` died at 11/12 on

@@ -1,0 +1,100 @@
+Chapter: ProbeH2LambdaTypes
+  cites Foreword chapter Console
+
+ H2's falsification matrix: what type the IR wire carries for a lambda
+ parameter, one case per shape, so an answer localizes instead of
+ confirming a mood. H2 says a lambda whose type no DECLARATION fixes
+ reaches the plug with `ErrorTy` for its parameters, in a program the
+ compiler reports as clean; five Roc ports refuse on exactly that.
+
+ Every case answers a number and bare metal is the oracle. The number is
+ the cheap half. The expensive half is the WIRE: compile this chapter in
+ `IR-CCE` mode on the seed and read the `(param "<name>" ...)` cells of
+ the lifted `__lam_N` definitions. `error` there, in a chapter the seed
+ compiles clean, is H2 confirmed from the compiler's own arm rather than
+ from ours -- which is the reading `native/codexir` cannot give, because
+ it is the compiler as our own backend renders it.
+
+ Read against `findings/README.md`'s H2, whose three stated falsifiers
+ this chapter is built to answer in one guest:
+
+   1. bare metal REFUSING case c  ->  the program is ill-typed and the
+      Roc ports are the defect, not the wire.
+   2. a diagnostic present for any clean-numbered case  ->  the ErrorTy
+      WAS reported and the plug should honour a halt, not fill a gap.
+   3. the seed's own IR-CCE wire NOT carrying `error`  ->  the wire is
+      fine and `native/codexir` put it there, which makes it OURS and
+      worse. This is the one that cannot be answered any other way.
+
+ Cases a to d are the shapes that refuse. Case e is a POSITIVE CONTROL
+ and it is the reason this chapter is worth a guest: it is the same
+ lambda literal in the same argument position, differing only in that
+ the receiver is DECLARED. If e also comes back `error`, H2's trigger is
+ not "no declaration fixes it" but "expected types never reach a lambda
+ literal at all", which is a wider claim about the checker and would be
+ written up as such. If e is clean and a to d are not, the trigger is
+ exactly as H2 states it.
+
+Section: Functions
+
+  twice : (Integer -> Integer), Integer -> Integer
+  twice (g) (x) = g (g x)
+
+ a. A lambda capturing a LIST, parameter unused. `roc-closure-captures-list`
+ reduced to four lines. The capture arrives typed -- it is collected from
+ its use -- and the parameter is the cell in question.
+
+  case-a : Integer -> Integer
+  case-a (n) =
+   let xs = [n, n + 1]
+   in let f = \i -> xs
+   in list-at (f 0) 0 + list-at (f 0) 1
+
+ b. Integer body, parameter unused and nothing in the body mentions it.
+ The only constraint on `i` lives at the call site.
+
+  case-b : Integer -> Integer
+  case-b (n) =
+   let f = \i -> 5
+   in f n
+
+ c. The parameter is USED, and this is H2's sharp case: the body reads
+ `(name "i" int-default)` while the signature one node up says `error`,
+ in the same definition. It is also the case falsifier 1 names -- if bare
+ metal refuses THIS, the whole hypothesis is a porting mistake.
+
+  case-c : Integer -> Integer
+  case-c (n) =
+   let f = \i -> i
+   in f n
+
+ d. `roc-fold-sum`'s shape reduced: a lambda LITERAL in function position,
+ applied on the spot, taking another lambda literal as an argument and
+ handing it to a declared function. Two parameters of one lifted
+ definition, arriving differently -- `base` from the argument `n`, `step`
+ from a lambda literal that has no type of its own yet. This is the case
+ that showed the recovery needs two sources rather than one.
+
+  case-d : Integer -> Integer
+  case-d (n) = (\base step -> twice step base) n (\y -> y + 1)
+
+ e. THE CONTROL. The same lambda literal, in the same argument position,
+ differing from d only in that `twice` is DECLARED and its parameter says
+ `Integer -> Integer`. `roc-returned-closure` is clean for this reason and
+ it is the only evidence today that the trigger is the missing
+ declaration rather than lambda literals in general. A matrix that cannot
+ come back clean anywhere proves nothing about what it measures.
+
+  case-e : Integer -> Integer
+  case-e (n) = twice (\y -> y * 2) n
+
+Section: Entry
+
+  opening : [Console] Nothing
+  opening = act
+   print-line-uni (show (case-a 1))
+   print-line-uni (show (case-b 7))
+   print-line-uni (show (case-c 9))
+   print-line-uni (show (case-d 5))
+   print-line-uni (show (case-e 5))
+  end
