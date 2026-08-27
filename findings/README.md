@@ -388,6 +388,44 @@ concrete** would mean a type was invented for a parameter nothing
 constrains; the honest answer there is a type VARIABLE, and getting one
 is the sharpest evidence the checker's own solution is what arrived,
 since no defaulting rule would produce it.
+
+**THE PREDICTION IS REFUTED. The patched compiler produces BYTE-IDENTICAL
+IR -- 7,935 bytes, not one cell moved.** Recorded as a miss, which is what
+pre-registering it was for.
+
+**The patch is in the build; this is not a build that missed.** Measured:
+`ast/codexir.zig` in the sandbox carries `lambda_expected_ty` twice, the
+built `native/codexir` is 25,002,168 bytes against the f49-gate2 build's
+25,011,170, and the sandbox tree is at `22e9b2cc`. The code shipped and
+changed nothing.
+
+**What that leaves.** Either the `is ErrorTy` arm never fires, or it fires
+and `lookup-expr-type` always answers `ErrorTy`. Nothing moved AT ALL --
+including case g, where a recovered answer would have been a `(tvar N)`
+and therefore visible even if every other case defaulted -- so the two are
+still not separated. Read out and eliminated, none of these is the cause:
+
+- `lower-expr-at` has no preamble that rewrites `ty` before dispatch, and
+  `:50` passes the lambda's OWN span (`Lowering.codex:18-21, :50`).
+- `lower-let` really does hand `ErrorTy` down (`:689`), so the arm's guard
+  should match.
+- `record-expr-type` is not guarded except on synthetic spans
+  (`Unifier.codex:145-150`), and these spans are real.
+- `infer-lambda` is the only TYPING site for a lambda; the ten other
+  `ALambdaExpr` arms in `TypeChecker.codex` are the punctual, linearity
+  and cost analyses.
+- **Our harness is not the problem, which was the best hypothesis and it
+  is dead.** `ast/CodexIrHarness.codex:68-69` reproduces the driver's
+  check-lower boundary -- `sort-expr-types` then a `deep-resolve` of every
+  entry -- so the table lowering reads is sorted and resolved exactly as
+  `opening.codex:635` leaves it.
+
+**The next step is an INSTRUMENT, not another reading.** One build with
+`lambda-expected-ty` answering a distinguishable type -- `TextTy` -- when
+the arm fires and the lookup misses. That separates "never fired" from
+"fired and found nothing" in one run and costs the same 13 minutes the
+last build did. Reading source has now failed to find it twice, and the
+tree's own rule is that at this point you instrument.
 ### H1. FALSIFIED 2026-08-26 17:52 -- Update 50 made the largest ladder unit uncompilable to IR-CCE in a 3 GB guest
 
 Raised 2026-08-26 17:42, when `ast/rebank_all.sh` died at 11/12 on
