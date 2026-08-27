@@ -67,7 +67,7 @@ def update_label(sha):
         for line in note.read_text(errors='replace').upper().splitlines():
             if prefix in line and ('RELEASE SEED' in line
                                    or 'RELEASE MEASUREMENTS' in line
-                                   or line.strip().startswith('SEED `')
+                                   or line.strip().lstrip('*').startswith('SEED `')
                                    or line.strip().startswith('| `SEED/CODEX.CDX` |')
                                    or (line.strip().startswith('**RELEASE HEAD:')
                                        and f'SEED `{prefix}`' in line)):
