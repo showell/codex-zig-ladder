@@ -111,7 +111,59 @@ compute entry point refuses on a host without `CODEX_LADDER_VENUE`
 (`bb39139`), which `~/.codex_ladder_env` exports. One compute job at a
 time.
 
-## NOTHING IS RUNNING. THE UPDATE 51 CEREMONY IS CLOSED.
+## TWO JOBS ARE RUNNING. READ THEIR STATUS FILES FIRST. (2026-08-27 ~15:40Z)
+
+Left running on purpose at the end of the 08-27 afternoon session; both are
+detached and neither needs a person. **Read these two files before anything
+else, because everything below was written without their answers.**
+
+    ~/runs/20260827T151547Z-h2-returns/CHAIN-STATUS.txt
+    ~/runs/20260827T152354Z-h2-canary/CANARY-STATUS.txt
+
+**1. The plug chain**, codex `6ed21f19`, ladder `c936810`. Legs 0-4 are in
+and GREEN; only **leg 5, the bare-metal sweep**, was still running. That is
+the one leg that consults an oracle outside the zig arm, so it is the only
+one that can still turn this red. Expect 14 rungs; anything less wants
+reading before the branch is trusted.
+
+**2. The H2 canary**, codex `c6cd236a`, and IT IS THE ONE THAT MATTERS. It
+polls until the box is quiet, then builds and reads the wire by itself. Its
+status file ends in a line beginning `VERDICT:`. The three readings and what
+each means are in the section below and in the commit message of
+`c6cd236a`, written before the build so the result cannot be fitted to it.
+
+**If the canary says the arm NEVER FIRES**, the parked patch is aimed at the
+wrong seam and `lower-let:689` is not the path feeding these lambdas; find
+what is. **If it says the lookup MISSES**, the seam is right and the span
+`infer-lambda` records under is not the span `lower-lambda` asks with --
+`infer-lambda` (`TypeCheckerInference.codex:488-498`) computes and RETURNS
+the lambda's full function type today and records it nowhere, which was
+confirmed by reading it this afternoon. **If it says real types**, the
+earlier byte-identical result was not measuring what it was believed to.
+
+**Do not re-cut a sandbox for either.** They hold their own natives.
+
+## THE ISSUE DRAFT IS WRITTEN AND NOT SENT
+
+`outbound/ISSUE-DRAFT-type-info-dropped.md`. Steve's argument -- the
+compiler is biased toward backends that can get away with missing type
+info, and x86 is the extreme case -- steelmanned, with every load-bearing
+claim verified against source rather than taken from the register.
+
+**Steve's decision, 2026-08-27: HOLD until the canary lands**, so the issue
+does not guess about their internals in the same breath as arguing their
+own gates cannot see this. When it lands, correct the "what we tried"
+section to say what the canary actually found, then send. GitHub, Steve's
+account, say it is Claude.
+
+The two strongest things in it, both checked: `infer-lambda` computes the
+lambda's complete type and returns it, so the type is not lost but
+RE-DERIVED by a worse method; and Ada (`Long_Long_Integer`) and Fortran
+(`integer(8)`) GUESS, which case f of the matrix refutes -- two shipped
+plugs silently miscompiling a `Text` parameter, which is the evidence that
+this already costs them something.
+
+## The Update 51 ceremony is closed
 
 Every step done and harvested, 2026-08-27. `u51-14of14`, seed
 `C3181693`, pin `012a9d2e`, `check_paths.py` clean, working tree clean.
