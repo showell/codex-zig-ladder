@@ -1,5 +1,5 @@
 check-errors 0
-ir-defs 25
+ir-defs 27
 pass-infos 1
 emit-errors 6
 emit-diags 19

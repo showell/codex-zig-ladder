@@ -1,8 +1,8 @@
-lex-tokens 18975
+lex-tokens 18992
 lex-errors 0
 chapter |Parser|
 prose-len 0
-defs 203
+defs 202
 def is-forall-start params 1 anns 1 L8C3 slug Parser
 def parse-forall-type params 1 anns 1 L20C3 slug Parser
 def parse-type params 1 anns 1 L36C3 slug Parser
@@ -152,66 +152,67 @@ def is-conversion-decl params 1 anns 1 L1378C3 slug Parser
 def parse-conversion-decl params 1 anns 1 L1388C3 slug Parser
 def empty-parse-document params 1 anns 1 L1400C3 slug Parser
 def parse-top-level params 10 anns 1 L1420C3 slug Parser
-def parse-top-level-effect params 10 anns 1 L1502C3 slug Parser
-def parse-effect-ops params 2 anns 1 L1515C3 slug Parser
-def empty-class-instance-scan params 0 anns 1 L1532C3 slug Parser
-def scan-class-instance-defs params 3 anns 1 L1535C3 slug Parser
-def parse-instance-type-head params 1 anns 1 L1567C3 slug Parser
-def skip-to-close-paren params 2 anns 1 L1574C3 slug Parser
-def finish-instance-methods params 2 anns 1 L1584C3 slug Parser
-def parse-instance-methods params 2 anns 1 L1588C3 slug Parser
-def parse-instance-params params 2 anns 1 L1603C3 slug Parser
-def try-top-level-type-def params 10 anns 1 L1612C3 slug Parser
-def try-top-level-def params 10 anns 1 L1622C3 slug Parser
-def parse-claim-arm params 10 anns 1 L1639C3 slug Parser
-def parse-simple-claim params 10 anns 1 L1645C3 slug Parser
-def template-anchor params 1 anns 1 L1672C3 slug Parser
-def def-name-offset params 2 anns 1 L1680C3 slug Parser
-def type-def-name-offset params 2 anns 1 L1685C3 slug Parser
-def advance-defs-past params 4 anns 1 L1690C3 slug Parser
-def advance-type-defs-past params 4 anns 1 L1696C3 slug Parser
-def following-def-name params 6 anns 1 L1702C3 slug Parser
-def anchor-one-block params 7 anns 1 L1709C3 slug Parser
-def anchor-blocks-loop params 10 anns 1 L1722C3 slug Parser
-def anchor-prose-blocks params 3 anns 1 L1730C3 slug Parser
-def find-type-def-named params 3 anns 1 L1736C3 slug Parser
-def check-prose-type-name params 5 anns 1 L1742C3 slug Parser
-def parser-find-def-index params 4 anns 1 L1748C3 slug Parser
-def effect-op-declares params 4 anns 1 L1754C3 slug Parser
-def effect-defs-declare params 4 anns 1 L1760C3 slug Parser
-def check-prose-function params 4 anns 1 L1767C3 slug Parser
-def extract-prose-params params 4 anns 1 L1774C3 slug Parser
-def extract-prose-param-name params 4 anns 1 L1780C3 slug Parser
-def extract-prose-param-word params 3 anns 1 L1792C3 slug Parser
-def prose-skip-close-paren params 3 anns 1 L1799C3 slug Parser
-def check-prose-params params 4 anns 1 L1805C3 slug Parser
-def check-prose-param-names params 5 anns 1 L1820C3 slug Parser
-def check-prose-block-against-defs params 5 anns 1 L1828C3 slug Parser
-def check-prose-consistency params 1 anns 1 L1839C3 slug Parser
-def check-prose-blocks-loop params 7 anns 1 L1843C3 slug Parser
-def banned-words params 0 anns 1 L1855C3 slug Parser
-def check-banned-word params 2 anns 1 L1873C3 slug Parser
-def check-banned-words-in-line params 5 anns 1 L1879C3 slug Parser
-def check-banned-in-blocks params 5 anns 1 L1887C3 slug Parser
-def check-prose-banned params 1 anns 1 L1896C3 slug Parser
-def scan-document params 1 anns 1 L1902C3 slug Parser
-def scan-top-level params 9 anns 1 L1908C3 slug Parser
-def scan-top-level-effect params 9 anns 1 L1947C3 slug Parser
-def try-scan-type-def params 9 anns 1 L1960C3 slug Parser
-def try-scan-def-header params 9 anns 1 L1970C3 slug Parser
-def scan-definition params 2 anns 1 L1980C3 slug Parser
-def try-scan-def params 2 anns 1 L1987C3 slug Parser
-def unwrap-type-for-scan params 3 anns 1 L1994C3 slug Parser
-def scan-def-body-with-ann params 3 anns 1 L2034C3 slug Parser
-def scan-def-params-then params 5 anns 1 L2040C3 slug Parser
-def finish-def-scan params 5 anns 1 L2050C3 slug Parser
-def skip-body-tokens params 2 anns 1 L2068C3 slug Parser
+def parse-top-level-effect params 10 anns 1 L1507C3 slug Parser
+def parse-effect-ops params 2 anns 1 L1520C3 slug Parser
+def empty-class-instance-scan params 0 anns 1 L1537C3 slug Parser
+def scan-class-instance-defs params 3 anns 1 L1540C3 slug Parser
+def parse-instance-type-head params 1 anns 1 L1572C3 slug Parser
+def skip-to-close-paren params 2 anns 1 L1579C3 slug Parser
+def finish-instance-methods params 2 anns 1 L1589C3 slug Parser
+def parse-instance-methods params 2 anns 1 L1593C3 slug Parser
+def parse-instance-params params 2 anns 1 L1608C3 slug Parser
+def parse-top-def-item params 4 anns 1 L1623C3 slug Parser
+def parse-top-item params 4 anns 1 L1644C3 slug Parser
+def parse-claim-arm params 10 anns 1 L1654C3 slug Parser
+def parse-simple-claim params 10 anns 1 L1660C3 slug Parser
+def template-anchor params 1 anns 1 L1687C3 slug Parser
+def def-name-offset params 2 anns 1 L1695C3 slug Parser
+def type-def-name-offset params 2 anns 1 L1700C3 slug Parser
+def advance-defs-past params 4 anns 1 L1705C3 slug Parser
+def advance-type-defs-past params 4 anns 1 L1711C3 slug Parser
+def following-def-name params 6 anns 1 L1717C3 slug Parser
+def anchor-one-block params 7 anns 1 L1724C3 slug Parser
+def anchor-blocks-loop params 10 anns 1 L1737C3 slug Parser
+def anchor-prose-blocks params 3 anns 1 L1745C3 slug Parser
+def find-type-def-named params 3 anns 1 L1751C3 slug Parser
+def check-prose-type-name params 5 anns 1 L1757C3 slug Parser
+def parser-find-def-index params 4 anns 1 L1763C3 slug Parser
+def effect-op-declares params 4 anns 1 L1769C3 slug Parser
+def effect-defs-declare params 4 anns 1 L1775C3 slug Parser
+def check-prose-function params 4 anns 1 L1782C3 slug Parser
+def extract-prose-params params 4 anns 1 L1789C3 slug Parser
+def extract-prose-param-name params 4 anns 1 L1795C3 slug Parser
+def extract-prose-param-word params 3 anns 1 L1807C3 slug Parser
+def prose-skip-close-paren params 3 anns 1 L1814C3 slug Parser
+def check-prose-params params 4 anns 1 L1820C3 slug Parser
+def check-prose-param-names params 5 anns 1 L1835C3 slug Parser
+def check-prose-block-against-defs params 5 anns 1 L1843C3 slug Parser
+def check-prose-consistency params 1 anns 1 L1854C3 slug Parser
+def check-prose-blocks-loop params 7 anns 1 L1858C3 slug Parser
+def banned-words params 0 anns 1 L1870C3 slug Parser
+def check-banned-word params 2 anns 1 L1888C3 slug Parser
+def check-banned-words-in-line params 5 anns 1 L1894C3 slug Parser
+def check-banned-in-blocks params 5 anns 1 L1902C3 slug Parser
+def check-prose-banned params 1 anns 1 L1911C3 slug Parser
+def scan-document params 1 anns 1 L1917C3 slug Parser
+def scan-top-level params 9 anns 1 L1923C3 slug Parser
+def scan-top-level-effect params 9 anns 1 L1963C3 slug Parser
+def scan-top-item params 4 anns 1 L1991C3 slug Parser
+def scan-definition params 2 anns 1 L2007C3 slug Parser
+def try-scan-def params 2 anns 1 L2014C3 slug Parser
+def unwrap-type-for-scan params 3 anns 1 L2021C3 slug Parser
+def scan-def-body-with-ann params 3 anns 1 L2061C3 slug Parser
+def scan-def-params-then params 5 anns 1 L2067C3 slug Parser
+def finish-def-scan params 5 anns 1 L2077C3 slug Parser
+def skip-body-tokens params 2 anns 1 L2095C3 slug Parser
 .
-type-defs 4
+type-defs 6
 type-def PageOcc
 type-def CollectProseResult
 type-def ClassDefsResult
+type-def TopItem
 type-def BannedWord
+type-def ScanItem
 .
 effect-defs 0
 class-defs 0
