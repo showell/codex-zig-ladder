@@ -259,16 +259,28 @@ which `PRIORITIES` itself already calls finding 50's *other* half -- a subset,
 not a competing attribution. **The previous queue's B2 asked for a run to settle
 this and the run was never needed.**
 
-**B1. BUILD AND MEASURE FINDING 64 -- the wire half only.** `11df612c` is
-committed and has never been built. Cut a sandbox at the fixes tip, build, and
-read `typeclass-smoke` / `typeclass-poly`'s wire. **Pre-register whether the
-dictionary's own type argument (`Showable-dict-Integer` typed `(args (tvar
-511))`) moves** -- separate from the lambda's parameters, and it must not be
-folded in silently. ~10 min.
+**B1. DONE 2026-08-27, AND IT REFUTED ITSELF.** The fix was built and does not
+work: `typeclass-smoke`'s parameter cells are unchanged and both programs still
+refuse. A method lambda is a record FIELD VALUE, so its context supplies an
+expectation (`to-text-impl : a -> Text`) and COMPILER-30's arm only fires when
+there is none -- **the span was never the blocker and the instance-method site
+was never one of the two.** Finding 64 is withdrawn as diagnosed and re-stated;
+`11df612c` is reverted, because it moved variable numbering while moving no
+parameter cell, and a change that perturbs unification while fixing nothing
+reads as progress in a diff. Corrected upstream, where the claim had already
+been sent. **The second PR is THREE findings: 57, 58, 59.**
 
-**Corpus and blast radius do NOT belong in B1.** The queue's own rule for B5 --
-a measurement at the old pin does not transfer -- applies here identically, and
-the `roc60c` baseline is the ungitted 624-program tree of K0. Defer both to B5.
+**B1a. THE SUCCESSOR LEAD -- why does one instance instantiate and its sibling
+not?** KEYBOARD first, and it wants an INSTRUMENT rather than more reasoning,
+which has now been wrong about this once.
+
+    (def "Showable-dict-Boolean" ... (record-ty "ShowableDict" (args boolean)))
+    (def "Showable-dict-Integer" ... (record-ty "ShowableDict" (args (tvar 511))))
+
+One instance's type argument is instantiated and its sibling's is not, and the
+unit binds no `forall` at all, so `tvar 511` is bound nowhere. Every type
+variable in the method lambdas is downstream of that. Blocks `typeclass-smoke`
+and `typeclass-poly`, and is half of `lang-smoke`.
 
 **B2. REBANK AT THE NEW PIN -- blocked on the mirror push**, which Damian says
 is next in their queue. Seed is `4341370C`. The previous queue omitted four
