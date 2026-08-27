@@ -1516,6 +1516,55 @@ it: read the call site's own instantiated type and pass it. It is also the
 case that a specialisation engine would find hardest, because there is no
 argument to specialise ON.
 
+## 64. A typeclass INSTANCE METHOD's lambda is desugared under a synthetic span, so its parameters lose the type the checker solved -- COMPILER-30's second site, now measured
+
+**Found 2026-08-27 evening, doing the separation Steve asked for.** Blocks
+`typeclass-smoke` and `typeclass-poly`. **It is not an unconstrained type; it
+is COMPILER-30 in a second place**, and it is a site PR 93 deliberately
+excluded.
+
+PR 93's own commit says it: *"Two compiler-generated lambdas still desugar to
+synthetic-span and are NOT in this commit, because the matrix does not measure
+them."* One of the two is `Desugarer.codex:1455`:
+
+    in let field-val = if list-length params == 0 then lam-body
+     else deck-record (ALambdaExpr params lam-body synthetic-span)
+
+**Measured now.** `typeclass-smoke`'s method lambda disagrees with itself
+inside one node:
+
+    (def "__lam_2" (params (param "b" (tvar 16))) (fn (tvar 16) text)
+      (if (name "b" boolean) ...))
+
+parameter cell `tvar 16`, body `boolean`. That is H2's case c exactly, one
+construct over. `__lam_1` is worse -- `x` is `tvar 16` in the parameter list
+and `tvar 516` in the body, inside a dictionary typed `tvar 511` -- and **the
+unit contains no `forall` quantifiers at all**, so every one of those variables
+is unbound by construction, which is what the emitter reports.
+
+**The asymmetry that proves it is not honest polymorphism:**
+
+    (def "Showable-dict-Boolean" ... (record-ty "ShowableDict" (args boolean)))
+    (def "Showable-dict-Integer" ... (record-ty "ShowableDict" (args (tvar 511))))
+
+A dictionary NAMED `-Integer`, typed with a free variable, beside a Boolean
+sibling that is concrete.
+
+**Fixed on the branch** (`406ae2f9`) by passing `token-span (m.name)`, which
+was available all along.
+
+**Predicted, and NOT yet measured:** this should give the method lambdas'
+parameters their real types. Whether it also fixes the DICTIONARY's own type
+argument (`args (tvar 511)`) is a separate question -- that is the record
+type's argument, not the lambda's -- and if the dict stays free after this,
+that is a third thing and wants its own finding rather than being folded in.
+
+**The lesson for the exclusion rule.** "Not measured, so not in this commit"
+was the right call for PR 93 and it should not become "not measured, so it
+does not matter". The excluded site was two programs, and it took one evening
+to find them. `Desugarer.codex:78` -- `ForExpr`'s `map-list` lambda -- is the
+remaining one, still unmeasured, still excluded, and now on notice.
+
 ## 63. OURS, and PRE-EXISTING. The discard rule checks the wrong SCOPE: `zig-occurs body n` sees the continuation, and zig sees the whole function
 
 **CORRECTED 2026-08-27 after steps 1 and 2. The first version of this entry
