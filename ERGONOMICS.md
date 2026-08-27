@@ -129,6 +129,45 @@ teaching an upstream script about a lock that is ours, and
 `build/plug-run.ps1` is generated besides. The mitigation is discipline:
 nothing in the codex tree gets run by hand while a sweep is up.
 
+## verify_emitter.sh must die with its children
+
+**KEYBOARD. Entry point: `verify_emitter.sh`, the `leg` function.**
+
+Objective: **ERGONOMICS.**
+
+Killing the chain does not kill what the chain started. Measured twice on
+2026-08-27, both times while abandoning a run whose commit had been
+superseded:
+
+- `kill` on `verify_emitter.sh` left `ast/allcycles.sh` running. It went
+  on to start a FRESH guest after the chain was already gone.
+- The next chain's leg 0 then died in one second on *"A GUEST IS ALREADY
+  RUNNING, and it did not take the lock"* -- the compute lock working
+  exactly as designed, refusing beside an orphan nobody owned.
+- The orphan had to be hunted by PID both times. The second one had been
+  alive eighteen seconds when it was found, which means it was started
+  AFTER the kill, by a child that had not noticed its parent was gone.
+
+The failure is loud, which is the only reason this is an ergonomics item
+and not a defect: the lock catches it, names it, and refuses. The cost is
+the two minutes of hunting and the false start.
+
+**The fix is the shape, not another guard.** `leg` should run each leg in
+its own process group and the script should `trap` INT/TERM to signal that
+group, so one signal reaches the whole tree. `pkill -f` is NOT the answer
+and must not become it: run from a Claude shell it matches the shell's own
+command line -- observed on 2026-08-27, `pgrep -af 'verify_emitter|qemu'`
+returned the very bash running the pgrep -- so a `-f` pattern broad enough
+to catch the legs is broad enough to kill the session issuing it.
+
+**A second, smaller thing in the same file.** `ast/ringplug_build.sh:36`
+pipes `ring_compile.py` through `grep -E "error|SIZE" | head -10`. When
+the compile refused for a reason matching neither word, the pipe swallowed
+it and the caller printed a bare `PLUG COMPILE FAILED` with no
+diagnostic -- and the pipe masks the exit code besides. That is the
+standing pipe trap, in a script we own. The refusal message was recovered
+only by running `ring_compile.py` by hand.
+
 ## Standing: the straw scripts are NOT retired
 
 The keyboard-tempo tools -- `droplet_compile.sh`, `droplet_transpile.sh`
