@@ -154,3 +154,23 @@ thing that looked like the thing I wanted."
 `ast/oracle_lib.sh` and the bundlers all read these paths -- so it wants
 its own sitting and Steve's methodology first.
 
+## What the top-level README points at (Steve, 2026-08-27)
+
+**`findings/README.md` YES. `PRIORITIES.md` no.**
+
+The reasoning, which generalises: the README is the outward-facing door,
+and the findings register is the PRODUCT -- the defects found, written so
+someone else can read them. `PRIORITIES.md` is our own work order. A
+visitor wants to know what this apparatus has caught; nobody outside
+needs to know what we are doing next Tuesday.
+
+It also means the two documents can drift apart on purpose. PRIORITIES
+is allowed to be terse, internal and full of shorthand, because its
+audience is us. The README and the register are not.
+
+Raised while briefing cold-agent passes over the README. Pass one reads
+the README ALONE (plus the upstream front page) and asks whether a
+stranger can orient; pass two gets the register, the scripts and the
+queue, and asks whether the README describes the system that actually
+exists. Different failures: the first finds what is missing for someone
+new, the second finds where the document has drifted from the code.
