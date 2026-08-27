@@ -166,6 +166,32 @@ left alone: `3f0f42e5` still sits in the history of the stale
 holds a lot of unrelated landed work -- deleting the branch to reach one
 commit would cost more than it saves.
 
+## WHAT THE FIXED WIRE DOES TO THE EMITTER, MEASURED
+
+**The zig plug needs no H2 arm at all.** Run against the `h2-span` natives,
+the matrix's emitted signatures are:
+
+    __lam_3(base: i64, step: CxFn1(i64, i64)) i64      the arrow, from the checker
+    __lam_6(s: []const u8) []const u8                  case f, Text
+    __lam_7(comptime T305: type, k: T305) i64          the tvar, handled generically
+
+`unanswered parameters: none`, `closure-wrapper markers: 0`. Every cell the
+deleted recovery walk was built to reconstruct now arrives on the wire, and
+`__lam_3`'s `step` -- the one it rebuilt from the callee slot -- arrives as a
+whole `CxFn1`.
+
+**The matrix still does not build, for one reason and it is not a type gap.**
+Case g's CALL SITE refuses by name: `zig plug: unresolved type variable T305
+of __lam_7`. `\k -> 1` is never applied, so there is no instantiation to
+monomorphise from. That is finding 55's class -- the same one the other three
+Roc ports fail on -- and it belongs to the item below, not to H2.
+
+**`verify_emitter.sh` leg 1b is STRICT now (`0de932f`).** Its allowlist was
+built for the deleted walk, and on the run that retired it the leg reported
+GREEN through a zig file that does not build. It is RED today, naming case g,
+which is the correct reading. It will go green when monomorphisation lands,
+not before, and it requires a compiler carrying the lambda-span fix.
+
 ## THE SEND, AND THE ONE THING OWED BEFORE IT
 
 `outbound/ISSUE-DRAFT-type-info-dropped.md` is rewritten (`b56137e`,
