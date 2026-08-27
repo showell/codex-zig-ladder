@@ -279,7 +279,7 @@ The turn itself is three steps:
    resident bound as the corpus runs. The only step of the turn with no Codex
    code and no QEMU in it.
 3. **The output is diffed against the banked truth**, split per rung
-   (`zig_verdict` in `ast/oracle_lib.sh`). The verdict is the same
+   (`zig_verdict` in `ast/plug_arm_lib.sh`). The verdict is the same
    byte-identical claim whichever transport carried the IR.
 
 So the zig arm does not take bare metal out of the loop; it takes out the
@@ -446,8 +446,9 @@ constructor and top-level name listings.
 `CheckStubs.codex` is the builtin table with `bs-emit` stripped (that field
 is typed over the code generator, which is not here). **Program.** the
 built-in fib snippet, fifteen lines and 264 bytes, spelled identically in
-five generators -- this is where the program shrinks from a real chapter to
-a toy, and every unit after it compiles fib unless it says otherwise. **Harness.** tokenize, parse, desugar, scope, resolve,
+NINE generators -- with a tenth, divergent copy in `gen_lex_harness.py` (184
+bytes, ten lines), which is a trap for anyone editing fib. This is where the
+program shrinks from a real chapter to a toy, and every unit after it compiles fib unless it says otherwise. **Harness.** tokenize, parse, desugar, scope, resolve,
 `check-chapter`. **Flags.** none.
 **Truth.** the scope shape, then `--- check ---`: one `tb <name> <kind>`
 line per type binding, then `substitutions`, `next-id` and `expr-types` as
@@ -603,7 +604,7 @@ deck intrinsic being off in every bundle we had ever built
 
 ## Counting
 
-Fourteen rungs, twelve compiles (`LADDER_UNITS`), eleven bundler scripts:
+Fourteen rungs, twelve compiles (`LADDER_UNITS`), twelve bundler scripts:
 `bundle_passes_to_x86.ps1` is one call into `bundle_ir_to_x86.ps1` with
 seven extra chapters and its own harness, which is why those two cannot
 drift apart. Three rungs carry a
@@ -656,7 +657,7 @@ rungs; the verdict never does.
   compiler's own serial-ring reader costs one. ir_to_x86's IR is 13.1 MB on
   the u47 seed, so it has no choice.
 
-`arm_for` in `ast/oracle_lib.sh` decides, because which transport is needed is a
+`arm_for` in `ast/plug_arm_lib.sh` decides, because which transport is needed is a
 property of the IR, and the IR belongs to the unit: the `ir_to_x86` and
 `passes_to_x86` units take the ring, and the four rungs they carry ride in
 with them.
@@ -674,7 +675,7 @@ matter.
 bytes of the zig arm's executable are produced by the zig toolchain, which has
 nothing to do with Codex -- not its back end, not its seed, not anything in this
 repository. Worth being specific, because it is better than it sounds: the rungs
-run their zig with `zig run` (`ast/oracle_lib.sh`, `zig_verdict`), and zig 0.16
+run their zig with `zig run` (`ast/plug_arm_lib.sh`, `zig_verdict`), and zig 0.16
 does not use LLVM for that. It uses its own x86-64 back end. Measured on the
 command the rungs actually use, not on a nearby one: `zig run` produces a
 10,253,773-byte binary and `zig run -fllvm` produces a 4,113,312-byte one. So
@@ -778,7 +779,7 @@ working `ast/*.truth` and `ast/*.ir` files the arms consume are not, so its
 first act is `ast/rebank_all.sh` -- `allcycles.sh` alone has nothing to
 diff against.
 
-**From the host:** `qemu-system-x86_64` (6.2.0), `python3` (3.10.12),
+**From the host:** `qemu-system-x86_64` (8.2.2), `python3` (3.12.3),
 PowerShell 7 installed at `~/.local/pwsh/pwsh` (the bundling scripts invoke
 that path directly; 7.5.4 here), and `zig` (0.16.0) for the arm under test.
 `/dev/kvm` is optional: `CODEX_ACCEL` selects the accelerator and the
