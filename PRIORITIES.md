@@ -228,6 +228,83 @@ verdict.
 The rule, now in `corpus/README.md`: **a bank is taken deliberately; a stage
 output is regenerated. Never track a file that every run rewrites.**
 
+## THE ROC PORT, AND THE FOUR FINDINGS UNDER IT (2026-08-27 evening)
+
+**Objective: HUNTING and COMPLETENESS both.** Entry point: KEYBOARD for
+diagnosis, BOX only to build. Exploration mode on Steve's call -- fact-finding
+ahead of due diligence, batching guests but not hoarding them.
+
+**Ports: 7 of 11 matched after PR 93, and 14 more ports written since**, taken
+in file order from the newly vendored `reference/roc-lang/`. See
+`reference/roc-lang/PORTING-LOG.md`, which lists all 117 cases in FILE ORDER
+and distinguishes ported / skipped / deferred. **Skipped means the LANGUAGE
+cannot carry it** (case 6, no early `return`, and the value-preserving
+adaptation preserves nothing). **Deferred meant a question was unanswered**,
+and the `var` question is now answered in that file: Codex has no mutable
+local, `mutable` is a property of a type declaration, so a `var` case ports by
+turning the location into a mutable record FIELD.
+
+**Four findings came out of it, and only one is ours.**
+
+- **57, COMPILER, FIXED and measured.** `subst-type-vars-from-arg` had no arm
+  for any user-declared parametric type, so a branch join kept a variable both
+  branches had resolved.
+- **58, COMPILER, FIXED and measured.** An empty list literal's solved element
+  type was never recorded, so it reached the plug as `(list error)`.
+- **59, COMPILER, FIXED, PARTIAL.** A non-empty list literal took its element
+  type from the context even when that context was a variable bound NOWHERE.
+  Cleared `hamt-test` and `kvstore-test`; did not clear `list-test`, and
+  finding 62 says why.
+- **60, OURS.** An unused `let` of a local emits a discard zig refuses. **The
+  first fix was WRONG and produced a wrong answer** -- see the register.
+- **61, OURS.** A generic function whose type parameter appears only in its
+  RETURN type is called with no type argument, though the IR carries the
+  instantiation. `hamt_empty()` against `fn hamt_empty(comptime T58: type)`.
+- **62, a classification error of mine**, recorded because it cost a wrong
+  prediction: the `is not declared at this site` marker has TWO causes and I
+  grouped by message.
+
+## MONOMORPHISATION: SMALLER THAN IT LOOKED, AND THE DESIGN QUESTION HAS A FACT UNDER IT
+
+The scoping pass Steve asked for **moved 7 of the 9 candidate programs off
+this item** -- they were findings 58/59/62, not monomorphisation. What is
+actually left is **four programs** (`roc-iter-map`, `roc-iter-keep-if`,
+`roc-iter-drop-if`, `typeclass-smoke`) plus the two halves of `lang-smoke` and
+`typeclass-poly`.
+
+**The fact that bears on the design, measured:** **Codex PERMITS POLYMORPHIC
+RECURSION.** `findings/probe-poly-recursion.codex` compiles clean and its
+recursive call is typed one level deeper than its definition --
+`(fn (list (list (tvar 41))) ...)` against `(fn (list (tvar 41)) ...)`. So the
+instantiation set is infinite in general: **emitter-side specialisation cannot
+terminate without an arbitrary depth cap**, while comptime generics hand that
+to zig, which reports a bounded error. Steve, unprompted: *"Ideally we could
+let zig's compiler do the monomorphisation for us."* This is evidence for that
+and it is not a preference.
+
+**Finding 61 is the smallest concrete first step** and needs no specialisation
+engine at all: read the call site's own instantiated type and pass it. It is
+also the case specialisation would find hardest, because there is no argument
+to specialise on.
+
+**Still undecided, and it should be decided deliberately:** what a backend
+emits for a type the program GENUINELY does not constrain -- `list-test`'s
+`cl-is-empty (cl-nil)`, matrix case g, `\k -> 1`. Any type is correct,
+refusing is honest, and choosing one is a DEFAULTING RULE.
+
+## THE INSTRUMENTS NEEDED TWO REPAIRS TODAY, BOTH FOUND BY ACCIDENT
+
+- **The driver's error gate was not honoured** by `corpus_run.py` or
+  `h2_wire.py`. A refused compile exits 0 and writes `CODEGEN-HALTED` where
+  the IR goes, so refusals were fed to `zigemit` as wires. **All 13 programs
+  in the census's `zigemit` bucket were compiler refusals, not emitter
+  failures** -- several are deliberate negative tests. Fixed; the bucket is
+  `codex-refused` now.
+- **An unexplained blast radius outranks the wins it arrives with.** Finding
+  60's first fix moved 56 emitted files against a predicted handful. Running
+  all 56 is what found `deck-bracket-contract` going `match -> differ`. The
+  wins were all green; the wrong answer was in the files nobody predicted.
+
 ## SENT: PR 93, AND THE OUTBOUND QUEUE IS EMPTY AGAIN
 
 **https://github.com/damiant3/Cobblestone/pull/93**, opened 2026-08-27
