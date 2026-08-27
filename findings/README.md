@@ -97,50 +97,56 @@ So the trigger is a lambda whose type is fixed only by INFERENCE from its
 context, and never by a declaration -- `let`-bound or applied on the spot
 makes no difference. Reworded above accordingly.
 
-**~~What tilts it upstream.~~ WITHDRAWN 2026-08-27 -- THIS PARAGRAPH WAS
-FALSE AND IT WAS THE LOAD-BEARING PREMISE OF THE WHOLE ENTRY.** It said
-"No plug mentions `ErrorTy` -- not the zig emitter, not the C# one".
-**Four sibling plugs have an explicit `ErrorTy` arm in the same function,
-in the same position:**
+**SETTLED 2026-08-27 BY MEASUREMENT. H2 IS UPSTREAM, root-caused, and
+fixed on a branch.** Two paragraphs stood here before that and both were
+wrong; they are gone rather than struck through, because a register entry
+carrying three successive opinions is what sent this two days the wrong
+way.
+
+The argument that reversed this entry in the morning was that four sibling
+plugs answer `ErrorTy` in the same position, so the atom is a CONTRACT:
 
     CSharpEmitterExpressions.codex:64   is ErrorTy -> "object"
     RustEmitter.codex:57                is ErrorTy -> "Box<dyn std::any::Any>"
     AdaEmitter.codex:134                is ErrorTy -> "Long_Long_Integer"
     FortranEmitter.codex:148            is ErrorTy -> "integer(8)"
 
-`cs-type` and `emit-zig-type` are arm-for-arm parallel -- both answer
-`NothingTy`, `ProofTy` and `PropEqTy`, both in that order -- and only ours
-is missing the `ErrorTy` arm, so `ErrorTy` reaches
-`ZigEmitter.codex:331`'s `otherwise` and becomes the exact marker the five
-Roc ports die on.
+**Four arms is not a contract, it is four workarounds for one missing
+fact, and two of them are wrong.** C# and Rust ERASE into a universal
+dynamic type their targets happen to have. Ada and Fortran GUESS a 64-bit
+integer, and case f of the matrix -- a lambda parameter whose true type is
+`Text` -- refutes the guess. Two shipped plugs silently miscompile it.
+Nobody recovers.
 
-**So `ErrorTy` on this wire is a CONTRACT, not an anomaly.** The plug fleet
-knows it arrives and answers it. **H2 IS OURS.** Raised by Steve, who asked
-why anything upstream needs changing when bare metal runs all twelve Roc
-programs, and whether our pipeline was simply not pulling in a solution
-that already existed. It was not pulling it in, and the solution is four
-files away.
+**The mechanism, measured, not read.** A canary compiler (`c6cd236a`) made
+`lambda-expected-ty` answer `Text` on a lookup miss, a type no defaulting
+rule in this compiler produces. The arm FIRES on all five affected lambdas
+and the lookup MISSES on all five. Reading source from there found why:
 
-**Which makes `3f0f42e5` the RIGHT fix rather than a workaround**, and the
-argument against building it -- that a plug-side recovery would paper over
-an upstream defect -- is withdrawn with the paragraph it rested on.
+    Syntax/SyntaxNodes.codex:23   | LambdaExpr (List Token) (Expr)
 
-**Why we cannot just copy the sibling arm, which is the one real
-asymmetry.** C# and Rust answer with a universal dynamic type; zig has
-none, and `ZigEmitter.codex`'s own prose says so a few lines below the
-`otherwise`: "Zig will not accept anyopaque as a parameter type at all."
-Ada and Fortran answer with a 64-bit integer, which for us is what case f
-of the matrix exists to refute -- its missing type is `Text`, and a plug
-that answers `i64` there is wrong rather than refusing. So the zig answer
-has to be the RECOVERED type, from the body's own uses or the callee's
-declared parameter, which is exactly what `3f0f42e5` does.
+The lambda is the only expression node in the CST with no span, so
+`Desugarer.codex:55` writes `synthetic-span`, and `is-synthetic-span`
+(`file-id == 0`) gates `record-expr-type` AND `lookup-expr-type` alike.
+Every lambda in the language is filed under file-id 0, which is to say not
+filed. Not a span mismatch -- no span.
 
-**What is left of the upstream story, and it is not a defect report.**
-Lowering does lose a type it holds (the mechanism below still reads
-true), so the wire could carry more than it does and a statically-typed
-target pays for that. That is a SUGGESTION worth making once our own arm
-is fixed. Nothing depends on it, the compiler patch is not needed to
-unblock anything, and it must not be sent as a defect.
+**The fix and its numbers.** `bba94d1b` gives the node its lambda token the
+way `HandleExpr`/`TryExpr`/`WithTimeoutExpr` carry theirs, five sites.
+Matrix cells reading `error`: **6 of 11 -> 0 of 11**. Case f recovers
+`text` rather than defaulting to `Integer`, which is the cell that
+separates recovery from a lucky guess. Case g, unconstrained by
+construction, comes back `(tvar 305)` -- an unsolved variable, which is
+what an unconstrained parameter IS, and more honest than an `ErrorTy` that
+claims a type failure in a clean program. Both controls unchanged.
+Evidence: `findings/h2-wire/`.
+
+**The plug-side recovery is DELETED, on Steve's ruling 2026-08-27**, branch
+and sandboxes both: *"the plug-side strategy is doomed to failure ... I
+don't want any fragile half-measures here."* It worked where it could and
+it did not converge -- the three programs it could not move each needed a
+different new rule -- because the information was never local. Anything
+below that argues for a plug-side arm is superseded by this paragraph.
 
     Falsified by:  BARE METAL refusing variant C. If the seed refuses it,
                    the program is ill-typed and the port is the defect, not
