@@ -111,36 +111,64 @@ compute entry point refuses on a host without `CODEX_LADDER_VENUE`
 (`bb39139`), which `~/.codex_ladder_env` exports. One compute job at a
 time.
 
-## RUNNING RIGHT NOW -- read this before starting anything
+## THE UPDATE 51 CEREMONY IS DONE EXCEPT THE TIER SET
 
-**The u51-REPAIR rebank is on the box, launched 2026-08-27 12:17.**
-Nothing else may compute until it finishes or is killed.
+Banked, diffed, tagged and pushed 2026-08-27: `u51-14of14`, seed
+`C3181693`, pin `012a9d2e`, README table and timings refreshed,
+`check_paths.py` clean. **14/14 green in 2541 s**, all fourteen truths
+byte-identical to the bank taken from the killed run (so that bank was
+right and is now known to be), `bank_diff` u50 -> u51 four moved and ten
+identical, and the diagnostics census compared for the first time under
+this seed with CDX6020 at its pinned 43 -- **no re-pin owed**.
 
-    sandbox   ~/runs/20260827T121729Z-u51-repair-rebank
-              ladder 15ebb21 (master), codex 012a9d2e (branch u51-rebank)
-    pid       269203   (rebank_all.sh; it re-detaches itself into logs/)
-    log       <sandbox>/ladder/logs/rebank-20260827-121737.log
-    expect    12 truth arms (~28 min), then allcycles.sh (~28 min)
+**THREE THINGS ARE STILL OWED, and one build serves all three.** Every one
+of them needs `native_build.sh` run from the PIN. The natives now on the
+box are from `h2-lowering-fix` and are the wrong tree for any of it --
+that is the "choose the build tree deliberately" rule, and it applies
+here.
 
-This is a FULL rebank, not a sweep, and the reason is the census. The
-u51 bank was taken from a run that was killed at 3/14, so no bare-metal
-`.diags` ever reached a tree that also swept -- every sweep since has
-printed `CENSUS NOT COMPARED`, and `check_diags.py`'s POLICY table is
-still pinned to u50's populations. A rebank produces both halves in one
-sandbox and that is the only way the pin gets re-taken.
+1. **The tier SET.** README "Processing a new Update" step 5 ends with it
+   and it has not run under u51. The BARE columns are banked
+   (`findings/gold/u51/`, 21 SET GREEN, recovered from a stranded sandbox
+   at `15ebb21`); the set is both arms, and `RED` or `STALE` rows want a
+   human before they mean anything. A closed finding shows up here as a
+   STALE row and nowhere else.
+2. **The census re-pin.** `corpus_run.py --changed --bank` against the
+   pin's natives. Owed every Update, because the natives move and so every
+   emitted zig moves with them; about 10 minutes after the natives.
+3. **`codexzig` has never been built from the u51 pin.** Nothing on this
+   box has: the newest is `~/runs/20260826T235600Z-f49-gate2`'s, an Update
+   50 tree whose emitter matches the pin and whose compiler half is a
+   whole Update behind. `codexzig_build.sh` ends with the FIXED POINT, so
+   this is a real check and not a chore -- and it is the check that caught
+   the `T38` gate failure on its first Update.
 
-The truth arms are a determinism check and nothing more: the seed has
-not moved (`C3181693` across `7a6c5682`, `a0425e10` and `012a9d2e`) and
-no compiler chapter moved with it, so the fourteen truths MUST come back
-byte-identical to `truth/u51`. If any one does not, that is the finding
-of the day and the bank is wrong, not the run.
+Housekeeping, lower stakes: 18 sandboxes and 9.6 GB in `~/runs`; gold has
+no rotation while truths keep three (`u48` gold is still there and `u48`
+truths are pruned); `u51-emitter` differs from the pin in five DOC files
+and nothing else, so it is a historical marker now.
 
-**Warmups were skipped deliberately.** The README wants
-`./cycle.sh hello recurse fib` before a rebank so a gross plug-side
-breakage is found in minutes rather than hours. The 01:56 sweep is
-strictly stronger evidence: 14/14 green against this exact emitter,
-byte-identical to the one the pin now carries, 25 minutes before this
-run started.
+## H2's FIX IS WRITTEN, BUILT, AND DID NOT TAKE
+
+Branch `h2-lowering-fix` (`22e9b2cc`), sandbox
+`~/runs/20260827T132006Z-h2-lowering`, natives built. The patched
+compiler emits **byte-identical IR** -- 7,935 bytes, not one cell moved --
+and the patch is definitely in the build (`codexir.zig` carries
+`lambda_expected_ty` twice, the binary size differs). The prediction was
+written down first, at `bd924df`, and it is refuted.
+
+**Next is one instrumented build, not more source reading.** Have
+`lambda-expected-ty` answer `TextTy` when its arm fires and the lookup
+misses; that separates "never fired" from "fired and found nothing" in a
+single run. Five candidate causes are already read out and eliminated in
+the register, including the best one -- our harness skipping the driver's
+check-lower boundary, which it does not.
+
+**Nothing goes to Damian until this is understood.** The DIAGNOSIS is
+solid and source-derived (lowering hands `ErrorTy` down as its
+no-expectation sentinel and never asks the checker); what is not
+established is the REPAIR, and sending a diagnosis with a fix that does
+not work attached is worse than sending the diagnosis alone.
 
 ## THE PR 92 EMITTER REPAIR LANDED -- `012a9d2e`, and it is OUR CODE VERBATIM
 
