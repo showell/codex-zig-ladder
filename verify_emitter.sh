@@ -19,6 +19,14 @@
 #
 #   0 natives     codexir + zigemit from this codex tree. Everything else
 #                 reads these, so a stale binary here poisons all of it.
+#   1b h2 matrix  findings/probe-h2-lambda-types.codex, seven cases, and
+#                 unlike leg 1 it has an `.expected` banked from BARE METAL,
+#                 so it is a correctness oracle and not a marker count. Case
+#                 f answers `x!`: a repair that defaults an unrecovered
+#                 parameter to Integer fails there instead of passing. Case
+#                 g is unknowable by construction and a refusal there is the
+#                 honest answer, so the leg prints the line-by-line diff
+#                 rather than one bit.
 #   1 tvar matrix findings/probe-tvar-recovery.codex, seven cases, one
 #                 function each. Case (g) -- a closure returning a declared
 #                 generic type -- is the one that reproduces, and a
@@ -92,6 +100,40 @@ else:
     else:
         print('  leg1-tvar-matrix RED (marker is in the file, zig reports "%s" instead)' % detail[:40])
 PY
+
+say "leg1b-h2-matrix START"
+python3 - <<'H2PY' 2>&1 | tee "$S/leg1b-h2-matrix.log" | tail -12 | tee -a "$STATUS"
+import subprocess, sys, re, pathlib, os
+sys.path.insert(0, os.getcwd())
+import corpus_run
+src = pathlib.Path('findings/probe-h2-lambda-types.codex')
+want = [l for l in pathlib.Path('findings/probe-h2-lambda-types.expected').read_text().splitlines() if l != '']
+unit, miss = corpus_run.resolve(src)
+assert not miss, miss
+ir = subprocess.run(['native/codexir'], input=unit.encode(), capture_output=True, timeout=120)
+zg = subprocess.run(['native/zigemit'], input=ir.stderr, capture_output=True, timeout=120)
+z = zg.stderr.decode(); pathlib.Path('probe-h2.zig').write_text(z)
+marks = sorted(set(re.findall(r'zig plug: [^"]*', z)))
+print('  h2 markers:', marks or 'NONE')
+p = subprocess.run(corpus_run.BOUNDED + ['timeout', '300', 'zig', 'run', 'probe-h2.zig'],
+                   capture_output=True, timeout=330)
+err = p.stderr.decode()
+pathlib.Path('probe-h2-build.log').write_text(err)
+if p.returncode != 0:
+    first = next((l for l in err.splitlines() if 'error:' in l), '')
+    print('  h2 DOES NOT BUILD ->', first.split('error:')[-1].strip()[:70])
+    print('  leg1b-h2-matrix RED (no values to compare)')
+else:
+    got = [l for l in p.stdout.decode().splitlines() if l != '']
+    for i, case in enumerate('abcdefg'):
+        g = got[i] if i < len(got) else '(missing)'
+        w = want[i] if i < len(want) else '(missing)'
+        print('  case %s  want %-4s got %-4s %s' % (case, w, g, 'ok' if g == w else 'MISMATCH'))
+    if got == want:
+        print('  leg1b-h2-matrix GREEN (all seven, case f recovered rather than defaulted)')
+    else:
+        print('  leg1b-h2-matrix RED (%d of %d lines match)' % (sum(1 for a, b in zip(got, want) if a == b), len(want)))
+H2PY
 
 leg leg2-corpus ./corpus_run.py --run
 say "  $(grep -E 'programs;|^match [0-9]+' "$S/leg2-corpus.log" | tail -2 | tr '\n' ' ')"
