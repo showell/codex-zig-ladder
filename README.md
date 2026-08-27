@@ -34,10 +34,10 @@ the operating procedure.
 
 | | |
 |---|---|
-| Seed | `C45E5825` (2,922,230 bytes) |
-| Update | 50 (`8cc80685`, the release; the `pin` is the Codex branch this bank was measured on -- see "The checkout") |
+| Seed | `C3181693` (2,917,073 bytes) |
+| Update | 51 (`012a9d2e`, the release `7a6c5682` plus its addendum and the PR 92 emitter repair; the `pin` is the Codex branch this bank was measured on -- see "The checkout") |
 | Rungs | **14 of 14 green** |
-| Banked | `truth/u50/`; the newest three `uNN` banks are kept (`bank_truth.py --keep`), older ones live in git history. A `seed-` bank is outside that rotation and ages out only by hand |
+| Banked | `truth/u51/`; the newest three `uNN` banks are kept (`bank_truth.py --keep`), older ones live in git history. A `seed-` bank is outside that rotation and ages out only by hand |
 
 This table is the point of the whole arrangement, so it is the first thing on
 the page and it is allowed to be unflattering. A ladder that cannot say which
@@ -48,12 +48,22 @@ Mid-rebank, the checkout's pin branch runs one Update ahead of this table --
 old banks. That is the normal in-between state, not drift: the table moves
 only when `bank_truth.py` lands the complete new set.
 
-An Update's work reaches the mirror before its release note does, and the row
-above is what that looks like: `seed_identity.py` finds no release note naming
-`6CF4A8E0`, refuses to call the bank `u50`, and labels it by the seed instead.
-The refusal is the design. Update 50's release will carry its own seed and get
-its own rebank; this bank answers what the interim push does, which is a
-different question and worth asking early.
+A bank is named for a SEED, not for a commit, and Update 51 is the case that
+shows why that is the right key. Three public commits share seed `C3181693`
+-- the release `7a6c5682`, the same-night addendum `a0425e10`, and the
+emitter repair `012a9d2e` -- so all three bank as `u51` and this one table
+answers for all three. `seed_identity.py` derives the name by finding the
+release note that names the seed's hash; when no note names it, it refuses
+`uNN` and labels the bank `seed-XXXXXXXX` instead, which is what Update 50's
+interim push got. The refusal is the design.
+
+**A rebank whose truths come back byte-identical is not a wasted rebank.**
+This one was run because the u51 bank had been taken from a run killed at
+3/14, and all fourteen truths reproduced exactly, sidecars included -- so the
+banked answer was right and is now known to be right rather than assumed.
+The rest of what a rebank buys is unaffected by the truths not moving: the
+diagnostics census only exists in a tree that measured bare metal AND swept,
+and the timings below are only honest if they were measured under this seed.
 
 The table above is maintained by hand; what cannot drift is the BANK's label,
 because `seed_identity.py` derives it from the seed's own hash by finding the
@@ -966,35 +976,44 @@ Then the smaller pieces:
   host. Read their headers; "The venue" below says where they stand.
 
 Costs -- this section is the one home for timing figures; re-measure and
-update them here at every rebank. Measured clean 2026-08-25 (seed
-`6CF4A8E0`, this 8 GB box, `CODEX_MEM_MB=3072` TCG, per-rung
+update them here at every rebank. Measured 2026-08-27 (seed `C3181693`,
+pin `012a9d2e`, this 8 GB box, `CODEX_MEM_MB=3072` TCG, per-unit
 `rung_stamp` timestamps in the log):
 
-- **`rebank_all.sh` end to end is 39 minutes** (2324 s) -- 26.5 for the
-  twelve truth arms (1593 s), 1 for the plug build, 11 for the trailing
-  sweep. The ten cheap units record in 14 s to 2.5 minutes each;
-  `ir_to_x86` and `passes_to_x86` are 5m12s and 5m51s on the truth side
-  and still dominate, though by less than they used to.
-- **The sweep** runs all fourteen rungs in 12 minutes (936 s, of which 61 s
-  is the plug rebuild before the first rung): lex 4s, parse 13s, desugar
-  15s, scope 19s, check 43s, lower 51s, ir_to_codex 110s, roundtrip 55s,
-  lir_to_x86 4s, ir_to_wire 103s, ir_to_x86 2m00s, passes_to_x86 2m13s.
+- **`rebank_all.sh` end to end is 42 minutes** (2541 s) -- 28 for the
+  twelve truth arms (1680 s), 51 s for the plug build, 13.5 for the
+  trailing sweep (861 s). Truth arms, cheapest first: lex 14s, parse 47s,
+  desugar 56s, scope 69s, check 118s, lower 157s, ir_to_codex 147s,
+  roundtrip 149s, lir_to_x86 31s, ir_to_wire 162s, **ir_to_x86 346s,
+  passes_to_x86 384s**. The last two are 43 per cent of the truth side
+  between them and always have been.
+- **The sweep** runs all fourteen rungs in 13.5 minutes (861 s, of which
+  51 s is the plug rebuild before the first rung): lex 4s, parse 12s,
+  desugar 16s, scope 18s, check 140s, lower 113s, ir_to_codex 57s,
+  roundtrip 115s, lir_to_x86 4s, ir_to_wire 60s, ir_to_x86 111s,
+  passes_to_x86 160s.
   `sweep_canary.sh` (lex+parse+desugar) is a REMOTE driver -- it sources
   `sweep_lib.sh`, calls `run_unit_remote`, and assumes `sweep_prep.sh` has
   run -- and its own header budgets 2-3 minutes including the straw. Adding
   scope would push it further for little coverage.
+- **A sweep's cost depends on what it has to REBUILD, and the biggest
+  term is not the sweep.** A sweep in a tree with no `.ir` files rebuilds
+  all twelve through `ensure_ir` first: the 2026-08-27 01:56 sweep took
+  1656 s that way against this one's 861 s in a tree the truth arms had
+  just filled. Same fourteen rungs, same emitter, same seed; the
+  difference is inputs. Read a sweep timing with its tree's state
+  attached or it means nothing.
 - **The sweep used to be the expensive half and is not any more.** It was
   1716 s on 2026-08-23 and 657 s on 2026-08-24 with the SEED UNCHANGED, so
   the 2.6x is the ladder's own work, not the Update's -- the emitter grew
   the self-tail-call transformation in that window (PR 81) and the zig arm
   of the two big units was the slow half. Attributed by window and by
   mechanism; nobody has ablated it, so read it as the likely cause rather
-  than a measured one. The two numbers above straddle a seed change as
-  well, which is why the 657 s and the 731 s are not the same number.
+  than a measured one.
 - **The census re-pin** (`native_build.sh`, then `corpus_run.py --changed
   --bank`): the natives are 11 minutes, and the census itself is 10
   minutes for the whole corpus -- transpile of 596 programs plus
-  build-and-run of the 326 clean ones, no QEMU anywhere. Every Update
+  build-and-run of the clean ones, no QEMU anywhere. Every Update
   re-pin reruns all of it, because the natives change and so every
   emitted zig moves.
 
@@ -1015,6 +1034,129 @@ only there.
 from a second host over one held ssh per job (log lines stream back, the
 exit code propagates, artifacts scp back); their headers carry their
 contracts. They are keyboard-tempo tools, not the ceremony's path.
+
+## Machine capacity
+
+What this box has, what each kind of job is ALLOWED to cost, and which of
+those numbers are ceilings rather than measurements. Written 2026-08-27
+because "one compute job at a time" had been standing in for an arithmetic
+nobody had done, and the question it is really asked to answer -- may a
+second job run beside this one -- cannot be answered without it.
+
+| | |
+|---|---|
+| RAM | 7,941 MB |
+| CPUs | 2 |
+| Swap | **none** |
+| Disk | 154 GB, 117 GB free |
+
+**No swap is the fact the rest of this section turns on.** An over-commit
+here is not a slowdown somebody notices and backs out of; it is an OOM
+kill, and the kernel picks the victim. Every ceiling below exists to keep
+a sum under 7.9 GB, and a job with no ceiling is a job that can take the
+box down with it.
+
+### The declared ceilings
+
+Numbers in the code, not observations. Three bound a job; the fourth is a
+gap.
+
+| what | ceiling | where |
+|---|---|---|
+| A QEMU guest | 3,072 MB | `CODEX_MEM_MB` in `~/.codex_ladder_env`; the seed guest dies silently above it |
+| The zig arm of a rung | **6 GB** | `ZIG_ARM_MEMORY_MAX`, `ast/oracle_lib.sh:356`, applied by `bounded_run` |
+| An emitted binary under a corpus runner | 800 MB | `RUN_MEMORY_MAX`, `corpus_run.py:207`; the full corpus replayed under it with zero hits and a max RSS of 145 MB |
+| **`codexzig` itself** | **none** | `codexzig_corpus.py:89` runs the tool with no `BOUNDED` prefix |
+
+**3 GB + 6 GB does not fit in 7.9 GB, and neither number is wrong.** They
+never overlap inside one sweep, because a rung's arms are sequential: the
+guest compiles the subject and exits, and only then does the zig arm run.
+The 6 GB is a ceiling for a job that HAS the box, not a budget for sharing
+it. Two jobs each honouring its own ceiling can still add to an OOM, so
+the ceilings are not by themselves an argument that concurrency is safe.
+
+**The unbounded one is what to fix before anything runs beside a sweep.**
+`codexzig_corpus.py` bounds the emitted program it builds and does not
+bound the tool that emits it, while `corpus_run.py`'s own comment calls the
+resident bound "not optional". The incident that bought that rule -- an
+unbounded runaway livelocking a whole host, 2026-08-19 -- is available to
+any codexzig run today.
+
+### What a guest actually costs
+
+A guest's declared size is a RESERVATION. QEMU's resident set grows with
+the pages the guest touches, so a 3,072 MB guest does not cost 3,072 MB
+until it needs to. Sampled every five seconds across the last four minutes
+of the u51-repair sweep -- `passes_to_x86`, the largest unit, through the
+ring arm:
+
+    peak qemu RSS      1,012 MB   against a 3,072 MB guest
+    peak system used   1,991 MB
+    minimum available  5,950 MB
+
+**The zig arm's real peak is UNMEASURED and the 6 GB ceiling has never
+been approached in a recorded run.** This sweep could not measure it:
+`~/.cache/zig` is 21 GB, it is GLOBAL rather than per sandbox, and exactly
+one file in it was written during the whole run -- so the zig builds were
+cache hits and no `zig` process was resident long enough to sample.
+`overnight_verify.sh:99` already wraps one rung in `/usr/bin/time -v`,
+which is the cheapest way to get the number when it is wanted.
+
+### The rule, and what is sacred in it
+
+**One QEMU guest at a time is the invariant** (Steve, 2026-08-27). Two
+guests stacked do not fail; they thrash, which reads as mysterious
+slowness rather than as the refused launch it should have been.
+
+**"One compute job at a time" is the older and broader form of that rule,
+and it is broader than the invariant needs.** Today the two are one lock:
+`compute_lock.take()` is a flock plus an "is any `qemu-system-*` running"
+check, taken both by `codex_vm.launch` -- the one line in this tree that
+starts a guest -- and directly by three runners that start no guest at all
+(`corpus_run.py:449`, `codexzig_corpus.py:95`, `codexzig_scale.py:53`). So
+a codexzig corpus pass and a sweep exclude each other for a reason that has
+nothing to do with guests.
+
+**And it is not applied consistently**, which is the tell that it is policy
+by accident rather than by decision: `roc_ports_run.py:106` calls
+`require_venue()` and never takes the lock, so the same class of work --
+codexzig over a named set, then `zig run` -- is lock-free in one runner and
+lock-holding in its neighbour. Neither starts a guest.
+
+The lock conflates two questions with different answers: *may I start a
+guest* (one at a time, sacred) and *may I use this box* (a capacity
+question, which the tables above are the input to). Separating them is what
+would let a codexzig pass run beside a sweep. It is not done, so the honest
+statement today is that concurrency here is UNTESTED, not that it is
+forbidden.
+
+### Where the newest `codexzig` lives
+
+`codexzig` is not one binary in a known place. `codexzig_build.sh` builds it
+per sandbox (~10 minutes), `native/` is gitignored, and a fresh sandbox
+carries none -- so "the current one" is a question about `~/runs`, never
+about the checkout. As of 2026-08-27 the newest is
+
+    ~/runs/20260826T235600Z-f49-gate2/ladder/native/codexzig   (24 MB, 08-27 00:10)
+
+and **it is an Update 50 tree.** Its codex commit is `cab52a35`, whose
+merge-base with the `012a9d2e` pin is `8cc80685` -- Update 50. Its
+`ZigEmitter.codex` IS byte-identical to the pin's, which is the half that
+usually stales first and the half that did not; the compiler half is a whole
+Update behind. **Nothing on this box has ever built a `codexzig` from the
+u51 pin.**
+
+What stales one, roughly in the order it happens: the emitter
+(`codex/plugs/zig/ZigEmitter.codex`), the ladder's harness chapters and the
+roots list they share, the compiler chapters `codexir` bundles, and the seed
+-- because the build runs through the seed and the ring plug before it
+reaches its own fixed point.
+
+One thing that did NOT stale, and it matters for anything read off an IR text
+that an older `codexzig` produced: `ir-emit-type`, the function that spells a
+`CodexType` on the wire, is **byte-identical between Update 50 and the pin**,
+verified arm by arm. The 100-line change to `IRTextEmitter.codex` between
+those trees is elsewhere in the file.
 
 ## One sandbox per experiment
 
@@ -1059,7 +1201,11 @@ pulled the shared checkout mid-run" stop being a thing that can happen.
    its own (about a minute) before spending a full cycle -- a quarter-hour to
    bank plus the same through the plug, for the expensive rungs -- discovering
    it does not compile.
-4. **One compute job per host.** QEMU, a sweep, a census run, a native
+4. **One QEMU guest at a time is the invariant**; "one compute job per
+   host" is how it is enforced today, and it is broader than the
+   invariant needs -- see "Machine capacity" above for the arithmetic
+   and for which runners take the lock without ever starting a guest.
+   QEMU, a sweep, a census run, a native
    build: one at a time. The lock is taken by `codex_vm.launch` --
    the one line in this tree that runs qemu -- so an entry point cannot
    start a guest without asking, and none of them has to remember to.
