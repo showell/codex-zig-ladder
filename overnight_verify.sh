@@ -21,10 +21,10 @@
 #      NOTE the movement here is (PR 76 + gaps batch) vs the verbatim
 #      bank -- the gaps-only slice is read against the hunt's recorded
 #      verbatim->76 movement.
-#   E  restore: natives rebuilt from the pinned checkout, the tracked
-#      corpus trio (transpile.json, gaps.json, run.jsonl) checked out
-#      back to the banked state, native shas verified against census
-#      meta.tools. If the chain dies mid-way, run this phase by hand.
+#   E  restore: natives rebuilt from the pinned checkout, native shas
+#      verified against census meta.tools. The stage outputs need no
+#      restoring -- they are untracked and every run rewrites them.
+#      If the chain dies mid-way, run this phase by hand.
 #
 # PHASE_FROM=C runs the gaps half alone (phases C, D, E). The two branches
 # are independent, so the heap half going red on 2026-08-21 does not hold
@@ -119,8 +119,11 @@ fi
 PHASE=E; STAMP "E: restore to the pinned mainline"
 CODEX_ROOT="$PIN" "$T/native_build.sh" > "$T/logs/overnight-restore-natives.log" 2>&1 \
     || { echo "RESTORE NATIVE BUILD FAILED:"; tail -8 "$T/logs/overnight-restore-natives.log"; exit 1; }
-git -C "$T" checkout -- corpus/transpile.json corpus/gaps.json corpus/run.jsonl \
-    || { echo "RESTORE CHECKOUT FAILED -- the corpus trio is still branch data"; exit 1; }
+# Nothing to restore: transpile.json/gaps.json/run.jsonl are untracked stage
+# outputs since 2026-08-27. This step used to `git checkout --` them back to
+# their committed state, which is exactly what froze the tracked copies at an
+# old census while census.json advanced -- the two then disagreed about 94
+# programs. The bank is corpus/census.json and it is written only by --bank.
 python3 - "$T" <<'PY'
 import hashlib, json, pathlib, sys
 T = pathlib.Path(sys.argv[1])

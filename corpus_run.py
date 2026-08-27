@@ -214,18 +214,24 @@ def _require_bounded():
                          'bound is not optional; refusing')
 
 
-def load_run_carry(results, prev):
+def load_run_carry(results):
     """Verdicts from an earlier interrupted or batched --run that still hold.
 
-    `prev` maps name -> zig_sha from the transpile.json the earlier run
-    actually compiled, captured before this invocation overwrote it. A
-    verdict carries iff the program's freshly emitted zig is byte-identical
-    to that and the zig toolchain has not moved. run.jsonl lines written
-    before the zig field existed carry on the sha alone, once; the baseline
-    bank retires them.
+    A verdict is a pure function of (its emitted zig) x (zig toolchain) x (the
+    .expected it was diffed against), so EVERY PART OF THAT KEY IS WRITTEN ON
+    THE VERDICT'S OWN LINE. The check is against the line, never against a
+    second file.
+
+    It used to read the shas from `transpile.json`, captured before this
+    invocation overwrote it. That baseline is forgeable: a bare `--transpile`
+    also writes that file, so `./corpus_run.py --transpile` followed by
+    `./corpus_run.py --run` made prev == now for every program and carried the
+    whole journal unconditionally. On 2026-08-27 that reported 94 programs as
+    `match -> refused` against a compiler change that had left 570 of 577
+    emitted files byte-identical. A line missing its key does not carry.
     """
     jsonl = WORK / 'run.jsonl'
-    if not jsonl.is_file() or prev is None:
+    if not jsonl.is_file():
         return {}
     lines = []
     raw = jsonl.read_text().splitlines()
@@ -239,17 +245,23 @@ def load_run_carry(results, prev):
             raise SystemExit(f'{jsonl} line {i + 1} is corrupt; inspect it')
     zv = zig_version()
     now = {r['name']: r.get('zig_sha') for r in results}
-    carry, dropped = {}, 0
+    carry, dropped, keyless = {}, 0, 0
     for e in lines:
         n = e['name']
-        if (prev.get(n) and prev[n] == now.get(n)
-                and e.get('zig', zv) == zv):
+        if e.get('zig_sha') is None:
+            keyless += 1
+            continue
+        if (e['zig_sha'] == now.get(n)
+                and e.get('expected_sha') == expected_sha(n)
+                and e.get('zig') == zv):
             carry[n] = e
         else:
             dropped += 1
     print(f'\nresume: {len(carry)} verdicts carried from run.jsonl '
-          f'(emitted zig byte-identical, toolchain unmoved)'
-          + (f'; {dropped} dropped as stale' if dropped else ''))
+          f'(zig byte-identical, .expected unmoved, toolchain unmoved)'
+          + (f'; {dropped} dropped as stale' if dropped else '')
+          + (f'; {keyless} dropped as keyless (written before the key was '
+             f'on the line)' if keyless else ''))
     return carry
 
 
@@ -283,14 +295,21 @@ def stage_run(results, out_dir, persist=True, batch=0, prior=None, hw=None):
     if jsonl:
         jsonl.flush()
 
+    sha_of = {r['name']: r.get('zig_sha') for r in results}
+
     def verdict(name, kind, note=''):
         tally[kind] += 1
         verdicts[name] = (kind, note)
         if kind not in ('match', 'no-expected', 'hardware-only'):
             detail.append((name, kind, note))
         if jsonl:
+            # The verdict's cache key travels WITH it. A resume that has to
+            # consult a second file to decide whether this line still holds is
+            # a resume that can be lied to.
             jsonl.write(json.dumps({'name': name, 'verdict': kind,
-                                    'detail': note, 'zig': zv}) + '\n')
+                                    'detail': note, 'zig': zv,
+                                    'zig_sha': sha_of.get(name),
+                                    'expected_sha': expected_sha(name)}) + '\n')
             jsonl.flush()
 
     for i, r in enumerate(todo, 1):
@@ -482,15 +501,6 @@ def main():
     # A limited run is a smoke test; the json files are the full-corpus census
     # and a slice must not overwrite them (one did, 2026-08-19).
     persist = not (a.limit or a.only)
-    # The shas the last run compiled against, captured before this
-    # invocation's transpile overwrites the file: they are the carry key
-    # for resuming an interrupted or batched --run.
-    prev_shas = None
-    if a.run and persist:
-        tj = WORK / 'transpile.json'
-        if tj.is_file():
-            prev_shas = {e['name']: e.get('zig_sha')
-                         for e in json.loads(tj.read_text())}
     results, hist = stage_transpile(names, WORK)
     if persist:
         (WORK / 'transpile.json').write_text(json.dumps(results, indent=1))
@@ -534,7 +544,7 @@ def main():
         tally, detail, verdicts = stage_run(to_run, WORK, persist=persist,
                                             hw=hw)
     elif a.run:
-        prior = load_run_carry(results, prev_shas) if persist else {}
+        prior = load_run_carry(results) if persist else {}
         tally, detail, verdicts = stage_run(results, WORK, persist=persist,
                                             batch=a.batch, prior=prior, hw=hw)
         if persist:

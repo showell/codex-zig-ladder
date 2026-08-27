@@ -84,3 +84,24 @@ ringplug-source-check.codex
 findings/.tier-run/
 ast/.stack-probe/
 *.self.zig
+# The corpus census keeps ONE tracked artifact: corpus/census.json, the bank,
+# written only by --bank. Everything else in corpus/ is a derived stage output
+# that every run rewrites, and tracking those is what broke the census on
+# 2026-08-27.
+#
+# transpile.json, gaps.json and run.json/run.jsonl were tracked AND rewritten
+# by every run, so the discipline became "revert them afterwards"
+# (overnight_verify.sh did exactly that with a `git checkout --`). The tracked
+# copies then froze at whenever someone last committed them on purpose while
+# census.json advanced through --bank, and the two disagreed: a stale
+# transpile.json held 596 programs and no `zigemit` bucket where census.json
+# held 606 and had one, and a stale run.jsonl called programs `refused` that
+# census.json called `match` and that build clean today. A resume read the
+# stale one and reported 94 phantom regressions.
+#
+# A bank is taken deliberately. A stage output is regenerated. Do not track a
+# file that every run rewrites.
+/corpus/transpile.json
+/corpus/gaps.json
+/corpus/run.json
+/corpus/run.jsonl
