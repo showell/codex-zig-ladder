@@ -217,52 +217,93 @@ That is independent confirmation, and it also means **the STANDING PROPERTY
 item in this file now has an upstream counterpart** -- coordinate with it
 rather than build a second one.
 
-## THE BOX QUEUE -- what runs on the guest next, in order (2026-08-27 night)
+## THE BOX QUEUE -- REWRITTEN after a cold review found three real defects in it
 
-One compute job at a time. Costs measured today: a native build is ~5.5 min, a
-14-rung sweep ~30 min, a full corpus transpile ~3 min, a full corpus `--run`
-under 4 min on an existing sandbox, a rebank ~40 min.
+A cold agent reviewed the first version read-only and its three heaviest
+findings were verified by hand before this rewrite. **All three held.** What
+follows replaces it.
 
-**B1. BUILD AND MEASURE FINDING 64.** `406ae2f9`/`11df612c` -- the
-instance-method lambda span -- is COMMITTED AND HAS NEVER BEEN BUILT. It is
-the only change on `roc-ports-type-recovery` in that state. Cut a sandbox at
-the branch tip, `native_build.sh`, then: the two programs it targets
-(`typeclass-smoke`, `typeclass-poly`), a full corpus transpile, and the blast
-radius against the `roc60c` tree. **Pre-register first**, including whether the
+**K0. KEYBOARD, DO FIRST, NO BOX. Fix the branch topology, because the
+headline numbers are not reproducible.** `roc-ports-type-recovery` (fixes) and
+`roc-ports-batch2` (ports) are **SIBLINGS**: `git merge-base` is `8f1b202a`,
+so the ports branch does not even contain findings 59, 60 or 61. Every "24 of
+29 Roc ports match" number was measured in the `roc60c` sandbox with 29 port
+files **untracked in its working tree** -- a 624-program population that no git
+ref describes and that cannot be rebuilt from either tip. Rebase the ports onto
+the fixes (or merge), then re-derive the number from a ref.
+
+**K1. KEYBOARD, OWED UPSTREAM, NO BOX. Send the probe.** Damian, 19:48Z:
+*"Yes to the probe, please."* Their instrument is `build/ir-fidelity` and
+already reports DROPPED on our case f; pointing it at
+`findings/probe-h2-lambda-types.codex` is their stated sanity check that the
+two instruments agree on what "recovered" means.
+
+**K2. KEYBOARD. The second PR is AUTHORISED.** Damian: *"Send all four as the
+second PR; that is the word."* Findings 57, 58, 59, 64. He fact-checked that no
+lane had taken them and **the register row now reserves them for our branch**.
+Measure against seed `4341370C` after the push, not before.
+
+**K3. KEYBOARD. Findings 47 and 50 are CLOSED; only their status paragraphs are
+stale.** The cold review settled both with no compute and the reproducer check
+was verified: finding 47's own smallest reproducer,
+`codex/test/tvar-in-declared-type.codex`, is `stage=clean, verdict=match` in the
+banked census, and `ZigEmitter.codex` carries the `ConstructedTy`/`SumTy`/
+`RecordTy` arms the finding says are missing. Finding 50's Boolean half is
+`clean/match` across every program it names; the 15-program residue is item 1c,
+which `PRIORITIES` itself already calls finding 50's *other* half -- a subset,
+not a competing attribution. **The previous queue's B2 asked for a run to settle
+this and the run was never needed.**
+
+**B1. BUILD AND MEASURE FINDING 64 -- the wire half only.** `11df612c` is
+committed and has never been built. Cut a sandbox at the fixes tip, build, and
+read `typeclass-smoke` / `typeclass-poly`'s wire. **Pre-register whether the
 dictionary's own type argument (`Showable-dict-Integer` typed `(args (tvar
-511))`) moves -- it is a separate question from the lambda's parameters and
-should not be folded in silently. Cost: ~10 min.
+511))`) moves** -- separate from the lambda's parameters, and it must not be
+folded in silently. ~10 min.
 
-**B2. SETTLE FINDINGS 47 AND 50 BY REPRODUCER.** Not a corpus run -- their
-marker strings overlap finding 55 and item 1c, so corpus data cannot attribute
-them. Run each finding's own reproducer against an existing sandbox's natives
-and read that. Cost: minutes, no guest.
+**Corpus and blast radius do NOT belong in B1.** The queue's own rule for B5 --
+a measurement at the old pin does not transfer -- applies here identically, and
+the `roc60c` baseline is the ungitted 624-program tree of K0. Defer both to B5.
 
-**B3. THE DIAGNOSTICS CENSUS, WHICH TONIGHT'S SWEEP SKIPPED.** `allcycles.sh`
-reported `CENSUS NOT COMPARED: ... ensure_ir.sh rebuilt the IR, so no
-bare-metal .diags exists for those units`, and named `ast/rebank_all.sh` as
-what produces a census that can be believed. Tonight's 14/14 therefore covers
-the rungs and not the diagnostics.
+**B2. REBANK AT THE NEW PIN -- blocked on the mirror push**, which Damian says
+is next in their queue. Seed is `4341370C`. The previous queue omitted four
+documented ceremony steps that `README.md` calls load-bearing, and they are
+part of this item: **`./tiers_run.py --bare` FIRST** (gold is keyed to the seed;
+a re-pin stales every column at once), **warmups before the rebank**,
+**`bank_truth.py` as an explicit step** ("all banked" in a log does not mean the
+bank exists), and **re-measuring the README's timings in the same commit**.
+Cost is nearer **75 min** than the 60 first claimed.
 
-**B4. REBANK AT THE NEW PIN -- blocked until the mirror push is public.** CL
-20189 is a new seed. When it lands: re-pin, natives, rebank the 14 truths,
-`bank_diff` against u51, tier set, census re-pin. B3 rides this. Cost: ~60 min
-all in. **Nothing downstream should be measured on the old pin once the mirror
-is public.**
+**Decide before starting: WHICH EMITTER.** `README.md` says sweep the release's
+emitter verbatim, because sweeping with our fixes in measures a compiler nobody
+ships. The branch carries four ZigEmitter commits. If ours are in the tree the
+result is not a `uNN` bank and `bank_diff` u51 -> u52 is not an Update diff.
+The diagnostics census rides this item; tonight's sweep skipped it.
 
-**B5. THE SECOND PR'S DUE DILIGENCE, AFTER B4.** Findings 57, 58, 59, 64 as a
-compiler branch and 60, 61 as a plug branch, measured against the NEW pin:
-corpus, sweep, and the Roc ports. Tonight's sweep was against the old pin and
-does not transfer.
+**B3. THE SECOND PR'S DUE DILIGENCE, AFTER B2. Use `verify_emitter.sh`, do not
+hand-assemble it.** Its own header says it exists because the same legs were
+assembled by hand twice in one day and the second assembly quietly measured a
+tree two commits behind. The hand-written plan omitted leg 1b -- the H2 matrix,
+**the only leg with a bare-metal-banked `.expected`, i.e. the only correctness
+oracle in the chain** -- plus the tvar matrix and the codexzig fixed point.
 
-**B6. MONOMORPHISATION -- exploration, guest per iteration.** The three
-`iter-*` ports and `typeclass-smoke`. Emitter changes rebuild `zigemit`
-through the seed, so each attempt costs a guest; batch and pre-register.
+**B4. MONOMORPHISATION -- the three `iter-*` ports ONLY.** `typeclass-smoke` is
+NOT in this bucket; `findings/h2-wire/SEPARATION-unconstrained.md` and finding
+64 both place it under COMPILER-30's second site, which is B1. **`lang-smoke`
+has no owner on this queue and needs one** -- the separation doc calls it probe
+case B and "really what blocks a core smoke test".
 
-**What is NOT on this queue and why.** The unconstrained-type defaulting
-question is two programs and wants an upstream wire change, not box time.
-Finding 63 is parked. The standing-property item now has an upstream
-counterpart and should be coordinated before anything is built.
+**HAZARD, recorded because rebasing it silently undoes a deletion.**
+`7de07cf0` (finding 55, 12 programs) is committed, unbuilt, and sits on
+`zig-plug-tvar-not-an-answer`, whose base is `8cc80685` (u50) -- not the u51
+pin. **Its tree still defines `zig-recover-param` in three places**: the
+plug-side H2 recovery that STANDING says is deleted and must not be rebuilt.
+Rebasing that branch forward reintroduces it. Verified by hand.
+
+**INSTRUMENT CHANGE COMING.** Damian: as of main 20176, `-IrUni` now lifts like
+`-IrCce`, so after the push a reading from the readable dump IS a reading of the
+wire. Anything pre-registered from the old view needs re-checking against the
+new one before it is compared.
 
 ## SETTLE THE LAST TWO CONTESTED FINDINGS -- 47 and 50, by REPRODUCER not by corpus
 
