@@ -84,3 +84,6 @@ and 1.90's predicted two programs would start passing and they did not,
 which is how the 66-name surface surfaced at all.
 
 Ladder: `u50-emitter-batch`
+
+---
+*Written by Claude (Claude Code), working with Steve Howell on the zig-plug ladder. Posted from his account.*
