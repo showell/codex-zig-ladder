@@ -24,11 +24,11 @@
   46
  ],
  [
-  "no emitter for port-out-32",
+  "no emitter for port-in-32",
   41
  ],
  [
-  "no emitter for port-in-32",
+  "no emitter for port-out-32",
   41
  ],
  [
@@ -50,6 +50,10 @@
  [
   "no emitter for block-write-sector",
   15
+ ],
+ [
+  "show on a Real needs __real_to_text, which this plug does not have",
+  14
  ],
  [
   "no emitter for net-recv-raw",
@@ -84,15 +88,11 @@
   10
  ],
  [
-  "no emitter for vec-extract",
+  "no zig type for this codex type",
   9
  ],
  [
-  "no emitter for text-to-unicode-bytes",
-  8
- ],
- [
-  "no emitter for unicode-bytes-to-text",
+  "no emitter for raw-bytes-to-text",
   8
  ],
  [
@@ -105,7 +105,7 @@
  ],
  [
   "effect handlers not supported",
-  8
+  7
  ],
  [
   "no emitter for uefi-read-key",
@@ -144,10 +144,6 @@
   5
  ],
  [
-  "no zig type for this codex type",
-  5
- ],
- [
   "no emitter for process-restrict-cap",
   4
  ],
@@ -157,6 +153,18 @@
  ],
  [
   "no emitter for read-text",
+  4
+ ],
+ [
+  "unresolved type variable T16 of __lam_0",
+  4
+ ],
+ [
+  "unresolved type variable T16 of __lam_1",
+  4
+ ],
+ [
+  "no emitter for vec-extract",
   4
  ],
  [
@@ -176,7 +184,15 @@
   3
  ],
  [
+  "type variable T27 is not declared at this site",
+  3
+ ],
+ [
   "no emitter for write-file",
+  3
+ ],
+ [
+  "type variable T25 is not declared at this site",
   3
  ],
  [
@@ -196,59 +212,11 @@
   2
  ],
  [
-  "unresolved type variable T74 of collision-find",
-  2
- ],
- [
-  "unresolved type variable T77 of make-single-branch",
-  2
- ],
- [
-  "unresolved type variable T72 of hamt-get",
-  2
- ],
- [
-  "unresolved type variable T73 of hamt-node-get",
-  2
- ],
- [
   "no emitter for read-mmio",
   2
  ],
  [
-  "unresolved type variable T71 of hamt-remove",
-  2
- ],
- [
-  "unresolved type variable T64 of collision-find",
-  2
- ],
- [
-  "unresolved type variable T72 of hamt-node-remove",
-  2
- ],
- [
-  "unresolved type variable T73 of collision-remove",
-  2
- ],
- [
-  "unresolved type variable T63 of hamt-node-get",
-  2
- ],
- [
-  "unresolved type variable T67 of make-single-branch",
-  2
- ],
- [
-  "unresolved type variable T62 of hamt-get",
-  2
- ],
- [
   "no emitter for port-in-16",
-  2
- ],
- [
-  "no emitter for __list-tail",
   2
  ],
  [
@@ -260,11 +228,7 @@
   2
  ],
  [
-  "no emitter for mask-any",
-  2
- ],
- [
-  "no emitter for mask-count",
+  "no emitter for __list-tail",
   2
  ],
  [
@@ -276,7 +240,11 @@
   2
  ],
  [
-  "no emitter for sort-ascending",
+  "no emitter for mask-count",
+  2
+ ],
+ [
+  "no emitter for mask-any",
   2
  ],
  [
@@ -296,6 +264,10 @@
   1
  ],
  [
+  "no emitter for atomic-add",
+  1
+ ],
+ [
   "no emitter for atomic-cas",
   1
  ],
@@ -304,11 +276,11 @@
   1
  ],
  [
-  "no emitter for atomic-add",
+  "no emitter for block-select",
   1
  ],
  [
-  "no emitter for block-select",
+  "no emitter for key-zero",
   1
  ],
  [
@@ -320,63 +292,11 @@
   1
  ],
  [
-  "no emitter for key-zero",
-  1
- ],
- [
   "no emitter for read-line",
   1
  ],
  [
   "no emitter for read-file-raw",
-  1
- ],
- [
-  "unresolved type variable T83 of collision-remove",
-  1
- ],
- [
-  "unresolved type variable T81 of hamt-remove",
-  1
- ],
- [
-  "unresolved type variable T82 of hamt-node-remove",
-  1
- ],
- [
-  "unresolved type variable T78 of make-single-branch",
-  1
- ],
- [
-  "unresolved type variable T84 of collision-remove",
-  1
- ],
- [
-  "unresolved type variable T95 of hamt-to-list",
-  1
- ],
- [
-  "unresolved type variable T74 of hamt-node-get",
-  1
- ],
- [
-  "unresolved type variable T82 of hamt-remove",
-  1
- ],
- [
-  "unresolved type variable T73 of hamt-get",
-  1
- ],
- [
-  "unresolved type variable T83 of hamt-node-remove",
-  1
- ],
- [
-  "unresolved type variable T86 of hamt-size",
-  1
- ],
- [
-  "unresolved type variable T75 of collision-find",
   1
  ],
  [
@@ -388,35 +308,11 @@
   1
  ],
  [
-  "unresolved type variable T74 of hamt-contains",
-  1
- ],
- [
-  "unresolved type variable T75 of hamt-size",
-  1
- ],
- [
   "no emitter for get-value",
   1
  ],
  [
-  "unresolved type variable T44 of ilist-reverse",
-  1
- ],
- [
-  "unresolved type variable T43 of ilist-append",
-  1
- ],
- [
-  "unresolved type variable T45 of ilist-length",
-  1
- ],
- [
-  "unresolved type variable T74 of swap-tup",
-  1
- ],
- [
-  "unresolved type variable T75 of swap-tup",
+  "unresolved type variable T25 of __lam_0",
   1
  ],
  [
@@ -424,43 +320,23 @@
   1
  ],
  [
-  "unresolved type variable T47 of cl-tail",
+  "type variable T57 is not declared at this site",
   1
  ],
  [
-  "unresolved type variable T45 of cl-is-empty",
+  "type variable T618 is not declared at this site",
   1
  ],
  [
-  "unresolved type variable T59 of cl-append",
+  "unresolved type variable T57 of cl-flip-cons",
   1
  ],
  [
-  "unresolved type variable T49 of cl-length-acc",
-  1
- ],
- [
-  "unresolved type variable T48 of cl-length",
-  1
- ],
- [
-  "unresolved type variable T63 of cl-drop",
-  1
- ],
- [
-  "unresolved type variable T62 of cl-take",
+  "opening returns a Real and printing it needs __real_to_text, which this plug does not have",
   1
  ],
  [
   "no emitter for process-exit",
-  1
- ],
- [
-  "unresolved type variable T16 of __lam_0",
-  1
- ],
- [
-  "unresolved type variable T16 of __lam_1",
   1
  ],
  [
@@ -492,7 +368,19 @@
   1
  ],
  [
-  "unresolved type variable T44 of describe",
+  "type variable T16 is not declared at this site",
+  1
+ ],
+ [
+  "unresolved type variable T19 of __lam_2",
+  1
+ ],
+ [
+  "type variable T19 is not declared at this site",
+  1
+ ],
+ [
+  "unresolved type variable T16 of __lam_2",
   1
  ],
  [
@@ -500,7 +388,7 @@
   1
  ],
  [
-  "no emitter for vec-sub",
+  "no emitter for vec-add",
   1
  ],
  [
@@ -508,11 +396,11 @@
   1
  ],
  [
-  "no emitter for vec-add",
+  "no emitter for vec-div",
   1
  ],
  [
-  "no emitter for vec-div",
+  "no emitter for vec-sub",
   1
  ],
  [
@@ -528,15 +416,7 @@
   1
  ],
  [
-  "no emitter for vec-reduce-add",
-  1
- ],
- [
   "no emitter for vec-select",
-  1
- ],
- [
-  "no emitter for from-real-approx",
   1
  ]
 ]
