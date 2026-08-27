@@ -1486,6 +1486,39 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
+## 60. OURS. An unused `let` whose value is a bare name emits `_ = x;`, which zig refuses as a pointless discard
+
+**Found 2026-08-27 by porting Roc case 10 sequentially**, which is the whole
+argument for porting a suite in its own order rather than cherry-picking the
+interesting-looking cases.
+
+    let x = [1, 2, 3] in let y = x in <body reads x, never y>
+
+    emitted   b1: { _ = x; break :b1 ((cx_list_at(x, 0) +% ...)); }
+    zig       error: pointless discard of local constant
+
+**Why the discard exists at all, and it is not wrong to have one.** The
+emitter's own prose says it: "zig refuses any unused constant or capture, and
+the IR legitimately carries bindings nothing reads, so let and capture
+emission checks whether the body ever names the binding and discards when it
+does not." An unused binding must still SEQUENCE its value, because the value
+may do work.
+
+**What is wrong is discarding a bare name.** `_ = x;` where `x` is a local
+const is an error in zig, and zig is right -- a name has nothing to sequence.
+The fix is `zig-let-discard`: emit nothing for an `IrName`, discard everything
+else exactly as before. Both `IrLet` arms (`emit-zig-expr` and
+`emit-zig-tail`) routed through it. The `__seq` arms are deliberately
+untouched, because a `__seq` let's value is a field store -- the effect the
+discard exists to preserve.
+
+**The control pair is what made it visible.** `roc-alias-original` (case 10)
+and `roc-alias-list` (case 9) differ in one respect: which of two names for
+the same list is read. The one reading the ALIAS passes; the one reading the
+ORIGINAL, leaving the alias unread, does not. One half of a one-respect pair
+failing is a much stronger signal than a lone red program, and Roc keeps
+eleven more cases in that cluster.
+
 ## 59. A non-empty list literal takes its element type from the CONTEXT even when the context's type is an unbound variable and the literal's own elements are correctly typed
 
 **Found 2026-08-27 at the keyboard, no guest**, while scoping monomorphisation.
