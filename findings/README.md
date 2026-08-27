@@ -308,6 +308,50 @@ the type is genuinely unknowable, and the one that would give falsifier 2
 something to be about), a control for case a's capture, the desugarer's
 `for x in xs ->` lambda, and nested `\a -> \b ->` which
 `LambdaLifting.codex:243-245` merges into one lifted definition.
+
+**THE MATRIX IS REBUILT and both control pairs come back clean, 2026-08-27.**
+Seven cases now, an `.expected` beside the chapter, and each of the three
+defects above closed. Read through the f49-gate2 natives (an Update 50
+tree, which is sound for this because `ir-emit-type` is byte-identical
+between Update 50 and the pin):
+
+    __lam_0  a  let-bound capture      (param "xs" (list int)) (param "i" error)
+    __lam_1  b  SAME AT A DECLARED PARAM (param "xs" (list int)) (param "i" int-default)
+    __lam_2  c  let-bound, param used  (param "i" error)
+    __lam_3  d  applied literal        (param "base" int-default) (param "step" error)
+    __lam_4  d  the literal argument   (param "y" error)
+    __lam_5  e  SAME AT A DECLARED RECEIVER  (param "y" int-default)
+    __lam_6  f  let-bound, TEXT        (param "s" error)
+    __lam_7  g  bound, never applied   (param "k" error)
+
+**a/b and d/e differ on the wire and nowhere else** -- same body, same
+answer, one respect apart -- so the difference is attributable to that
+respect and to no other. That is what the first version could not do.
+
+**The return half of H2 is confirmed in the same read**, which no
+instrument had looked at:
+
+    __lam_0  (fn (list int-default) (fn error error))   body returns a LIST
+    __lam_1  (fn (list int-default) (fn int-default (list int-default)))
+    __lam_3  (fn int-default (fn error int-default))    return fine, param not
+
+So a lifted lambda can lose its parameters, its return, or both, and
+`__lam_3` shows the loss is per-position rather than per-definition.
+
+**Case f is the one that bounds a repair.** Its missing type is `Text`,
+and every other case's is `Integer` -- which is also the language's
+default. A repair that defaults an `error` parameter to `Integer` passes
+six cases and fails this one, visibly.
+
+**Case g says the wire cannot tell four situations apart.** `\k -> 1`
+bound and never applied is the one shape where nothing anywhere
+constrains the parameter, and it spells `error` exactly like the six that
+are fully determined. Worse, the honest answer for `k` is an unresolved
+TYPE VARIABLE -- the checker binds it to a fresh one and nothing unifies
+it -- so even the genuinely-unknown case is mislabelled, because the path
+that would have said `(tvar N)` is the path that is never consulted. **A
+plug cannot do the right thing locally here**, and that is the argument
+for fixing lowering rather than teaching every plug to guess.
 ### H1. FALSIFIED 2026-08-26 17:52 -- Update 50 made the largest ladder unit uncompilable to IR-CCE in a 3 GB guest
 
 Raised 2026-08-26 17:42, when `ast/rebank_all.sh` died at 11/12 on

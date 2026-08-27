@@ -1,48 +1,61 @@
 Chapter: ProbeH2LambdaTypes
   cites Foreword chapter Console
 
- H2's falsification matrix: what type the IR wire carries for a lambda
- parameter, one case per shape, so an answer localizes instead of
- confirming a mood. H2 says a lambda whose type no DECLARATION fixes
- reaches the plug with `ErrorTy` for its parameters, in a program the
- compiler reports as clean; five Roc ports refuse on exactly that.
+ H2's matrix: what type the IR wire carries for a lambda parameter, one
+ case per shape, so an answer localizes instead of confirming a mood.
 
- Every case answers a number and bare metal is the oracle. The number is
- the cheap half. The expensive half is the WIRE: compile this chapter in
- `IR-CCE` mode on the seed and read the `(param "<name>" ...)` cells of
- the lifted `__lam_N` definitions. `error` there, in a chapter the seed
- compiles clean, is H2 confirmed from the compiler's own arm rather than
- from ours -- which is the reading `native/codexir` cannot give, because
- it is the compiler as our own backend renders it.
+ Every case answers a number and bare metal is the oracle; the answers are
+ banked in `probe-h2-lambda-types.expected` beside this file, because a
+ compile that is never RUN throws away the run's only correctness signal.
+ The second half is the WIRE: compile in `IR-CCE` mode and read the
+ `(param "<name>" ...)` cells of the lifted `__lam_N` definitions.
 
- Read against `findings/README.md`'s H2, whose three stated falsifiers
- this chapter is built to answer in one guest:
+ REBUILT 2026-08-27 after a cold read took the first version apart. What
+ that read established, from compiler source and with no machine time, is
+ that the `error` cells are manufactured in LOWERING, not by the checker:
+ a `let` lowers its bound value with expected type `ErrorTy`
+ (`IR/Lowering.codex:689`), `lower-lambda` peels its parameters off that
+ expected type (`:722-724`), `peel-fun-param` answers `ErrorTy` for any
+ non-`FunTy` (`Types/CodexTypeHelpers.codex:4-10`), and the unifier's own
+ answer -- which exists, and which `deep-resolve` would give -- is never
+ asked for. So the matrix is no longer trying to establish THAT. It is
+ here to bound the fix: which shapes are affected, and which candidate
+ repair would be a real recovery rather than a lucky default.
 
-   1. bare metal REFUSING case c  ->  the program is ill-typed and the
-      Roc ports are the defect, not the wire.
-   2. a diagnostic present for any clean-numbered case  ->  the ErrorTy
-      WAS reported and the plug should honour a halt, not fill a gap.
-   3. the seed's own IR-CCE wire NOT carrying `error`  ->  the wire is
-      fine and `native/codexir` put it there, which makes it OURS and
-      worse. This is the one that cannot be answered any other way.
+ Four things the first version got wrong, all fixed here:
 
- Cases a to d are the shapes that refuse. Case e is a POSITIVE CONTROL
- and it is the reason this chapter is worth a guest: it is the same
- lambda literal in the same argument position, differing only in that
- the receiver is DECLARED. If e also comes back `error`, H2's trigger is
- not "no declaration fixes it" but "expected types never reach a lambda
- literal at all", which is a wider claim about the checker and would be
- written up as such. If e is clean and a to d are not, the trigger is
- exactly as H2 states it.
+   - Its "control" differed from the case it controlled in five respects
+     and its prose misnamed the variable. Cases b and e are genuine
+     one-respect controls now, each paired with the case above it.
+   - It had no `.expected` and its instrument never booted the image, so
+     the numbers it claimed as the oracle were never read.
+   - Every case's true answer was `Integer`, which is also the language's
+     default -- so a repair that simply defaulted an `error` parameter to
+     `Integer` would have passed the whole matrix. Case f is `Text`.
+   - It had no case where the type is genuinely unknowable, so falsifier 2
+     (is a diagnostic being discarded) had nothing to be about. Case g is
+     that case.
+
+ A control PAIR agrees on its number by design -- a and b both answer 3, d
+ and e both answer 7 -- because the pair is meant to differ on the wire and
+ nowhere else. A wrong line is still identified by its position.
 
 Section: Functions
 
   twice : (Integer -> Integer), Integer -> Integer
   twice (g) (x) = g (g x)
 
- a. A lambda capturing a LIST, parameter unused. `roc-closure-captures-list`
- reduced to four lines. The capture arrives typed -- it is collected from
- its use -- and the parameter is the cell in question.
+  d-recv : Integer, (Integer -> Integer) -> Integer
+  d-recv (base) (step) = twice step base
+
+  give-list : (Integer -> List Integer), Integer -> List Integer
+  give-list (mk) (i) = mk i
+
+ a. A lambda capturing a LIST, bound by `let`, parameter unused.
+ `roc-closure-captures-list` reduced. The CAPTURE arrives typed -- it is
+ collected from its use by a different pass entirely
+ (`IR/LambdaLifting.codex:288-296`) -- and the lambda's own parameter is
+ the cell in question.
 
   case-a : Integer -> Integer
   case-a (n) =
@@ -50,18 +63,22 @@ Section: Functions
    in let f = \i -> xs
    in list-at (f 0) 0 + list-at (f 0) 1
 
- b. Integer body, parameter unused and nothing in the body mentions it.
- The only constraint on `i` lives at the call site.
+ b. CONTROL FOR a. The same capturing lambda, the same body, the same
+ answer; the one respect that differs is that it sits at a DECLARED
+ parameter, so an expected `FunTy` reaches `lower-lambda` instead of the
+ `ErrorTy` a `let` hands down. This is the only case that isolates the
+ capture path from the parameter path.
 
   case-b : Integer -> Integer
   case-b (n) =
-   let f = \i -> 5
-   in f n
+   let xs = [n, n + 1]
+   in let got = give-list (\i -> xs) 0
+   in list-at got 0 + list-at got 1
 
- c. The parameter is USED, and this is H2's sharp case: the body reads
- `(name "i" int-default)` while the signature one node up says `error`,
- in the same definition. It is also the case falsifier 1 names -- if bare
- metal refuses THIS, the whole hypothesis is a porting mistake.
+ c. The parameter is USED. The body reads `(name "i" int-default)` while
+ the signature one node up says `error`, in the same definition. The
+ first version also carried a variant with an unused parameter and an
+ integer body; it was the same call site twice and it is gone.
 
   case-c : Integer -> Integer
   case-c (n) =
@@ -69,32 +86,53 @@ Section: Functions
    in f n
 
  d. `roc-fold-sum`'s shape reduced: a lambda LITERAL in function position,
- applied on the spot, taking another lambda literal as an argument and
- handing it to a declared function. Two parameters of one lifted
- definition, arriving differently -- `base` from the argument `n`, `step`
- from a lambda literal that has no type of its own yet. This is the case
- that showed the recovery needs two sources rather than one.
+ applied on the spot, taking another lambda literal as an argument. Two
+ parameters of one lifted definition arriving differently -- `base` from
+ the argument `n`, `step` from a literal that has no type of its own yet.
 
   case-d : Integer -> Integer
   case-d (n) = (\base step -> twice step base) n (\y -> y + 1)
 
- e. THE CONTROL. The same lambda literal, in the same argument position,
- differing from d only in that `twice` is DECLARED and its parameter says
- `Integer -> Integer`. `roc-returned-closure` is clean for this reason and
- it is the only evidence today that the trigger is the missing
- declaration rather than lambda literals in general. A matrix that cannot
- come back clean anywhere proves nothing about what it measures.
+ e. CONTROL FOR d. The same literal `\y -> y + 1`, in the same second
+ argument position, reaching the same `twice` through the same body, for
+ the same answer. The one respect that differs is that the receiver is a
+ DECLARED definition rather than a lambda literal. If d is dirty and e is
+ clean, the difference is attributable to that and to nothing else.
 
   case-e : Integer -> Integer
-  case-e (n) = twice (\y -> y * 2) n
+  case-e (n) = d-recv n (\y -> y + 1)
+
+ f. TEXT, so that a repair which defaults an `error` parameter to
+ `Integer` fails visibly instead of passing. Every other case's true
+ answer is `Integer`, which is also the language's default, and a matrix
+ that cannot tell a recovered type from a lucky guess is not measuring the
+ repair it exists to bound.
+
+  case-f : Text -> Text
+  case-f (t) =
+   let g = \s -> s & "!"
+   in g t
+
+ g. Bound and NEVER APPLIED, so nothing anywhere constrains `k`. This is
+ the only case where `error` would be an honest answer rather than a
+ discarded one, and it is what falsifier 2 is about: if the compiler files
+ a diagnostic for any case here, this is the case it should be about, and
+ a diagnostic on the others would mean we are throwing one away.
+
+  case-g : Integer -> Integer
+  case-g (n) =
+   let h = \k -> 1
+   in n
 
 Section: Entry
 
   opening : [Console] Nothing
   opening = act
    print-line-uni (show (case-a 1))
-   print-line-uni (show (case-b 7))
+   print-line-uni (show (case-b 1))
    print-line-uni (show (case-c 9))
    print-line-uni (show (case-d 5))
    print-line-uni (show (case-e 5))
+   print-line-uni (case-f "x")
+   print-line-uni (show (case-g 4))
   end
