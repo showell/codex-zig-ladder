@@ -34,10 +34,10 @@ the operating procedure.
 
 | | |
 |---|---|
-| Seed | `6CF4A8E0D5E6D6F2` (2,876,035 bytes) |
-| Update | 50's **interim** push (`0c4327d5`, pin verbatim -- the `pin` is the Codex branch this bank was measured on; see "The checkout"). No release note names this seed, so the bank is `seed-6cf4a8e0`, not `u50` |
+| Seed | `C45E5825` (2,922,230 bytes) |
+| Update | 50 (`8cc80685`, the release; the `pin` is the Codex branch this bank was measured on -- see "The checkout") |
 | Rungs | **14 of 14 green** |
-| Banked | `truth/seed-6cf4a8e0/`; the newest three `uNN` banks are kept (`bank_truth.py --keep`), older ones live in git history. A `seed-` bank is outside that rotation and ages out only by hand |
+| Banked | `truth/u50/`; the newest three `uNN` banks are kept (`bank_truth.py --keep`), older ones live in git history. A `seed-` bank is outside that rotation and ages out only by hand |
 
 This table is the point of the whole arrangement, so it is the first thing on
 the page and it is allowed to be unflattering. A ladder that cannot say which
@@ -374,7 +374,10 @@ compiles the IR gets its own sidecar (`truth_prov.py stamp-ir`), keyed on
 the seed, the subject's bytes and the flags.
 
 One gap worth knowing: the harness-content hash banking checks watches
-`gen_<unit>_harness.py` and `bundle_<unit>.ps1`, so editing the generator
+`gen_<unit>_harness.py` and `bundle_<unit>.ps1`, plus the three shared files
+in `truth_prov.SHARED` (`emit_harness.py`, `oracle_lib.sh`, `split_truth.py`)
+-- which is why the plug arms live in `ast/plug_arm_lib.sh` and not in
+`oracle_lib.sh`: moving them back would rekey every truth on disk, so editing the generator
 that owns a composite unit's SECOND program
 (`gen_ir_to_x86_on_cce_harness.py`,
 `gen_passes_to_x86_on_arith_harness.py`) changes what is measured without
@@ -775,9 +778,13 @@ prior build step, and `cycle.sh` is the only producer of these artifacts
 here (it alone writes the fingerprint `plug_provenance` demands; the
 author's own plug build is Windows-only and never runs on this host). A
 fresh LADDER clone is a different matter: the banks are tracked, but the
-working `ast/*.truth` and `ast/*.ir` files the arms consume are not, so its
-first act is `ast/rebank_all.sh` -- `allcycles.sh` alone has nothing to
-diff against.
+working `ast/*.truth` and `ast/*.ir` files the arms consume are not. It does
+NOT need a rebank for them. `ast/allcycles.sh` restores what it can and
+rebuilds the rest: `restore_truths.py` copies each banked truth into place
+rather than re-measuring it, and `ast/ensure_ir.sh` regenerates any missing
+or unstamped `.ir`. Before those existed the only way to get those files was
+a full rebank -- about 27 minutes spent producing INPUTS -- and this
+paragraph used to say so.
 
 **From the host:** `qemu-system-x86_64` (8.2.2), `python3` (3.12.3),
 PowerShell 7 installed at `~/.local/pwsh/pwsh` (the bundling scripts invoke
@@ -878,6 +885,35 @@ live in `ast/`, the transports and VM helpers at the top level. Everything wants
     ast/allcycles.sh          # rebuild both plugs, sweep all fourteen
     ast/rebank_all.sh         # re-bank every truth arm, then sweep
 
+    verify_emitter.sh         # the standing answer to an EMITTER change: six
+                              # legs -- natives, the type-variable case matrix,
+                              # the corpus, the codexzig fixed point, the Roc
+                              # ports, and the sweep. The sweep is leg 5 of 6.
+                              # It exists because the chain was assembled by
+                              # hand twice in one day and the second assembly
+                              # measured a tree two commits behind the one
+                              # under test. It stamps both HEADs before it
+                              # starts so that cannot happen quietly again.
+    zigc_verify.sh            # re-runs the zigc transcript; caches the build
+    run_seed_probe.sh         # compile a probe on BARE METAL, the seed, in
+                              # QEMU. Read its header before asking any
+                              # question about what "the compiler" does:
+                              # native/codexir is the compiler as OUR PLUG
+                              # renders it, and answering a compiler question
+                              # with it cost a wrong report upstream, twice.
+    check_harness_gates.py    # the two hosted harnesses copy two lists from
+                              # the driver (emit roots, and the diagnostic
+                              # bags gating emission). This compares them to
+                              # each other AND to opening.codex, because
+                              # agreeing with each other is necessary and not
+                              # sufficient -- the emit-roots list once drifted
+                              # in both at once, and being wrong together
+                              # looks exactly like being right.
+    roc_ports_run.py          # eleven programs ported from Roc's evaluator
+                              # suite, against Roc's own expected values --
+                              # a second oracle written by people who have
+                              # never seen this emitter
+
 A passing rung prints one line:
 
     ORACLE PASS: zig lex output byte-identical to bare-metal truth
@@ -939,12 +975,14 @@ update them here at every rebank. Measured clean 2026-08-25 (seed
   sweep. The ten cheap units record in 14 s to 2.5 minutes each;
   `ir_to_x86` and `passes_to_x86` are 5m12s and 5m51s on the truth side
   and still dominate, though by less than they used to.
-- **The sweep** runs all fourteen rungs in 12 minutes (731 s, of which 61 s
+- **The sweep** runs all fourteen rungs in 12 minutes (936 s, of which 61 s
   is the plug rebuild before the first rung): lex 4s, parse 13s, desugar
   15s, scope 19s, check 43s, lower 51s, ir_to_codex 110s, roundtrip 55s,
   lir_to_x86 4s, ir_to_wire 103s, ir_to_x86 2m00s, passes_to_x86 2m13s.
-  `sweep_canary.sh` (lex+parse+desugar) is about 90 seconds; adding scope
-  would push it past 2.5 minutes for little coverage.
+  `sweep_canary.sh` (lex+parse+desugar) is a REMOTE driver -- it sources
+  `sweep_lib.sh`, calls `run_unit_remote`, and assumes `sweep_prep.sh` has
+  run -- and its own header budgets 2-3 minutes including the straw. Adding
+  scope would push it further for little coverage.
 - **The sweep used to be the expensive half and is not any more.** It was
   1716 s on 2026-08-23 and 657 s on 2026-08-24 with the SEED UNCHANGED, so
   the 2.6x is the ladder's own work, not the Update's -- the emitter grew
@@ -955,8 +993,8 @@ update them here at every rebank. Measured clean 2026-08-25 (seed
   well, which is why the 657 s and the 731 s are not the same number.
 - **The census re-pin** (`native_build.sh`, then `corpus_run.py --changed
   --bank`): the natives are 11 minutes, and the census itself is 10
-  minutes for the whole corpus -- transpile of 593 programs plus
-  build-and-run of the 325 clean ones, no QEMU anywhere. Every Update
+  minutes for the whole corpus -- transpile of 596 programs plus
+  build-and-run of the 326 clean ones, no QEMU anywhere. Every Update
   re-pin reruns all of it, because the natives change and so every
   emitted zig moves.
 
@@ -1004,8 +1042,8 @@ paths that a second experiment would have overwritten.
 A fresh worktree carries none of those, which is the whole point: a run that
 needs natives must build them or be handed them deliberately, and cannot
 inherit them by accident. Worktrees share the object store, so the cost is
-the working tree rather than the history -- about 800 MB a sandbox against
-60 GB free on the droplet.
+the working tree rather than the history -- about 400-700 MB a sandbox against
+119 GB free on the droplet.
 
 Pointing `CODEX_ROOT` inside the sandbox is deliberate too: it makes "someone
 pulled the shared checkout mid-run" stop being a thing that can happen.
@@ -1377,8 +1415,10 @@ code, F4 boots the emitted binary.
 - `codexzig_corpus.py` -- the breadth and correctness runner for `codexzig`:
   every corpus program byte-compared against the pipeline, and the
   well-behaved subset (clean + match) built, run, and checked against the
-  depot's `.expected`. The `.expected` half is the only check in this tree
-  whose oracle was written by someone with no knowledge of the plug.
+  depot's `.expected`. The `.expected` half is one of two checks in this tree
+  whose oracle was written by someone with no knowledge of the plug; the
+  other is `roc_ports_run.py`, whose expected values are the Roc project's
+  own, written by people who have never heard of Codex.
 - `codexzig_scale.py` -- the deck. Every unit subject through `codexzig`
   with its deck peak and headroom (JUSTIFICATIONS "The deck costs ~145 MB per
   MB of source"), then a squeeze that lowers the reservation and confirms
@@ -1435,7 +1475,7 @@ Two things it is not:
 which own only their unit's second program; the harness itself comes from
 the `ir_to_x86` and `passes_to_x86` generators. `ast/emit_harness.py` holds the compile pipeline once --
 `frontend_source` (source text to a lowered IR) and `pipeline_source`
-(that plus the x86 emission) -- so the four generators that run it
+(that plus the x86 emission) -- so the five generators that run it
 (`gen_ir_to_x86` and `gen_passes_to_x86`, whose units carry the `_on_` rungs;
 `gen_zigc`; `gen_codexir`) cannot drift from each other. Four more
 generators import only its shared tables (`DECK_PROLOGUE`,
@@ -1450,10 +1490,14 @@ scripts are the record.
 
 ## Open questions
 
-- The `zigc` transcript above elides its middle step ("...then compile that
-  subject to IR with the seed and push it through the plug"). `native_build.sh`
-  does that for `codexir` and `zigemit`; `zigc` has no such script, so the
-  transcript is not reproducible as written.
+- ~~The `zigc` transcript above has no runner behind it~~ Resolved by
+  `zigc_verify.sh`, which does the elided middle step and caches the
+  expensive build by fingerprint (`rm zigc` forces a rebuild). Its header
+  states the reason it exists: "a number nothing re-checks is a number that
+  was true once." **What is still wrong: the transcript names
+  `ast/repro-mid.codex`, which does not exist and is gitignored
+  (`ast/.gitignore`). `zigc_verify.sh` defaults to `ast/repro.codex`, which
+  is tracked.**
 - ~~`passes_to_x86_on_arith`'s paragraph points at finding 11~~ Resolved. Finding 11 was
   withdrawn as filed: the cause was ours, a harness that skipped the driver's
   RESOLVE phase. What survived it -- `emit-record` laying a record out by a
