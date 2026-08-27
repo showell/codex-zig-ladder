@@ -174,6 +174,38 @@ def transpile(src, out_dir):
     return r
 
 
+def population_provenance(tests):
+    """Which git ref, if any, describes the set of programs about to be run.
+
+    THE MANIFEST STAMPS THE CHECKOUT, NOT THE POPULATION, and those are not the
+    same fact. On 2026-08-27 a sandbox was measured with 29 port files copied
+    in untracked: 624 programs, a headline result quoted all evening, and no
+    ref anywhere describes that tree. The MANIFEST said `codex-at-creation` and
+    was perfectly correct and perfectly useless for reproducing it.
+
+    So every run now says whether its population is a ref or a one-off. Cheap,
+    printed next to the count it qualifies, and loud when it matters.
+    """
+    try:
+        head = subprocess.run(['git', '-C', str(tests), 'rev-parse', '--short', 'HEAD'],
+                              capture_output=True, text=True, timeout=15).stdout.strip()
+        dirty = subprocess.run(['git', '-C', str(tests), 'status', '--porcelain', '.'],
+                               capture_output=True, text=True, timeout=30).stdout.splitlines()
+    except Exception as e:                       # not a checkout, or no git
+        return f'  population: NOT UNDER GIT ({e.__class__.__name__}) -- not reproducible'
+    if not head:
+        return '  population: NOT UNDER GIT -- not reproducible'
+    untracked = [l for l in dirty if l.startswith('??')]
+    modified = [l for l in dirty if not l.startswith('??')]
+    if not dirty:
+        return f'  population: {head}, clean -- reproducible from that ref'
+    bits = []
+    if untracked: bits.append(f'{len(untracked)} untracked')
+    if modified: bits.append(f'{len(modified)} modified')
+    return (f'  population: {head} PLUS {", ".join(bits)} -- NO REF DESCRIBES THIS SET,\n'
+            f'  so any number from this run is not reproducible from a commit')
+
+
 def stage_transpile(names, out_dir):
     results, hist = [], collections.Counter()
     for i, src in enumerate(names, 1):
@@ -542,6 +574,7 @@ def main():
             raise SystemExit(f'--only: no such program(s): {", ".join(missing)}')
         names = [have[w] for w in want]
     print(f'corpus: {len(names)} programs from {TESTS}')
+    print(population_provenance(TESTS))
 
     # A limited run is a smoke test; the json files are the full-corpus census
     # and a slice must not overwrite them (one did, 2026-08-19).
