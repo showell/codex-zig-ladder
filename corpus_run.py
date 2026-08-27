@@ -369,12 +369,28 @@ def load_bank():
     return json.loads(CENSUS.read_text()) if CENSUS.is_file() else None
 
 
+def current_tools():
+    """The shas of the natives this invocation is actually running."""
+    return {t.name: hashlib.sha256(t.read_bytes()).hexdigest()[:16]
+            for t in (CODEXIR, ZIGEMIT)}
+
+
+def bank_describes_this_tree(bank):
+    """Whether the bank was taken with the natives now in `native/`.
+
+    A diff against a bank taken with DIFFERENT tools is a diff between two
+    measurements, not a report about a change -- and it reads identically to
+    the real thing unless something says so. Saying so is this function.
+    """
+    want = (bank.get('meta') or {}).get('tools') or {}
+    return want == current_tools(), want
+
+
 def write_bank(programs):
     meta = {
         'date': datetime.date.today().isoformat(),
         'zig': zig_version(),
-        'tools': {t.name: hashlib.sha256(t.read_bytes()).hexdigest()[:16]
-                  for t in (CODEXIR, ZIGEMIT)},
+        'tools': current_tools(),
     }
     CENSUS.write_text(json.dumps({'meta': meta, 'programs': programs},
                                  indent=1, sort_keys=True))
@@ -413,6 +429,21 @@ def assemble_census(results, carried, verdicts):
 
 
 def print_bank_diff(bank, programs):
+    # WHICH TREE IS THIS BANK ABOUT. A verdict diff is only a statement about
+    # a change when both sides came from the same natives; otherwise it is two
+    # unrelated measurements subtracted from each other, which is exactly how
+    # 94 phantom regressions got reported on 2026-08-27. Loud, and before the
+    # rows, because the rows are what gets read.
+    same, want = bank_describes_this_tree(bank)
+    if not same:
+        now = current_tools()
+        print(f'\n*** THE BANK IS NOT ABOUT THIS TREE ***')
+        for t in sorted(set(want) | set(now)):
+            mark = '  ' if want.get(t) == now.get(t) else '<-'
+            print(f'      {t:9s} bank {want.get(t, "(absent)")}  '
+                  f'now {now.get(t, "(absent)")} {mark}')
+        print('    Every row below is a difference between two measurements,')
+        print('    not a change this run caused. Re-bank, or read it as such.')
     old = bank['programs']
     flips = []
     for n, e in programs.items():
