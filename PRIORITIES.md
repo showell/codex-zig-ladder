@@ -237,10 +237,32 @@ caught the two stale items above.
    candidate fixes costed in row 1.90 and neither taken. Wants its own
    sitting plus a check that re-derives the surface AND counts
    parameters.
-3. **The H2 recovery rule** (`3f0f42e5`) -- written, never built, and it
-   carries a KNOWN GAP in its own prose: match binders are not guarded
-   against rebinding, which yields a wrong recovered type rather than a
-   refusal. Close the gap, then a cold read, then a chain of its own.
+3. **H2 -- FALSIFY IT BEFORE BUILDING ANYTHING.** This is now one guest
+   and it should go first the moment the box is free.
+   `findings/probe-h2-lambda-types.codex` is the matrix (five cases, four
+   refusing shapes plus a POSITIVE CONTROL), `run_seed_probe.sh` reads
+   both the diagnostics and the IR wire since `9240b79`, and the register
+   entry carries the arm-by-arm read. Two legs are settled at the
+   keyboard: `error` on the wire can only be `ErrorTy` (all 26 CodexType
+   variants have an `ir-emit-type` arm, so the `otherwise` floor that
+   made the atom ambiguous is dead), and the matrix discriminates on our
+   arm -- five error cells across cases a to d, case e's control clean.
+
+   **The recovery rule `3f0f42e5` is a WORKAROUND until this run happens,
+   and that is the reason to run first and build second.** If the seed's
+   own wire carries `error`, the defect is the checker's and the fix is a
+   PR upstream; a plug-side recovery would then be a workaround with a
+   live finding under it, which is the shape this tree has already paid
+   for twice (`deck-record` outlived the finding Update 43 closed and
+   silently disabled the seed's deck discipline for weeks). If the wire
+   is CLEAN, `native/codexir` put the `error` there and the bug is ours
+   and worse, and the recovery rule is fixing a symptom of our own
+   miscompile. **Neither outcome makes the recovery rule the first move.**
+
+   If it is built anyway, it still carries a KNOWN GAP in its own prose:
+   match binders are not guarded against rebinding, which yields a wrong
+   recovered type rather than a refusal. Close the gap, then a cold read,
+   then a chain of its own.
 4. The rest of the reading pass (item 1e): 24 corpus refusals left, of
    which 11 are item 2 above and 5 are a concurrency cluster nobody has
    read.
