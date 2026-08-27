@@ -90,6 +90,14 @@ def main():
         raise SystemExit(f'codexir failed: rc {r.returncode}, '
                          f'{len(r.stderr)} bytes of wire')
     wire = r.stderr.decode('utf-8', 'replace')
+    # A refused compile exits 0 and writes its diagnostics where the wire
+    # would go. Reading that as a wire finds no lifted lambdas and reports
+    # `0 of 0 parameter cells say error`, which is a clean bill of health for
+    # a program that never compiled.
+    halted = next((l for l in wire.splitlines()
+                   if l.startswith('CODEGEN-HALTED')), None)
+    if halted:
+        raise SystemExit(f'the compiler REFUSED this probe, there is no wire to read:\n  {halted}')
     if a.save:
         pathlib.Path(a.save).write_text(wire)
     print(f'{len(wire)} bytes of wire')

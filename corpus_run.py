@@ -140,6 +140,20 @@ def transpile(src, out_dir):
         r['stage'] = 'codexir'
         r['detail'] = f'rc={ir.returncode} signal={-ir.returncode if ir.returncode < 0 else 0}'
         return r
+    # THE DRIVER'S ERROR GATE. A refused compile exits 0 and writes
+    # `CODEGEN-HALTED: ... no IR emitted` where the IR would go, so the two
+    # checks above pass it through and zigemit is handed a diagnostic to parse
+    # as a wire. It fails, and the program is recorded against the EMITTER.
+    # On 2026-08-27 all 13 programs in the `zigemit` bucket were this: not one
+    # was an emitter failure, and several are deliberate negative tests the
+    # census has no way to expect. codexzig_corpus.py has checked for this
+    # line since it was written; this runner never did.
+    halted = next((l for l in ir.stderr.decode('utf-8', 'replace').splitlines()
+                   if l.startswith('CODEGEN-HALTED')), None)
+    if halted:
+        r['stage'] = 'codex-refused'
+        r['detail'] = halted[:160]
+        return r
     (out_dir / f'{src.stem}.ir').write_bytes(ir.stderr)
 
     zg = subprocess.run([str(ZIGEMIT)], input=ir.stderr,
