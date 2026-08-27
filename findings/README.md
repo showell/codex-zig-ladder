@@ -1486,6 +1486,80 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
+## 58. A list literal's element type is never recorded, so an empty list whose element type the checker resolved reaches the plug as `(list error)`
+
+**Found 2026-08-27 at the keyboard, no guest**, diagnosing the last of the
+eleven Roc ports. Blocks `roc-fold-empty` and nothing else in the corpus so
+far. **Same family as COMPILER-30 / PR 93 -- a type the checker solved that
+the IR does not carry -- and it is the THIRD instance of the identical
+shape.**
+
+    __lam_0  xs   (list error)          the wire
+    (list-expr (elems) error)           the literal itself
+
+The program is `(\xs base step -> fold-loop xs base step 0) [] 42 (\acc x ->
+acc + x)`, and `fold-loop : List Integer, ...` declares the element type one
+line down. `fold-loop`'s own parameter comes out `(list int-default)`, so the
+checker unified it; the literal keeps `error`.
+
+**Both halves of the mechanism, read at the pin.**
+
+- `infer-list` (`Types/TypeCheckerInference.codex`) answers an empty literal
+  with a FRESH TYPE VARIABLE and **never calls `record-expr-type`**, so the
+  resolved answer is never filed under the literal's span.
+- `lower-empty-list` (`IR/Lowering.codex`) resolves the CONTEXT's expectation
+  and falls to `is otherwise -> deck-record (IrList [] ErrorTy sp)` when the
+  context supplies none. The same `ErrorTy` floor as H2.
+
+**Smaller than H2, because the span already exists.** `AListExpr` carries a
+real span (`Desugarer.codex:47`, `is ListExpr (elems) (sp)`), unlike
+`LambdaExpr` which carried none. So this needs no CST change: record the type
+in `infer-list`, and have `lower-empty-list` ask before it falls to `ErrorTy`.
+
+## 57. `subst-type-vars-from-arg` cannot learn a type variable from any USER-DECLARED parametric type, so a branch join keeps a variable both of its branches had resolved
+
+**Found 2026-08-27 at the keyboard, no guest.** Blocks three of the eleven
+Roc ports -- `roc-iter-map`, `roc-iter-keep-if`, `roc-iter-drop-if` -- which
+all refuse with `unresolved type variable T16 of __lam_0/__lam_1`. **Same
+family as COMPILER-30 / PR 93.**
+
+**The measurement, from `roc-iter-map`'s own wire.** `range-to : Integer,
+Integer -> Iter Integer` is fully monomorphic, so this is NOT
+monomorphisation:
+
+    then-branch   (name "DoneA" (ctd "Step" (args int-default)))    CONCRETE
+    else-branch   (apply (name "One" ...) ... (ctd "Step" (args int-default)))  CONCRETE
+    the `if`      (ctd "Step" (args (tvar 16)))                     A VARIABLE
+
+Both branches carry the resolved answer and the join does not.
+
+**The cause, and the machinery that should have prevented it already
+exists.** `lower-if` (`IR/Lowering.codex:44`) calls `branch-recorded-ty` with
+`if-witness-ty` as the witness, which is exactly this case.
+`usable-witness-ty` accepts `(ctd "Step" (args int-default))` -- no error, no
+typevars, and `ty-admits-widening` is False for anything that is not a bare
+`IntegerTy`/`RealTy`. So the substitution IS attempted and learns nothing:
+
+    subst-type-vars-from-arg    IR/LoweringTypes.codex:57-64
+      is TypeVar   / ListTy / FunTy / TypeApply   ->  handled
+      is otherwise -> target                      <-- the floor
+
+`SumTy`, `RecordTy`, `ConstructedTy`, `LinkedListTy`, `VectorTy`, `UnitTy`
+and `LinearTy` all carry type children and all land on that floor. **Every
+ADT in the language is invisible to this walk.** The asymmetry is the tell:
+`subst-type-var-in-target`, the APPLYING direction, uses
+`codex-type-map-children` and handles all of them -- only the LEARNING
+direction is blind.
+
+**This is the compiler-side twin of finding 47**, which is the same blindness
+in the zig plug's own recovery walk ("knows `List a` and `a -> b` and nothing
+the subject declares").
+
+**Reproducer: `findings/probe-ctd-subst.codex`**, case A. Its case B is NOT a
+control and the probe says so -- it fails a layer earlier, its branches
+themselves carrying the variable, which is a fourth thing to look at and not
+evidence for this one.
+
 ## 56. WITHDRAWN ENTIRELY -- there is no soundness hole and no miscompile; `native/codexir` never reads the diagnostic bag, which is finding 49
 
 **Settled 2026-08-26 23:5x. Nothing was wrong with any compiler.** The
