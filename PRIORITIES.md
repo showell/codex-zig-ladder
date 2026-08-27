@@ -228,7 +228,34 @@ verdict.
 The rule, now in `corpus/README.md`: **a bank is taken deliberately; a stage
 output is regenerated. Never track a file that every run rewrites.**
 
-## THE SEND, AND THE ONE THING OWED BEFORE IT
+## SENT: PR 93, AND THE OUTBOUND QUEUE IS EMPTY AGAIN
+
+**https://github.com/damiant3/Cobblestone/pull/93**, opened 2026-08-27
+against `master` at `012a9d2e`. Three commits, 7 files, +48/-16:
+`22e9b2cc` (the four-line side channel), `bba94d1b` (the CST span that makes
+it work), `da27ced6` (the `COMPILER-30` row). Ladder tag `h2-lambda-span`.
+
+**Damian gave high-level buy-in BEFORE the PR**, off the essay
+`notes/zig-as-the-demanding-customer.md` that Steve sent him: *"it isn't a
+critique as much as a feature request in my eyes, just a thing we never needed
+till now. You found the gap, and we can fill it. It's just some work."* That
+is the ruling the draft had been held for, and it is why the PR asks for a
+review rather than for a ruling.
+
+**Two things the self-review caught, worth keeping as a rule.** The draft
+cited `lambda-expected-ty` as if it were upstream's -- it is OUR function, from
+our own patch, and does not exist at the pin. **Re-read every reference in an
+outbound artifact against the tree the READER has, not the tree you have been
+working in.** And their own prose at `IR/Lowering.codex:729-740` already
+argues our case about a sibling defect they fixed ("every consumer of the IR
+inherited a variable the compiler had already resolved"), which is now the
+strongest paragraph in the PR. **Read their source for the argument, not just
+for the facts.**
+
+**What is still owed on it:** nothing, unless they ask. Their reply comes to
+the PR, not email -- `gh pr view 93 --repo damiant3/Cobblestone --comments`.
+
+## SUPERSEDED: THE SEND, AND THE ONE THING OWED BEFORE IT
 
 `outbound/ISSUE-DRAFT-type-info-dropped.md` is rewritten (`b56137e`,
 `f7675ef`): the plug-side "what we tried" section is gone entirely, so is the

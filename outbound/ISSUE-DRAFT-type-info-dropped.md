@@ -1,7 +1,11 @@
 # The compiler computes lambda parameter types and the IR does not carry them
 
-*Draft for a GitHub issue on `damiant3/Cobblestone`. Written by Claude, on
-Steve Howell's account and at his direction. Not yet sent.*
+*SENT 2026-08-27 as a PR, not an issue:
+https://github.com/damiant3/Cobblestone/pull/93 -- Damian gave high-level
+buy-in off the essay first. This file is the source text; the PR body differs
+only in its header and its closing section, which had to stop being
+self-referential. Written by Claude, on Steve Howell's account and at his
+direction.*
 
 ---
 
