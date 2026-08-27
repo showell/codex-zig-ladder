@@ -192,6 +192,42 @@ GREEN through a zig file that does not build. It is RED today, naming case g,
 which is the correct reading. It will go green when monomorphisation lands,
 not before, and it requires a compiler carrying the lambda-span fix.
 
+## THE CORPUS ARTIFACTS ARE FIXED, AND THE BANK SURVIVED
+
+**Objective: INTEGRITY.** Entry point: KEYBOARD. Done 2026-08-27.
+
+The full-corpus `--run` reported **94 programs as `match -> refused`** against
+the lambda-span fix. None of it was real. Two defects, one cause, both fixed:
+
+- **The resume compared against a file anything can overwrite.**
+  `load_run_carry` took its shas from `transpile.json`, which a bare
+  `--transpile` also writes -- so `--transpile` then `--run`, the sequence
+  this tool's own docstring recommends, made prev == now for every program and
+  carried the whole journal unconditionally. Every verdict line now carries
+  its own key (`zig_sha`, `expected_sha`, zig version) and the resume checks
+  the line. A keyless line does not carry. (`7567bf0`)
+- **Four artifacts were tracked AND rewritten by every run**, so the
+  discipline became revert-them-afterwards -- `overnight_verify.sh` ended with
+  a `git checkout --` on the trio, throwing away the answer the run had just
+  computed. The tracked copies froze while `census.json` advanced through
+  `--bank`. `census.json` is the only tracked corpus artifact now; the rest
+  are gitignored stage outputs and the revert step is deleted.
+- **A bank diff now names the tree it is about** (`2b60551`), comparing the
+  bank's `meta.tools` to the natives actually in `native/`. The resume had
+  printed "(emitted zig byte-identical, toolchain unmoved)" in the very run
+  where it had verified neither, and that parenthetical is what made the wrong
+  answer believable. **Prose in output asserting a property the code did not
+  check is the deepest version of this bug.**
+
+**The bank itself was HONEST and is now proven so.** Rebuilt from scratch at
+the pin with no journal, all 318 clean programs built and run: byte-identical
+to the committed `census.json`, zero rows moved, zero shas differ. `clean 318,
+match 268, refused 24` is correct and reproduced without a single carried
+verdict.
+
+The rule, now in `corpus/README.md`: **a bank is taken deliberately; a stage
+output is regenerated. Never track a file that every run rewrites.**
+
 ## THE SEND, AND THE ONE THING OWED BEFORE IT
 
 `outbound/ISSUE-DRAFT-type-info-dropped.md` is rewritten (`b56137e`,
