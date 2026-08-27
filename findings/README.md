@@ -1544,7 +1544,43 @@ into.
 scoping pass that produced the nine-program estimate grouped by message, and
 that is why one of the three predicted programs did not move.
 
-## 60. OURS. An unused `let` whose value is a LOCAL emits `_ = x;`, which zig refuses as a pointless discard
+## 60. OURS. An unused `let` emits a discard that zig refuses when the discarded name is also read elsewhere
+
+**THE RULE, MEASURED against zig 0.16 rather than inferred from one error
+message -- and the inference was wrong twice before this table existed:**
+
+    const x = 7; _ = x;             compiles
+    const x = 7; _ = x; use(x);     error: pointless discard of local constant
+    fn f(n) { _ = n; }              compiles
+    fn f(n) { _ = n; use(n); }      error: pointless discard of function parameter
+    fn f(n) { }                     error: unused function parameter
+
+**The discard is an error exactly when the name is ALSO read elsewhere**, and
+that holds for locals and parameters alike. It is not about being a local, and
+it is not two opposing rules; it is one rule. Both earlier readings of it were
+wrong and both shipped into a build.
+
+**Three attempts, and what each one broke:**
+
+1. **any `IrName`** -- dropped `_ = cx_deck_enter();`. An `IrName` with arity 0
+   is emitted as a CALL, so an effect vanished. `deck-bracket-contract`
+   `match -> DIFFER`, a wrong answer.
+2. **a local, unconditionally** -- dropped `_ = n;` where `n` was read nowhere
+   else, so the parameter became unused. `const-narrow-proven`
+   `match -> refused`.
+3. **a local that is also read elsewhere** (`zig-name-is-local ctx n &
+   zig-occurs body n`) -- the rule above.
+
+**The cost, stated plainly: this finding unblocks ONE port and took three
+builds.** What earned its keep was the checking, not the fixing -- the blast
+radius that forced running 56 programs, and a five-line zig experiment that
+would have settled the rule before the first attempt had it been run first.
+The same lesson the canary taught this morning, already written down and not
+applied.
+
+---
+
+### The original entry
 
 **THE FIRST FIX WAS WRONG AND PRODUCED A WRONG ANSWER. Recorded first because
 it is the more useful half of this entry.** `af119cc5` tested for `IrName` and
