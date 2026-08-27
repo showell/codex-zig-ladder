@@ -111,64 +111,105 @@ compute entry point refuses on a host without `CODEX_LADDER_VENUE`
 (`bb39139`), which `~/.codex_ladder_env` exports. One compute job at a
 time.
 
-## THE UPDATE 51 CEREMONY IS DONE EXCEPT THE TIER SET
+## RUNNING RIGHT NOW -- natives from the pin
 
-Banked, diffed, tagged and pushed 2026-08-27: `u51-14of14`, seed
-`C3181693`, pin `012a9d2e`, README table and timings refreshed,
-`check_paths.py` clean. **14/14 green in 2541 s**, all fourteen truths
-byte-identical to the bank taken from the killed run (so that bank was
-right and is now known to be), `bank_diff` u50 -> u51 four moved and ten
-identical, and the diagnostics census compared for the first time under
-this seed with CDX6020 at its pinned 43 -- **no re-pin owed**.
+    sandbox   ~/runs/20260827T133749Z-u51-natives
+              ladder 9cad748 (master), codex 012a9d2e (branch u51-rebank)
+    log       <sandbox>/natives.log
+    launched  2026-08-27 13:37, about 13 minutes
 
-**THREE THINGS ARE STILL OWED, and one build serves all three.** Every one
-of them needs `native_build.sh` run from the PIN. The natives now on the
-box are from `h2-lowering-fix` and are the wrong tree for any of it --
-that is the "choose the build tree deliberately" rule, and it applies
-here.
+**Every sandbox older than this was deleted 2026-08-27 13:36** (Steve's
+call), 18 of them and 9.6 GB, `~/runs` back to empty and the box from 38
+GB used to 28. Checked before deleting, because this exact class of loss
+happened this morning: no authored work was stranded -- every tracked
+change in every sandbox was a run artifact (`.ir.prov` stamps and the
+`--keep 3` pruner's own deletions, both already landed here), the u51
+gold was confirmed byte-identical to what `15ebb21` harvested, and
+`h2-lowering-fix` lives in the depot clone rather than only in its
+sandbox. **`sandbox.sh --prune` prunes the LADDER's worktree metadata
+only**; the depot's was pruned by hand afterwards, which is the gap this
+file has been naming for two days.
 
-1. **The tier SET.** README "Processing a new Update" step 5 ends with it
-   and it has not run under u51. The BARE columns are banked
-   (`findings/gold/u51/`, 21 SET GREEN, recovered from a stranded sandbox
-   at `15ebb21`); the set is both arms, and `RED` or `STALE` rows want a
-   human before they mean anything. A closed finding shows up here as a
-   STALE row and nowhere else.
-2. **The census re-pin.** `corpus_run.py --changed --bank` against the
-   pin's natives. Owed every Update, because the natives move and so every
-   emitted zig moves with them; about 10 minutes after the natives.
-3. **`codexzig` has never been built from the u51 pin.** Nothing on this
-   box has: the newest is `~/runs/20260826T235600Z-f49-gate2`'s, an Update
-   50 tree whose emitter matches the pin and whose compiler half is a
-   whole Update behind. `codexzig_build.sh` ends with the FIXED POINT, so
-   this is a real check and not a chore -- and it is the check that caught
-   the `T38` gate failure on its first Update.
+## WHAT THE NATIVES OWE WHEN THEY LAND, in order
 
-Housekeeping, lower stakes: 18 sandboxes and 9.6 GB in `~/runs`; gold has
-no rotation while truths keep three (`u48` gold is still there and `u48`
-truths are pruned); `u51-emitter` differs from the pin in five DOC files
-and nothing else, so it is a historical marker now.
+The u51 ceremony is otherwise DONE: banked, diffed, tagged and pushed
+(`u51-14of14`, seed `C3181693`, pin `012a9d2e`), README table and timings
+refreshed, `check_paths.py` clean. 14/14 green in 2541 s, all fourteen
+truths byte-identical to the bank taken from the killed run, `bank_diff`
+u50 -> u51 four moved and ten identical, census compared for the first
+time under this seed with CDX6020 at its pinned 43 and **no re-pin owed**.
+These three want the pin's natives and nothing else:
 
-## H2's FIX IS WRITTEN, BUILT, AND DID NOT TAKE
+1. **The tier SET** -- `./tiers_run.py`, both arms. README "Processing a
+   new Update" step 5 ends with it and it has never run under u51. The
+   BARE columns are banked (`findings/gold/u51/`, 21 SET GREEN). **A
+   finding that Update 51 closed shows up here as a STALE row and nowhere
+   else**, and `RED` or `STALE` both want a human before they mean
+   anything.
+2. **The census re-pin** -- `corpus_run.py --changed --bank`, about 10
+   minutes. Owed every Update because the natives move and every emitted
+   zig moves with them.
+3. **`codexzig_build.sh`** -- nothing on this box has ever built one from
+   the u51 pin, and the build ENDS with the fixed point, so it is a check
+   and not a chore. It is the check that caught the `T38` gate failure on
+   its first Update.
 
-Branch `h2-lowering-fix` (`22e9b2cc`), sandbox
-`~/runs/20260827T132006Z-h2-lowering`, natives built. The patched
-compiler emits **byte-identical IR** -- 7,935 bytes, not one cell moved --
-and the patch is definitely in the build (`codexir.zig` carries
-`lambda_expected_ty` twice, the binary size differs). The prediction was
-written down first, at `bd924df`, and it is refuted.
+Housekeeping still open: gold has no rotation while truths keep three
+(`u48` gold is present, `u48` truths are pruned); `u51-emitter` differs
+from the pin in five DOC files and nothing else, so it is a historical
+marker.
 
-**Next is one instrumented build, not more source reading.** Have
-`lambda-expected-ty` answer `TextTy` when its arm fires and the lookup
-misses; that separates "never fired" from "fired and found nothing" in a
-single run. Five candidate causes are already read out and eliminated in
-the register, including the best one -- our harness skipping the driver's
-check-lower boundary, which it does not.
+## H2: THE DIAGNOSIS HOLDS, THE FIX IS INERT -- PICK UP HERE
 
-**Nothing goes to Damian until this is understood.** The DIAGNOSIS is
-solid and source-derived (lowering hands `ErrorTy` down as its
-no-expectation sentinel and never asks the checker); what is not
-established is the REPAIR, and sending a diagnosis with a fix that does
-not work attached is worse than sending the diagnosis alone.
+**Read this section cold and it should be enough to resume.** Steve is
+away; nothing goes to Damian until the second half is understood.
+
+**The diagnosis, which is solid and needs no machine to check.** A
+lambda's parameters are peeled off the type its CONTEXT expects
+(`IR/Lowering.codex:722-724`), and `peel-fun-param` answers `ErrorTy` for
+anything that is not an arrow (`Types/CodexTypeHelpers.codex:4-10`). A
+`let` hands its bound value `ErrorTy` as the expectation (`:689`, `:707`),
+so every parameter peels to `ErrorTy` and `lambda-recorded-ty` stores the
+arrow with `ErrorTy` in each position because `ErrorTy` has no type
+variables (`:743-747`). The checker is NOT at fault: `bind-lambda-params`
+binds each parameter to a fresh type variable
+(`Types/TypeCheckerInference.codex:507-516`) and unification solves it.
+`deep-resolve` would hand the answer back; `lower-lambda-params-acc`
+never asks. **In one sentence: the type checker gets it right, and the
+stage that writes the IR never asks it.**
+
+**The fix, which is written, built, and does nothing.** Branch
+`h2-lowering-fix` (`22e9b2cc`, child of the pin, in the depot clone --
+its sandbox is deleted, the branch is not): `infer-lambda` records the
+lambda's type against its span via `record-expr-type`, and `lower-lambda`
+consults it when and only when its expectation is `ErrorTy`. The patched
+compiler emits **byte-identical IR, 7,935 bytes, not one cell moved**,
+and the patch is definitely in the build -- `ast/codexir.zig` carried
+`lambda_expected_ty` twice and the binary size differed. The prediction
+was recorded at `bd924df` BEFORE the build finished, and it is refuted.
+
+**Five causes read out and eliminated** (detail in the register's H2
+entry): no preamble rewrites `ty` before dispatch and `:50` passes the
+lambda's own span; `lower-let` really does hand down `ErrorTy`;
+`record-expr-type` is unguarded except on synthetic spans; `infer-lambda`
+is the only TYPING site for a lambda; and -- the best hypothesis, now
+dead -- our harness does NOT skip the driver's check-lower boundary,
+`ast/CodexIrHarness.codex:68-69` sorts and deep-resolves the table
+exactly as `opening.codex:635` does.
+
+**The next move is an INSTRUMENT, not another reading.** Source reading
+has failed twice. One build with `lambda-expected-ty` answering `TextTy`
+when its arm fires and the lookup misses separates "never fired" from
+"fired and found nothing" in a single run, for the same 13 minutes.
+A candidate worth holding while that runs: `expr-type-key` packs
+file-id, start offset AND SPAN LENGTH
+(`Types/Unifier.codex:131-135`), so a lambda recorded under one span and
+looked up under a span of a different LENGTH would miss silently -- but
+that is a guess, and the instrument is what settles it.
+
+**Do not send the diagnosis with a broken fix attached.** The diagnosis
+alone is worth sending; the two together are worth less than the
+diagnosis.
 
 ## THE PR 92 EMITTER REPAIR LANDED -- `012a9d2e`, and it is OUR CODE VERBATIM
 
