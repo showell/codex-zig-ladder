@@ -217,6 +217,48 @@ That is independent confirmation, and it also means **the STANDING PROPERTY
 item in this file now has an upstream counterpart** -- coordinate with it
 rather than build a second one.
 
+## THE PIN HAS MOVED, THE ErrorTy QUESTION IS RULED, AND PR 93 IS CLOSED (2026-08-27 20:26Z)
+
+**Public at `3942e362`, both mirrors. Seed `4341370C8FE5BAD6...`.** Our six
+changes are in as written, with the seed built from them. **Everything measured
+tonight is against a superseded base**, including the compiler-only sweep that
+was still running when this landed.
+
+**THE ErrorTy COLLISION IS RULED, and the ruling is SPLIT NOW.** Damian,
+20:18Z: *"`ErrorTy` on the wire is reserved for genuine type failures; a
+distinct no-expectation marker takes the sentinel meaning at the sites that
+currently pass `ErrorTy` to mean 'nothing expected'."* Recorded as open work on
+their side.
+
+**This changes the second PR's footing and it is not a small thing.** *"Your
+second PR should expect the wire to change under it -- if the split lands
+before your follow-up, rebase onto the new marker; if your PR arrives first, we
+will carry the rebase in the absorb."* Findings 58 and 59 both turn on
+`lower-let` handing `ErrorTy` down as the no-expectation sentinel; after the
+split they will be reading a different marker. **The fixes are unaffected in
+substance -- his words -- but their code will need rebasing onto whichever
+lands first.**
+
+He also names the consequence we argued for: once split, the fidelity
+instrument gains the invariant that **a clean compile carries zero `ErrorTy`
+anywhere on the wire**, which retires the ambiguity class rather than one
+instance of it.
+
+**Their instrument already grades our matrix**: case f CARRIED
+(`def:__lam_0/param/0`, `text` against `int-default`), the empty-list item
+DROPPED -- *"the honest reading until your follow-up lands"*.
+
+**WHAT IS NOW OWED, in order:**
+
+1. **Re-pin and rebank at `3942e362` / seed `4341370C`.** Every banked truth,
+   the census, and the tier gold are against the old seed. `u52-rebank` is
+   created and points at it.
+2. **Rebase the second PR onto `3942e362`**, dropping our COMPILER-30 commits,
+   which are now upstream. `compiler-only-second-pr` is based on the old pin and
+   carries them; it must be rebuilt, not amended.
+3. **Re-measure**, because tonight's corpus and sweep numbers describe a base
+   nobody ships now.
+
 ## THE BRANCHES, AFTER THE 2026-08-27 INVENTORY (24 -> 17, all pushed)
 
 **Ancestry is NOT an absorption test in this project.** Upstream absorbs by
