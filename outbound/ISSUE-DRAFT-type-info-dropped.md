@@ -182,6 +182,13 @@ one — `no zig type for this codex type` — which is this defect's signature.
 Two are your tests (`ir-check-clean`, `linear-capture-once`); four are Roc
 snippets we ported, including the one that surfaced this in the first place.
 
+**And those six then build and RUN correctly.** Of 577 emitted `.zig` files,
+570 are byte-identical before and after, so behaviour cannot have changed for
+them; the change touches seven. Six of the seven now compile and print output
+matching their hand-verified `.expected`. The seventh keeps one marker for a
+different defect — an empty list's element type, item 2 below. **No program
+regressed.**
+
 ## What we are not claiming
 
 - **We have not tested this the way you would.** We have no depot gate, and a
