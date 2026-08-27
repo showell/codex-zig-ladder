@@ -28,6 +28,15 @@ census cannot pose yet.
 The ports are `roc-*.codex` in the depot's test directory. A glob rather
 than a manifest on purpose: a list beside the files is a second thing to
 keep in step, and this queue has filed that failure twice in one day.
+
+THREE VERDICT CLASSES, not two. A port either agrees with Roc, disagrees
+with Roc, or never reaches the question because the plug declines to emit
+it -- and the third is an emitter gap, not a cross-backend disagreement.
+Only the second is red. Scoring the third as a miss is what made this
+runner report `3 match, 8 not` and exit 1 over the expected result on
+2026-08-27, and Damian's independent grading of the same twelve pairs
+(4 run and match, 8 refuse with the designed clean markers) is the same
+split said correctly.
 """
 import pathlib
 import subprocess
@@ -57,6 +66,21 @@ def run_one(src, out_dir):
     halt = halted(zig)
     if halt:
         return 'halted', halt[:140]
+
+    # A designed plug refusal is NOT a wrong answer, and scoring it as one is
+    # what made leg 4 of the f49-gate2 chain report RED over a result that was
+    # the expected one (2026-08-27). This runner asks exactly one question --
+    # does Codex compute what Roc says it computes -- and a program the plug
+    # declines to emit never reaches that question. It is a gap in the
+    # emitter, counted and named here, and evidence about no value at all.
+    #
+    # The marker list is corpus_run's, not a second copy: the census scan and
+    # this one have to mean the same thing by 'refusal', and the prelude
+    # guards wear the same spelling while not being refusals.
+    marks = [m for m in corpus_run.MARKER.findall(zig.read_text())
+             if m not in corpus_run.PRELUDE_GUARDS]
+    if marks:
+        return 'gap', '; '.join(sorted(set(marks))[:2])
 
     want = corpus_run.expected_text(src.stem)
     if want is None:
@@ -95,14 +119,24 @@ def main():
     WORK.mkdir(exist_ok=True)
     print(f'### {len(ports)} ported Roc snippets through {CODEXZIG.name}, '
           f"against Roc's own expected values")
-    bad = 0
+    # Three buckets, because two cannot say what this runner learned. A port
+    # that AGREES and a port that DISAGREES are both answers about a value;
+    # a port the plug refuses is not an answer, and folding it into 'not'
+    # turns an emitter gap into a cross-backend disagreement in the reader's
+    # head. Only a disagreement, or a failure nobody designed, is red.
+    agree, disagree, no_answer = 0, 0, 0
     for src in ports:
         verdict, detail = run_one(src, WORK)
-        if verdict != 'match':
-            bad += 1
+        if verdict == 'match':
+            agree += 1
+        elif verdict == 'gap':
+            no_answer += 1
+        else:
+            disagree += 1
         print(f'  {verdict:<17} {src.stem:<34} {detail}'.rstrip(), flush=True)
-    print(f'### {len(ports) - bad} match, {bad} not')
-    return 1 if bad else 0
+    print(f'### {agree + disagree} of {len(ports)} answered: {agree} agree with Roc, '
+          f'{disagree} do not; {no_answer} no answer (the plug refuses to emit them)')
+    return 1 if disagree else 0
 
 
 if __name__ == '__main__':
