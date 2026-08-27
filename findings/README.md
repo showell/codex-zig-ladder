@@ -1803,6 +1803,12 @@ corpus after the morning's `cite_resolve` fix took it 41 -> 13. This
 gate, in a different harness, independently finds 13. Two gates, same
 number, which is the agreement that was absent all night.
 
+**SWEEP 14/14 GREEN**, chain `f49-gate2` complete on all six legs
+(natives 5m18, tvar matrix, corpus, codexzig fixed point, Roc ports
+3/11 unchanged, sweep 26m). So the gate changes nothing bare metal can
+see, and the `codexzig` fixed point holds -- which also confirms the
+byte-identical regeneration of the zig harness after the refactor.
+
 **Reported to PR 92** as a corrected headline (`match 183 -> 267`); the
 six emitter findings' reach numbers are counted by error signature
 rather than by the clean set and are unaffected.

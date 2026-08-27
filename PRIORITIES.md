@@ -246,7 +246,7 @@ loop unless it says otherwise.
 
 ---
 
-## 1z. FINDING 49 -- FIXED, MEASURED, REPORTED. 13 programs, 2 contaminated verdicts
+## 1z. FINDING 49 -- CLOSED. Fixed, measured, swept 14/14, reported to PR 92
 
 **Objective: INTEGRITY. Fix written and committed `7a6071d`; chain
 `f49-gate2` running on codex `cab52a35` so the gate is the ONLY delta.
