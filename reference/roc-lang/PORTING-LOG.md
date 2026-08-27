@@ -145,4 +145,23 @@ and must never become a second source of truth about which ports exist.
 
 ## Deferred, not skipped
 
-- **#8 tuple pattern var reassignment in while loop** -- needs `var` + `while` + tuple destructuring in the loop head. The fold ports show the standing adaptation (mutation-and-loop becomes recursion) so this is portable; it is simply bigger than the cluster around it and is worth its own sitting.
+- **#8 tuple pattern var reassignment in while loop** -- needs `var` + `while` + tuple destructuring in the loop head. Portable by the two adaptations below combined (mutation becomes a mutable field, the loop becomes recursion), but it needs both at once and is worth its own sitting.
+
+## What `var` becomes, settled 2026-08-27
+
+Roc's `var $x = ...` then `$x = ...` has **no direct Codex equivalent, and the
+reason is structural rather than a missing keyword.** `mutable` in Codex is a
+property of a TYPE DECLARATION -- `mutable Box = record { n : Integer }` -- and
+mutation happens by storing into a field of such a record
+(`b.n = b.n + 1`, as `codex/test/mutable-smoke.codex` does). There is no
+mutable-local binding form at all: `is-mutable` appears in the compiler only as
+a field of a declaration.
+
+So a `var` case ports by turning the mutable location into a mutable record
+field. That is a change of SHAPE, not a rename -- Roc rebinds a local, the port
+stores into a heap cell -- and it is recorded in each port that uses it rather
+than treated as standing. It is arguably the harder direction for a backend
+with real memory, which is the argument for porting these rather than skipping
+them.
+
+Cases affected: **#8, #12, #15**.
