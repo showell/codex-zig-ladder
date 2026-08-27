@@ -36,6 +36,22 @@ outbound queue is what says where each one stands.
 | 37 | The 512 MB stack is protecting the parser's header scan, and that scan is mutual TAIL recursion | Update 50's interim push -- PR 82 absorbed; the two top-level scans return their item, so each tail-calls ITSELF. |
 | 40 | The zig plug calls a curried definition flat, so an under-applied chain it cannot inline will not compile | Update 50's interim push -- PR 83 absorbed verbatim; an over-applied definition applies the rest through the returned closure. |
 
+## Closed by absorption -- one line each, because the text is in git
+
+These reached an Update and their full entries were deleted from the live
+register rather than copied here. The number is preserved so nobody reuses it;
+the text is recoverable from git by the commit that removed it.
+
+- **42.** A self-tail loop reads a top-level definition where the source reads
+  its own parameter. OURS (PR 81's transformation), sent as PR 85, **absorbed
+  upstream in Update 50's interim push, main 19131.**
+- **44.** The AST does not carry a record's implicit type parameters. THEIRS,
+  sent as PR 90 (COMPILER-20). **Update 51 makes the AST carry it.**
+- **H2.** A lambda whose type no declaration fixes reaches the plug with
+  `ErrorTy` for its parameters. THEIRS, root-caused to the CST lambda having
+  no span, sent as PR 93. **Absorbed 2026-08-27 as main CL 20184 with a new
+  seed in CL 20189**, recorded upstream as COMPILER-30.
+
 ## 1. `net-recv-raw` truncates odd-length frames
 
 **CLOSED in Update 43.** The count is rounded up before it reaches RBCR.
