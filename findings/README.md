@@ -1536,6 +1536,19 @@ decoder in the match emitter, and the two fixes touch no common code.
    does, the spelling appeared somewhere unexamined and the two-site fix
    is incomplete.
 
+**AND OUR FIX WON THE MERGE, 2026-08-27.** Their compiler lane had landed
+its own `zig-bool-lit-text` independently after our lead. Ours replaced
+it on absorb *"because it dispatches on the pattern's TYPE first, so a
+genuine Text literal pattern passes through where our unconditional
+spelling swap would have corrupted it."*
+
+**That guard exists only because a cold read demanded it.** The first
+version of our fix swapped the spelling unconditionally; the reviewer
+called the `TextTy` case a trap for later, since both spellings refuse
+loudly today and nothing is wrong *now*. It was added on that argument
+alone, with no failing test behind it, and it turned out to be the
+difference between the two fixes within twenty-four hours.
+
 **CONFIRMED IN C# 2026-08-26 by the Cobblestone project agent**, from the
 lead we sent over Gmail. It is **three sites, not one**: `cs-tco-lit-text`
 (`CSharpEmitter.codex:403`), and the ordinary match path does the same in

@@ -139,7 +139,15 @@ time.
    which 11 are item 2 above and 5 are a concurrency cluster nobody has
    read.
 
-7. **Verify the Roc ports' `.expected` against BARE METAL** -- owed,
+7. ~~**Verify the Roc ports' `.expected` against BARE METAL**~~ -- **DONE
+   2026-08-27 BY DAMIAN'S LANE, 12 of 12 match** against the shipped seed
+   `C3181693`. They are now depot tests and gate with everything else. So
+   the adaptations were sound and Roc's values agree with Codex bare
+   metal on all twelve; the two-way-oracle question does not arise for
+   this batch. Nothing owed. (Superseded item text below for the
+   reasoning, which still applies to any FUTURE port.)
+
+8. **Verify FUTURE Roc ports' `.expected` against BARE METAL** -- owed,
    and we have not done it. Their values come from Roc, adapted, and
    every run we made compared them against OUR ARM (`codexzig`,
    `corpus_run.py`), never against the seed. Damian's review says it
