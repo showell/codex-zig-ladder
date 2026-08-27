@@ -111,6 +111,48 @@ compute entry point refuses on a host without `CODEX_LADDER_VENUE`
 (`bb39139`), which `~/.codex_ladder_env` exports. One compute job at a
 time.
 
+## RUNNING RIGHT NOW -- read this before starting anything
+
+**The Update 51 rebank is on the box, detached, launched 2026-08-27
+01:09.** Nothing else may compute until it finishes or is killed.
+
+    sandbox   ~/runs/20260827T010113Z-u51-rebank      (ladder 980a893+, codex 7a6c5682)
+    pid       257245
+    log       <sandbox>/ladder/logs/rebank-20260827-010941.log
+    expect    ~39 min for the truth arms, then a sweep
+
+**When it lands, in order:**
+
+1. `bank_truth.py` -- the truths are in the SANDBOX, not the checkout.
+   Bank them, and confirm the slug is `u51` (the sandbox carries the
+   `seed_identity` fix; a sandbox cut before 00:49 does NOT and would
+   bank `seed-c3181693`, which is the wrong label baked into 28
+   filenames with no flag to override).
+2. `bank_diff.sh` -- what moved from u50.
+3. **Correct the README's banked-against table to u51.**
+   `check_paths.py` prints a WARN naming this exact debt.
+4. `tiers_run.py --zig` if the zig arms are wanted; the bare columns are
+   already banked (21, SET GREEN, `findings/gold/u51/`).
+
+**Ceremony steps DONE:** 1 (registers + surfaces -- no host contract
+moved; `X86_64Boot.codex`'s only change is COMPILER-25's byte-order fix,
+same length), 2 (both seeds probed: new boots, ring verified, `SIZE:`
+parses; diagnostics identical to the old seed; output 496 bytes smaller
+for the same input), 3 (pin `u51-rebank` at `7a6c5682`, clean tree,
+`seed_identity` says Update 51, gold banked).
+
+**Ceremony step 4 is UNDECIDED and it is Steve's call:** what the zig
+arms measure. Our stack is 23 commits and is NOT in Update 51 (PR 92 was
+absorbed to their Perforce after the release). Rebasing it is small --
+Update 51's whole plug delta is 12 insertions, their `zig-bool-lit-text`,
+at the two sites our `zig-lit-pat-text` touches, and they have already
+ruled ours the better fix. The truth arms do not care; only the sweep
+does.
+
+**`check_paths.py` FAILs in a fresh sandbox** and that is expected:
+`build-output/zig-plug.cdx` is a built, untracked artifact. Run it in the
+checkout, not the sandbox. The README does not say so.
+
 ## What to pick up next
 
 **Post-PR-92 queue, 2026-08-26 23:3x. In order.**
