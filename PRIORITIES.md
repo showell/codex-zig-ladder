@@ -298,6 +298,66 @@ IS OURS" on the strength of four sibling arms, which measurement has now
 overturned in the other direction. The register is orientation, exactly like
 MEMORY.md. Code is truth, and a measurement beats both.
 
+## STANDING PROPERTY: DOES THE IR CARRY WHAT THE CHECKER KNEW?
+
+**Objective: INTEGRITY.** Entry point: BOX, but it should RIDE a step that
+already has natives rather than add one. **NOT URGENT, AND NOT SCOPED --
+Steve, 2026-08-27: "We'll scope it properly when we're ready for it."** This
+entry exists so the idea is not re-derived from scratch; it is a placeholder
+with its design notes attached, not a work item.
+
+**The idea.** H2 was found because a person noticed a refusal and chased it
+for two days. The class it belongs to -- a type the checker solved that the IR
+does not carry -- is mechanically detectable, and the tree should detect it
+instead of a person. Today it is a finding we re-derive; it should be a
+property that goes red on its own.
+
+From `notes/zig-as-the-demanding-customer.md` on the essay surface, which is
+where the reasoning lives.
+
+**Why it is worth doing at all.** The project's own gates are structurally
+blind to this class: the x86 reference and the C# DDC witness both erase
+types by construction, so neither can fail on a dropped one. Anything that
+catches it has to be built on the arm that cannot erase, which is ours. That
+also means nobody upstream is likely to build it.
+
+**What exists already, and it is most of the parts.**
+
+- `findings/probe-h2-lambda-types.codex` -- seven cases, two one-respect
+  control pairs, `.expected` banked from bare metal. Case f is a `Text` so a
+  defaulting plug fails visibly; case g is unconstrained so no concrete type
+  is the honest answer there.
+- `h2_wire.py` -- prints the `(param ...)` cells straight off the IR wire, no
+  zig generated and no emitter opinion in the reading.
+- `verify_emitter.sh` leg 1b -- strict since `0de932f`; already runs the
+  matrix end to end against the bare-metal `.expected`.
+
+**The hard part, and it is the whole design question.** The property is NOT
+"no `error` on the wire". Case g proves that: `\k -> 1` is never applied, so
+nothing constrains its parameter, and an unsolved type variable is the honest
+answer. The discriminator that matters is:
+
+    did the checker COMPUTE an answer that the IR failed to carry?   -> upstream
+    does the checker have no answer because the program does not
+      constrain one?                                                 -> ours,
+                                                                        and it
+                                                                        is
+                                                                        monomorphisation
+
+A first cut could compare, per lifted lambda, what `infer-lambda` computed
+against what reached the wire. That needs the checker's answer to be readable
+from outside, which the lambda-span fix has now made true for lambdas and is
+not true in general.
+
+**What would make it standing rather than occasional.** Run it every ceremony,
+on the arm that can see it, with a bare-metal oracle underneath -- the shape
+the tier set already has. **Do not build a second mechanism if a tier can
+carry it**; a tier row is the existing home for "this disagreement is known
+and here is why", and the tier set already caught a stale row this Update.
+
+**Scope it when the outbound queue is empty**, not before. The send, the
+`ErrorTy` sentinel collision and monomorphisation are all ahead of it.
+
 ## THE PR 92 EMITTER REPAIR LANDED -- `012a9d2e`, and it is OUR CODE VERBATIM
 
 The report went to Damian at ~02:00; `012a9d2e` was pushed the same
