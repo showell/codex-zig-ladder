@@ -111,122 +111,15 @@ compute entry point refuses on a host without `CODEX_LADDER_VENUE`
 (`bb39139`), which `~/.codex_ladder_env` exports. One compute job at a
 time.
 
-## H2 IS SETTLED. IT IS UPSTREAM, IT IS ROOT-CAUSED, AND IT IS FIXED.
+## STANDING: THE PLUG-SIDE H2 RECOVERY IS DELETED AND MUST NOT BE REBUILT
 
-**Objective: OUTBOUND.** Entry point: KEYBOARD, then one BOX run for due
-diligence.
-
-The canary (`c6cd236a`) answered on 2026-08-27 at 16:09Z: **the arm FIRES and
-the lookup MISSES**, on all five affected lambdas. Its own driver printed that
-verdict off a grep of the parameter cells, which was right for the wrong
-reason -- only one parameter cell moved, and that one was contamination from a
-neighbour. The evidence is the whole wire, not the cell table, and it is
-banked in `findings/h2-wire/` with the pin's baseline beside it.
-
-**The root cause, found by reading source from where the canary pointed:**
-
-    Syntax/SyntaxNodes.codex:23   | LambdaExpr (List Token) (Expr)
-
-The lambda is the only expression node in the CST with no span. Its
-neighbours all carry one, so `Desugarer.codex:55` has nothing to pass and
-writes `synthetic-span`, and `is-synthetic-span` (`file-id == 0`) gates BOTH
-`record-expr-type` (`Unifier.codex:147`) and `lookup-expr-type` (`:178`).
-Every lambda in the language is filed under file-id 0, which is to say not
-filed. That is why the parked patch was byte-identical: it wrote into a
-channel that discards and read from one that always misses. **Not a span
-mismatch -- no span.**
-
-**The fix: branch `h2-lambda-span` (`bba94d1b`), five sites**, giving the node
-its lambda token the way `HandleExpr`/`TryExpr`/`WithTimeoutExpr` carry
-theirs. Measured in `~/runs/20260827T161748Z-h2-span`, which still holds its
-natives:
-
-    matrix cells reading `error`     6 of 11  ->  0 of 11
-    case f  (\s -> s & "!" on a Text)  error  ->  text
-    case d  (a lambda literal's fn arg) error  ->  (fn int-default int-default)
-    case g  (never applied)             error  ->  (tvar 305)
-    controls b and e                    unchanged
-
-Case f is the cell that separates recovery from a lucky `Integer` default, and
-it recovered. Case g is the cell that must NOT recover, and it did not -- an
-unsolved type variable is what an unconstrained parameter is, and it is more
-honest than an `ErrorTy` claiming a type failure in a clean program. The
-pre-registration (`1e044bf`, written before the build) called ten of eleven
-cells and got case g wrong; the reading was wrong, not the compiler.
-
-**THE PLUG-SIDE RECOVERY IS DELETED. Steve's ruling, 2026-08-27:** *"Let's
-nuke all remnants of our attempts to work around this on the plug side. I
-think the plug-side strategy is doomed to failure ... I don't want any
-fragile half-measures here or unnecessary clutter in our upstream message."*
-Branch `zig-plug-h2-recovery` deleted (nine commits, 294 lines in
-`ZigEmitter.codex`), its three sandboxes removed, 1.7 GB freed. Nothing
-anywhere should grow a zig-side arm for this again. One remnant is knowingly
-left alone: `3f0f42e5` still sits in the history of the stale
-`zig-plug-tvar-not-an-answer` branch, which is based on pre-u51 upstream and
-holds a lot of unrelated landed work -- deleting the branch to reach one
-commit would cost more than it saves.
-
-## WHAT THE FIXED WIRE DOES TO THE EMITTER, MEASURED
-
-**The zig plug needs no H2 arm at all.** Run against the `h2-span` natives,
-the matrix's emitted signatures are:
-
-    __lam_3(base: i64, step: CxFn1(i64, i64)) i64      the arrow, from the checker
-    __lam_6(s: []const u8) []const u8                  case f, Text
-    __lam_7(comptime T305: type, k: T305) i64          the tvar, handled generically
-
-`unanswered parameters: none`, `closure-wrapper markers: 0`. Every cell the
-deleted recovery walk was built to reconstruct now arrives on the wire, and
-`__lam_3`'s `step` -- the one it rebuilt from the callee slot -- arrives as a
-whole `CxFn1`.
-
-**The matrix still does not build, for one reason and it is not a type gap.**
-Case g's CALL SITE refuses by name: `zig plug: unresolved type variable T305
-of __lam_7`. `\k -> 1` is never applied, so there is no instantiation to
-monomorphise from. That is finding 55's class -- the same one the other three
-Roc ports fail on -- and it belongs to the item below, not to H2.
-
-**`verify_emitter.sh` leg 1b is STRICT now (`0de932f`).** Its allowlist was
-built for the deleted walk, and on the run that retired it the leg reported
-GREEN through a zig file that does not build. It is RED today, naming case g,
-which is the correct reading. It will go green when monomorphisation lands,
-not before, and it requires a compiler carrying the lambda-span fix.
-
-## THE CORPUS ARTIFACTS ARE FIXED, AND THE BANK SURVIVED
-
-**Objective: INTEGRITY.** Entry point: KEYBOARD. Done 2026-08-27.
-
-The full-corpus `--run` reported **94 programs as `match -> refused`** against
-the lambda-span fix. None of it was real. Two defects, one cause, both fixed:
-
-- **The resume compared against a file anything can overwrite.**
-  `load_run_carry` took its shas from `transpile.json`, which a bare
-  `--transpile` also writes -- so `--transpile` then `--run`, the sequence
-  this tool's own docstring recommends, made prev == now for every program and
-  carried the whole journal unconditionally. Every verdict line now carries
-  its own key (`zig_sha`, `expected_sha`, zig version) and the resume checks
-  the line. A keyless line does not carry. (`7567bf0`)
-- **Four artifacts were tracked AND rewritten by every run**, so the
-  discipline became revert-them-afterwards -- `overnight_verify.sh` ended with
-  a `git checkout --` on the trio, throwing away the answer the run had just
-  computed. The tracked copies froze while `census.json` advanced through
-  `--bank`. `census.json` is the only tracked corpus artifact now; the rest
-  are gitignored stage outputs and the revert step is deleted.
-- **A bank diff now names the tree it is about** (`2b60551`), comparing the
-  bank's `meta.tools` to the natives actually in `native/`. The resume had
-  printed "(emitted zig byte-identical, toolchain unmoved)" in the very run
-  where it had verified neither, and that parenthetical is what made the wrong
-  answer believable. **Prose in output asserting a property the code did not
-  check is the deepest version of this bug.**
-
-**The bank itself was HONEST and is now proven so.** Rebuilt from scratch at
-the pin with no journal, all 318 clean programs built and run: byte-identical
-to the committed `census.json`, zero rows moved, zero shas differ. `clean 318,
-match 268, refused 24` is correct and reproduced without a single carried
-verdict.
-
-The rule, now in `corpus/README.md`: **a bank is taken deliberately; a stage
-output is regenerated. Never track a file that every run rewrites.**
+Steve, 2026-08-27: *"the plug-side strategy is doomed to failure ... I don't
+want any fragile half-measures here."* Branch `zig-plug-h2-recovery` is gone,
+294 lines of it. With the compiler fixed the emitter needs no H2 arm at all --
+`unresolved parameters: none`, and `__lam_3`'s `step` arrives as a whole
+`CxFn1(i64, i64)`, the exact cell the walk rebuilt from the callee slot. The
+history is in `findings/README.md` and `findings/h2-wire/`; this line exists so
+nobody re-derives the idea.
 
 ## THE ROC PORT, AND THE FOUR FINDINGS UNDER IT (2026-08-27 evening)
 
@@ -305,7 +198,7 @@ refusing is honest, and choosing one is a DEFAULTING RULE.
   all 56 is what found `deck-bracket-contract` going `match -> differ`. The
   wins were all green; the wrong answer was in the files nobody predicted.
 
-## PR 93 IS ABSORBED AND LANDED (2026-08-27 18:57Z) -- AND THEY NAMED OUR NEXT PR FOR US
+## OUTBOUND: PR 93 LANDED, AND THE SECOND PR IS THE ONE THEY ASKED FOR
 
 **Damian, on the PR:** *"Absorbed and landed: main CL 20184 carries all six
 code changes as you wrote them, and 20189 carries the new seed built from
@@ -324,32 +217,6 @@ That is independent confirmation, and it also means **the STANDING PROPERTY
 item in this file now has an upstream counterpart** -- coordinate with it
 rather than build a second one.
 
-## WHAT THEY KEPT OPEN IS WHAT WE HAVE ALREADY FIXED
-
-Damian listed three things COMPILER-30 leaves honestly open. **Two of them are
-sitting finished on `roc-ports-type-recovery` right now:**
-
-    the ErrorTy sentinel collision      -> THEIR rulings queue, as the design
-                                           question the PR posed. Ours to argue,
-                                           not to patch.
-    the empty-list carrier              -> FINDING 58, fixed (8f1b202a)
-    the two remaining synthetic-span    -> FINDING 64 fixes one (406ae2f9,
-    sites                                  instance-method synthesis, measured
-                                           on typeclass-smoke/typeclass-poly).
-                                           Desugarer.codex:78 is the other and
-                                           is still unmeasured.
-
-**So the second PR is not speculative; it is the follow-up they asked for in
-writing.** Its contents, all compiler-side and all the same family:
-
-    57  subst-type-vars-from-arg learns from declared parametric types
-    58  an empty list keeps its solved element type   <- their "empty-list carrier"
-    59  a list literal prefers its elements over a variable bound nowhere
-    64  instance-method lambdas keep their span       <- one of their two sites
-
-Plug-side (61, 60) goes separately with a `plugs-backlog.md` row, and finding
-60's three iterations want squashing first.
-
 ## THE SEED IS MOVING, SO A REBANK IS OWED
 
 CL 20189 is a **new seed built from the change**. When the mirror push lands,
@@ -366,77 +233,6 @@ the reliable tell there."* A discriminator we handed them was ambiguous in the
 file it was meant to discriminate. Cheap to check before sending and we did
 not. → [[reference_pipe_masks_exit_code]] is the same family: a check that
 looks decisive and is not.
-
-## SENT: PR 93, AND THE OUTBOUND QUEUE IS EMPTY AGAIN
-
-**https://github.com/damiant3/Cobblestone/pull/93**, opened 2026-08-27
-against `master` at `012a9d2e`. Three commits, 7 files, +48/-16:
-`22e9b2cc` (the four-line side channel), `bba94d1b` (the CST span that makes
-it work), `da27ced6` (the `COMPILER-30` row). Ladder tag `h2-lambda-span`.
-
-**Damian gave high-level buy-in BEFORE the PR**, off the essay
-`notes/zig-as-the-demanding-customer.md` that Steve sent him: *"it isn't a
-critique as much as a feature request in my eyes, just a thing we never needed
-till now. You found the gap, and we can fill it. It's just some work."* That
-is the ruling the draft had been held for, and it is why the PR asks for a
-review rather than for a ruling.
-
-**Two things the self-review caught, worth keeping as a rule.** The draft
-cited `lambda-expected-ty` as if it were upstream's -- it is OUR function, from
-our own patch, and does not exist at the pin. **Re-read every reference in an
-outbound artifact against the tree the READER has, not the tree you have been
-working in.** And their own prose at `IR/Lowering.codex:729-740` already
-argues our case about a sibling defect they fixed ("every consumer of the IR
-inherited a variable the compiler had already resolved"), which is now the
-strongest paragraph in the PR. **Read their source for the argument, not just
-for the facts.**
-
-**What is still owed on it:** nothing, unless they ask. Their reply comes to
-the PR, not email -- `gh pr view 93 --repo damiant3/Cobblestone --comments`.
-
-## SUPERSEDED: THE SEND, AND THE ONE THING OWED BEFORE IT
-
-`outbound/ISSUE-DRAFT-type-info-dropped.md` is rewritten (`b56137e`,
-`f7675ef`): the plug-side "what we tried" section is gone entirely, so is the
-hedge that said we did not know why our patch was inert, and in their place is
-the root cause, the fix, and the table above. The ask is a ruling plus an
-offer to send the branch as a PR with a `compiler-backlog.md` row. GitHub,
-Steve's account, say it is Claude.
-
-**What is owed: due diligence on a core-compiler change.** A change in the
-parser and desugarer touches every backend, and the only measurement so far is
-one seven-case matrix's IR wire. Before the send, run the fix's compiler
-through the corpus and the 14-rung sweep -- the `h2-span` sandbox already has
-the natives, so this is one BOX job, not a rebuild. A regression there is the
-one thing that would change the message.
-
-## The Update 51 ceremony is closed
-
-Every step done and harvested, 2026-08-27. `u51-14of14`, seed
-`C3181693`, pin `012a9d2e`, `check_paths.py` clean, working tree clean.
-
-- **Rebank 14/14 green** in 2541 s; all fourteen truths byte-identical to
-  the bank taken from the killed run, sidecars included.
-- **`bank_diff` u50 -> u51**: four rungs moved, ten byte-identical.
-- **Census compared** for the first time under this seed; CDX6020 at its
-  pinned 43, **no re-pin owed**.
-- **Tier SET GREEN, 16 green 6 noted** -- and it CAUGHT ONE.
-  `prim-closure/under-mutual` went STALE: finding 39 / COMPILER-18 shipped
-  in Update 50, bare metal `not-47` at u49 and `47` from u50 on. Row
-  deleted at `5f5b42d`. It survived a whole Update because the u50
-  close-out ran `tiers_run.py --zig`, the zig arm alone, which
-  structurally cannot see a disagreement that STOPPED.
-- **Corpus census re-pinned and HARVESTED** (`07ab991`): clean 318, match
-  268, refused 24, against the 317/267/24 reported to PR 92 from an Update
-  50 tree. One program of drift across an Update; the PR's headline stands
-  and nothing is owed.
-- **`codexzig` built from the u51 pin, the first ever, and the FIXED POINT
-  HOLDS** -- it re-emitted its own 2,365,512-byte bundle byte-identically.
-
-The sandbox `~/runs/20260827T133749Z-u51-natives` still holds the pin's
-natives and codexzig. **It is the only sandbox on the box** and it is
-worth keeping until the next item is measured, because that item needs
-exactly these natives.
 
 ## AFTER THAT: THE OTHER THREE PORTS, WHICH ARE A DIFFERENT CLASS
 
@@ -523,69 +319,6 @@ and here is why", and the tier set already caught a stale row this Update.
 
 **Scope it when the outbound queue is empty**, not before. The send, the
 `ErrorTy` sentinel collision and monomorphisation are all ahead of it.
-
-## THE PR 92 EMITTER REPAIR LANDED -- `012a9d2e`, and it is OUR CODE VERBATIM
-
-The report went to Damian at ~02:00; `012a9d2e` was pushed the same
-night. Measured, not inferred:
-
-- `git diff u51-emitter:codex/plugs/zig/ZigEmitter.codex
-  012a9d2e:codex/plugs/zig/ZigEmitter.codex` is **EMPTY**. The depot's
-  emitter is byte-identical to our branch's. `plugs-backlog.md` too. The
-  whole tree diff between our 19-commit branch and the depot tip is
-  **five doc files**.
-- All four names are in the code now (`zig-lit-pat-text`,
-  `zig-stray-tvar`, `zig-first-stray-tvar`, `zig-tvar-scope-refusal`),
-  and `zig-bool-lit-text` is **gone** -- Damian made the same call our
-  rebase did, for the same published reason. **The removal Steve had not
-  reviewed is moot: it is upstream's own.**
-- Both halves of the report were taken. `GitHubUpdate51.md` carries a
-  CORRECTION paragraph naming the cause (`p4 copy` loses INTEGRATES to
-  the noclobber refusal) and the second half -- that the 19961
-  re-measure was x86-only and could not observe the emitter. The zig arm
-  was graded this time before the claim was written: 4 of 12 pairs run
-  and match, 8 refuse with the designed clean markers.
-- `PerforceProcess.md`'s P-CLOBBER row gained a **copy-up variant** with
-  our incident in it, and a new standing rule: after every copy-up,
-  account the submitted CL's file list against the source CL's in both
-  directions before writing any claim on it.
-
-**Consequences for us.** The outbound queue for the zig plug is EMPTY
-again -- `u51-emitter` is fully absorbed and the branch is now a
-historical marker, not a stack. Ceremony step 4 answers itself for the
-first time: **sweep the release's emitter verbatim** and sweeping our
-own fixes are THE SAME RUN. `012a9d2e` is not a release (no seed move,
-no release note of its own), so the bank stays `u51` and
-`seed_identity.py` agrees.
-
-**Ceremony step 1 read clean.** No seed move, nothing under
-`codex/compiler/Emit/`, `tools/codex-vm.c` or `build/vm-config.ps1`, so
-neither `codex_vm.py`'s RAM/`SIZE:` contract nor `ring_compile.py`'s ring
-constants can have moved. Step 2 is vacuous for the same reason -- the
-seed is the one already probed at 00:47. Nothing in the Update closes a
-finding of ours, so no workaround is orphaned.
-
-**The u51 gold was STRANDED and is recovered (`15ebb21`).** `tiers_run.py
---bare` banked 21 columns SET GREEN inside the killed rebank's sandbox on
-2026-08-27, and only the truths were ever harvested out of it; this file
-has claimed `findings/gold/u51/` existed ever since and the directory was
-not in the checkout. Gold is keyed to the seed, which has not moved.
-
-**When the rebank lands, in order:**
-
-1. `bank_truth.py` -- only if the arms are green, and diff first: the
-   truths should be identical to what is already banked.
-2. `bank_diff.sh` -- what moved from u50.
-3. **Re-pin `check_diags.py`'s POLICY table** from the run's `--census`
-   block. This is the debt the whole rebank exists to pay.
-4. **Correct the README's banked-against table to u51** and re-measure
-   the timings in "Running it" in the same commit. `check_paths.py`
-   prints a WARN naming this exact debt.
-5. Tag `u51-14of14`, push.
-6. `native_build.sh` from this pin, then `./tiers_run.py` as a SET --
-   natives are per-emitter and ours are still `d7e148e7b699` from the
-   u50 pin. Expect rows to go STALE: the tier ledger admits divergences
-   the repaired emitter now fixes.
 
 ## What to pick up next
 
@@ -688,48 +421,6 @@ command: `verify_emitter.sh` (the six-leg chain), `run_pr87_probes.sh`,
 compiler question)**, and `sandbox.sh <label> [ladder-ref] [codex-repo]
 [codex-ref]`, whose fourth argument is how a chain excludes a commit.
 
-## Where things stand, 2026-08-26 evening
-
-**Depth-first is the rule now (Steve, 2026-08-26): the moment a port
-unleashes a finding, that finding goes to the top of this list.** That is
-why finding 47 is item 1 and the Roc porting it came out of is item 3.
-
-Three efforts are live at once. They are ordered here, and the ordering is
-the whole point of writing them down:
-
-    1  finding 47        guard written, NOTHING BUILT             -> item 1
-    1a finding 50        show has 5 cases, plug has 1; 42 programs -> item 1a
-    1b finding 49        our corpus gate is blind, fix is known    -> item 1b
-    2  finding 46's PR   fix done and verified, not sent          -> item 2
-    3  the Roc ports     11 ported, run: 2 match 9 refuse        -> item 3
-
-**THE REBANK STALLED ONCE, RESUMED, AND IS SWEEPING.**
-`~/runs/20260826T171739Z-u50-rebank-tvar`, on `zig-plug-tvar-not-an-answer`
-as decided. `rebank_all.sh` died at 11/12 on `passes_to_x86` -- the largest
-unit, 2.65 MB -- with `guest stopped consuming at rpos 2097152 of 2652454`
-on the IR-CCE compile, the CDX compile of the same source having just
-succeeded.
-
-**It was transport, not the release, and the register carries the reasoning
-as H1 (FALSIFIED).** The retry of that one unit completed: 14,029,026 bytes
-of IR in 219 s. A stall that does not reproduce cannot be explained by a
-tree. Filed as a hypothesis rather than a finding precisely because the fact
-that did not fit -- the guest stops READING, before a lift would run -- was
-visible from the start.
-
-**A number that fell out of it and is worth keeping:** the IR is +145,569
-bytes over the interim's 13,883,457, about **1%**, which is Update 50's lift
-adding definitions to the largest unit. It compiles fine. The lift's cost on
-this path is measured now and it is small.
-
-**Now sweeping.** All twelve truths are recorded, so `ast/allcycles.sh` was
-run directly rather than re-recording eleven good units to reach
-`rebank_all`'s second half. **`truth/u50` is still NOT banked** --
-`bank_truth.py` is the step after a green sweep, and until it runs the sweep,
-`allcycles` in a fresh sandbox, and the roundtrip harness generator all stay
-blocked. They remain the same missing bank.
-
-
 ## The native loop, which changes what is cheap
 
     native/codexir   .codex -> IR      ~0.1s
@@ -747,69 +438,11 @@ loop unless it says otherwise.
 
 ---
 
-## 1z. FINDING 49 -- CLOSED. Fixed, measured, swept 14/14, reported to PR 92
+## SHIPPED: PR 92 -- do not re-do
 
-**Objective: INTEGRITY. Fix written and committed `7a6071d`; chain
-`f49-gate2` running on codex `cab52a35` so the gate is the ONLY delta.
-What is left is to READ THE RESULT and act on it.** Raised 2026-08-26 23:5x after it produced a false report to
-Damian's lane and cost them a triage round.
-
-`ast/CodexIrHarness.codex` calls `check-chapter`, binds `cr.state`, and
-contains the word `bag` **zero times**. Its sibling
-`ast/CodexZigHarness.codex` merges four bags and halts. So
-`native/codexir` emits IR for a program with compiler errors and says
-nothing.
-
-**Measured 2026-08-26 on one tree, same source unit, three arms:**
-
-    program              seed (bare metal)   native/codexir   native/codexzig
-    probe-pr87-alias     CDX2001 Int vs Fun  rc=0, NONE       CDX2001 Int vs Fun
-    probe-pr87-direct    CDX2001 Int vs Fun  rc=0, NONE       CDX2001 Int vs Fun
-    probe-cdx2001-text   CDX2001 Int vs Text rc=0, NONE       CDX2001 Int vs Text
-
-**What it has already cost.** A three-line program was reported to
-Damian's lane as a type-checker soundness hole in Codex. It was not. Then
-it was reported as our plug miscompiling their checker. It was not that
-either -- `codexzig` is the same plug's output and gets it right. Their
-compiler lane ran a four-seed refusal sweep with a positive control to
-tell us so.
-
-**What it is still costing, silently.** `corpus_run.py` runs
-`native/codexir`. A corpus program carrying a compiler error emits IR
-anyway, and we then build its zig, run it, and record a verdict. **We do
-not know how many of the 326 "clean" programs have compiler errors**,
-because the instrument that would say so is the one that cannot.
-`codexzig`'s gate found 41 of 593 when it was turned on; `codexir` has no
-such gate and has never been asked.
-
-**The fix** is the gate its sibling already has: merge
-`toks.errors`, `doc.parse-bag`, `rr.bag` and `cr.state.bag`, and halt
-with `CODEGEN-HALTED` rather than emitting. `CodexZigHarness.codex:5-17`
-is the model and its prose explains the driver's behaviour it stands in
-for. **Do not copy the list -- reuse the shape**, which is the lesson
-that keeps arriving in this tree.
-
-**Then re-run the corpus and expect the clean count to FALL.** That is
-the point, not a regression: programs whose verdicts we have been
-recording without the right to.
-
-## 0. SHIPPED 2026-08-26 as PR 92 -- do not re-do
-
-**https://github.com/damiant3/Cobblestone/pull/92**, branch
-`zig-plug-u50-emitter-batch` off `8cc80685`, ladder tag
-`u50-emitter-batch`. 24 commits, rows 1.85-1.90.
-
-    corpus match    183 -> 269
-    corpus refused  112 ->  24
-    sweep           14/14 on all four chains
-
-Closed by it: finding 47 (tvar scope guard), 50 (`show`'s five type
-cases), 51 (a refusal strands its parameters), 52 (Boolean literal
-patterns), 53 (the thread entry), 17 part A (units are their backing
-type). Rows 1.89 and 1.90 report 17(B)/55 and 54 as OPEN.
-
-**Their reply comes to the PR on GitHub, not email** (Steve asked for
-that) -- `gh pr view 92 --repo damiant3/Cobblestone --comments`.
+24 commits, rows 1.85-1.90, corpus match 183 -> 269 and refused 112 -> 24,
+sweep 14/14 on all four chains. Findings it closed are in `findings/CLOSED.md`
+with their numbers. Nothing owed.
 
 ## 1f. Unit families are 53% of everything left, and half the fix is ONE ARM
 
@@ -929,13 +562,11 @@ wrong for 0.1 is worse than one that refuses. So the plug refuses with a
 named marker for now, which also puts the gap in the histogram where it can
 be ranked.
 
-## 1e. The corpus reading pass -- DONE once, and it is the COMPLETENESS work list
+## The corpus reading pass -- the COMPLETENESS work list
 
-**Objective: COMPLETENESS. KEYBOARD, no compute.** Added on Steve's note
-reply: *"I agree. Add the reading pass to priorities."*
-
-**Done 2026-08-26 21:0x** against the `f47-guard2` `corpus/run.jsonl`,
-which had been on disk for hours. All 112 refusals classified by cause:
+**Objective: COMPLETENESS. KEYBOARD.** All 112 refusals of the
+`f47-guard2` run classified by cause, 2026-08-26. The classification is
+the work list; the narrative around it has been cut.
 
      41  expected type 'i64', found 'bool'          finding 50   FIXED
      40  startFn return type (thread entry)         finding 53   NEW, open
@@ -945,51 +576,6 @@ which had been on disk for hours. All 112 refusals classified by cause:
       2  undeclared identifier 'True'               finding 52   NEW, FIXED
       1  IList(i64) depends on itself               finding 48   open
      11  singletons: shadowing, switch exhaustiveness, arity, sin, ...
-
-**Three causes were 93 of 112.** Two findings came straight out of it
-(52 and 53), one of which was the second-largest class in the corpus and
-had never been filed -- its only trace in the register was an aside
-inside finding 42.
-
-**RE-CLASSIFIED 2026-08-26 21:2x against the f50/f51 `run.jsonl`.** The
-pile is 70 (69 refused + 1 crashed), and it is more concentrated than
-before, not less:
-
-     40  startFn return type (thread entry)      finding 53   FIXED
-     11  undeclared Frequency/Timestamp/Duration finding 17   item 1f (B)
-      3  expected type 'void', found comptime_int finding 17   item 1f (A)
-      2  undeclared identifier 'True'            finding 52   FIXED
-      2  expected 1 argument(s), found 0                      unclassified
-      2  invalid operands: 'void' and 'void'     finding 17   item 1f (A)
-     10  singletons (shadowing, switch exhaustiveness, sin, CxFn1, ...)
-
-**AFTER the f52/f53 build the pile is 30**, and it is mostly one thing:
-
-     16  unit families (three messages, one gap)  finding 17   item 1f
-      2  invalid operands: 'struct' and 'struct'              NEW, unmasked
-      1  IList depends on itself                 finding 48
-     11  singletons and small classes
-
-The 2 `'struct' and 'struct'` are `fork-nested` and `par-map`, and both
-were `startFn` refusals before -- **newly visible, not a regression.**
-
-The `found 'bool'` class (41) is GONE and the `found 'f64'` class (2) has
-become named markers -- both fixes in that build confirmed from a second
-angle. **The two staged fixes target 42 of the 70**, and `startFn` alone
-is now 57% of the pile, up from 36%: the same defect with a bigger share,
-because everything around it moved.
-
-**What is left:**
-- Re-classify the 69 and update this table.
-- The 3 `void`/`comptime_int` and the 11 singletons are unclassified. That
-  is the next reading, and it is where the remaining unknown defects are.
-- `tcp-reliability` moved `refused -> crashed` in the f50/f51 run: it now
-  builds and panics `index out of bounds: index 0, len 0`. A crash is a
-  different class from a refusal and it is unexamined.
-
-**The lesson worth keeping:** the evidence for finding 52 and finding 53
-had been in our own corpus output for as long as we have been running it.
-Nobody had read it. A summary is where a 40-program class goes to hide.
 
 ## 3. Port Roc's closure/recursion snippets into the corpus
 
@@ -1302,41 +888,13 @@ were our own missing chapters, which is the failure `cite_resolve.py`'s own
 docstring was written to prevent: "the plug's fallback fires -- which looks
 exactly like an emitter gap and is not one."
 
-## 6. PR 87 is SETTLED; three probes are written and owe one compiler run
+## PR 87 is SETTLED, and three probes still owe one BOX run
 
-**Objective: OUTBOUND. The drafting and the writing are done; what is
-left is a BOX run and a report.**
-
-Answered and then **accepted as written**, 2026-08-26, both over Gmail.
-The row withdrew and the trust-model re-scope replaced it. Their side:
-the invariant gets declared in the **Developers Rulebook's plug-wire
-contract section**, naming the shape, the CDX2010 occurs check as the
-component doing the work, and the hand-authored-IR caveat; the
-`IRTextParser` arity check is recorded as an open lead, not built.
-
-**Two answers landed on US:** PR 87's reproducer was their arm B (full
-arity, result happens to be a function), and the TCO gate is arity-blind
-**on bare metal too** -- so finding 36 blamed the wrong component and is
-re-framed.
-
-**OWED, and explicitly accepted by them:**
-- `findings/probe-pr87-alias.codex` -- the let-bound alias, **the shape
-  their seven arms did not cover.** Prediction recorded in the file:
-  the checker should refuse it, and if it ever compiled `is-self-call`
-  would not fire at all, because through an alias the apply spine's root
-  is `g` rather than the definition's name. That defeats the gate in the
-  SAFE direction.
-- `findings/probe-pr87-deck.codex` -- self tail call under `deck-record`.
-- `findings/probe-pr87-armb.codex` -- their arm B with a base case,
-  **executed** rather than compiled. Expects `5`. They said an executed
-  arm is strictly better evidence and they will take it.
-- The two coverage corners are already **source-read confirmed** here:
-  `has-tail-call` answers False for `IrTry` outright and
-  `has-tail-call-act` inspects only the last statement.
-
-**Report either way. A null result is a result** -- they asked for it in
-those words, because "tried and found nothing" moves confidence where
-silence does not.
+**Objective: OUTBOUND. Entry point: BOX.** The drafting is done and accepted;
+what is left is one run and a report. Two answers landed on US and are the
+part worth remembering: PR 87's reproducer was their arm B, and the TCO gate
+is arity-blind on bare metal too, so finding 36 blamed the wrong component and
+is re-framed.
 
 ## 7. Diagnostics as a banked set
 
@@ -1534,53 +1092,6 @@ Left:
   frames on the 2.5 MB subject and three on the parser. The constant is
   untouched. Verified inert first (ladder tag `stack-prose-verified`,
   JUSTIFICATIONS "A prose block moves the plug and not its output").
-
-## Not an item: one zig program, and it exists now
-
-**Built 2026-08-25 (Steve's call to take it up again): `codexzig_build.sh`,
-`native/codexzig`, Codex source in and zig out in one process.** Not a
-merge of two emitted zig files -- one Codex bundle, codexir's chapter set plus the emitter and the IR text
-parser, with the pipe between the two halves replaced by a `let`.
-Byte-identical to `codexir | zigemit` on 85 programs, and **a fixed point:
-given its own 2.8 MB bundle it emits the 2,273,737 bytes of zig that the
-seed-plus-ring-plug path emits from the same source, and a binary built from
-that output emits them again.** (The two BINARIES differ, because
-`zig build-exe` is not reproducible on zig 0.16.0 -- the same file at the
-same path twice already gives different bytes. The emitted SOURCE is the
-fixed point.)
-
-**We keep the two separate binaries**, for the reason that has not changed:
-the intermediate IR is what most of the ladder's questions are asked about.
-codexzig is the artifact for other people, and it is also its own regression
-test -- `--check` byte-compares it against the pipeline.
-
-**It is verified, and it earns its keep as an instrument.** 577/577 corpus
-programs byte-identical to the pipeline; 181 of them built, run and matching
-the depot's `.expected`; all 14 unit subjects identical from 0.12 MB to
-2.87 MB; and its own bundle a fixed point. Two runners keep those true --
-`codexzig_corpus.py` and `codexzig_scale.py`. It also produced **finding 45**
-(the deck reservation is advisory) in ten minutes and no QEMU, which is the
-argument for it as more than publicity.
-
-**What it does NOT replace: the bare-metal oracle.** Everything codexzig
-checks is the zig arm against itself or against `.expected`. The rungs
-compare the zig arm against BARE METAL, and a defect the plug and the seed
-share -- or one the emitter makes identically on both paths -- is invisible
-here and visible there. codexzig is the fastest way to learn that
-transpilation still works across the whole compiler; it is not evidence that
-the answer is right.
-
-**If it is ever published**, three things settled while the idea was being
-argued and are worth not re-deriving: lead with the strongest true claim,
-which is that the emitted compiler's output is byte-identical to the native
-x86-64 backend across all fourteen rungs -- "zig compiles another language"
-is the weakest thing that is true here; say plainly and first that it is
-machine-generated zig, because that audience will read one function and
-know, and owning it reads as confidence; and the compiler is Damian's while
-the ladder is only the witness, so anything published says which is which
-and he sees it first.
-
----
 
 ## Outbound queue
 
