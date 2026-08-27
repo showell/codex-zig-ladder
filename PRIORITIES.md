@@ -217,6 +217,53 @@ That is independent confirmation, and it also means **the STANDING PROPERTY
 item in this file now has an upstream counterpart** -- coordinate with it
 rather than build a second one.
 
+## THE BRANCHES, AFTER THE 2026-08-27 INVENTORY (24 -> 17, all pushed)
+
+**Ancestry is NOT an absorption test in this project.** Upstream absorbs by
+re-implementing as their own CLs, so `git merge-base --is-ancestor` answers "not
+in the pin" even for PR 92, whose emitter the pin carries VERBATIM. Deleting on
+that test would have cut live work; the records are the test.
+
+**LIVE, and what each is for:**
+
+    compiler-only-second-pr    6   the second PR's tree: pin + COMPILER-30 + 57/58/59,
+                                   ZERO ZigEmitter commits, so the sweep on it
+                                   measures the RELEASE emitter as README demands
+    roc-ports-type-recovery   15   working branch: the three compiler fixes, finding
+                                   61, finding 65 (not ready), finding 60 REVERTED
+    roc-ports-batch2           4   the new Roc ports ONLY, rebased onto the absorbed
+                                   pin. 0 files outside codex/test. Sendable alone
+    h2-lambda-span             3   PR 93's head. Absorbed upstream as CL 20184; the
+                                   PR closes with the mirror push. Delete after that
+    u51-rebank                 0   the current pin marker
+
+**HAZARD -- do not rebase forward without reading finding 55's entry:**
+
+    zig-plug-tvar-not-an-answer  26  base 8cc80685 (u50, NOT the u51 pin). Holds
+                                     7de07cf0, finding 55, unbuilt and worth 12
+                                     programs -- and ALSO 3f0f42e5, whose tree still
+                                     defines `zig-recover-param` in three places.
+                                     That is the plug-side H2 recovery STANDING says
+                                     is deleted. Rebasing this branch reintroduces it.
+
+**UNCLASSIFIED, kept because I could not confirm they are absorbed:**
+`u51-emitter` (19, overlaps PR 92's content plus findings 54 and 17-half, which
+rows 1.89/1.90 report OPEN), and the u50-era singles
+`deck-reservation-not-enforced`, `irtextparser-ir-prefix`,
+`plug-run-linux-vm-host`, `plugs-overapply-corpus`, `plugs-python-tco-arity`,
+`u50-stack`. All pushed. **Settling these is a keyboard job for whoever next
+wants the clutter gone** -- each needs its PR status checked, not its ancestry.
+
+**Deleted, all absorbed or dead and all recoverable from origin:**
+`zig-plug-u50-emitter-batch` (PR 92), `zig-plug-loop-param-rename` (PR 85),
+`ast-implicit-tparams` (PR 90), `zig-plug-stack-prose` (PR 84),
+`roc-corpus-ports` (the original ports), `h2-lowering-canary` (its own commit
+says NOT FOR UPSTREAM; wire banked in `findings/h2-wire/`), `h2-lowering-fix`
+(superseded -- it IS `22e9b2cc`, which rode PR 93).
+
+**NEXT, once the sweep is green (Steve): cherry-pick the new Roc ports onto a
+going-forward branch** rather than carrying `roc-ports-batch2` indefinitely.
+
 ## THE BOX QUEUE -- REWRITTEN after a cold review found three real defects in it
 
 A cold agent reviewed the first version read-only and its three heaviest
