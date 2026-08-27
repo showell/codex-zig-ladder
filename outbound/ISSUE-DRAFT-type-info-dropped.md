@@ -30,16 +30,33 @@ lambda's complete function type — `wrap-fun-type (pr.param-types) lam-row
 variable, unification solves them, and the solution is sitting in the
 `UnificationState` that call returns.
 
-Lowering does not ask. `lower-lambda` (`IR/Lowering.codex:722-724`) peels the
-parameter types off the type its **context expects**, and `peel-fun-param`
-(`Types/CodexTypeHelpers.codex:4-10`) answers `ErrorTy` for anything that is
-not an arrow. When there is no contextual expectation — `lower-let` hands its
+Lowering does not ask. `lower-lambda` (`IR/Lowering.codex:721-728`) peels the
+parameter types off the type its **context expects** (`:724`), and
+`peel-fun-param` (`Types/CodexTypeHelpers.codex:4-10`) answers `ErrorTy` for
+anything that is not an arrow. When there is no contextual expectation — `lower-let` hands its
 bound value `ErrorTy` (`:689`) — every parameter peels to `ErrorTy`, and
 `lambda-recorded-ty` stores the arrow with `ErrorTy` in each position.
 
 So the type is not lost. It is **computed, returned, and then re-derived by a
 second, worse method**, and the second method's failure is what reaches the
 plugs.
+
+**You have already fixed one instance of this, in the same function.** The
+prose under `lower-lambda` (`IR/Lowering.codex:729-740`) describes a lambda
+that recorded the *expected* type it was handed rather than the resolved one:
+
+> `lower-let` twenty lines above records the resolved type of what it bound,
+> which is why the same expression through a `let` came out concrete and
+> through a lambda did not.
+>
+> The consequence was not local. […] The application's result type was then
+> emitted uninstantiated and **every consumer of the IR inherited a variable
+> the compiler had already resolved.**
+
+That last sentence is our whole report, in your words, about the neighbouring
+case. `lambda-recorded-ty` and `subst-type-vars-from-arg` were the fix. What
+we are describing is the same asymmetry one step over: a `let`-bound lambda's
+*parameters*, where the resolved answer exists and nothing carries it either.
 
 ## Why `ErrorTy` specifically makes this worse
 
@@ -131,10 +148,11 @@ which gates **both** ends of the mechanism:
     Types/Unifier.codex:178   lookup-expr-type   if is-synthetic-span sp then ErrorTy
 
 Every lambda in the language is filed under file-id 0, which is to say not
-filed, and any lookup against it returns `ErrorTy`. The side channel
-`lower-dict-placeholder` already uses successfully twenty lines above
-`lambda-expected-ty` is structurally unavailable to lambdas, and has been the
-whole time.
+filed, and any lookup against it returns `ErrorTy`. So the side channel is not
+missing — it is the same `lookup-expr-type` / `deep-resolve` pair
+`lower-dict-placeholder` already uses successfully at
+`IR/Lowering.codex:216`. It is structurally unavailable to lambdas, and has
+been the whole time, because a lambda has no span to key on.
 
 Give the CST node its lambda token the way its neighbours carry theirs, pass
 `token-span` in the desugarer, and the four lines start working. Our branch
@@ -188,6 +206,28 @@ them; the change touches seven. Six of the seven now compile and print output
 matching their hand-verified `.expected`. The seventh keeps one marker for a
 different defect — an empty list's element type, item 2 below. **No program
 regressed.**
+
+## What we are NOT reporting, which is the same question from the other side
+
+Zig refuses a lot. Most of it is ours, and we want to be explicit that we are
+not bringing you a list of things our backend finds inconvenient.
+
+Case g of the matrix is the example. `\k -> 1`, bound and never applied —
+nothing in the program constrains that parameter, so the honest type is a
+variable, and zig refuses it because there is no instantiation to
+monomorphise from. **That is work we owe, not a fact you dropped**, and it is
+not in this report. The other three Roc ports we cannot yet build fail the
+same way.
+
+The discriminator we use, and the only one we think is defensible:
+
+- **Did the checker compute an answer that the IR failed to carry?** Then it
+  is here.
+- **Does the checker have no answer, because the program does not constrain
+  one?** Then it is ours, and it is monomorphisation.
+
+Every claim in this issue is on the first side of that line, and we checked
+each one against your source rather than against our own notes.
 
 ## What we are not claiming
 
