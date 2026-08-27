@@ -5,6 +5,45 @@ One entry per decision, newest first. This file exists so the README and
 the memory notes can say "do X" without re-arguing it; if a rule here ever
 looks wrong, re-measure before overturning it.
 
+## Compiler-only sweep, 2026-08-27 21:52Z -- 14/14 green, and superseded on arrival
+
+Tree `53979eeb`: the u51 pin plus COMPILER-30 and findings 57, 58, 59.
+**Zero ZigEmitter commits**, which is the point -- `README.md` says sweep the
+release's emitter verbatim, and every earlier sweep this evening had our four
+plug fixes in the tree, so each measured a compiler nobody ships.
+
+    natives                 5m46s
+    corpus --transpile      606 programs: clean 328, markers 249, unresolved 16,
+                            codex-refused 13     (population 53979eeb, clean)
+    corpus --run            328 built and run: match 275, refused 27,
+                            no-expected 23, hardware-only 2, crashed 1
+    sweep                   14/14 rungs green, 1780s
+
+**No program regressed.** All 23 verdict moves accounted for: 7 markers->match,
+3 markers->refused (newly BUILT and failing, two on our own finding-61 gap which
+is deliberately not in this tree), 12 zigemit->codex-refused which is our own
+error-gate relabelling.
+
+**Two caveats the sweep prints about itself, and they are not small.**
+
+    IR REBUILT ... bare metal was NOT re-measured in this sweep
+    TRUTHS RESTORED FROM THE BANK -- this sweep says the plug still reproduces
+    the bank, NOT that bare metal was re-measured
+    CENSUS NOT COMPARED: ... ensure_ir.sh rebuilt the IR, so no bare-metal
+    .diags exists for those units
+
+So it covers the rungs and not the diagnostics, and its bare-metal side is the
+u51 bank rather than a fresh measurement. `desugar`, `check` and `lower` are
+themselves rung subjects and this tree changes all three, which is what makes
+the byte-identical result meaningful rather than trivial.
+
+**SUPERSEDED ON ARRIVAL.** The mirror push landed at 20:26Z, mid-sweep: the pin
+is now `3942e362` with seed `4341370C`, and Damian asked for the second PR to be
+measured against it. This result is a true statement about a base nobody ships.
+It is kept because it is evidence the three compiler fixes are
+semantics-preserving on the rungs, and because the re-measure at the new pin
+will want something to compare against.
+
 ## The bundle edits are image-preserving (2026-08-18)
 
 `bundle_scope` strips `bsearch-text-pos`; `bundle_ir_to_x86` carries `CCE` and
