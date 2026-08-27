@@ -1,0 +1,13 @@
+8256 bytes of wire
+  __lam_0  xs       (list int-default)
+  __lam_0  i        int-default
+  __lam_1  xs       (list int-default)
+  __lam_1  i        int-default
+  __lam_2  i        int-default
+  __lam_3  base     int-default
+  __lam_3  step     (fn int-default int-default)
+  __lam_4  y        int-default
+  __lam_5  y        int-default
+  __lam_6  s        text
+  __lam_7  k        (tvar 305)
+0 of 11 parameter cells say `error`

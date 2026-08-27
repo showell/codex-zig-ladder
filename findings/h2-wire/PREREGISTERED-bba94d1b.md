@@ -38,3 +38,35 @@ Readings:
 A cell that comes back as a bare type VARIABLE rather than a type means the
 recorded type was read before unification finished and `deep-resolve` is not
 doing what `lambda-expected-ty` assumes.
+
+---
+
+## What it actually said (`cells-fix-bba94d1b.txt`, 2026-08-27 16:23Z)
+
+**Ten of eleven cells exactly as pre-registered. `0 of 11 parameter cells
+say error`.** Wire 7,935 -> 8,256 bytes, because the types are real now.
+
+The two cells that carried the weight both landed:
+
+- **`__lam_6 s` is `text`.** Case f is the only cell whose true answer is not
+  the language default, so this is the one that distinguishes a recovery from
+  a lucky `Integer`. It recovered.
+- **`__lam_3 step` is `(fn int-default int-default)`.** A whole arrow, from
+  the checker, in the cell the plug-side walk had to reconstruct from the
+  callee slot.
+
+Both controls (`__lam_1`, `__lam_5`) are unchanged, so the fix does not reach
+further than claimed.
+
+**The one deviation, and the pre-registration read it wrong.** Case g came
+back `(tvar 305)`, not `error`. This file predicted that a bare type variable
+would mean the recorded type was read before unification finished. That is
+not what happened. `\k -> 1` is never applied, so nothing constrains `k`, and
+the honest type of that lambda is `forall a. a -> Integer`. An unsolved
+variable is what an unconstrained parameter IS; `deep-resolve` resolved it as
+far as it goes, which is to itself.
+
+It is a better answer than the pin gave, not a worse one: `error` claims a
+type failure in a program the compiler reports clean, while `(tvar 305)` says
+"polymorphic, unconstrained" -- which is true. The property case g exists to
+protect held: nothing invented a type there.
