@@ -1516,38 +1516,55 @@ it: read the call site's own instantiated type and pass it. It is also the
 case that a specialisation engine would find hardest, because there is no
 argument to specialise ON.
 
-## 63. OURS, and PRE-EXISTING. An unused `let` whose value is a CALL THAT INLINES to a bare name still emits a pointless discard
+## 63. OURS, and PRE-EXISTING. The discard rule checks the wrong SCOPE: `zig-occurs body n` sees the continuation, and zig sees the whole function
 
-**Found 2026-08-27 by Roc case 20, which was ported as a CONTROL for finding
-60 and did its job by failing.** Confirmed pre-existing: it refuses
-identically on the `8f1b202a` tree, before findings 59, 60 and 61.
+**CORRECTED 2026-08-27 after steps 1 and 2. The first version of this entry
+blamed emitter inlining and an `IrApply`, and both halves were wrong.** The
+correction is the finding.
 
-    let x = [1, 2] in let a = ident2 x in let b = ident2 x in list-at a 0
+**Step 2 -- where the inlining happens: THE COMPILER, not the emitter.**
+`ident2` is not on the wire at all. `called-twice` lowers to
 
-    const a = x; ... _ = x; ... cx_list_at(a, 0)
-    zig: error: pointless discard of local constant
+    (let "a" (list int-default) (name "x" (list int-default))
+     (let "b" (list int-default) (name "x" (list int-default))
+      (apply (apply (name "list-at" ...) (name "a" ...)) (int-lit 0) ...)))
 
-`ident2` is the identity function, so `ident2 x` INLINES to a bare `x`. The
-binding `b` is unread, so the emitter discards its value -- and the value's
-emitted text is now a plain name that is read elsewhere, which is exactly the
-condition zig refuses.
+so `let a = ident2 x` is already `let a = x`. **`zig-let-discard` therefore
+sees an `IrName`, not an `IrApply`, and the predicate SHOULD have fired.**
 
-**Why finding 60's fix does not cover it, and this is the transferable part.**
-`zig-let-discard` inspects the IR NODE. Here the node is an `IrApply`, so it
-takes the "keep the discard" branch, which is right for a call in general and
-wrong for this call. **The condition zig imposes is on the EMITTED TEXT, and
-the predicate is written against the IR.** Those agree until something --
-inlining, here -- makes an apply emit as a name.
+**Why it did not, and this is the actual defect.** The rule is
+`zig-name-is-local ctx n & zig-occurs body n`, and `body` is the let's
+CONTINUATION -- the code after the binding. Here the continuation reads `a`,
+not `x`, so `zig-occurs` answers False and the discard is kept. But `x` is read
+at `const a = x;`, which comes BEFORE the discard. **Zig's "read elsewhere" is
+the whole enclosing function; ours is everything after this point.** The rule
+is right and its scope is wrong.
 
-That is the fourth distinct way this one discard has been got wrong today
-(three in finding 60, this one on top), and every one of them is the same
-mismatch in a different costume: a rule about generated text expressed as a
-rule about the tree it was generated from.
+So this is not a separate finding from 60 after all. It is finding 60's rule
+with a scope that happens to agree with zig's whenever the earlier use is
+absent, which is most of the time.
 
-**Not fixed.** The honest fix tests the emitted string rather than the node,
-and that is a bigger change than it sounds -- it needs the value emitted
-before the decision, and the body's emitted text to answer "read elsewhere".
-Worth doing deliberately rather than as a fifth patch on a tired afternoon.
+**Step 1 -- how often it bites: ONCE, in 595 emitted programs.** Scanning
+every emitted `.zig` for `_ = <ident>;` where the identifier is genuinely READ
+elsewhere on the same line (excluding declarations and the discard itself)
+finds four sites in two files. Three are `_ = _ctx2;` in `par-nested`, which
+refuses for an unrelated and pre-existing reason
+(`expected type 'i64', found 'CxFn1(void,i64)'`) and never reaches a discard
+error. The fourth is `roc-list-called-twice`, the port written to probe this.
+
+**So the honest sizing is: one program, and it is one we wrote.** The pattern
+needs an unused binding whose value is a name that was read EARLIER, which the
+depot's own corpus produces nowhere. Roc's aliasing cluster produces it
+readily -- case 20 is exactly that shape -- so it will recur as ports land, but
+it is not blocking anything today.
+
+**What a fix would need**, if it is ever worth doing: the enclosing
+definition's body at the discard site, so the occurrence check can use zig's
+scope instead of the continuation. `emit-zig-def` has it; threading it through
+would touch `ZigCtx`. **That is a bigger change than the defect currently
+justifies**, and the earlier plan -- test the emitted STRING rather than the
+tree -- is now known to be solving the wrong problem, since the node was an
+`IrName` all along.
 
 ## 62. The `is not declared at this site` marker covers TWO causes, and only one of them is finding 59
 
