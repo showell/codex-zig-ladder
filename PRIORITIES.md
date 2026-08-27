@@ -111,60 +111,76 @@ compute entry point refuses on a host without `CODEX_LADDER_VENUE`
 (`bb39139`), which `~/.codex_ladder_env` exports. One compute job at a
 time.
 
-## TWO JOBS ARE RUNNING. READ THEIR STATUS FILES FIRST. (2026-08-27 ~15:40Z)
+## H2 IS SETTLED. IT IS UPSTREAM, IT IS ROOT-CAUSED, AND IT IS FIXED.
 
-Left running on purpose at the end of the 08-27 afternoon session; both are
-detached and neither needs a person. **Read these two files before anything
-else, because everything below was written without their answers.**
+**Objective: OUTBOUND.** Entry point: KEYBOARD, then one BOX run for due
+diligence.
 
-    ~/runs/20260827T151547Z-h2-returns/CHAIN-STATUS.txt
-    ~/runs/20260827T152354Z-h2-canary/CANARY-STATUS.txt
+The canary (`c6cd236a`) answered on 2026-08-27 at 16:09Z: **the arm FIRES and
+the lookup MISSES**, on all five affected lambdas. Its own driver printed that
+verdict off a grep of the parameter cells, which was right for the wrong
+reason -- only one parameter cell moved, and that one was contamination from a
+neighbour. The evidence is the whole wire, not the cell table, and it is
+banked in `findings/h2-wire/` with the pin's baseline beside it.
 
-**1. The plug chain is DONE and FULLY GREEN**, codex `6ed21f19`, ladder
-`c936810`. Legs 0-4 were already in; **leg 5, the bare-metal sweep, landed
-GREEN at 16:03Z with all 14 rungs**. That was the one leg consulting an
-oracle outside the zig arm, so nothing is left that can turn the plug branch
-red. The status file is kept only as the record -- there is no longer a
-question in it.
+**The root cause, found by reading source from where the canary pointed:**
 
-**2. The H2 canary**, codex `c6cd236a`, and IT IS THE ONLY OPEN QUESTION.
-It waited out the sweep and **took the box at 16:03:38Z**, so by the time
-anyone reads this it has either finished or died; either way its status file
-says which. Its
-status file ends in a line beginning `VERDICT:`. The three readings and what
-each means are in the section below and in the commit message of
-`c6cd236a`, written before the build so the result cannot be fitted to it.
+    Syntax/SyntaxNodes.codex:23   | LambdaExpr (List Token) (Expr)
 
-**If the canary says the arm NEVER FIRES**, the parked patch is aimed at the
-wrong seam and `lower-let:689` is not the path feeding these lambdas; find
-what is. **If it says the lookup MISSES**, the seam is right and the span
-`infer-lambda` records under is not the span `lower-lambda` asks with --
-`infer-lambda` (`TypeCheckerInference.codex:488-498`) computes and RETURNS
-the lambda's full function type today and records it nowhere, which was
-confirmed by reading it this afternoon. **If it says real types**, the
-earlier byte-identical result was not measuring what it was believed to.
+The lambda is the only expression node in the CST with no span. Its
+neighbours all carry one, so `Desugarer.codex:55` has nothing to pass and
+writes `synthetic-span`, and `is-synthetic-span` (`file-id == 0`) gates BOTH
+`record-expr-type` (`Unifier.codex:147`) and `lookup-expr-type` (`:178`).
+Every lambda in the language is filed under file-id 0, which is to say not
+filed. That is why the parked patch was byte-identical: it wrote into a
+channel that discards and read from one that always misses. **Not a span
+mismatch -- no span.**
 
-**Do not re-cut a sandbox for either.** They hold their own natives.
+**The fix: branch `h2-lambda-span` (`bba94d1b`), five sites**, giving the node
+its lambda token the way `HandleExpr`/`TryExpr`/`WithTimeoutExpr` carry
+theirs. Measured in `~/runs/20260827T161748Z-h2-span`, which still holds its
+natives:
 
-## THE ISSUE DRAFT IS WRITTEN AND NOT SENT
+    matrix cells reading `error`     6 of 11  ->  0 of 11
+    case f  (\s -> s & "!" on a Text)  error  ->  text
+    case d  (a lambda literal's fn arg) error  ->  (fn int-default int-default)
+    case g  (never applied)             error  ->  (tvar 305)
+    controls b and e                    unchanged
 
-`outbound/ISSUE-DRAFT-type-info-dropped.md`. Steve's argument -- the
-compiler is biased toward backends that can get away with missing type
-info, and x86 is the extreme case -- steelmanned, with every load-bearing
-claim verified against source rather than taken from the register.
+Case f is the cell that separates recovery from a lucky `Integer` default, and
+it recovered. Case g is the cell that must NOT recover, and it did not -- an
+unsolved type variable is what an unconstrained parameter is, and it is more
+honest than an `ErrorTy` claiming a type failure in a clean program. The
+pre-registration (`1e044bf`, written before the build) called ten of eleven
+cells and got case g wrong; the reading was wrong, not the compiler.
 
-**Steve's decision, 2026-08-27: HOLD until the canary lands**, so the issue
-does not guess about their internals in the same breath as arguing their
-own gates cannot see this. When it lands, correct the "what we tried"
-section to say what the canary actually found, then send. GitHub, Steve's
-account, say it is Claude.
+**THE PLUG-SIDE RECOVERY IS DELETED. Steve's ruling, 2026-08-27:** *"Let's
+nuke all remnants of our attempts to work around this on the plug side. I
+think the plug-side strategy is doomed to failure ... I don't want any
+fragile half-measures here or unnecessary clutter in our upstream message."*
+Branch `zig-plug-h2-recovery` deleted (nine commits, 294 lines in
+`ZigEmitter.codex`), its three sandboxes removed, 1.7 GB freed. Nothing
+anywhere should grow a zig-side arm for this again. One remnant is knowingly
+left alone: `3f0f42e5` still sits in the history of the stale
+`zig-plug-tvar-not-an-answer` branch, which is based on pre-u51 upstream and
+holds a lot of unrelated landed work -- deleting the branch to reach one
+commit would cost more than it saves.
 
-The two strongest things in it, both checked: `infer-lambda` computes the
-lambda's complete type and returns it, so the type is not lost but
-RE-DERIVED by a worse method; and Ada (`Long_Long_Integer`) and Fortran
-(`integer(8)`) GUESS, which case f of the matrix refutes -- two shipped
-plugs silently miscompiling a `Text` parameter, which is the evidence that
-this already costs them something.
+## THE SEND, AND THE ONE THING OWED BEFORE IT
+
+`outbound/ISSUE-DRAFT-type-info-dropped.md` is rewritten (`b56137e`,
+`f7675ef`): the plug-side "what we tried" section is gone entirely, so is the
+hedge that said we did not know why our patch was inert, and in their place is
+the root cause, the fix, and the table above. The ask is a ruling plus an
+offer to send the branch as a PR with a `compiler-backlog.md` row. GitHub,
+Steve's account, say it is Claude.
+
+**What is owed: due diligence on a core-compiler change.** A change in the
+parser and desugarer touches every backend, and the only measurement so far is
+one seven-case matrix's IR wire. Before the send, run the fix's compiler
+through the corpus and the 14-rung sweep -- the `h2-span` sandbox already has
+the natives, so this is one BOX job, not a rebuild. A regression there is the
+one thing that would change the message.
 
 ## The Update 51 ceremony is closed
 
@@ -194,114 +210,6 @@ natives and codexzig. **It is the only sandbox on the box** and it is
 worth keeping until the next item is measured, because that item needs
 exactly these natives.
 
-## TOP PRIORITY: THE H2 CANARY. THE DIRECTION IS UNDER TEST, NOT DECIDED.
-
-**Steve, 2026-08-27 afternoon, on reading the essay: "I don't think it's
-necessarily up to the zig emitter to work around the fact that the compiler
-throws away useful type info ... inferring types from surrounding code feels
-fragile and clumsy to me."** He is right that it is a fair description of
-what the plug-side recovery does, and the argument that reversed this file
-this morning is weaker than it was written to sound:
-
-- **"Four sibling plugs answer `ErrorTy`, so it is a contract"** does not
-  survive being looked at. C# `object` and Rust `Box<dyn Any>` are plugs
-  ERASING a type into a universal dynamic one their targets happen to have;
-  that says nothing about whether the wire should carry it. Ada
-  `Long_Long_Integer` and Fortran `integer(8)` are GUESSES, and case f of
-  our own matrix refutes the guess. **Nobody recovers.** Four workarounds,
-  two of them wrong, is not a contract.
-- **The cost of being wrong is asymmetric.** A plug-side recovery that
-  ships and is then fixed upstream becomes a workaround with no live
-  finding under it -- the `deck-record` shape, which outlived the finding
-  Update 43 closed and disabled the seed's deck discipline for weeks. This
-  tree has paid that twice.
-- **Whoever writes this section is on their third opinion** (upstream,
-  ours, upstream). That is the point at which this tree stops reading and
-  measures.
-
-**So the decision rests on the canary, not on another reading.** Branch
-`h2-lowering-canary` (`c6cd236a`), a child of the parked patch `22e9b2cc`
-which is a child of the `012a9d2e` pin. `lambda-expected-ty` answers
-`TextTy` when the arm fires AND the lookup misses; `Text` because no
-defaulting rule in this compiler produces it. Read with `h2_wire.py`, which
-is new and prints the `(param ...)` cell of every lifted lambda with no zig
-generated and no plug opinion involved. **Pre-registered before the build:**
-any `text` means the arm fires and the lookup misses; every cell still
-`error` means the arm never fires; real types mean the byte-identical
-earlier result was not measuring what it was believed to. Case f is
-unreadable here -- its true answer IS `text` -- so read a, c, d and g.
-
-**If the compiler fix is available, the plug-side recovery is DELETED, not
-kept beside it.** Two answers to one question is the state this whole
-session has been chasing out of the emitter, and keeping a dead recovery
-walk "just in case" would be the same mistake at the level of the tree.
-
-## WHAT WAS BUILT WHILE THE DIRECTION WAS STILL `3f0f42e5`
-
-**Branch `zig-plug-h2-recovery`, cut from the `012a9d2e` pin. Measured, in
-three chains, each step found by the previous step's build rather than
-predicted.** It is real work and it is not wasted whatever the canary says:
-the definition/wrapper disagreement it uncovered is wrong with or without
-`ErrorTy` on the wire. Whether it SHIPS is the open question.
-
-    fe64fcb4  definitions recover        corpus 318/268/24 unchanged
-    ad482a41  wrapper parameters recover corpus 318/268/24 unchanged
-    6ed21f19  wrapper returns recover    wrapper markers 14 -> 4
-
-The recovery works where it can: `__lam_3` came out
-`(base: i64, step: CxFn1(i64, i64))` from the callee slot, and `__lam_6`
-came out `[]const u8` -- case f, the cell that separates recovery from a
-lucky `Integer`. Cases a and g keep their refusals by design, and leg 1b's
-allowlist is built around exactly those two.
-
-**Three defects were found in it, and the pattern is worth keeping.** One
-lambda gets typed in three places -- its definition, its closure wrapper's
-parameters, its closure wrapper's result -- and all three had to be made to
-agree, one arrow further down each time. A cold read caught a fourth: the
-wrapper's slots start at the first UNSUPPLIED parameter, and indexing from
-zero handed a partially-applied trampoline the type of a parameter already
-consumed. A WRONG type, not a refusal, written by the same session that had
-spent the morning building guards against exactly that.
-
-**The argument this section used to make, kept because it is what has to be
-answered:** bare metal runs all twelve Roc programs, so nothing upstream
-blocks them.
-
-**Four sibling plugs answer `ErrorTy` and ours does not:**
-
-    CSharpEmitterExpressions.codex:64   is ErrorTy -> "object"
-    RustEmitter.codex:57                is ErrorTy -> "Box<dyn std::any::Any>"
-    AdaEmitter.codex:134                is ErrorTy -> "Long_Long_Integer"
-    FortranEmitter.codex:148            is ErrorTy -> "integer(8)"
-
-`cs-type` and `emit-zig-type` are arm-for-arm parallel -- both answer
-`NothingTy`, `ProofTy` and `PropEqTy`, in that order -- and only ours
-lacks the `ErrorTy` arm, so it falls to `ZigEmitter.codex:331`'s
-`otherwise` and becomes the marker **five of the eight failing Roc ports
-die on**. `ErrorTy` is a wire CONTRACT the fleet answers, not an anomaly.
-
-**So `3f0f42e5` is the right fix and not a workaround**, and the argument
-that stood here against building it -- that a plug-side recovery would
-paper over an upstream defect -- is withdrawn with the false premise it
-rested on. **Build it.** It recovers the parameter's type from the body's
-own uses or from the callee's declared parameter, and it carries one
-KNOWN GAP in its own prose: match binders are not guarded against
-rebinding, which yields a wrong recovered type rather than a refusal.
-Close that gap first, then a cold read, then a chain.
-
-**Do not copy the sibling arm.** C# and Rust answer with a universal
-dynamic type and zig has none -- `ZigEmitter.codex`'s own prose says
-"Zig will not accept anyopaque as a parameter type at all". Ada's and
-Fortran's `i64` is what case f of `findings/probe-h2-lambda-types.codex`
-exists to refute: its missing type is `Text`, and a plug answering `i64`
-there is wrong rather than refusing. The answer must be the RECOVERED
-type.
-
-**Verify with what is already on the box.** The matrix and its
-`.expected` are written, and the pin's natives and codexzig are sitting
-in the sandbox above. Expect five Roc ports to move and case f to be the
-one that proves recovery rather than defaulting.
-
 ## AFTER THAT: THE OTHER THREE PORTS, WHICH ARE A DIFFERENT CLASS
 
 `iter-map`, `iter-keep-if`, `iter-drop-if` fail on type variables
@@ -311,32 +219,22 @@ is ours too, and **nothing written covers it**: `7de07cf0` says so
 itself, "Does NOT fix finding 55's other half: a source-level type
 variable reaching the same fallback." Bigger piece, own sitting.
 
-## PARKED: THE LOWERING OBSERVATION AND THE INERT PATCH
+## THE `ErrorTy` SENTINEL COLLISION, WHICH THE FIX DOES NOT CLOSE
 
-**Not a defect report, and nothing depends on it.** Lowering does lose a
-type it holds -- a `let` hands `ErrorTy` down as its no-expectation
-sentinel (`Lowering.codex:689`), parameters peel off it
-(`:722-724`, `Types/CodexTypeHelpers.codex:4-10`), and the checker's
-solved answer is never asked for. That reading survived the reversal and
-is worth sending as a SUGGESTION once our own arm is fixed: the wire
-could carry more than it does, and a statically-typed target pays for it.
-Send it as an observation, never as a bug.
+Still true and still worth saying, and it is in the draft: `ErrorTy` is the
+compiler's TYPE FAILURE atom AND `lower-let`'s no-expectation sentinel
+(`Lowering.codex:689`). Two different facts wearing one spelling, and the
+collision reaches the wire -- a plug reading `(param "x" error)` cannot tell a
+failed check from an unwritten answer. The lambda-span fix removes the case
+that made this bite, but not the collision.
 
-**The patch is parked, not abandoned.** Branch `h2-lowering-fix`
-(`22e9b2cc`) in the depot clone -- its sandbox is deleted, the branch is
-not -- produced BYTE-IDENTICAL IR, 7,935 bytes, with the patch provably
-in the build. The prediction was recorded first at `bd924df` and refuted.
-Five causes are read out and eliminated in the register. It is no longer
-urgent, because nothing is blocked on it; the instrument that would
-settle it is one build with `lambda-expected-ty` answering `TextTy` on a
-lookup miss.
-
-**The lesson that cost the day, and it has now cost two:** a claim in
-`findings/README.md` was read as evidence rather than verified against
-code. The false sentence was "No plug mentions `ErrorTy` -- not the zig
-emitter, not the C# one", and the disproving grep had already been run
-that morning. The register is orientation, exactly like MEMORY.md. Code
-is truth.
+**The lesson that cost two days:** a claim in `findings/README.md` was read as
+evidence rather than verified against code. The false sentence was "No plug
+mentions `ErrorTy` -- not the zig emitter, not the C# one", and the disproving
+grep had already been run that morning. Then the entry over-corrected to "H2
+IS OURS" on the strength of four sibling arms, which measurement has now
+overturned in the other direction. The register is orientation, exactly like
+MEMORY.md. Code is truth, and a measurement beats both.
 
 ## THE PR 92 EMITTER REPAIR LANDED -- `012a9d2e`, and it is OUR CODE VERBATIM
 
@@ -433,32 +331,9 @@ caught the two stale items above.
    candidate fixes costed in row 1.90 and neither taken. Wants its own
    sitting plus a check that re-derives the surface AND counts
    parameters.
-3. **H2 -- FALSIFY IT BEFORE BUILDING ANYTHING.** This is now one guest
-   and it should go first the moment the box is free.
-   `findings/probe-h2-lambda-types.codex` is the matrix (five cases, four
-   refusing shapes plus a POSITIVE CONTROL), `run_seed_probe.sh` reads
-   both the diagnostics and the IR wire since `9240b79`, and the register
-   entry carries the arm-by-arm read. Two legs are settled at the
-   keyboard: `error` on the wire can only be `ErrorTy` (all 26 CodexType
-   variants have an `ir-emit-type` arm, so the `otherwise` floor that
-   made the atom ambiguous is dead), and the matrix discriminates on our
-   arm -- five error cells across cases a to d, case e's control clean.
-
-   **The recovery rule `3f0f42e5` is a WORKAROUND until this run happens,
-   and that is the reason to run first and build second.** If the seed's
-   own wire carries `error`, the defect is the checker's and the fix is a
-   PR upstream; a plug-side recovery would then be a workaround with a
-   live finding under it, which is the shape this tree has already paid
-   for twice (`deck-record` outlived the finding Update 43 closed and
-   silently disabled the seed's deck discipline for weeks). If the wire
-   is CLEAN, `native/codexir` put the `error` there and the bug is ours
-   and worse, and the recovery rule is fixing a symptom of our own
-   miscompile. **Neither outcome makes the recovery rule the first move.**
-
-   If it is built anyway, it still carries a KNOWN GAP in its own prose:
-   match binders are not guarded against rebinding, which yields a wrong
-   recovered type rather than a refusal. Close the gap, then a cold read,
-   then a chain of its own.
+3. **H2 -- DONE.** Settled by measurement 2026-08-27 and fixed on
+   `h2-lambda-span`; see the top of this file. What is left is the send
+   and the due-diligence run before it, not a decision.
 4. The rest of the reading pass (item 1e): 24 corpus refusals left, of
    which 11 are item 2 above and 5 are a concurrency cluster nobody has
    read.
@@ -651,9 +526,9 @@ that) -- `gh pr view 92 --repo damiant3/Cobblestone --comments`.
 ## 1f. Unit families are 53% of everything left, and half the fix is ONE ARM
 
 **PREDICTIONS for the units+shadowing chain, written before it runs
-(codex `cab52a35`, which deliberately EXCLUDES the H2 recovery rule at
-`3f0f42e5` -- that is the least-reviewed code written today and it moves
-the same programs finding 47 governs).**
+(codex `cab52a35`. It excluded the H2 recovery rule, which no longer
+exists -- H2 is fixed in the compiler and the plug-side walk is deleted --
+so the exclusion is now vacuous and the base is just `cab52a35`).**
 
 1. `unit-family`, `unit-smoke`, `units-foreword`, `implicit-convert`
    move `refused -> match`. `unit-family` prints `2400 / 240 / 2 / 100`.
