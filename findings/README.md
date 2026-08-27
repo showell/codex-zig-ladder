@@ -2251,6 +2251,32 @@ cannot be skipped today.
 the checker learns it touches the type checker and every plug that reads
 type-defs, and we can verify only the zig arm.
 
+
+**CLOSED UPSTREAM BY UPDATE 51 as COMPILER-26** (main 19889), found by
+the ceremony's step 1 on 2026-08-27: *"a record or variant's implicit
+type parameters are carried on the AST rather than derived by the IR text
+emitter at serialisation time, so every AST consumer sees the complete
+type."* That is this finding, fixed, and it went in as PR 90.
+
+**THE WORKAROUND IT JUSTIFIES IS NOW ORPHANED, AND THAT IS THE HAZARD
+THE CEREMONY WARNS ABOUT.** `codexzig` carries `IRTextParser` and joins
+its two halves by emitting IR TEXT and parsing it straight back in
+memory. `gen_codexzig_harness.py:9` records why: a direct hand-off looked
+possible and did not work, *because the wire DERIVED what the AST did not
+carry.* Update 51 makes the AST carry it.
+
+So the round trip may now be removable -- which would delete
+`IRTextParser` from the bundle, shrink it, and remove a whole stage from
+the crown-jewel binary. **NOT verified, NOT attempted.** It is exactly
+the shape of "a workaround that outlives its finding actively corrupts
+measurements", and the ceremony's instruction is to grep for the
+workaround and delete it in the same commit that acknowledges the
+closure. That commit has not been written; this note is the
+acknowledgement half.
+
+**Owed before touching it:** the round trip is load-bearing for the
+FIXED POINT, so removing it is measured by `codexzig_build.sh` and
+nothing else. Do it on the u51 pin, alone, on its own chain.
 ## 43. No plug `run.ps1` consults the VM host selection in the config it sources, so no plug can be run on Linux
 
 Found 2026-08-25 on the ladder droplet against `0c4327d5`, which is
