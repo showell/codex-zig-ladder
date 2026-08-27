@@ -1,0 +1,95 @@
+Chapter: ProbeCtdSubst
+  cites Foreword chapter Console
+
+ Does the compiler learn a type variable from a USER-DECLARED parametric
+ type the way it learns one from a builtin?
+
+ `subst-type-vars-from-arg` (`IR/LoweringTypes.codex:57-64`) is the walk that
+ learns `a := Integer` by matching a parameter type against an argument type.
+ It has arms for `TypeVar`, `ListTy`, `FunTy` and `TypeApply`, and an
+ `is otherwise -> target` floor. `SumTy`, `RecordTy`, `ConstructedTy`,
+ `LinkedListTy`, `VectorTy`, `UnitTy` and `LinearTy` all carry type children
+ and all fall to that floor.
+
+ Both cases below are the same shape: a parametric container whose field is a
+ closure returning something built from the container's own parameter, with
+ the closure's body an `if` whose two branches are CONCRETE. `lower-if`
+ (`IR/Lowering.codex:44`) calls `branch-recorded-ty` with those branches as
+ the witness, which is exactly the machinery that should replace the variable.
+
+ The ONE RESPECT that differs: case A's payload is a declared sum type and
+ case B's is a builtin `List`. If A carries a `tvar` on the wire and B does
+ not, the missing arm is the whole cause.
+
+Section: Types
+
+  BoxA (a) = record {
+   get : Integer -> StepA a
+  }
+
+  StepA (a) = | OneA (a) | DoneA
+
+  BoxB (a) = record {
+   get : Integer -> List a
+  }
+
+Section: Functions
+
+ A. payload is a DECLARED sum type. Expect `(ctd "StepA" (args (tvar N)))`
+ on the wire if the arm is missing.
+
+  mk-a : Integer -> BoxA Integer
+  mk-a (n) =
+   BoxA { get = \i -> if n == 0 then DoneA else OneA n }
+
+  read-a : BoxA Integer -> Integer
+  read-a (b) =
+   when ((b.get) 0)
+    is OneA (v) -> v
+    is DoneA -> 0
+
+ B. NOT A CONTROL, and saying so is the point. It was written as one -- same
+ closure, same `if`, a builtin `List` payload that `subst-from-list` DOES
+ handle -- and it fails too, which would look like a refutation of A if the
+ wire were not read. It is not. Read on the wire, A and B fail at different
+ places:
+
+   A  branches `(ctd "StepA" (args int-default))`   -- CONCRETE
+      the `if`  `(ctd "StepA" (args (tvar 16)))`    -- the witness was usable
+                                                       and the walk learned
+                                                       nothing: the missing arm
+
+   B  branches `(list-expr (elems (int-lit 0)) (tvar 19))` -- the BRANCHES
+      the `if`  `(list (tvar 19))`                          themselves carry
+                                                            the variable, so
+                                                            `usable-witness-ty`
+                                                            refuses them and
+                                                            the substitution is
+                                                            never attempted
+
+ So B is a separate defect one layer earlier: a list literal lowered under a
+ type-variable expectation does not get a concrete type from its own elements.
+ Both branches are non-empty here on purpose -- an empty list literal has an
+ unresolved element type for a third reason again, and the first version of
+ this probe used one and measured that instead.
+
+ The lesson this probe cost: a control is only a control once its failure
+ MODE has been read, not once its verdict has. Two programs can both be red
+ for unrelated reasons and the pair says nothing.
+
+  mk-b : Integer -> BoxB Integer
+  mk-b (n) =
+   BoxB { get = \i -> if n == 0 then [0] else [n] }
+
+  read-b : BoxB Integer -> Integer
+  read-b (b) =
+   let xs = (b.get) 0
+   in if list-length xs == 0 then 0 else list-at xs 0
+
+Section: Entry
+
+  opening : [Console] Nothing
+  opening = act
+   print-line-uni (show (read-a (mk-a 7)))
+   print-line-uni (show (read-b (mk-b 9)))
+  end
