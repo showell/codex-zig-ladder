@@ -1145,7 +1145,49 @@ it: read the call site's own instantiated type and pass it. It is also the
 case that a specialisation engine would find hardest, because there is no
 argument to specialise ON.
 
-## 64. A typeclass INSTANCE METHOD's lambda is desugared under a synthetic span, so its parameters lose the type the checker solved -- COMPILER-30's second site, now measured
+## 64. WITHDRAWN AS DIAGNOSED, and re-stated: an instance DICTIONARY's type argument is never instantiated, and the method lambda's parameter is a symptom
+
+**The first version of this entry said this was COMPILER-30's second site and
+that `token-span (m.name)` fixed it. BUILT 2026-08-27 and IT DOES NOT.** The
+claim was also sent upstream before it was built, and has been corrected there.
+
+    typeclass-smoke  __lam_1 x  (tvar 16)   predicted int-default, UNCHANGED
+    typeclass-smoke  __lam_2 b  (tvar 16)   predicted boolean,     UNCHANGED
+    markers          unchanged; both programs still red
+
+**Why the span was never the blocker.** COMPILER-30's arm fires only when the
+context supplies NO expectation -- `lower-let` handing down `ErrorTy`. A method
+lambda is a record FIELD VALUE, and the field has a declared type:
+
+    (rec-def "ShowableDict" (tparams "a")
+      (fields (rec-field "to-text-impl" (a-fun (a-named "a") (a-named "Text")))))
+
+so the expectation is `a -> Text`, the arm never fires, and the span it would
+have used is irrelevant. The parameter peels from the field type, and its `a`
+is the dictionary's own type argument.
+
+**Which is where the defect actually is.** `Showable-dict-Integer` is typed
+`(record-ty "ShowableDict" (args (tvar 511)))` while `Showable-dict-Boolean` is
+`(args boolean)` -- **the instance's type argument is instantiated for one
+instance and not the other**, and the unit contains no `forall` quantifiers, so
+`tvar 511` is bound nowhere. Every type variable in those lambdas is downstream
+of that.
+
+**The change is NOT inert, which is its own warning.** It moved variable
+numbering -- `__lam_1`'s body went `(tvar 516)` to `(tvar 511)`, `to-text-List`
+swapped two -- without moving any parameter cell. A change that perturbs
+unification while fixing nothing is worse than one that does nothing, because
+it looks like progress in a diff.
+
+**Still open and now correctly scoped:** why one instance instantiates its
+dictionary and its sibling does not. That is the question to instrument, and
+reasoning about it has now been wrong once.
+
+**The `ForExpr` `map-list` lambda is the ONLY remaining synthetic-span site.**
+The instance-method site is not one -- its lambda has an expectation, so the
+span cannot help it.
+
+
 
 **Found 2026-08-27 evening, doing the separation Steve asked for.** Blocks
 `typeclass-smoke` and `typeclass-poly`. **It is not an unconstrained type; it
