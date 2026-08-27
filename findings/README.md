@@ -1486,6 +1486,64 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
+## 61. OURS. A generic function whose type parameter appears ONLY in its return type is called with no type argument, though the IR carries the instantiation
+
+**Found 2026-08-27**, when finding 59 cleared `hamt-test` and `kvstore-test`
+to `clean` and they then failed the zig build. **This is the next gap, not a
+regression** -- both were `markers` before and had never been built.
+
+    fn hamt_empty(comptime T58: type) HamtMap(T58)                emitted
+    hamt_empty()                                                  called
+    zig: error: expected 1 argument(s), found 0
+
+    fn hamt_set(comptime T65: type, m: HamtMap(T65), ...)         emitted
+    hamt_set(i64, m0, "...", 42)                                  called -- CORRECT
+
+**The emitter already threads type arguments, and the rule it uses is the
+defect.** It derives them from the VALUE arguments: `hamt-set` takes an
+`m : HamtMap(T)` and a `value : T`, so `T` is readable off the call. `hamt-empty`
+takes nothing at all -- its type parameter appears only in the RETURN type --
+so there is nothing to read and it emits none.
+
+**The answer is on the wire and is not being asked for.** At the call site the
+IR types `hamt-empty` as `(ctd "HamtMap" (args int-default))`, fully
+instantiated. The instantiation is not missing; the emitter derives it from
+the wrong place.
+
+**This is the smallest concrete piece of the monomorphisation item, and it
+argues for the comptime direction.** No specialisation engine is needed for
+it: read the call site's own instantiated type and pass it. It is also the
+case that a specialisation engine would find hardest, because there is no
+argument to specialise ON.
+
+## 62. The `is not declared at this site` marker covers TWO causes, and only one of them is finding 59
+
+**Recorded 2026-08-27 because a prediction was wrong**, and the wrongness was
+the useful part: `list-test` was predicted to clear with `hamt-test` and
+`kvstore-test` and did not. All three carried the same marker text. The causes
+are different and the marker cannot tell them apart.
+
+**Cause A -- a FOREIGN variable where an in-scope answer exists.** `hamt-test`:
+the definition is `forall 70`, the element is `tvar 70`, and the literal's
+element-type slot said `tvar 25`, which the unit binds nowhere. That is
+finding 59 and it is fixed.
+
+**Cause B -- an HONESTLY unconstrained variable.** `list-test`:
+`cl-is-empty (cl-nil)` on an empty cons-list constant. Nothing in the program
+ever determines the element type, because `is-empty` does not look at an
+element. There is no in-scope answer to prefer, because there is no answer at
+all.
+
+Cause B is case g of the H2 matrix again, and the same question the zig plug
+faces for `\k -> 1`: what does a backend emit for a type the program genuinely
+does not constrain? Any type is correct. Refusing is honest. Choosing one is a
+DEFAULTING RULE and it needs to be decided deliberately rather than fallen
+into.
+
+**The lesson for the queue: classify by CAUSE, never by marker text.** The
+scoping pass that produced the nine-program estimate grouped by message, and
+that is why one of the three predicted programs did not move.
+
 ## 60. OURS. An unused `let` whose value is a bare name emits `_ = x;`, which zig refuses as a pointless discard
 
 **Found 2026-08-27 by porting Roc case 10 sequentially**, which is the whole
