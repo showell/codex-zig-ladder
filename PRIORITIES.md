@@ -217,6 +217,53 @@ That is independent confirmation, and it also means **the STANDING PROPERTY
 item in this file now has an upstream counterpart** -- coordinate with it
 rather than build a second one.
 
+## THE BOX QUEUE -- what runs on the guest next, in order (2026-08-27 night)
+
+One compute job at a time. Costs measured today: a native build is ~5.5 min, a
+14-rung sweep ~30 min, a full corpus transpile ~3 min, a full corpus `--run`
+under 4 min on an existing sandbox, a rebank ~40 min.
+
+**B1. BUILD AND MEASURE FINDING 64.** `406ae2f9`/`11df612c` -- the
+instance-method lambda span -- is COMMITTED AND HAS NEVER BEEN BUILT. It is
+the only change on `roc-ports-type-recovery` in that state. Cut a sandbox at
+the branch tip, `native_build.sh`, then: the two programs it targets
+(`typeclass-smoke`, `typeclass-poly`), a full corpus transpile, and the blast
+radius against the `roc60c` tree. **Pre-register first**, including whether the
+dictionary's own type argument (`Showable-dict-Integer` typed `(args (tvar
+511))`) moves -- it is a separate question from the lambda's parameters and
+should not be folded in silently. Cost: ~10 min.
+
+**B2. SETTLE FINDINGS 47 AND 50 BY REPRODUCER.** Not a corpus run -- their
+marker strings overlap finding 55 and item 1c, so corpus data cannot attribute
+them. Run each finding's own reproducer against an existing sandbox's natives
+and read that. Cost: minutes, no guest.
+
+**B3. THE DIAGNOSTICS CENSUS, WHICH TONIGHT'S SWEEP SKIPPED.** `allcycles.sh`
+reported `CENSUS NOT COMPARED: ... ensure_ir.sh rebuilt the IR, so no
+bare-metal .diags exists for those units`, and named `ast/rebank_all.sh` as
+what produces a census that can be believed. Tonight's 14/14 therefore covers
+the rungs and not the diagnostics.
+
+**B4. REBANK AT THE NEW PIN -- blocked until the mirror push is public.** CL
+20189 is a new seed. When it lands: re-pin, natives, rebank the 14 truths,
+`bank_diff` against u51, tier set, census re-pin. B3 rides this. Cost: ~60 min
+all in. **Nothing downstream should be measured on the old pin once the mirror
+is public.**
+
+**B5. THE SECOND PR'S DUE DILIGENCE, AFTER B4.** Findings 57, 58, 59, 64 as a
+compiler branch and 60, 61 as a plug branch, measured against the NEW pin:
+corpus, sweep, and the Roc ports. Tonight's sweep was against the old pin and
+does not transfer.
+
+**B6. MONOMORPHISATION -- exploration, guest per iteration.** The three
+`iter-*` ports and `typeclass-smoke`. Emitter changes rebuild `zigemit`
+through the seed, so each attempt costs a guest; batch and pre-register.
+
+**What is NOT on this queue and why.** The unconstrained-type defaulting
+question is two programs and wants an upstream wire change, not box time.
+Finding 63 is parked. The standing-property item now has an upstream
+counterpart and should be coordinated before anything is built.
+
 ## SETTLE THE LAST TWO CONTESTED FINDINGS -- 47 and 50, by REPRODUCER not by corpus
 
 **Objective: INTEGRITY.** Entry point: KEYBOARD plus one short native run.
