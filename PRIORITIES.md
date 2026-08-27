@@ -120,14 +120,17 @@ else, because everything below was written without their answers.**
     ~/runs/20260827T151547Z-h2-returns/CHAIN-STATUS.txt
     ~/runs/20260827T152354Z-h2-canary/CANARY-STATUS.txt
 
-**1. The plug chain**, codex `6ed21f19`, ladder `c936810`. Legs 0-4 are in
-and GREEN; only **leg 5, the bare-metal sweep**, was still running. That is
-the one leg that consults an oracle outside the zig arm, so it is the only
-one that can still turn this red. Expect 14 rungs; anything less wants
-reading before the branch is trusted.
+**1. The plug chain is DONE and FULLY GREEN**, codex `6ed21f19`, ladder
+`c936810`. Legs 0-4 were already in; **leg 5, the bare-metal sweep, landed
+GREEN at 16:03Z with all 14 rungs**. That was the one leg consulting an
+oracle outside the zig arm, so nothing is left that can turn the plug branch
+red. The status file is kept only as the record -- there is no longer a
+question in it.
 
-**2. The H2 canary**, codex `c6cd236a`, and IT IS THE ONE THAT MATTERS. It
-polls until the box is quiet, then builds and reads the wire by itself. Its
+**2. The H2 canary**, codex `c6cd236a`, and IT IS THE ONLY OPEN QUESTION.
+It waited out the sweep and **took the box at 16:03:38Z**, so by the time
+anyone reads this it has either finished or died; either way its status file
+says which. Its
 status file ends in a line beginning `VERDICT:`. The three readings and what
 each means are in the section below and in the commit message of
 `c6cd236a`, written before the build so the result cannot be fitted to it.
