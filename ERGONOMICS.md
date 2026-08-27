@@ -83,6 +83,23 @@ the build's path literals are Windows-only and `Join-Path` does not
 normalise them, so the documented Linux host cannot run the documented
 build.
 
+## DONE 2026-08-27: the ports branch refuses a commit that is not a test file
+
+A compiler fix landed on `roc-ports-batch2` TWICE in one evening, both times
+because `git rebase` leaves HEAD on the branch it just rebased and the next
+commit went wherever HEAD happened to be. Both had to be cherry-picked onto
+`roc-ports-type-recovery` and the ports branch reset, and the second one was
+caught only because a sandbox's START line printed a commit that did not
+contain the fix being measured.
+
+`.git/hooks/pre-commit` in the depot clone now refuses any staged file outside
+`codex/test/` while on that branch, and prints the four commands that move it.
+Verified by trying to commit a `Desugarer.codex` change to it.
+
+Local to this box, since hooks are not tracked. **The general shape is worth
+keeping in mind: a rule that has been broken twice is a rule the tool should
+enforce, not one to be more careful about.**
+
 ## Standing: the compute lock is one line at one door
 
 Not a task. It is here because the shape of it took a day to find and
