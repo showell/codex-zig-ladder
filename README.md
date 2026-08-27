@@ -1,11 +1,41 @@
-# The zig plug's phase-oracle ladder
+# codex-zig-ladder -- a Diverse Double-Compiling check on the Codex compiler
+
+**Codex** is a programming language whose compiler is written in itself and
+emits bare-metal kernel images, so compiling anything with it means booting a
+machine. It is developed at
+[damiant3/Cobblestone](https://github.com/damiant3/Cobblestone) -- the language
+is Codex, the project is Cobblestone.
+
+**The zig plug** is a transpiler living in that project. It turns Codex IR into
+zig source, so the Codex compiler can also be built as an ordinary Linux
+executable instead of a kernel.
+
+**This repository asks whether the plug is honest.** It compiles the same
+compiler source two ways -- once by the trusted Codex seed on bare metal under
+QEMU, once through the plug and the zig toolchain -- and requires the two
+results to agree byte for byte. That is a Diverse Double-Compiling check in
+Wheeler's sense, built in fourteen steps called **rungs**, each putting more of
+the compiler under test than the last.
+
+**The goal is finding defects**, in the plug and in Codex itself.
+[`findings/README.md`](findings/README.md) is the register of what it has
+caught.
+
+This repository lives *outside* the Codex checkout it audits and modifies
+nothing in it; point it at one with `CODEX_ROOT` ("Running it", below). It is
+built for one dedicated host and refuses to compute anywhere else ("The
+venue").
+
+If you are new here: "What this is" has the vocabulary, "What the check proves,
+and what it does not" has the honest limits, and "Processing a new Update" is
+the operating procedure.
 
 ## What this is banked against
 
 | | |
 |---|---|
 | Seed | `6CF4A8E0D5E6D6F2` (2,876,035 bytes) |
-| Update | 50's **interim** push (`0c4327d5`, pin verbatim). No release note names this seed, so the bank is `seed-6cf4a8e0`, not `u50` |
+| Update | 50's **interim** push (`0c4327d5`, pin verbatim -- the `pin` is the Codex branch this bank was measured on; see "The checkout"). No release note names this seed, so the bank is `seed-6cf4a8e0`, not `u50` |
 | Rungs | **14 of 14 green** |
 | Banked | `truth/seed-6cf4a8e0/`; the newest three `uNN` banks are kept (`bank_truth.py --keep`), older ones live in git history. A `seed-` bank is outside that rotation and ages out only by hand |
 
@@ -49,7 +79,8 @@ source over a serial line.
 that. It is the authority every measurement here is compared against, and it is
 also what produces the IR the plug consumes -- which is why a new seed
 invalidates everything banked. Seeds change with each **Update**, an upstream
-release of the Codex repository; the release commit names its seed.
+release of Cobblestone (`damiant3/Cobblestone`, the project Codex is the
+language of); the release commit names its seed.
 
 **The plug** (`codex/plugs/zig/ZigEmitter.codex`) transpiles Codex IR into zig
 source: `prog.ir -> prog.zig`, which `zig build-exe` then makes native. Point it
