@@ -111,137 +111,111 @@ compute entry point refuses on a host without `CODEX_LADDER_VENUE`
 (`bb39139`), which `~/.codex_ladder_env` exports. One compute job at a
 time.
 
-## RUNNING RIGHT NOW -- census re-pin, then the codexzig fixed point
+## NOTHING IS RUNNING. THE UPDATE 51 CEREMONY IS CLOSED.
 
-    sandbox   ~/runs/20260827T133749Z-u51-natives
-              ladder 5f5b42d (master), codex 012a9d2e (branch u51-rebank)
-    driver    <sandbox>/chain.sh, nohup'd -- survives the console
-    logs      <sandbox>/chain.log   the two START/exit lines
-              <sandbox>/census.log  corpus_run.py --changed --bank
-              <sandbox>/codexzig.log  codexzig_build.sh
-    launched  2026-08-27 13:53, about 20 minutes for both
+Every step done and harvested, 2026-08-27. `u51-14of14`, seed
+`C3181693`, pin `012a9d2e`, `check_paths.py` clean, working tree clean.
 
-Sequential, not parallel, and that is not a preference: both take the
-compute lock, and only one may hold it. Natives are already built from
-the pin (6 minutes, against the README's quoted 11 -- the zig cache was
-warm).
+- **Rebank 14/14 green** in 2541 s; all fourteen truths byte-identical to
+  the bank taken from the killed run, sidecars included.
+- **`bank_diff` u50 -> u51**: four rungs moved, ten byte-identical.
+- **Census compared** for the first time under this seed; CDX6020 at its
+  pinned 43, **no re-pin owed**.
+- **Tier SET GREEN, 16 green 6 noted** -- and it CAUGHT ONE.
+  `prim-closure/under-mutual` went STALE: finding 39 / COMPILER-18 shipped
+  in Update 50, bare metal `not-47` at u49 and `47` from u50 on. Row
+  deleted at `5f5b42d`. It survived a whole Update because the u50
+  close-out ran `tiers_run.py --zig`, the zig arm alone, which
+  structurally cannot see a disagreement that STOPPED.
+- **Corpus census re-pinned and HARVESTED** (`07ab991`): clean 318, match
+  268, refused 24, against the 317/267/24 reported to PR 92 from an Update
+  50 tree. One program of drift across an Update; the PR's headline stands
+  and nothing is owed.
+- **`codexzig` built from the u51 pin, the first ever, and the FIXED POINT
+  HOLDS** -- it re-emitted its own 2,365,512-byte bundle byte-identically.
 
-**THE RESULTS DO NOT COME HOME BY THEMSELVES. HARVEST THEM.**
-`corpus/census.json` and `corpus/gaps.json` are TRACKED files and the run
-writes them inside the sandbox. This is the exact failure that stranded
-the u51 gold for a day and was only found by accident on 2026-08-27:
+The sandbox `~/runs/20260827T133749Z-u51-natives` still holds the pin's
+natives and codexzig. **It is the only sandbox on the box** and it is
+worth keeping until the next item is measured, because that item needs
+exactly these natives.
 
-    cp ~/runs/20260827T133749Z-u51-natives/ladder/corpus/census.json corpus/
-    cp ~/runs/20260827T133749Z-u51-natives/ladder/corpus/gaps.json    corpus/
-    git diff --stat corpus/          # then commit, with the new counts in the message
+## TOP PRIORITY: BUILD `3f0f42e5`. IT IS OURS AND IT IS ALREADY WRITTEN.
 
-**Read the new corpus counts against PR 92's before filing them.** That
-PR's re-scored headline -- `match 183 -> 267, refused 112 -> 24` -- was
-measured on an Update 50 tree with our emitter. This is the first census
-under the u51 pin, so the natives moved and every emitted zig moved with
-them. If the counts shift materially that is a note Damian would want,
-even though PR 92 is closed and nothing is owed.
+**H2 reversed direction on 2026-08-27 and this section replaces what
+stood here.** Steve asked why anything upstream needed changing when bare
+metal runs all twelve Roc programs, and whether our pipeline was simply
+failing to pull in a solution that already existed. It was.
 
-## CEREMONY: ONE ITEM LEFT AFTER THE CHAIN
+**Four sibling plugs answer `ErrorTy` and ours does not:**
 
-Banked, diffed, tagged, pushed (`u51-14of14`); README table and timings
-refreshed; `check_paths.py` clean.
+    CSharpEmitterExpressions.codex:64   is ErrorTy -> "object"
+    RustEmitter.codex:57                is ErrorTy -> "Box<dyn std::any::Any>"
+    AdaEmitter.codex:134                is ErrorTy -> "Long_Long_Integer"
+    FortranEmitter.codex:148            is ErrorTy -> "integer(8)"
 
-- **Tier SET: DONE, and it CAUGHT ONE.** `prim-closure/under-mutual` went
-  STALE -- finding 39 / COMPILER-18, fixed upstream in Update 50, bare
-  metal `not-47` at u49 and `47` from u50 on. Row deleted at `5f5b42d`,
-  set now **16 green 6 noted, SET GREEN**. It sat stale through a whole
-  Update because the u50 close-out ran `tiers_run.py --zig` -- the zig arm
-  alone, which structurally cannot see a disagreement that STOPPED. Same
-  shape as the addendum's bare-metal re-measure that could not observe the
-  emitter: a check run on the one arm that cannot answer the question.
-- **Census re-pin: RUNNING.** Then harvest, per above.
-- **codexzig from the pin: RUNNING**, the first ever. Its build ENDS with
-  the fixed point, so a red here is a finding, not a chore.
+`cs-type` and `emit-zig-type` are arm-for-arm parallel -- both answer
+`NothingTy`, `ProofTy` and `PropEqTy`, in that order -- and only ours
+lacks the `ErrorTy` arm, so it falls to `ZigEmitter.codex:331`'s
+`otherwise` and becomes the marker **five of the eight failing Roc ports
+die on**. `ErrorTy` is a wire CONTRACT the fleet answers, not an anomaly.
 
-Then the ceremony is closed. Housekeeping still open: gold has no
-rotation while truths keep three; `u51-emitter` differs from the pin in
-five DOC files only and is a historical marker.
+**So `3f0f42e5` is the right fix and not a workaround**, and the argument
+that stood here against building it -- that a plug-side recovery would
+paper over an upstream defect -- is withdrawn with the false premise it
+rested on. **Build it.** It recovers the parameter's type from the body's
+own uses or from the callee's declared parameter, and it carries one
+KNOWN GAP in its own prose: match binders are not guarded against
+rebinding, which yields a wrong recovered type rather than a refusal.
+Close that gap first, then a cold read, then a chain.
 
-## H2: THE DIAGNOSIS HOLDS, THE FIX IS INERT -- PICK UP HERE
+**Do not copy the sibling arm.** C# and Rust answer with a universal
+dynamic type and zig has none -- `ZigEmitter.codex`'s own prose says
+"Zig will not accept anyopaque as a parameter type at all". Ada's and
+Fortran's `i64` is what case f of `findings/probe-h2-lambda-types.codex`
+exists to refute: its missing type is `Text`, and a plug answering `i64`
+there is wrong rather than refusing. The answer must be the RECOVERED
+type.
 
-**Read this section cold and it should be enough to resume.** Steve is
-away; nothing goes to Damian until the second half is understood.
+**Verify with what is already on the box.** The matrix and its
+`.expected` are written, and the pin's natives and codexzig are sitting
+in the sandbox above. Expect five Roc ports to move and case f to be the
+one that proves recovery rather than defaulting.
 
-**The diagnosis, which is solid and needs no machine to check.** A
-lambda's parameters are peeled off the type its CONTEXT expects
-(`IR/Lowering.codex:722-724`), and `peel-fun-param` answers `ErrorTy` for
-anything that is not an arrow (`Types/CodexTypeHelpers.codex:4-10`). A
-`let` hands its bound value `ErrorTy` as the expectation (`:689`, `:707`),
-so every parameter peels to `ErrorTy` and `lambda-recorded-ty` stores the
-arrow with `ErrorTy` in each position because `ErrorTy` has no type
-variables (`:743-747`). The checker is NOT at fault: `bind-lambda-params`
-binds each parameter to a fresh type variable
-(`Types/TypeCheckerInference.codex:507-516`) and unification solves it.
-`deep-resolve` would hand the answer back; `lower-lambda-params-acc`
-never asks. **In one sentence: the type checker gets it right, and the
-stage that writes the IR never asks it.**
+## AFTER THAT: THE OTHER THREE PORTS, WHICH ARE A DIFFERENT CLASS
 
-**The fix, which is written, built, and does nothing.** Branch
-`h2-lowering-fix` (`22e9b2cc`, child of the pin, in the depot clone --
-its sandbox is deleted, the branch is not): `infer-lambda` records the
-lambda's type against its span via `record-expr-type`, and `lower-lambda`
-consults it when and only when its expectation is `ErrorTy`. The patched
-compiler emits **byte-identical IR, 7,935 bytes, not one cell moved**,
-and the patch is definitely in the build -- `ast/codexir.zig` carried
-`lambda_expected_ty` twice and the binary size differed. The prediction
-was recorded at `bd924df` BEFORE the build finished, and it is refuted.
+`iter-map`, `iter-keep-if`, `iter-drop-if` fail on type variables
+reaching the plug from polymorphic definitions -- `(fn (tvar 44) (tvar
+45))`, `(ctd "Step" (args (tvar 16)))`. That is monomorphisation and it
+is ours too, and **nothing written covers it**: `7de07cf0` says so
+itself, "Does NOT fix finding 55's other half: a source-level type
+variable reaching the same fallback." Bigger piece, own sitting.
 
-**Five causes read out and eliminated** (detail in the register's H2
-entry): no preamble rewrites `ty` before dispatch and `:50` passes the
-lambda's own span; `lower-let` really does hand down `ErrorTy`;
-`record-expr-type` is unguarded except on synthetic spans; `infer-lambda`
-is the only TYPING site for a lambda; and -- the best hypothesis, now
-dead -- our harness does NOT skip the driver's check-lower boundary,
-`ast/CodexIrHarness.codex:68-69` sorts and deep-resolves the table
-exactly as `opening.codex:635` does.
+## PARKED: THE LOWERING OBSERVATION AND THE INERT PATCH
 
-**The next move is an INSTRUMENT, not another reading.** Source reading
-has failed twice. One build with `lambda-expected-ty` answering `TextTy`
-when its arm fires and the lookup misses separates "never fired" from
-"fired and found nothing" in a single run, for the same 13 minutes.
-A candidate worth holding while that runs: `expr-type-key` packs
-file-id, start offset AND SPAN LENGTH
-(`Types/Unifier.codex:131-135`), so a lambda recorded under one span and
-looked up under a span of a different LENGTH would miss silently -- but
-that is a guess, and the instrument is what settles it.
+**Not a defect report, and nothing depends on it.** Lowering does lose a
+type it holds -- a `let` hands `ErrorTy` down as its no-expectation
+sentinel (`Lowering.codex:689`), parameters peel off it
+(`:722-724`, `Types/CodexTypeHelpers.codex:4-10`), and the checker's
+solved answer is never asked for. That reading survived the reversal and
+is worth sending as a SUGGESTION once our own arm is fixed: the wire
+could carry more than it does, and a statically-typed target pays for it.
+Send it as an observation, never as a bug.
 
-**Do not send the diagnosis with a broken fix attached.** The diagnosis
-alone is worth sending; the two together are worth less than the
-diagnosis.
+**The patch is parked, not abandoned.** Branch `h2-lowering-fix`
+(`22e9b2cc`) in the depot clone -- its sandbox is deleted, the branch is
+not -- produced BYTE-IDENTICAL IR, 7,935 bytes, with the patch provably
+in the build. The prediction was recorded first at `bd924df` and refuted.
+Five causes are read out and eliminated in the register. It is no longer
+urgent, because nothing is blocked on it; the instrument that would
+settle it is one build with `lambda-expected-ty` answering `TextTy` on a
+lookup miss.
 
-**WHAT INSTRUMENTING LOWERING ACTUALLY BUYS, because "progress on the Roc
-ports" over-promises and the arithmetic should be on the page.** Of the
-eight ports that do not run:
-
-- **Five are this defect** (`fold-sum`, `fold-count`, `fold-product`,
-  `fold-empty`, `closure-captures-list`). It is UPSTREAM's to fix. A
-  perfect PR does not make them run here -- they run when Damian ships a
-  compiler carrying it, which is an Update away at best.
-- **Three are a different class entirely** (`iter-map`, `iter-keep-if`,
-  `iter-drop-if`): type variables reaching the plug from polymorphic
-  definitions -- `(fn (tvar 44) (tvar 45))`, `(ctd "Step" (args (tvar
-  16)))` -- which is monomorphisation, and OURS. **Nothing written covers
-  them.** `7de07cf0` says so itself: "Does NOT fix finding 55's other
-  half: a source-level type variable reaching the same fallback."
-
-So no item on this list makes the Roc ports run this week, and it is
-better to say that than to discover it.
-
-**The reason to instrument first is stronger than the ports anyway: the
-inert fix threatens the DIAGNOSIS, not just the repair.** The diagnosis
-rests on `lower-let` handing `ErrorTy` down as the expectation
-(`Lowering.codex:689`). If the instrument says the `is ErrorTy` arm never
-fired, that reading is wrong and the whole chain needs re-deriving before
-a word of it goes to Damian. A patch that produces byte-identical output
-usually means something structural is misunderstood, and here the
-misunderstanding could be load-bearing. That is what makes it top
-priority -- not the ports.
+**The lesson that cost the day, and it has now cost two:** a claim in
+`findings/README.md` was read as evidence rather than verified against
+code. The false sentence was "No plug mentions `ErrorTy` -- not the zig
+emitter, not the C# one", and the disproving grep had already been run
+that morning. The register is orientation, exactly like MEMORY.md. Code
+is truth.
 
 ## THE PR 92 EMITTER REPAIR LANDED -- `012a9d2e`, and it is OUR CODE VERBATIM
 
