@@ -28,6 +28,61 @@ that something is missing from it.
 
 ---
 
+## The whole compiler concatenates on Linux, and it is 2,944,968 bytes
+
+**Measured 2026-08-27, and it retires an assumption rather than proposing
+work.** The standing belief was that building a compiler from our own fork
+was out of reach. Three of the four reasons turn out not to exist.
+
+**`build/concat-codex-self.ps1` RUNS HERE.** It produced a valid unit --
+**2,944,968 bytes, 86 chapters**, `Foreword--Sha512` through
+`Types--Unification` -- from `012a9d2e` in a throwaway worktree. The only
+thing in its way was PATH SEPARATORS: two literals in the script
+(`'codex\compiler'`, `'codex\foreword\core'`) and 98 in
+`build/quire-map.ps1`, all of which `Join-Path` turns into a single
+filename with backslashes in it on Linux. Nothing conceptual, nothing
+about the language, nothing about the host.
+
+**The size is the number that matters, and it is unremarkable:**
+
+    whole compiler (this concat)    2,944,968 bytes
+    the seed itself                 2,917,073 bytes
+    passes_to_x86 subject           2,652,454 bytes   compiled EVERY REBANK
+    codexir subject                 2,636,148 bytes   built here in 6 minutes
+
+**Eleven per cent larger than the biggest thing this box already compiles
+routinely**, in a 3 GB guest, in 384 seconds. Not a different order of
+magnitude. `passes_to_x86` needs `decks=100`; upstream's own COMPILER-18
+notes reach for `-Decks 200` on the full build, so the deck scale is the
+knob to expect to turn, not the guest.
+
+**PowerShell was never the barrier either.** `ast/oracle_lib.sh:159`
+already shells out to `~/.local/pwsh/pwsh` for eighteen `.ps1` bundlers
+on every rebank. And Linux is upstream's own supported host:
+`build/vm-config.ps1:15` says "Windows-only; QEMU is the fallback and the
+only host on Linux/WSL", while `build/compile.ps1` defaults to
+`-MemMB 3072` -- our guest size -- with a retry ladder and `-MemNoCap`.
+
+**What is NOT established.** Nobody has run the compile. The next step is
+one seed compile of this 2.9 MB unit through `ring_compile`, which is the
+same call the truth arm makes twelve times a rebank, and the honest
+unknown is the deck scale rather than the memory. `CODEX_MEM_MB=3072` is
+a real ceiling on this box -- the seed guest dies silently above it -- and
+raising it is Steve's call.
+
+**Why it is worth doing.** Today a compiler patch can only be tested
+through `native/codexir`, which is the compiler as OUR PLUG renders it --
+the arm confusion that has cost two wrong reports. A fork-built compiler
+is the reference arm for our own changes. It would also let the five
+lowering-blocked Roc ports run on our fork without waiting for an Update.
+
+**A PR is possible but not a hand edit.** Both scripts carry "GENERATED
+FROM THE CODEX SHELL DSL. Do not edit by hand." The fix belongs in the
+generator under `codex/build/`, and the report to Damian is one sentence:
+the build's path literals are Windows-only and `Join-Path` does not
+normalise them, so the documented Linux host cannot run the documented
+build.
+
 ## Standing: the compute lock is one line at one door
 
 Not a task. It is here because the shape of it took a day to find and
