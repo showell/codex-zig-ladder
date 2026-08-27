@@ -105,14 +105,39 @@ rule: it waits for an instrument rather than getting a fix nothing measures.
 
 ## Measurements
 
-**TO BE RE-TAKEN against `4341370C` before this is sent.** The numbers we have
-were measured against `012a9d2e` and we would rather not quote a seed you have
-replaced. Expected shape, from the old pin:
+Taken on a **compiler-only tree** -- COMPILER-30 plus these three and nothing
+else, zero ZigEmitter commits -- because `README.md` says to sweep the
+release's emitter verbatim, and a measurement with our plug fixes in it is a
+measurement of a compiler nobody ships. Population `53979eeb`, clean, so the
+set is described by a ref. **To be re-confirmed against `4341370C` after the
+push.**
 
-- corpus `clean` up by six on 1 and 2 together, with six programs going
-  `markers -> match` and nothing moving the other way
-- `hamt-test` and `kvstore-test` `markers -> match` on 3
-- 4's two programs are `typeclass-smoke` and `typeclass-poly`
+    corpus, 606 programs        pin      this tree
+      clean                     318      328
+      match                     268      275
+      refused                    24       27
+
+**+4 clean attributable to these three.** The other +6 is COMPILER-30, which
+you already have; quoting +10 against a pin that predates your own absorbed
+work would be true and misleading.
+
+**No program regressed.** Nothing moved out of `match`. All 23 verdict changes
+are accounted for:
+
+- **7 `markers -> match`** -- `ir-check-clean`, `linear-capture-once`, and the
+  five Roc ports including `roc-closure-captures-list`, the subject that
+  started this.
+- **3 `markers -> refused`** -- `hamt-test`, `kvstore-test`, `ota-gate-real`.
+  These newly transpile clean and then fail to BUILD, which is progress rather
+  than regression: they were never built before. Two fail on `expected 1
+  argument(s), found 0`, which is a gap in OUR emitter that our own plug branch
+  fixes and which is deliberately not in this tree; the third is the
+  `Timestamp`/`Frequency` unit-family gap already on your register.
+- **12 `zigemit -> codex-refused`** -- a relabelling on our side, not a
+  behaviour change. Our corpus runner was not honouring your driver's error
+  gate, so programs your compiler REFUSED were being recorded against our
+  emitter. All 13 in that bucket were compiler refusals; several are your
+  deliberate negative tests.
 
 ## What we are not claiming
 
