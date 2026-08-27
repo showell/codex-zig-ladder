@@ -305,6 +305,68 @@ refusing is honest, and choosing one is a DEFAULTING RULE.
   all 56 is what found `deck-bracket-contract` going `match -> differ`. The
   wins were all green; the wrong answer was in the files nobody predicted.
 
+## PR 93 IS ABSORBED AND LANDED (2026-08-27 18:57Z) -- AND THEY NAMED OUR NEXT PR FOR US
+
+**Damian, on the PR:** *"Absorbed and landed: main CL 20184 carries all six
+code changes as you wrote them, and 20189 carries the new seed built from
+them."* COMPILER-30 records the fix with our matrix and corpus numbers.
+
+**Their verification on top of ours:** full gate green with the change in,
+byte-identical self-fixed-point in one pass, 407 BVT tests, 8 plug subjects
+byte-identical across both VM hosts, and **`roc-closure-captures-list` -- the
+subject that surfaced this -- builds, runs and answers 3 against its
+`.expected` on THEIR zig arm.**
+
+**They built their own instrument from the essay's argument, before the PR
+arrived:** *"our new IR-fidelity instrument, built yesterday from your note's
+argument, isolated the loss to the let path exactly as your analysis said."*
+That is independent confirmation, and it also means **the STANDING PROPERTY
+item in this file now has an upstream counterpart** -- coordinate with it
+rather than build a second one.
+
+## WHAT THEY KEPT OPEN IS WHAT WE HAVE ALREADY FIXED
+
+Damian listed three things COMPILER-30 leaves honestly open. **Two of them are
+sitting finished on `roc-ports-type-recovery` right now:**
+
+    the ErrorTy sentinel collision      -> THEIR rulings queue, as the design
+                                           question the PR posed. Ours to argue,
+                                           not to patch.
+    the empty-list carrier              -> FINDING 58, fixed (8f1b202a)
+    the two remaining synthetic-span    -> FINDING 64 fixes one (406ae2f9,
+    sites                                  instance-method synthesis, measured
+                                           on typeclass-smoke/typeclass-poly).
+                                           Desugarer.codex:78 is the other and
+                                           is still unmeasured.
+
+**So the second PR is not speculative; it is the follow-up they asked for in
+writing.** Its contents, all compiler-side and all the same family:
+
+    57  subst-type-vars-from-arg learns from declared parametric types
+    58  an empty list keeps its solved element type   <- their "empty-list carrier"
+    59  a list literal prefers its elements over a variable bound nowhere
+    64  instance-method lambdas keep their span       <- one of their two sites
+
+Plug-side (61, 60) goes separately with a `plugs-backlog.md` row, and finding
+60's three iterations want squashing first.
+
+## THE SEED IS MOVING, SO A REBANK IS OWED
+
+CL 20189 is a **new seed built from the change**. When the mirror push lands,
+the pin moves and every banked truth is against the old seed. **Do not start
+the second PR's measurement on the old pin once the mirror is public** --
+re-pin, rebank, then measure. The PR stays open until that push, and closes
+with it.
+
+## ONE ABSORB NOTE TO TAKE ON THE CHIN
+
+*"your note's grep discriminator for the stale source concat
+(`list-length defs == 0`) matches twice in the pre-fix file, so byte size is
+the reliable tell there."* A discriminator we handed them was ambiguous in the
+file it was meant to discriminate. Cheap to check before sending and we did
+not. → [[reference_pipe_masks_exit_code]] is the same family: a check that
+looks decisive and is not.
+
 ## SENT: PR 93, AND THE OUTBOUND QUEUE IS EMPTY AGAIN
 
 **https://github.com/damiant3/Cobblestone/pull/93**, opened 2026-08-27
