@@ -217,6 +217,35 @@ That is independent confirmation, and it also means **the STANDING PROPERTY
 item in this file now has an upstream counterpart** -- coordinate with it
 rather than build a second one.
 
+## WHERE THE NIGHT ENDED, 2026-08-27 -- read this first tomorrow
+
+**Parked in good order. Nothing is in flight, nothing is uncommitted, and the
+outbound queue is empty.**
+
+    depot branches   4   roc-ports-batch2 (the new ports, on the absorbed pin)
+                         roc-ports-type-recovery (57/58/59 + 61; 60 reverted,
+                         65 not ready)
+                         compiler-only-second-pr (stale base -- rebuild it)
+                         u52-rebank (the new pin, 3942e362)
+    runs/            1.2G, two sandboxes, both for a stated reason
+    outbound         PR 93 landed and CLOSED; issue 94 open for their agents
+
+**THE NEXT SESSION IS A DIFFERENT PROJECT (Steve): a small NEW repo focused
+entirely on the `codexzig` artifact.** Overlap with this repo is expected; it
+is a fresh take rather than a fork. **This queue keeps for whenever the ladder
+is picked back up** -- nothing here rots except the measurements, and those are
+all keyed to a pin that has already moved.
+
+**When the ladder resumes, the order is not what it was this morning:**
+
+1. **Re-pin and rebank at `3942e362` / seed `4341370C`.** Not optional and not
+   deferrable -- every truth, the census and the tier gold are keyed to the old
+   seed, so every number in this file is historical until it is done.
+2. **Rebuild the second PR's tree** on the new pin, WITHOUT our COMPILER-30
+   commits, which are now upstream. Expect findings 58 and 59 to want rebasing
+   onto the new no-expectation marker once the ErrorTy split lands.
+3. **Monomorphisation** -- execution, not research, and scoped above.
+
 ## THE PIN HAS MOVED, THE ErrorTy QUESTION IS RULED, AND PR 93 IS CLOSED (2026-08-27 20:26Z)
 
 **Public at `3942e362`, both mirrors. Seed `4341370C8FE5BAD6...`.** Our six
