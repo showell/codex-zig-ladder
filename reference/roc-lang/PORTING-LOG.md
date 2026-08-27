@@ -17,7 +17,7 @@ A glob, not a manifest, still decides what RUNS (`roc_ports_run.py` globs
 `roc-*.codex`). This file is the record of intent; it is not read by any script
 and must never become a second source of truth about which ports exist.
 
-## Status: 10 of 117 ported
+## Status: 17 ported, 1 skipped, of 117
 
 | # | case | expected | status |
 |---|---|---|---|
@@ -26,12 +26,12 @@ and must never become a second source of truth about which ports exist.
 | 3 | inline fold empty list lambda | `42.0` | **roc-fold-empty** |
 | 4 | inline fold counts elements lambda | `4.0` | **roc-fold-count** |
 | 5 | recursive function with var keeps outer binding | `6.0` | **roc-recursive-var** |
-| 6 | simple early return from function via bool | `True` | -- |
+| 6 | simple early return from function via bool | `True` | SKIPPED |
 | 7 | early return in for loop predicate function | `True` | **roc-early-return-predicate** |
 | 8 | tuple pattern var reassignment in while loop | `3.0` | -- |
-| 9 | list alias variable aliasing | `6.0` | -- |
-| 10 | list alias return original after aliasing | `6.0` | -- |
-| 11 | list alias triple aliasing | `3.0` | -- |
+| 9 | list alias variable aliasing | `6.0` | **roc-alias-list** |
+| 10 | list alias return original after aliasing | `6.0` | **roc-alias-original** |
+| 11 | list alias triple aliasing | `3.0` | **roc-alias-triple** |
 | 12 | list alias mutable reassignment | `7.0` | -- |
 | 13 | list alias multiple independent lists | `3.0` | -- |
 | 14 | list alias empty list aliasing | `42.0` | -- |
@@ -57,7 +57,7 @@ and must never become a second source of truth about which ports exist.
 | 34 | nested record with list | `11.0` | -- |
 | 35 | record with string list | `\"hello\"` | -- |
 | 36 | record with mixed count and list | `42.0` | -- |
-| 37 | tag with list payload | `3.0` | -- |
+| 37 | tag with list payload | `3.0` | **roc-tag-list-payload** |
 | 38 | tag with multiple list payloads | `3.0` | -- |
 | 39 | tag with string list payload | `\"tag\"` | -- |
 | 40 | result with list payload | `6.0` | -- |
@@ -72,7 +72,7 @@ and must never become a second source of truth about which ports exist.
 | 49 | nested list patterns through record | `60.0` | -- |
 | 50 | tag with extracted list payload | `15.0` | -- |
 | 51 | empty list pattern through record | `42.0` | -- |
-| 52 | simple nested list | `3.0` | -- |
+| 52 | simple nested list | `3.0` | **roc-nested-list** |
 | 53 | multiple inner lists | `3.0` | -- |
 | 54 | same inner list multiple times | `3.0` | -- |
 | 55 | two level inline nested list | `3.0` | -- |
@@ -100,13 +100,13 @@ and must never become a second source of truth about which ports exist.
 | 77 | basic list created and used in inner block | `60.0` | -- |
 | 78 | basic multiple lists chained through aliases | `6.0` | -- |
 | 79 | conditional chooses list from then branch | `3.0` | -- |
-| 80 | conditional chooses list from else branch | `7.0` | -- |
+| 80 | conditional chooses list from else branch | `7.0` | **roc-cond-else-branch** |
 | 81 | conditional reuses same list in both branches | `3.0` | -- |
 | 82 | conditional drops unused branch list | `3.0` | -- |
 | 83 | nested conditional list result | `2.0` | -- |
 | 84 | conditional string list result | `\"a\"` | -- |
 | 85 | conditional inline list literals | `30.0` | -- |
-| 86 | conditional empty list branch | `42.0` | -- |
+| 86 | conditional empty list branch | `42.0` | **roc-cond-empty-branch** |
 | 87 | string list single captured string | `\"hi\"` | -- |
 | 88 | string list multiple captured strings | `\"a\"` | -- |
 | 89 | string list return second string | `\"b\"` | -- |
@@ -138,3 +138,11 @@ and must never become a second source of truth about which ports exist.
 | 115 | returned closure calls captured function argument | `9` | -- |
 | 116 | iterator-like keep_if skips rejected tag payloads | `2` | **roc-iter-keep-if** |
 | 117 | iterator-like drop_if stops at first kept tag payload | `2` | **roc-iter-drop-if** |
+
+## Skipped, with reasons
+
+- **#6 simple early return from function via bool** -- no early `return` in Codex; the value-preserving adaptation is a plain `if`, which preserves nothing of what the case tests (contrast case 7, where the early exit survives as recursion)
+
+## Deferred, not skipped
+
+- **#8 tuple pattern var reassignment in while loop** -- needs `var` + `while` + tuple destructuring in the loop head. The fold ports show the standing adaptation (mutation-and-loop becomes recursion) so this is portable; it is simply bigger than the cluster around it and is worth its own sitting.
