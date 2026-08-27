@@ -97,12 +97,50 @@ So the trigger is a lambda whose type is fixed only by INFERENCE from its
 context, and never by a declaration -- `let`-bound or applied on the spot
 makes no difference. Reworded above accordingly.
 
-**What tilts it upstream.** No plug mentions `ErrorTy` -- not the zig
-emitter, not the C# one -- while `IRTextParser.codex:276` parses `"error"`
-into it, so the wire carries it and the parser accepts it. Compare the
-type-variable case, where `CSharpEmitter.codex:534-541` documents the
-situation and prescribes `dynamic`. Nothing here says a plug should expect
-this.
+**~~What tilts it upstream.~~ WITHDRAWN 2026-08-27 -- THIS PARAGRAPH WAS
+FALSE AND IT WAS THE LOAD-BEARING PREMISE OF THE WHOLE ENTRY.** It said
+"No plug mentions `ErrorTy` -- not the zig emitter, not the C# one".
+**Four sibling plugs have an explicit `ErrorTy` arm in the same function,
+in the same position:**
+
+    CSharpEmitterExpressions.codex:64   is ErrorTy -> "object"
+    RustEmitter.codex:57                is ErrorTy -> "Box<dyn std::any::Any>"
+    AdaEmitter.codex:134                is ErrorTy -> "Long_Long_Integer"
+    FortranEmitter.codex:148            is ErrorTy -> "integer(8)"
+
+`cs-type` and `emit-zig-type` are arm-for-arm parallel -- both answer
+`NothingTy`, `ProofTy` and `PropEqTy`, both in that order -- and only ours
+is missing the `ErrorTy` arm, so `ErrorTy` reaches
+`ZigEmitter.codex:331`'s `otherwise` and becomes the exact marker the five
+Roc ports die on.
+
+**So `ErrorTy` on this wire is a CONTRACT, not an anomaly.** The plug fleet
+knows it arrives and answers it. **H2 IS OURS.** Raised by Steve, who asked
+why anything upstream needs changing when bare metal runs all twelve Roc
+programs, and whether our pipeline was simply not pulling in a solution
+that already existed. It was not pulling it in, and the solution is four
+files away.
+
+**Which makes `3f0f42e5` the RIGHT fix rather than a workaround**, and the
+argument against building it -- that a plug-side recovery would paper over
+an upstream defect -- is withdrawn with the paragraph it rested on.
+
+**Why we cannot just copy the sibling arm, which is the one real
+asymmetry.** C# and Rust answer with a universal dynamic type; zig has
+none, and `ZigEmitter.codex`'s own prose says so a few lines below the
+`otherwise`: "Zig will not accept anyopaque as a parameter type at all."
+Ada and Fortran answer with a 64-bit integer, which for us is what case f
+of the matrix exists to refute -- its missing type is `Text`, and a plug
+that answers `i64` there is wrong rather than refusing. So the zig answer
+has to be the RECOVERED type, from the body's own uses or the callee's
+declared parameter, which is exactly what `3f0f42e5` does.
+
+**What is left of the upstream story, and it is not a defect report.**
+Lowering does lose a type it holds (the mechanism below still reads
+true), so the wire could carry more than it does and a statically-typed
+target pays for that. That is a SUGGESTION worth making once our own arm
+is fixed. Nothing depends on it, the compiler patch is not needed to
+unblock anything, and it must not be sent as a defect.
 
     Falsified by:  BARE METAL refusing variant C. If the seed refuses it,
                    the program is ill-typed and the port is the defect, not
