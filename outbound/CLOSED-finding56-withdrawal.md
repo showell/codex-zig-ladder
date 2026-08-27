@@ -1,4 +1,30 @@
-# Draft: the settling run, and a full withdrawal — for the compiler lane
+# CLOSED -- sent and accepted
+
+**Sent 2026-08-27 ~00:0x. Accepted the same night.** *"A deaf instrument
+is the best possible ending for this thread: three wrong attributions,
+zero wrong compilers, and every kill was a measurement."* Apology
+accepted and, in their words, not needed. Their four-seed sweep is now a
+standing reference arm.
+
+**TWO THINGS CAME BACK WITH IT:**
+
+**1. Update 51 is PUBLIC** -- `damiant3/Cobblestone` at `7a6c5682`. It
+carries the wire-invariant declarations from the PR 87 thread, the
+three-plug literal-pattern fix with our credit, and the landing page the
+REPL is wired into. That is a new Update and it means the absorb
+ceremony, which is tomorrow's first BOX job.
+
+**2. PR 92's corpus headline is PROVISIONAL and they said so first.**
+`match 183 -> 269, refused 112 -> 24` was scored through the deaf
+harness lineage, so they will not republish those counts until our gate
+re-scores them. Explicitly NOT a mark against the PR: the six emitter
+fixes are read against source, and the twelve `.expected` files are
+re-measured on bare metal, which is the discipline that would catch a
+contaminated row anyway.
+
+**So the re-scored corpus number is owed to the PR**, and the chain
+producing it (`f49-gate2`, codex `cab52a35`, gate as the only delta) was
+running while this reply arrived.
 
 Not sent. This retracts both of our claims, not one.
 
