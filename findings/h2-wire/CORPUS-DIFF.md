@@ -93,8 +93,27 @@ toolchain unmoved)" -- reads a sha map from a banked artifact that is itself
 stale, so it concludes byte-identical for programs it has no current sha for
 and carries verdicts it should have dropped.
 
-**Nothing here is fixed.** It is recorded because the corpus conformance
-numbers this tree quotes -- `clean 318, match 268, refused 24` -- come from
-these files, and at least one of the three is wrong about at least 94
-programs. A number that cannot be reproduced by re-running the programs it
-describes is not a measurement.
+## Fixed, and the bank is VINDICATED
+
+Both halves repaired the same afternoon (`7567bf0`, `2b60551`): every verdict
+line now carries its own cache key so the resume cannot be lied to, the stage
+outputs are untracked because only a bank should be tracked, and a bank diff
+now says out loud when the bank was taken with different natives than the ones
+in `native/`.
+
+Then the bank was rebuilt from scratch to find out whether it had been
+contaminated too -- a full `--run --bank` at the pin with NO journal to resume
+from, **all 318 clean programs actually built and run**, natives whose shas
+already matched the bank's `meta.tools`:
+
+    606 programs: clean 318, markers 259, unresolved 16, zigemit 13
+    match 268, refused 24, no-expected 23, hardware-only 2, crashed 1
+
+**The result is BYTE-IDENTICAL to the committed `census.json`.** Zero rows
+changed their answer, zero `zig_sha` differ, same 606 programs. So the number
+this tree quotes everywhere -- `clean 318, match 268, refused 24` -- is
+correct and is now independently reproduced without a single carried verdict.
+
+The rot was confined to the two stale stage outputs. The bank was honest the
+whole time, which is exactly what a bank taken deliberately is supposed to be,
+and is the argument for the split that now exists.
