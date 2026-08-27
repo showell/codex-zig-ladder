@@ -111,53 +111,57 @@ compute entry point refuses on a host without `CODEX_LADDER_VENUE`
 (`bb39139`), which `~/.codex_ladder_env` exports. One compute job at a
 time.
 
-## RUNNING RIGHT NOW -- natives from the pin
+## RUNNING RIGHT NOW -- census re-pin, then the codexzig fixed point
 
     sandbox   ~/runs/20260827T133749Z-u51-natives
-              ladder 9cad748 (master), codex 012a9d2e (branch u51-rebank)
-    log       <sandbox>/natives.log
-    launched  2026-08-27 13:37, about 13 minutes
+              ladder 5f5b42d (master), codex 012a9d2e (branch u51-rebank)
+    driver    <sandbox>/chain.sh, nohup'd -- survives the console
+    logs      <sandbox>/chain.log   the two START/exit lines
+              <sandbox>/census.log  corpus_run.py --changed --bank
+              <sandbox>/codexzig.log  codexzig_build.sh
+    launched  2026-08-27 13:53, about 20 minutes for both
 
-**Every sandbox older than this was deleted 2026-08-27 13:36** (Steve's
-call), 18 of them and 9.6 GB, `~/runs` back to empty and the box from 38
-GB used to 28. Checked before deleting, because this exact class of loss
-happened this morning: no authored work was stranded -- every tracked
-change in every sandbox was a run artifact (`.ir.prov` stamps and the
-`--keep 3` pruner's own deletions, both already landed here), the u51
-gold was confirmed byte-identical to what `15ebb21` harvested, and
-`h2-lowering-fix` lives in the depot clone rather than only in its
-sandbox. **`sandbox.sh --prune` prunes the LADDER's worktree metadata
-only**; the depot's was pruned by hand afterwards, which is the gap this
-file has been naming for two days.
+Sequential, not parallel, and that is not a preference: both take the
+compute lock, and only one may hold it. Natives are already built from
+the pin (6 minutes, against the README's quoted 11 -- the zig cache was
+warm).
 
-## WHAT THE NATIVES OWE WHEN THEY LAND, in order
+**THE RESULTS DO NOT COME HOME BY THEMSELVES. HARVEST THEM.**
+`corpus/census.json` and `corpus/gaps.json` are TRACKED files and the run
+writes them inside the sandbox. This is the exact failure that stranded
+the u51 gold for a day and was only found by accident on 2026-08-27:
 
-The u51 ceremony is otherwise DONE: banked, diffed, tagged and pushed
-(`u51-14of14`, seed `C3181693`, pin `012a9d2e`), README table and timings
-refreshed, `check_paths.py` clean. 14/14 green in 2541 s, all fourteen
-truths byte-identical to the bank taken from the killed run, `bank_diff`
-u50 -> u51 four moved and ten identical, census compared for the first
-time under this seed with CDX6020 at its pinned 43 and **no re-pin owed**.
-These three want the pin's natives and nothing else:
+    cp ~/runs/20260827T133749Z-u51-natives/ladder/corpus/census.json corpus/
+    cp ~/runs/20260827T133749Z-u51-natives/ladder/corpus/gaps.json    corpus/
+    git diff --stat corpus/          # then commit, with the new counts in the message
 
-1. **The tier SET** -- `./tiers_run.py`, both arms. README "Processing a
-   new Update" step 5 ends with it and it has never run under u51. The
-   BARE columns are banked (`findings/gold/u51/`, 21 SET GREEN). **A
-   finding that Update 51 closed shows up here as a STALE row and nowhere
-   else**, and `RED` or `STALE` both want a human before they mean
-   anything.
-2. **The census re-pin** -- `corpus_run.py --changed --bank`, about 10
-   minutes. Owed every Update because the natives move and every emitted
-   zig moves with them.
-3. **`codexzig_build.sh`** -- nothing on this box has ever built one from
-   the u51 pin, and the build ENDS with the fixed point, so it is a check
-   and not a chore. It is the check that caught the `T38` gate failure on
-   its first Update.
+**Read the new corpus counts against PR 92's before filing them.** That
+PR's re-scored headline -- `match 183 -> 267, refused 112 -> 24` -- was
+measured on an Update 50 tree with our emitter. This is the first census
+under the u51 pin, so the natives moved and every emitted zig moved with
+them. If the counts shift materially that is a note Damian would want,
+even though PR 92 is closed and nothing is owed.
 
-Housekeeping still open: gold has no rotation while truths keep three
-(`u48` gold is present, `u48` truths are pruned); `u51-emitter` differs
-from the pin in five DOC files and nothing else, so it is a historical
-marker.
+## CEREMONY: ONE ITEM LEFT AFTER THE CHAIN
+
+Banked, diffed, tagged, pushed (`u51-14of14`); README table and timings
+refreshed; `check_paths.py` clean.
+
+- **Tier SET: DONE, and it CAUGHT ONE.** `prim-closure/under-mutual` went
+  STALE -- finding 39 / COMPILER-18, fixed upstream in Update 50, bare
+  metal `not-47` at u49 and `47` from u50 on. Row deleted at `5f5b42d`,
+  set now **16 green 6 noted, SET GREEN**. It sat stale through a whole
+  Update because the u50 close-out ran `tiers_run.py --zig` -- the zig arm
+  alone, which structurally cannot see a disagreement that STOPPED. Same
+  shape as the addendum's bare-metal re-measure that could not observe the
+  emitter: a check run on the one arm that cannot answer the question.
+- **Census re-pin: RUNNING.** Then harvest, per above.
+- **codexzig from the pin: RUNNING**, the first ever. Its build ENDS with
+  the fixed point, so a red here is a finding, not a chore.
+
+Then the ceremony is closed. Housekeeping still open: gold has no
+rotation while truths keep three; `u51-emitter` differs from the pin in
+five DOC files only and is a historical marker.
 
 ## H2: THE DIAGNOSIS HOLDS, THE FIX IS INERT -- PICK UP HERE
 
