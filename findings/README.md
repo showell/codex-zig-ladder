@@ -48,6 +48,33 @@ box is busy.
 
 A finding with no such line is a finding nobody tried to break.
 
+## FIVE ENTRIES HAVE CONTESTED STATUS -- do not read 47, 50, 51, 52 or 53 as settled
+
+**Found 2026-08-27 while pruning this file, and it stopped a bad deletion.**
+Two of our own records disagree about whether PR 92 closed these:
+
+- **PRIORITIES recorded** *"Closed by it: finding 47 (tvar scope guard), 50
+  (`show`'s five type cases), 51 (a refusal strands its parameters), 52
+  (Boolean literal patterns), 53 (the thread entry)"*.
+- **These entries say otherwise**: 50 and 53 both say *"Not fixed."* and 47
+  says *"not yet verified"*.
+
+**Neither is evidence, and the likely story favours PRIORITIES.** Every one of
+these was found on 2026-08-26 and PR 92 shipped on 2026-08-26 -- so an entry
+saying "Not fixed" may simply predate its own fix by hours and never have been
+revisited. That is the ordinary way a register goes stale, and it is why this
+file is orientation rather than evidence.
+
+**What settles it: one clean full-corpus `--run`, and it is a coffee break.**
+The honest re-bank on 2026-08-27 built and ran all 318 clean programs in under
+four minutes. 52 and 53 fail at RUN stage, so transpile markers are blind to
+them and only a run answers. **The one run.jsonl on this box that covers the
+whole corpus is the stale one that produced 94 phantom flips**, so it must not
+be used for this.
+
+Until then these five are neither open nor closed here, and **nothing should be
+deleted, cited or reported on the strength of either record.**
+
 ## Hypotheses
 
 *Not findings. Each carries what would refute it and what that costs.*
@@ -1642,6 +1669,11 @@ the class cannot come back silently.
 
 ## 53. `main` spawns `opening` on a thread, and zig refuses a thread entry that returns a value -- 40 corpus programs, and the value was the answer
 
+**STATUS CONTESTED -- see "FIVE ENTRIES HAVE CONTESTED STATUS" at the top of
+this file. PRIORITIES recorded PR 92 as closing this; this entry disagrees;
+neither has been re-checked. Do not cite either way.**
+
+
 Found 2026-08-26 21:0x by the corpus reading pass. **OURS**,
 `codex/plugs/zig/ZigEmitter.codex`. Not fixed.
 
@@ -1736,6 +1768,11 @@ it is right is not a prediction.
 `neg-real-repro` moved `refused -> markers`: the entry Real refusal
 firing with its own message, as designed.
 ## 52. A `when` on a Boolean reaches the plug as the SPELLING `True`, and the plug emits it into zig, which has no such identifier
+
+**STATUS CONTESTED -- see "FIVE ENTRIES HAVE CONTESTED STATUS" at the top of
+this file. PRIORITIES recorded PR 92 as closing this; this entry disagrees;
+neither has been re-checked. Do not cite either way.**
+
 
 Found 2026-08-26 21:0x by classifying all 112 corpus refusals by cause --
 the reading pass, from a `run.jsonl` that had been on disk for hours.
@@ -1863,6 +1900,11 @@ inverted-arms answer this program was written to catch did not appear.
 No other corpus program moved from this change, as predicted.
 ## 51. A refusal that replaces an EXPRESSION strands the parameters that fed it, and zig reports the stranding, never the refusal
 
+**STATUS CONTESTED -- see "FIVE ENTRIES HAVE CONTESTED STATUS" at the top of
+this file. PRIORITIES recorded PR 92 as closing this; this entry disagrees;
+neither has been re-checked. Do not cite either way.**
+
+
 Found 2026-08-26 20:08 by `verify_emitter.sh` legs 1 and 4 on the
 `f47-guard2` chain -- the first chain that ever compiled the
 type-variable guard. **OURS**, `codex/plugs/zig/ZigEmitter.codex`. Not
@@ -1912,6 +1954,11 @@ carries a refusal must discard the parameters that refusal stranded
 body, so it is the one place that can see both.
 
 ## 50. The zig plug implements one of `show`'s five type cases and maps the other four onto it, and that is 37% of every corpus refusal
+
+**STATUS CONTESTED -- see "FIVE ENTRIES HAVE CONTESTED STATUS" at the top of
+this file. PRIORITIES recorded PR 92 as closing this; this entry disagrees;
+neither has been re-checked. Do not cite either way.**
+
 
 Found 2026-08-26 by `codex/test/roc-early-return-predicate.codex`, a Roc
 port, on its first run. **OURS**, `codex/plugs/zig/ZigEmitter.codex:852`.
@@ -2115,6 +2162,11 @@ is one. The count is unknown because until finding 47's fix most such programs
 stopped at a marker, which is the same blind spot that hid this one.
 
 ## 47. The type-variable recovery walk knows `List a` and `a -> b` and nothing the subject declares, so a variable inside `Step a` cannot be recovered from any position
+
+**STATUS CONTESTED -- see "FIVE ENTRIES HAVE CONTESTED STATUS" at the top of
+this file. PRIORITIES recorded PR 92 as closing this; this entry disagrees;
+neither has been re-checked. Do not cite either way.**
+
 
 Found 2026-08-26 on the ladder droplet, by the second snippet ported from
 Roc's closure/recursion suite (PRIORITIES item 3), on its first run.

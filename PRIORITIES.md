@@ -217,6 +217,35 @@ That is independent confirmation, and it also means **the STANDING PROPERTY
 item in this file now has an upstream counterpart** -- coordinate with it
 rather than build a second one.
 
+## SETTLE THE FIVE CONTESTED FINDINGS -- one corpus run, four minutes
+
+**Objective: INTEGRITY.** Entry point: BOX, but the cheapest kind -- no guest,
+no natives build, just `corpus_run.py --run` on an existing sandbox.
+
+**Findings 47, 50, 51, 52 and 53 are neither open nor closed**, because two of
+our own records disagree. The PR 92 note recorded all five as closed by it;
+their register entries say 50 and 53 are "Not fixed" and 47 is "not yet
+verified". Every one was found on 2026-08-26 and PR 92 shipped on 2026-08-26,
+so the entries may simply predate their own fixes -- which makes PRIORITIES the
+likelier of the two, and still not evidence.
+
+**Why it is worth a run rather than a reading.** 52 and 53 fail at RUN stage,
+so transpile markers cannot see them; only a run answers. And the single
+full-corpus `run.jsonl` on this box is the STALE one that produced 94 phantom
+flips on 2026-08-27, so it is worse than having none.
+
+**The cost is small and was measured today:** the honest re-bank built and ran
+all 318 clean programs in under four minutes.
+
+**What it buys.** Five entries either leave this register for a one-line stub
+in `CLOSED.md`, or get their "Not fixed" confirmed and stop being cited as
+closed. It also removes the reason the 2026-08-27 prune stopped where it did:
+these five are the whole of what was left on the table.
+
+**Do it against a tree whose provenance is stated** -- after the mirror push
+moves the pin, not before, or the answer describes a compiler nobody is
+running.
+
 ## THE SEED IS MOVING, SO A REBANK IS OWED
 
 CL 20189 is a **new seed built from the change**. When the mirror push lands,
