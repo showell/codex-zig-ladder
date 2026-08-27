@@ -1145,6 +1145,47 @@ it: read the call site's own instantiated type and pass it. It is also the
 case that a specialisation engine would find hardest, because there is no
 argument to specialise ON.
 
+## 65a. The finding 65 fix WORKS on plain classes and ADDS A MARKER on a superclass chain -- NOT READY TO SHIP
+
+**Built and measured 2026-08-27 21:01, against the pre-fix baseline taken the
+same hour.**
+
+**The claim held, exactly as pre-registered.** The instrument's one-respect
+pair moved the way it had to and its control did not:
+
+    Tellable-dict-Integer   (tvar 289) -> int-default     the head type now reaches it
+    Tellable-dict-Boolean   boolean    -> boolean         unchanged
+    Showable-dict-Integer   (tvar 511) -> int-default
+    Showable-dict-Boolean   boolean    -> boolean
+
+**The narrow falsifier held too.** Nothing with a compound head acquired a
+declared type: no `*-dict-List` exists and `to-text-List` still carries its own
+free variable. The fix fired only where it can prove the head.
+
+**But `typeclass-poly` GAINED A MARKER**, and that is disqualifying on its own:
+
+    unresolved type variable T319 of Sortable-dict-Integer      NEW
+    Equatable-dict-Integer  (tvar 298) -> (tvar 297)   still free
+    Sortable-dict-Integer   (tvar 298) -> (tvar 319)   still free
+
+**The differentiator is a SUPERCLASS.** `typeclass-poly` is the only one of the
+three that has one -- `class Equatable a => Sortable` -- so its dictionary
+carries a `__super-Equatable` field pointing at another dictionary. Neither
+dictionary in that chain takes the declared type, and the emitter now names one
+of them in a refusal it did not make before.
+
+**Not shipped, and not in the second PR.** The programs were already red so no
+verdict regressed, but a change that adds a refusal is a regression in refusal
+terms, and today's own rule is that an unexplained mover outranks the wins.
+
+**What is NOT yet known**, and it is being left as a question rather than a
+guess at the end of a long session: why a superclass chain declines the
+declared type, and whether the `args` on those dictionaries mean the dict type
+has a parameter the instance count says it should not have. Reasoning about
+this construct has been wrong twice today; the next step is to read the
+synthesised `EquatableDict` type definition against `count-class-instances`,
+not to adjust the fix and rebuild.
+
 ## 65. An instance's HEAD TYPE names the dictionary it synthesises and never types it, so the dictionary's type argument is whatever the METHOD BODIES happen to pin
 
 **Found 2026-08-27 by instrument, after reasoning about the same code was
