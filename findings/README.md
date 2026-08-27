@@ -1486,6 +1486,55 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
+## 59. A non-empty list literal takes its element type from the CONTEXT even when the context's type is an unbound variable and the literal's own elements are correctly typed
+
+**Found 2026-08-27 at the keyboard, no guest**, while scoping monomorphisation.
+**Blocks `hamt-test`, `kvstore-test`, `list-test` outright**, and is half of
+what blocks `lang-smoke` and `typeclass-poly`; it is also one of three gaps in
+the three `db-*` programs. **Same family as COMPILER-30 / PR 93, and the
+FOURTH instance of the shape.**
+
+**It is the lambda defect they already fixed, one node over.** The prose under
+`lower-lambda` says a lambda "used to record the EXPECTED type it was handed,
+which at a polymorphic call is the callee's declared parameter with its type
+variables still in it", and `lambda-recorded-ty` was the fix. A list literal
+does exactly that and has no equivalent guard.
+
+    lower-nonempty-list (elems) (ty) (ctx) (sp) =
+     let resolved = deep-resolve (ctx.ust) ty
+     in let from-context = when resolved is ListTy (e) -> e is otherwise -> ErrorTy
+     in let elem-ty = when from-context
+        is ErrorTy -> ir-expr-type (lower-expr (list-at elems 0) ErrorTy ctx)
+        is otherwise -> from-context
+
+The elements are consulted ONLY when the context offers nothing at all. When
+the context offers a type it wins unconditionally -- including when it is a
+variable and the elements are concrete.
+
+**The measurement, from `hamt-test`.** `collision-set-loop` is
+`(forall 70 ...)`; every parameter is `tvar 70`. One node reads:
+
+    (list-expr (elems (record "HamtEntry" ... (record-ty "HamtEntry" (args (tvar 70)))))
+               (ctd "HamtEntry" (args (tvar 25))))
+
+The element is typed 70, the list it is appended into is typed 70, and the
+literal's own element-type slot says 25. **The IR for this unit binds only
+`forall 67` and `forall 70` -- there is no `forall 25` anywhere**, so the
+emitter's "type variable T25 is not declared at this site" is literally
+accurate: the variable is unbound at the site that must emit it.
+
+**The same shape with a concrete witness** is case B of
+`findings/probe-ctd-subst.codex`, which was written as a control for finding
+57, is not one, and was kept for this: `(list-expr (elems (int-lit 0)) (tvar
+19))` -- an `int-lit` element under a variable element type.
+
+**Two ways to fix, and the choice matters.** Where the elements are concrete,
+preferring them is obviously right. Where the elements carry an IN-SCOPE
+variable and the context carries an out-of-scope one -- `hamt-test` -- the
+answer is not "erase the variable" but "use the one that is bound here".
+`branch-recorded-ty`'s `usable-witness-ty` refuses any witness with typevars,
+so it cannot be reused as-is for that case.
+
 ## 58. A list literal's element type is never recorded, so an empty list whose element type the checker resolved reaches the plug as `(list error)`
 
 **Found 2026-08-27 at the keyboard, no guest**, diagnosing the last of the
