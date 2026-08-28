@@ -239,7 +239,37 @@ GREEN, 21/21 content byte-identical to u51), the `seed_identity.py` repair
 (U52 announced its seed in a sixth spelling and the deriver refused `u52`),
 and the `cycle.sh` artifact-check repair.
 
-**The census did NOT move** -- CDX6020 x43, its pinned value. No re-pin owed.
+**THE CENSUS NEEDS EXTRA SCRUTINY BEFORE IT IS BELIEVED (Steve, 2026-08-28).**
+It printed one line -- CDX6020 x43, its pinned value -- and that was reported
+as "the census did not move", which is much broader than what happened.
+
+What IS sound: the census reads `<unit>-subject.cdx.diags` and
+`<unit>.ir.diags` for every unit in `LADDER_UNITS`, i.e. BARE-METAL
+diagnostics. All twelve units compiled, and no `CENSUS NOT COMPARED` caveat
+printed, so `ir_rebuilt` was empty and this is the full population the count
+is pinned over. The six red zig arms did not contaminate it.
+
+What is NOT sound as a general claim: `check_diags.py` only PRINTS a code
+whose POLICY verdict is not `OK`. **CDX4010** (bounds proven), **CDX4011**
+(no-alias proven), **CDX4030** (pipeline), **CDX2053** (narrowing proven) and
+**CDX3005** (shadowed builtin) are all `OK` and absorbed in silence -- and
+those are precisely where a lowering or optimiser change shows up. For those
+classes the census CANNOT move, by construction. What held was one NOTE-class
+population, not "the diagnostics".
+
+**Steve's read, and it wants testing:** programs the recent changes touched
+probably carry MORE THAN ONE problem, and the ceremony as run does not show
+that clearly. Two mechanisms feed it -- the six failing units never reached the
+plug at all, so any plug-side divergence in them is unobserved this Update; and
+the corpus (596), the Roc ports and the full tier set have not run.
+
+Where to start: print the OK-class counts too (or diff them), which is a small
+change to the census's reporting rather than its policy; then check whether
+**CDX2052**, COMPILER-31's new refusal, fires anywhere -- it is not in POLICY,
+so it would surface as `UNKNOWN`, and it did not fire this sweep. The census's
+own prose already names the durable fix: *"The right shape is a banked
+diagnostics set diffed like a truth file, which would say what changed instead
+of that something did."*
 
 **STILL OWED, in order:**
 1. Steve's ruling on the bank.
