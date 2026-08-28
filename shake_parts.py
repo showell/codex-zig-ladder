@@ -362,7 +362,7 @@ PRELUDE_TAIL = """
  down rather than measuring again. The two places a name could hide without
  being a reference are comments and string literals. Emitted zig carries
  almost no comments, and a Codex text literal is emitted as CCE hex escapes --
- `"\x30\x0d\x18..."` -- so a program's own strings CANNOT contain a prelude
+ `"\\x30\\x0d\\x18..."` -- so a program's own strings CANNOT contain a prelude
  name in a form this scan can see. Crude roots and code-position roots agree
  exactly on every program tried, and that is structural, not luck.
 
@@ -430,6 +430,14 @@ def splice(emitter, parts, names, kind, shake_on):
     inner = (',\n' + ' ' * 4).join(r.strip() for r in rows)
     table = '  zig-prelude-parts : List ShakePart =\n   [' + inner + ']'
     block = PRELUDE_HEAD + '\n\n'.join(defs) + '\n\n' + table + '\n' + PRELUDE_TAIL
+    # The prose blocks are plain triple-quoted strings, so an escape written
+    # for the READER -- `\\x30` as an example of CCE output -- becomes that byte
+    # and rides into upstream source as a control character. It did, once.
+    bad = sorted({c for c in PRELUDE_HEAD + PRELUDE_TAIL
+                  if ord(c) < 32 and c != '\n'})
+    if bad:
+        raise SystemExit('shake_parts: control characters in the generated prose: '
+                         + ', '.join(hex(ord(c)) for c in bad))
     out = lines[:start] + block.split('\n') + lines[end:]
     # The emit site, and whether the shake is ON there. This is a FLAG rather
     # than a hand edit because the restructure and the behaviour change are two
@@ -588,11 +596,47 @@ def prove_gate(parts, joined, files):
     return 0
 
 
+def verify_table(emitter, parts, names, kind, restructured):
+    """The table in the shipped emitter is EXACTLY what this generator produces.
+
+    Everything `--check-corpus` concludes is about the edges in `frag_needs`,
+    which this file derives. The emitter runs the edges in its own generated
+    table. Those are the same by construction only while nobody has touched
+    the table by hand, and "nobody would" is not a gate.
+
+    No second parser: splice the original chunk list again and compare. A
+    parser for the generated form could disagree with the generator that wrote
+    it, which is the drift this is meant to detect.
+    """
+    have = restructured.read_text(errors='replace')
+    for shake_on in (False, True):
+        want = splice(emitter, parts, names, kind, shake_on)
+        if want == have:
+            print(f'  TABLE GATE: PASS -- byte-identical to a fresh splice, shake '
+                  f'{"ON" if shake_on else "OFF"}')
+            return 0
+    # Say WHERE, or this is a bare no.
+    want = splice(emitter, parts, names, kind, False)
+    hl, wl = have.split('\n'), want.split('\n')
+    for i in range(min(len(hl), len(wl))):
+        if hl[i] != wl[i]:
+            print(f'  TABLE GATE: FAIL -- first difference at line {i+1}')
+            print(f'    shipped   {hl[i][:90]!r}')
+            print(f'    generated {wl[i][:90]!r}')
+            break
+    else:
+        print(f'  TABLE GATE: FAIL -- lengths differ, {len(hl)} vs {len(wl)} lines')
+    return 1
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('emitter', help='path to ZigEmitter.codex')
     ap.add_argument('--against', help='an emitted .zig to gate the cut against')
     ap.add_argument('--shake', help='an emitted .zig to shake, reporting what survives')
+    ap.add_argument('--verify-table', dest='verify_table',
+                    help='a restructured ZigEmitter.codex: prove its table is\n'
+                         'exactly what this generator produces')
     ap.add_argument('--prove-gate', dest='prove_gate', nargs='+',
                     help='emitted .zig files: prove --check-corpus can fail')
     ap.add_argument('--check-corpus', dest='check_corpus', nargs='+',
@@ -657,6 +701,11 @@ def main():
         pathlib.Path(a.gen_frags).write_text('\n\n'.join(lines) + '\n')
         print(f'  wrote {a.gen_frags}')
         return 0
+
+    if a.verify_table:
+        names = [n for n, _ in parts if n]
+        return verify_table(pathlib.Path(a.emitter), parts, names,
+                            decl_kinds(parts), pathlib.Path(a.verify_table))
 
     if a.prove_gate:
         return prove_gate(parts, joined, [pathlib.Path(x) for x in a.prove_gate])
