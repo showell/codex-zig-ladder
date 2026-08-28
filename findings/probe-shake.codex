@@ -21,6 +21,13 @@ Chapter: ProbeShake
  is now [X, Y, Z], where the two orders differ. A fixture that cannot fail the
  thing it is named after is decoration.
 
+ FIXTURES 17-19 ARE THE FIXED POINT. Shaking an already-shaken table with the
+ same roots must return the same table and the same text: the kept set already
+ contains everything reachable, so a second pass finds the same closure. It
+ should hold by construction, which is exactly the kind of claim that is worth
+ one cheap fixture rather than an argument -- and it is the property that makes
+ shaking safe to apply at more than one stage.
+
  FIXTURE 12 IS WHY FRAGMENTS BEAT SCANNING. Its text mentions `cx_ghost` and
  its uses do not include it, because the name sits in a `ShakeLit`. No scanner
  can reach that answer: it sees a name and must assume the worst, and that
@@ -98,5 +105,13 @@ Section: Main
    in act
      print-line-uni (report "15 closure over frags" real ["A"])
      print-line-uni ("16 shake-text: [" & shake-text real ["A"] & "]")
+   end
+   let big = [mk "A" ["B"], mk "B" ["C"], mk "C" [], mk "D" ["E"], mk "E" []]
+   in let once = shake-kept big ["A"]
+   in let twice = shake-kept once ["A"]
+   in act
+     print-line-uni ("17 idempotent once : [" & join (names-of once) & "]")
+     print-line-uni ("18 idempotent twice: [" & join (names-of twice) & "]")
+     print-line-uni ("19 text agrees     : " & (if shake-text once ["A"] == shake-text twice ["A"] then "yes" else "NO"))
    end
   end

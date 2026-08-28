@@ -1,4 +1,4 @@
-# key 0ae9b04618a7c55a
+# key 56c89ec55c08e3d8
 1 chain      : kept [A B C] unmatched [(none)]
 2 diamond   : kept [A B C D] unmatched [(none)]
 3 cycle     : kept [A B] unmatched [(none)]
@@ -8,3 +8,13 @@
 7 identity  : kept [A B] unmatched [(none)]
 8 order kept: kept [X Y Z] unmatched [(none)]
 9 dup roots : kept [A B] unmatched [(none)]
+10 projection: text [fn a() { b(); }]
+11 uses      : [b]
+12 lit is not a use: text mentions cx_ghost, uses [b]
+13 use dedup : [b]
+14 self-edge dropped: [(none)]
+15 closure over frags: kept [A b] unmatched [(none)]
+16 shake-text: [fn a() { b(); }]
+17 idempotent once : [A B C]
+18 idempotent twice: [A B C]
+19 text agrees     : yes
