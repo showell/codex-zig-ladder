@@ -198,6 +198,33 @@ refusing is honest, and choosing one is a DEFAULTING RULE.
   all 56 is what found `deck-bracket-contract` going `match -> differ`. The
   wins were all green; the wrong answer was in the files nobody predicted.
 
+## STANDING DECISION: UPDATE 52 IS A FLAWED RELEASE, AND WE ARE WAITING
+
+**Steve, 2026-08-28.** Update 52 is a **known flawed release with respect to
+the zig emitter** and is recorded as such in `README.md`'s banked-against
+table. It was NOT banked: the truths are sound but the arms came back 6/14, and
+`native_build.sh` exits 1, so Update 52 cannot be transpiled to zig at all.
+**The ladder's honest answer to "which seed do you agree with" is still
+`C3181693` (Update 51).**
+
+**Apart from PR 96, we are NOT hunting Update 52 further. We are waiting for
+the dust to settle.** Damian's agents are on it and will follow up more
+holistically than we can from outside; the ceremony has already told us the two
+headline compiler changes are invisible to our rung population, so more of the
+same probing buys little. What we DO find gets written into an ISSUE, not
+chased into a PR -- unless it is a clear fix we can verify without much compute,
+which is the bar PR 96 met and finding 66 does not.
+
+**What that leaves owed, and it is small:** the Update 52 anomalies ISSUE,
+carrying finding 66 (recursive-sum equality is a silent wrong answer) and
+anything else worth naming. Then re-bank at whichever of Update 52-plus-PR-96
+or Update 53 arrives first.
+
+**Not owed, explicitly retired:** a u51 diagnostics baseline (Steve: not worth
+the compute -- `diags/u52.txt` is the first entry of the series and Update 53
+gets the first real diff), the Roc ports, and the full tier set at Update 52.
+None of them can run a zig arm at this pin anyway.
+
 ## PR 96 IS SENT, AND THE TREE-SHAKING BASE IS BUILT AND VERIFIED
 
 **PR 96: https://github.com/damiant3/Cobblestone/pull/96** -- the three

@@ -43,6 +43,32 @@ This table is the point of the whole arrangement, so it is the first thing on
 the page and it is allowed to be unflattering. A ladder that cannot say which
 seed it agrees with is not evidence about anything.
 
+**IT STILL SAYS UPDATE 51, AND THAT IS DELIBERATE. UPDATE 52 IS A FLAWED
+RELEASE FOR THE ZIG EMITTER AND WAS NOT BANKED.** Its truths were measured and
+are sound -- twelve units, fourteen truths, every one byte-identical to the u51
+bank, each carrying seed `61C81B04` with its harness sha unchanged -- but the
+zig arms came back **6 of 14**, so banking it would have frozen a question
+mid-answer, which is exactly what the green-arms rule exists to prevent.
+
+The cause is Update 52's own and it is one defect: COMPILER-30's
+`ErrorTy | NoExpectTy` arm sweep landed on three matches in
+`codex/compiler/IR/Lowering.codex` that already had a `NoExpectTy` arm, making
+an arm that can never be reached. Legal dead code in Codex;
+`error: duplicate switch value` in zig. **Update 52 cannot be transpiled to
+zig at all** -- `native_build.sh` exits 1, `codexir` does not build, and the
+tier set's zig arm and `codexzig` are blocked with it. `zigemit` survives only
+because it does not bundle `Lowering.codex`.
+
+Sent as **PR 96** with backlog row COMPILER-34, tag `u52-dup-arms-unblocked`;
+three deletions, and with them `native_build.sh` returns 0. Re-bank at Update
+52 when that lands, or at Update 53, whichever arrives first. Until then the
+ladder's answer to "which seed do you agree with" is honestly `C3181693`.
+
+Note for anyone reading a green result from this period: their own release
+gate did not see this, because Update 52 unblocked its DDC by teaching the C#
+plug to DROP duplicate match arms. A gate taught to ignore a defect reports
+green over it.
+
 Mid-rebank, the checkout's pin branch runs one Update ahead of this table --
 `seed_identity.py` names the new Update while `truth/` still holds only the
 old banks. That is the normal in-between state, not drift: the table moves
