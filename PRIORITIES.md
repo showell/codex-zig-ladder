@@ -399,112 +399,114 @@ upstream and DROP our four cherry-picked PR 95 commits, which will then be
 duplicates (git will usually drop them by patch-id, but check rather than
 assume). Do not edit `prelude-last` -- it is absorbed and closed.
 
-## RESUME HERE: THE TREE SHAKER, IN ORDER
+## THE SHAKER: FOUR OF THE FIVE OWED ITEMS ARE DONE. Objective: COMPLETENESS. KEYBOARD, then BOX.
 
-**Where the code is.** Branch `zig-tree-shaking` @ `297649f2`, worktree
-`~/showell_repos/cobblestone-treeshake`, pushed. Five commits on `968d4600`:
-PR 95's four (prelude-last, landed upstream as row plugs 2.01) plus the
-duplicate-arm fix. **The shake is OFF in the committed emitter** -- `zig-prelude`
-runs the real selection with every part name as a root, which is why the
-restructure moved no byte. Ladder side: `shake_parts.py`,
-`findings/probe-shake.codex` (19 fixtures, green both arms),
-`codex/foreword/core/Shake.codex` in the worktree.
+**Where the code is.** Ladder `master` @ `7e6a7cb`. Emitter: branch
+`zig-tree-shaking` @ `e74cd110`, worktree `~/showell_repos/cobblestone-treeshake`.
+**The shake is still OFF in the committed emitter** -- `zig-prelude` runs the
+real selection with every part name as a root. Do not touch `prelude-last` (PR
+95 under absorption) or `lowering-duplicate-noexpect-arms` (PR 96 open).
 
-**Do these before turning the shake on again. The first is a showstopper.**
+**THE SHOWSTOPPER IS FIXED AND THE FIX IS PROVEN AT THE ONLY SCALE THAT
+MATTERS.** The cut named a chunk by what it BEGAN with, and three of 123 carry
+a comment block and a declaration in one string, so the prelude had 96
+declarations and 93 parts. `cx_heap_base` is the one that would have broken
+builds: five callers, none of them reaching the part it was buried in.
 
-1. **Fix the three orphan declarations.** The prelude has 96 top-level
-   declarations and 93 part names: three chunks carry a comment block AND a
-   declaration, so `group()`'s first-line match fails and the chunk welds onto
-   the next part. `cx_heap_base` (called by five parts), `cx_utf8_to_cce`,
-   `cx_vtag`. Verified: 468 of 589 corpus programs would fail with
-   `use of undeclared identifier`. **Add the gate that catches it: every
-   `(?m)^(?:pub )?(fn|const|var) NAME` in the joined text must be a part name.**
-   Three lines, and it fails today.
-2. **Make the order fixture able to fail.** Fixture 8 was rewritten once and is
-   STILL decoration: the realistic wrong implementation is discovery order
-   (return `shake-reach`'s accumulator, delete `shake-kept-loop`), and table
-   order equals discovery order on all eleven graph fixtures. Use table
-   `[C,A,B]`, `A->B->C`, root `A` -- table gives `C A B`, discovery `A B C`.
-3. **Stop trusting the all-roots identity gate for edges.** With every name a
-   root, reachability completes before any edge matters, so it proves the cut
-   and the concatenation ONLY. Both edge bugs survived it. Edges need their own
-   check -- the corpus simulation in Python is the cheap one: for each emitted
-   program, assert every identifier in code position in the kept text is
-   declared there, or `std`, or a zig builtin.
-4. **Bank `probe-scancost.codex`** -- it is untracked and never banked, yet its
-   8.6M chars/s and ~21 s figures are pasted into prose destined for UPSTREAM
-   source. A number in someone else's compiler with no artifact behind it is
-   not acceptable. Register it in `tiers_run.py`, bank a gold, record the wall
-   time in the commit.
-5. **`build/check-zig-prelude-surface.ps1` breaks when the shake is on.** It
+    old cut   93 parts, 96 declarations   4 clean, 10 broken over the rungs
+    new cut   96 parts, 96 declarations  14 clean,  0 broken
+
+**And the restructure moves no byte.** Built the natives from the 96-part
+emitter with the shake OFF (run `20260828T190620Z-shake-96parts`):
+`ast/codexir.zig` is byte-identical to the pre-restructure baseline,
+1,979,036 bytes, md5 `b77431b7`. The zigemit.zig prelude region matches too.
+
+**FOUR GATES NOW, AND THEY ANSWER FOUR QUESTIONS.** The old set was two, and
+both edge bugs walked through them, because with every name a root
+reachability completes before any edge matters.
+
+    DECLARATION   every top-level decl in the joined text is a part name
+    IDENTITY      parts concatenated equal a REAL emitted prelude; each part's
+                  fragment list rebuilds its own text byte for byte
+    CORPUS EDGE   --check-corpus: shake with the REAL roots, then ask zig's
+                  question of the result -- is anything referenced here not
+                  declared here. The only gate that sees an edge.
+    TABLE         --verify-table: the table in the shipped emitter is exactly
+                  what the generator produces. It caught drift on its first run.
+
+`--prove-gate` keeps the corpus gate honest by suppressing one declaration and
+requiring it to be named. The victim is derived, not written down: the
+most-depended-on part that is never a root in any program, so it survives only
+through the closure (`cx_gpa`, 20 incoming edges -- not `std`, which has 27 but
+is named directly by everything).
+
+**Fixture 8 can fail now, and the tiers agree.** Table `[C, A, B]` with
+A -> B -> C rooted at A: the table says `C A B`, a discovery-order
+implementation says `A B C`. Simulated both over all ten graph fixtures before
+spending a run; it is the only one that separates them. Bare metal produced
+`C A B` independently and the zig arm is byte-identical.
+
+**probe-scancost is in the tier set and banked.** Eight runs each, boot
+subtracted using probe-shake as the baseline: 2.29s for 20,643,840 chars,
+**9.0M chars/s**, so 186M chars for the largest program we emit is **21
+seconds** (15-33 bounded by the extremes). The figure quoted in prose destined
+for upstream now has an artifact behind it.
+
+**WHAT IS LEFT, IN ORDER.**
+
+1. **Turn the shake ON and run the corpus edge gate at scale.**
+   `shake_parts.py --splice ... --shake-on` (it is a flag now, not a hand
+   edit), rebuild natives, `corpus_run.py --transpile` (minutes, no QEMU),
+   then `--check-corpus corpus/.codexzig/*.zig`. The 589-program answer is
+   the one that matters; 14 rungs is a smoke test. The corpus .zig currently
+   on disk predates PR 95 and every one of them SKIPS.
+2. **`build/check-zig-prelude-surface.ps1` breaks when the shake is on.** It
    requires subjects' preludes to AGREE; shaking makes them differ by design.
-   It needs to derive its surface from an all-roots emit. Nothing in either
-   commit mentions this, and it is the check PR 95 just repaired.
+   **The design, since one idea is already dead:** a subject that names every
+   part inside one string literal CANNOT force an all-roots emit, because
+   Codex text literals are emitted as CCE hex escapes. So: reconstruct the
+   full prelude from the emitter's own parts table, derive the surface from
+   THAT, and replace "the preludes must agree" with the stronger property
+   shaking actually has -- each emitted prelude must be a sub-selection of one
+   known whole, in table order. Verify by a greedy walk with the cursor
+   required to land at the end.
+3. **`zig-prelude-decls` is documented as "the UNION over the whole prelude"
+   and names 23 of the 96 declarations.** Every `fn` is absent, including
+   `cx_print`, `cx_new`, `cx_concat`, `cx_text_eq`. `zig-sanitize` renames a
+   name only if it is in that list, so a Codex program defining `cx-print`
+   emits a second `fn cx_print` into a file that already has one. The cause is
+   in the deriving script: it reads `const NAME`, `var NAME`, `|capture|` and
+   function PARAMETERS, never the function's own name, and has been printing
+   OK over a surface missing three quarters of the declarations.
+   `findings/probe-prelude-collide.codex` is written and NOT YET RUN -- it
+   declares `cx-print` and `cx-new`. **Run it before claiming anything.**
+   Independent of shaking, and ours to fix (COMPLETENESS).
 
-**Corrected numbers, so they are not re-quoted wrong.** The sound reduction is
-**13% for the compiler and 58% for a small program**, not the 60% in the old
-prototype note (measured without the closure) and not the 21% in `acb8e21`
-(measured with the unsound call-shape rule, which dropped the four
-`cx_bump_*` function-pointer edges). The real precision win from code-position
-fragments is **six edges out of 154**. **The upward channel is NOT needed for
-shaking** -- crude and code-position roots are identical on every program tried.
+**Numbers, re-measured on the 96-part cut rather than re-quoted.** Over the 14
+rung programs of run `20260828T152105Z-treeshake-base`:
 
-**The case for shaking is legibility and un-blinding the corpus oracle, not
-size:** 55 of 93 parts are kept by some programs and not others, so an edit to
-any of them moves a strict subset -- the signal the oracle cannot see today.
+    lex.zig            52/96 parts   52% of prelude bytes   48% smaller
+    lower.zig          69/96         68%                    32%
+    passes_to_x86.zig  80/96         79%                    21%
+    codexir.zig        79/96         86%                    14%
 
-## THE SHAKER IS PARKED, AND A COLD READ FOUND TWO BUGS THE GATES CANNOT SEE
+    42 parts kept by EVERY program, 8 by none, 46 by some and not others
 
-**Parked 2026-08-28 to work on angry-gopher. Nothing shipped; the shake is OFF
-in the committed emitter, so nothing is broken by leaving it here.** Branch
-`zig-tree-shaking` @ `297649f2` in `~/showell_repos/cobblestone-treeshake`.
+The 21% in `acb8e21` was measured with an unsound call-shape rule and the 60%
+in the older prototype note without the closure; neither should be re-quoted.
+**58% for a small program is still unverified on this cut** -- every program
+here is a rung, and the corpus emit that would settle it is item 1.
 
-**SHOWSTOPPER, verified: the prelude has 96 top-level declarations and only 93
-part names.** Three chunks carry a comment block AND a declaration, so
-`group()`'s first-line `DECL` match fails and the chunk is welded onto the NEXT
-part:
+**Those 46 varying parts ARE the case for shaking, and it is not size.** An
+edit to any of them moves a strict subset of the corpus, which is exactly the
+signal the byte-identity oracle cannot see while every program carries the
+whole prelude.
 
-    cx_heap_base     buried in part cx_buf_want         referenced by 5 parts
-    cx_utf8_to_cce   buried in part cx_read_file_uni
-    cx_vtag          buried in part cx_buf_write_byte   a PROGRAM can name it
-
-`cx_heap_base` is called by `cx_bump_alloc`, `cx_bump_resize`, `cx_bump_free`,
-`cx_address_of` and `cx_concat`, none of which reach `cx_buf_want`, so the shake
-keeps the callers and drops the declaration -- **468 of 589 corpus programs
-would fail** with `use of undeclared identifier`. `shake_parts.py`'s docstring
-claim that "each chunk is EXACTLY one zig top-level declaration or one comment
-block" is FALSE for three of 123. **Fix: assert every
-`(?m)^(?:pub )?(fn|const|var) NAME` in the joined text is a part name. Three
-lines, and it fails today.**
-
-**THE ORDER FIXTURE STILL CANNOT FAIL.** Fixture 8 was rewritten this afternoon
-from `[Z,Y,X]` to `[X,Y,Z]` to stop table order and TOPOLOGICAL order
-coinciding. But the realistic wrong implementation is DISCOVERY order -- return
-`shake-reach`'s accumulator and delete `shake-kept-loop` -- and table order
-equals discovery order on all eleven graph fixtures. **Fix: table `[C,A,B]`,
-`A->B->C`, root `A`: table gives `C A B`, discovery gives `A B C`.**
-
-**THE ALL-ROOTS IDENTITY GATE IS BLIND TO EVERY EDGE ERROR.** With every name a
-root, reachability completes before any edge matters, so it can only prove the
-cut and the concatenation. `297649f2` claims it proves "the walk, the ordering
-or a fragment list" -- it does not, which is why BOTH edge bugs survived it.
-
-**THE PRECISION CLAIM IN `acb8e21` IS MOSTLY THE VTABLE BUG.** Committed rule
-21/93, sound `\bNAME\b` 37/93, current fixed rule 36/93. The genuine win from
-code-position fragments is **six edges out of 154**, not half a prelude. The
-principle ("false edges near the root drag whole subtrees") is right; these
-numbers do not demonstrate it.
-
-**Also owed:** `probe-scancost.codex` is UNTRACKED and never banked, so the
-8.6M chars/s and 21 s figures -- which are pasted into prose destined for
-UPSTREAM SOURCE -- have no artifact behind them. And
-`build/check-zig-prelude-surface.ps1` requires subjects' preludes to AGREE,
-which shaking breaks by design; the check PR 95 just repaired will fail on the
-first shaken run, and nothing in either commit mentions it.
-
-**The architecture survives:** one algorithm in a Foreword chapter, two
-consumers, generated table, no-byte-moves staging. The cold read's own summary:
-*"The architecture is right. The gates are pointed at the wrong things."*
+**The upward channel is NOT needed for shaking.** Crude and code-position
+roots are identical on every program tried, and there is now a structural
+reason rather than an observation: a Codex text literal is emitted as CCE hex
+escapes, so a program's own strings cannot contain a prelude name in a form
+the scan can see, and emitted zig carries almost no comments.
 
 ## NEXT: THE ZIG EMITTER'S UPWARD CHANNEL, FOR A PRECISE TREE SHAKER
 
