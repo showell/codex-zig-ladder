@@ -46,6 +46,21 @@ rewrite cut 700 lines to 150 live ones; the 08-24 one re-sorted by
 objective; this one moved ergonomics out and re-ordered what is left so
 the work that does not need the box comes first.)
 
+## TOP PRIORITY: THE TYPE-DEF PRUNE IS PARKED WITH OPEN DEFECTS. See [TYPEDEF-PRUNE.md](TYPEDEF-PRUNE.md).
+
+**Do not send it.** A cold review on 2026-08-28 found defects that can drop a
+LIVE type on ordinary input -- duplicate names across cited chapters are
+last-writer-wins, type-class dictionaries may not be rooted, `SumCtor.return-
+type` is never walked, and the pass has no bail-out where the def prune has
+one. That file is the whole record: branch, what is verified, every defect with
+its file and line, and what to do when it is picked up.
+
+**The one line to carry away from it:** a missed root fails SILENTLY --
+`zig-find-ctor` returning `-1` reclassifies a constructor as a plain value name
+-- so under-collection yields wrong zig, not a diagnostic. Every gate run
+against it was a regex over text or a corpus that does not contain the shapes.
+A corpus that passes tells you the corpus lacks the shape.
+
 ## Objectives
 
 Every item opens with an **Objective** naming what it is FOR in one word,
