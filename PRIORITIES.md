@@ -198,6 +198,69 @@ refusing is honest, and choosing one is a DEFAULTING RULE.
   all 56 is what found `deck-bracket-contract` going `match -> differ`. The
   wins were all green; the wrong answer was in the files nobody predicted.
 
+## PR 96 IS SENT, AND THE TREE-SHAKING BASE IS BUILT AND VERIFIED
+
+**PR 96: https://github.com/damiant3/Cobblestone/pull/96** -- the three
+unreachable arms. Branch `lowering-duplicate-noexpect-arms` @ `2d5a7532` off
+`968d4600`, two commits (the three deletions, then backlog row COMPILER-34),
+tagged `Ladder: u52-dup-arms-unblocked`. **34 not 33: Damian claimed 33 in the
+issue-94 reply and it is unreleased.**
+
+**The blast radius is what carries the PR**, and it is bigger than the rungs:
+`native_build.sh` exits 1 on plain Update 52 and `codexir` cannot be built at
+all, which blocks the tier set's zig arm and `codexzig` too. Only `zigemit`
+survives (it does not bundle `Lowering.codex`). With the three lines gone,
+`native_build.sh` returns 0 with zero errors. Update 52 could not be transpiled
+to zig at all.
+
+**FINDING 66 -- a SILENT WRONG ANSWER, found by a probe written for this
+Update.** `probe-recursive-eq` is in the tier SET with its two rows admitted in
+`EXPECTED.txt`. Update 52 turned `==` on a self-recursive sum from a compile
+refusal into a synthesised `__eq_<Sum>` helper (confirmed by symbol:
+`__eq_Tree` appears once in the probe's CDX map). The zig plug emits raw
+`(a_ == b_)` and records are pointers there, so it answers by IDENTITY: two
+distinct objects of equal shape come back `no` where bare metal says `yes`. It
+COMPILES, RUNS, and prints a plausible answer -- finding 42's shape. **Goes to
+Damian in the Update 52 anomalies ISSUE, not a PR** (Steve 2026-08-28: throw
+U52's issues over the wall, do not deep-hunt; their agents follow up
+holistically). Closing it means giving the emitter a structural path with a
+synthesised recursive helper, mirroring what `X86_64.codex` just gained.
+
+**THE DIAGNOSTICS ARE BANKED AND THE CENSUS NO LONGER HIDES 97% OF ITSELF.**
+`bank_diags.py` banks counts per unit per code under `diags/<slug>.txt` with
+`--diff`; `check_diags.py --census` now prints the whole population (OK still
+does not gate). `diags/u52.txt` is the first entry: 3110 diagnostics, CDX4010
+x3013, CDX6020 x43, CDX3005 x27, CDX2053 x15, CDX4030 x12. No baseline exists
+to diff against and **we are not building one** (Steve: not worth the compute);
+Update 53 will have one. Also corrected: `allcycles.sh` claimed its counts were
+taken over BOTH halves of every unit -- all twelve `<unit>.ir.diags` are
+absent, always, because the IR arm runs `passes=text-plug` and emits nothing.
+
+**Both headline Update 52 compiler changes are invisible to the rung
+population, measured not inferred:** zero `__eq_` symbols in any of the twelve
+subject maps, and zero CDX2052 anywhere. That is why nothing moved -- not "U52
+was clean" but "U52's changes lie outside what twelve compiler-chapter subjects
+exercise".
+
+## NEXT: THE ZIG EMITTER'S UPWARD CHANNEL, FOR A PRECISE TREE SHAKER
+
+**Steve's call. The channel is the deliverable; shaking is the concrete goal
+that makes it real.** See the memory `project_zig_emitter_upward_channel`.
+
+**THE BASE IS BUILT, PUSHED AND VERIFIED: branch `zig-tree-shaking` @
+`eb55cfc3`, worktree `~/showell_repos/cobblestone-treeshake`, on origin.** Six
+commits on `968d4600`: PR 95's four (prelude-last) then PR 96's two,
+cherry-picked. The two touch disjoint files, so it composed linearly with no
+conflicts. **Verified current-and-not-broken:** `native_build.sh` exit=0, zero
+errors, `codexir` 25.6 MB; and PR 95 is confirmed live in the output --
+emitted `codexir.zig` opens on the program, banner at 17003, `cx_new` at 17605
+of 17831 lines.
+
+Keep it clean: **do not touch `prelude-last` (PR 95 is under absorption) or
+`lowering-duplicate-noexpect-arms` (PR 96 is open)**. Work happens on
+`zig-tree-shaking`. If either PR is absorbed with changes, rebase the base
+rather than editing the sent branches.
+
 ## THE U52 CEREMONY IS HALF DONE, AND IT FOUND SOMETHING. Objective: DUE_DILIGENCE -> OUTBOUND. KEYBOARD, then BOX.
 
 **Sweep 6/14. Six units fail on ONE cause and it is Update 52's own.**
