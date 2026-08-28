@@ -79,10 +79,11 @@ this issue claimed otherwise and we cut it.
 
 ## What our ladder could not see this Update, stated so our quiet is not read as a clean bill
 
-Across the twelve compiler-chapter subjects our rungs compile: **zero `__eq_`
-symbols** in any subject's CDX map, so this path never fired anywhere in our
-population; and **no CDX2052 diagnostics** (an existing code that Update 52
-gave a new message under, `Types/TypeCheckerInference.codex:562-564`).
+Across the twelve compiler-chapter subjects our rungs compile, counted over
+all twelve maps and all twelve diagnostic files in two independent sweeps:
+**zero `__eq_` symbols**, so this path never fired anywhere in our population,
+and **zero CDX2052 diagnostics** (an existing code that Update 52 gave a new
+message under, `Types/TypeCheckerInference.codex:562-564` — not a new code).
 
 Our fourteen truths came back byte-identical to the Update 51 bank. The honest
 reading is not "Update 52 changed nothing" — it is that our population does not
