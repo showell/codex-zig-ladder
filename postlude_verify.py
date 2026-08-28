@@ -71,6 +71,11 @@ AST_SUBJECTS = ('zigemit', 'codexir', 'codexzig')
 # so a difference in the output is a difference between the two builds and
 # nothing else.
 DRIVE_SUBJECT = 'sort-test'
+
+# Zig's cache is content-addressed and both variants share almost every
+# compilation unit, so one cache outside the work directory makes a re-run
+# minutes rather than the half hour the first one costs.
+ZIGCACHE = pathlib.Path('/tmp') / f'postlude-zig-cache-{pathlib.Path.home().name}'
 TRANSPILER = pathlib.Path.home() / 'showell_repos' / 'codex-zig-transpiler'
 BEFORE_REV, AFTER_REV = '8595322', 'daf36cf'
 SAMPLE = 'generated/arith.zig'
@@ -125,16 +130,27 @@ def calibrate(banner):
 # What the move is ALLOWED to change in a program's output: where in the file
 # a frame sits, and the counter zig appends to a monomorphised name (which
 # follows declaration order). Nothing else.
+#
+# The directory is the instrument's own leak, not the subject's. The two
+# variants must be built under the same BASENAME in different DIRECTORIES,
+# because zig puts the basename into every type it names in a diagnostic --
+# and a panic backtrace then prints the differing directory. Both are replaced
+# by their exact bytes, never guessed at with a pattern.
 POSITION = re.compile(rb'(\.zig):\d+:\d+')
 ANON = re.compile(rb'__anon_\d+')
 THREAD = re.compile(rb'thread \d+ panic')
 
 
-def normalise(out):
+def normalise(out, dirs=()):
     if not isinstance(out, tuple):
         return out
     rc, so, se = out
-    f = lambda b: THREAD.sub(b'thread N panic', ANON.sub(b'__anon_N', POSITION.sub(rb'\1:L:C', b)))
+
+    def f(b):
+        for d in dirs:
+            b = b.replace(str(d).encode(), b'<work>')
+        return THREAD.sub(b'thread N panic',
+                          ANON.sub(b'__anon_N', POSITION.sub(rb'\1:L:C', b)))
     return rc, f(so), f(se)
 
 
@@ -142,7 +158,7 @@ def build_and_run(src, workdir, tag):
     """(build_ok, diagnostics, run_result) -- run only if the build succeeded."""
     exe = workdir / f'exe-{tag}'
     b = subprocess.run(['zig', 'build-exe', '-femit-bin=' + str(exe), str(src),
-                        '--cache-dir', str(workdir / ('cache-' + tag))],
+                        '--cache-dir', str(ZIGCACHE)],
                        capture_output=True, text=True)
     diag = (b.stderr + b.stdout).replace(str(src), '<src>').replace(str(workdir), '<work>')
     if b.returncode != 0:
@@ -178,6 +194,7 @@ def grade_ast(banner):
     with tempfile.TemporaryDirectory(prefix='postlude-ast-') as td:
         work = pathlib.Path(td)
         (work / 'a').mkdir(); (work / 'b').mkdir()
+        dirs = (work / 'a', work / 'b')
         for name in AST_SUBJECTS:
             src = AST / f'{name}.zig'
             text = src.read_text()
@@ -189,7 +206,7 @@ def grade_ast(banner):
             for tag, path in (('a', a_src), ('b', b_src)):
                 exe = work / f'exe-{name}.{tag}'
                 b = subprocess.run(['zig', 'build-exe', '-femit-bin=' + str(exe), str(path),
-                                    '--cache-dir', str(work / f'cache-{tag}')],
+                                    '--cache-dir', str(ZIGCACHE)],
                                    capture_output=True, text=True)
                 if b.returncode != 0:
                     outs[tag] = ('BUILD FAILED', (b.stderr + b.stdout)[-400:])
@@ -211,7 +228,7 @@ def grade_ast(banner):
                 same = va == vb
                 verdict = ('YES' if same else
                            'only where the file says a frame is'
-                           if normalise(va) == normalise(vb) else 'NO')
+                           if normalise(va, dirs) == normalise(vb, dirs) else 'NO')
                 row.append(f'  built both ways; exit {va[0]}, '
                            f'{len(va[2]):,} bytes on stderr; '
                            f'output byte-identical: {verdict}')
@@ -242,6 +259,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix='postlude-') as td:
         work = pathlib.Path(td)
         (work / 'a').mkdir(); (work / 'b').mkdir()
+        dirs = (work / 'a', work / 'b')
         for n, src in enumerate(srcs, 1):
             text = src.read_text()
             if PRELUDE_TAIL not in text:
@@ -274,7 +292,7 @@ def main():
                 ran += 1
                 if run_a == run_b:
                     same_run += 1
-                elif normalise(run_a) == normalise(run_b):
+                elif normalise(run_a, dirs) == normalise(run_b, dirs):
                     moved_only += 1
                 else:
                     problems.append((src.name, f'behaviour differs: {run_a[0]!r} vs {run_b[0]!r}'))
