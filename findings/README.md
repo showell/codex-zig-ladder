@@ -1190,6 +1190,51 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
+## 66. Structural equality on a recursive sum is a SILENT WRONG ANSWER in the zig plug, on a path Update 52 opened
+
+**Found 2026-08-28**, by a probe written for this Update. `probe-recursive-eq`,
+in the tier SET, with its two disagreeing rows admitted in `EXPECTED.txt`.
+
+Update 52 turned `==` on a self-recursive sum from a compile-time refusal into
+working code. Before it, the x86 back end answered `cdx-recursive-structural-eq`
+-- "this backend compares a sum by inlining a field compare", and inlining has
+no correct bound. Update 52 synthesises one `__eq_<Sum>` helper per recursive
+sum the program actually compares and CALLS it, so the recursion terminates at
+runtime on the data. Confirmed by symbol: `__eq_Tree` appears exactly once in
+the probe's emitted CDX map.
+
+The zig plug has no structural path at all. `emit-zig-binary`'s `IrEq` arm
+special-cases Text and otherwise emits raw zig `==`; the emitted line is
+literally `(a_ == b_)`. Every record is a POINTER in that plug (finding 10, all
+of them), so `==` on a composite is IDENTITY.
+
+    row                          bare metal   zig
+    equal shape, two objects     yes          no     <-- disagrees
+    different shape              no           no
+    a value compared to itself   yes          yes
+    equal shape, nested          yes          no     <-- disagrees
+    different shape, nested      no           no
+
+**IT COMPILES, RUNS, AND PRINTS A PLAUSIBLE ANSWER.** No `@compileError`, no
+marker, no refusal, no crash -- the shape of finding 42, and the reason the
+bare-metal oracle exists rather than a zig-arm self-check.
+
+**The two agreeing rows are the diagnosis, not noise.** A pointer comparison
+gets `different shape` and `a value compared to itself` RIGHT. A probe carrying
+only equal-shape rows could not have told identity from a broken structural
+compare; these rows say which it is.
+
+**Not filed upstream as a defect against them** -- the gap is ours. Closing it
+means giving the emitter a structural path with a synthesised recursive helper,
+mirroring what `X86_64.codex` just gained, which is real work and not a
+one-liner. Filed here, and going to Damian as part of the Update 52 anomalies
+ISSUE rather than a PR (Steve's call 2026-08-28: throw Update 52's issues over
+the wall, do not deep-hunt them; their agents follow up holistically).
+
+Related: finding 10 (records are pointers, all of them), finding 42 (the other
+silent wrong answer), COMPILER-30's sweep (the separate Update 52 defect that
+blocked the arms until `lowering-duplicate-noexpect-arms`).
+
 ## 65. An instance's HEAD TYPE names the dictionary it synthesises and never types it, so the dictionary's type argument is whatever the METHOD BODIES happen to pin
 
 **REPORTED UPSTREAM: issue 94 section 2 -- the second leg of the argument, MEASURED. The fix is not offered there; see 65a for why.**

@@ -1,0 +1,8 @@
+# key 4fad33ddee4247ca
+-- one level of recursion --
+equal shape, two objects   : yes
+different shape            : no
+a value compared to itself : yes
+-- nested, so a depth-one compare cannot pass by luck --
+equal shape, two objects   : yes
+different shape            : no

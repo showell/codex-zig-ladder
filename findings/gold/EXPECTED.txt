@@ -75,3 +75,4 @@ prim-records	record 8 fields64	cost: record is fields*8 on bare metal; ours carr
 prim-records	capturing lambda 16	cost: record is fields*8 on bare metal; ours carries alignment/closure env (primitive-costs.md tier 4; zig values moved 11->15 on the 1db8a78c natives)
 prim-records	non-capturing	cost: record is fields*8 on bare metal; ours carries alignment/closure env (primitive-costs.md tier 4; zig values moved 11->15 on the 1db8a78c natives)
 probe-approx-eq	one-ulp 1	finding 20: IrApproxEq emits ==, the 4-ULP band has zero width on this arm (OPEN, ours)
+probe-recursive-eq	equal shape, two objects	finding 66: bare metal compares a recursive sum STRUCTURALLY (Update 52's synthesised __eq_<Sum> helper); the zig plug's IrEq arm emits raw zig `==`, which on a pointer representation is IDENTITY. Two distinct objects of equal shape: bare metal yes, zig no. The other rows agree BY LUCK -- a pointer compare gets `different shape` and `a value compared to itself` right.
