@@ -14,12 +14,22 @@ Chapter: ProbeShake
  agree: the closure gets the double-compiling treatment rather than being
  trusted.
 
- FIXTURE 8 IS THE ONE THAT MATTERS AND ITS FIRST VERSION WAS DECORATION. It
- was written as [Z, Y, X] with X depending on Y depending on Z -- where the
- table order and a dependencies-first topological order are BOTH "Z Y X", so
- it could not tell them apart and would have passed either implementation. It
- is now [X, Y, Z], where the two orders differ. A fixture that cannot fail the
- thing it is named after is decoration.
+ FIXTURE 8 IS THE ONE THAT MATTERS AND IT TOOK THREE TRIES TO MAKE IT ABLE TO
+ FAIL. A fixture that cannot fail the thing it is named after is decoration,
+ and this one was decoration twice.
+
+ It began as [Z, Y, X] with X depending on Y depending on Z, where the table
+ order and a dependencies-first TOPOLOGICAL order are both "Z Y X". Rewriting
+ it to [X, Y, Z] separated those two -- and left it still unable to fail,
+ because topological order is not the wrong answer anybody would actually
+ write. The realistic wrong implementation is DISCOVERY order: return
+ `shake-reach`'s accumulator and delete `shake-kept-loop` entirely. On [X, Y,
+ Z] rooted at X, discovery visits X then Y then Z, which is the table order
+ again.
+
+ It is now table [C, A, B] with A -> B -> C, rooted at A. The table says
+ "C A B" and discovery says "A B C", so the two implementations disagree in
+ the first position and this fixture is the one that notices.
 
  FIXTURES 17-19 ARE THE FIXED POINT. Shaking an already-shaken table with the
  same roots must return the same table and the same text: the kept set already
@@ -86,8 +96,8 @@ Section: Main
      print-line-uni (report "6 unknown   " two ["nope"])
      print-line-uni (report "7 identity  " two ["A", "B"])
    end
-   let ordered = [mk "X" ["Y"], mk "Y" ["Z"], mk "Z" []]
-   in print-line-uni (report "8 order kept" ordered ["X"])
+   let ordered = [mk "C" [], mk "A" ["B"], mk "B" ["C"]]
+   in print-line-uni (report "8 order kept" ordered ["A"])
    let dup = [mk "A" ["B"], mk "B" []]
    in print-line-uni (report "9 dup roots " dup ["A", "A", "B"])
    let f1 = [ShakeLit "fn a() { ", ShakeUse "b", ShakeLit "(); }"]
