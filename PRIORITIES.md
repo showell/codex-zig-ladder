@@ -395,52 +395,50 @@ Its two probes are back in the tier set and green.
     restructure inert     codexir.zig byte-identical, md5 b77431b7
     tier set, both arms   27 tiers: green 20, noted 7, RED 0 -- SET GREEN
 
-## NEXT, IN THIS ORDER (Steve's call 2026-08-28), NOW THAT PR 98 IS SENT
+## NEXT: PRUNE UNREACHABLE TYPE-DEFS. Objective: COMPLETENESS. KEYBOARD, then BOX.
 
-**1. POINT codex-zig-transpiler AT THE TREE-SHAKING BRANCH. Objective:
-ERGONOMICS. BOX.** A smaller fixed point and a much more readable
-`arith.zig`.
+**IT IS THE SAME CONCEPT AS THE SHAKER AND MUST NOT BE THE SAME CODE.**
+`opening.codex:1716`:
 
-**It is a LINEAR move and the memory that said otherwise is stale.**
-`cobblestone-pin` is already on `prelude-last` at `14388a57`, NOT the
-`3942e362` the transpiler memory records. `zig-tree-shaking` is a descendant,
-seven commits on, off the same `968d4600` base -- so the same seed, no rebase,
-no pin surgery. Move the worktree and `./build.py --force`.
+    emit-ir-chapter (ir-prune-unreachable-roots lifted-ir ir-emit-roots)
+                    (fe.text-meta) (fe.type-defs)
 
-**What it buys, simulated before spending the box time:**
+Defs go through the prune; **type-defs are threaded PAST it.** That is the
+whole defect. Type-defs live in the IR, upstream of all 56 plugs, so pruning
+them there shrinks the wire for everyone; the prelude is a zig text blob that
+exists only AFTER emission, which is why `Shake` lives in the plug. Using
+`Shake` here would force an all-plugs fix down into the zig plug alone.
+**Extend `ir-prune-unreachable-roots`.** `Shake`'s second consumer is
+therefore still hypothetical -- relevant to PR 98, where we offered to move it
+out of Foreword if they would rather.
 
-    arith.zig today    907 lines, 41,661 bytes; program is lines 1-79
-    arith.zig shaken   41/96 parts, 17,448 of 37,461 prelude bytes (46%)
-                       so roughly 460 lines, ~21,600 bytes -- a 54% cut
+**MEASURED over the 578 emitted corpus programs, program region only** (dead =
+the name appears only at its own declaration; `main` and `cx_entry` excluded,
+because zig resolves those by name and the first pass at this reported `main`
+dead in 578 of 578 -- the shake gate's blind spot, hit again):
 
-**What it does NOT buy: a much smaller fixed point.** `codexzig` is a 2.9 MB
-program that reaches most of the prelude -- `codexir`, comparable, sheds only
-14%. The payoff is the sample's legibility, not the artifact's size. Say so
-rather than being surprised by it.
+    kind                  dead    live   dead bytes
+    type constructor     2,398     381      357,274
+    type def             2,107   6,893       98,545
+    value def            1,652  30,423      102,887
 
-Watch for: `a7f20525` adds a NEW Foreword chapter (`Shake`) and the emitter
-now cites `Shake` and `TextSearch`, so the bundle has two more cites to
-resolve than any previous transpiler build.
+**Type constructors are 86% dead and are the prize** -- 357 KB, and
+`Tup2..Tup5` are 2,282 of those 2,398 instances, dead in 553-578 programs
+each. `Foreword Tuple` rides into every unit unconditionally.
 
-**2. PRUNE UNUSED TYPE-DEFS -- Tup2..Tup5. Objective: COMPLETENESS. KEYBOARD,
-then BOX.** **TREE-SHAKING DOES NOT DO THIS AND WILL NOT**, which is the thing
-to be clear about: `Tup2..Tup5` are emitted into the PROGRAM region by the
-type-def emitter, not into the prelude, so the prelude shake cannot reach
-them. Verified on shaken output -- all four still present in a shaken corpus
-program.
-
-`Foreword Tuple` rides into every unit unconditionally, so every emitted
-program carries 24 lines of it. In `arith.zig` each of the four appears
-**exactly once, its own declaration, zero uses**. `ir-prune-unreachable-roots`
-already does this shape for defs; type-defs never got it.
+**The 1,652 dead VALUE defs are a separate question and probably a finding.**
+`ir-prune-unreachable-roots` already runs on defs, so either its roots are
+conservative or these become unreachable only after emission. Worth one probe
+before assuming it is benign; do not fold it into this item.
 
 **Steve's ruling stands: PRUNE, DO NOT REORDER.** Reordering only relocates
 dead code and drags real program types down with it.
 
-**Steve chose this order deliberately (2026-08-28), knowing it means building
-the transpiler twice** -- once against the shaker and again after the Tup
-prune. Keeping the two exercises separate is worth the box time; do not
-quietly merge them to save a build.
+**Gate it the way the shaker was gated:** byte-identity over the corpus for
+everything that is NOT dead, and a `--check-emitted`-shaped question of the
+result -- every type named in code position must be declared. `treeshake-base`
+is marked KEEP because it is the unshaken oracle; this needs a comparable
+baseline of its own.
 
 ## THE ZIG EMITTER'S UPWARD CHANNEL. Objective: COMPLETENESS. Not started.
 
