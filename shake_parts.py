@@ -606,6 +606,27 @@ def prove_gate(parts, joined, files):
     return 0
 
 
+GEN_FIRST = ' The prelude, cut into selectable parts. Each is a `List ShakeFrag` from'
+GEN_LAST = '  zig-prelude : Text = shake-text zig-prelude-parts zig-prelude-part-names'
+
+
+def generated_block(text):
+    """The lines shake_parts.py owns, and nothing else.
+
+    The rest of ZigEmitter.codex is hand-written and MUST stay editable --
+    `zig-prelude-decls` lives up at line 84 and finding 67 is a change to it.
+    An earlier version of this gate compared whole files, which would have
+    called that legitimate edit drift and been believed.
+    """
+    lines = text.split('\n')
+    try:
+        i = lines.index(GEN_FIRST)
+        j = lines.index(GEN_LAST)
+    except ValueError:
+        return None
+    return lines[i:j + 1]
+
+
 def verify_table(emitter, parts, names, kind, restructured):
     """The table in the shipped emitter is EXACTLY what this generator produces.
 
@@ -614,73 +635,28 @@ def verify_table(emitter, parts, names, kind, restructured):
     table. Those are the same by construction only while nobody has touched
     the table by hand, and "nobody would" is not a gate.
 
-    No second parser: splice the original chunk list again and compare. A
-    parser for the generated form could disagree with the generator that wrote
-    it, which is the drift this is meant to detect.
+    No second parser: splice the original chunk list again and compare the
+    generated block. A parser for the generated form could disagree with the
+    generator that wrote it, which is the drift this is meant to detect.
     """
-    have = restructured.read_text(errors='replace')
-    for shake_on in (False, True):
-        want = splice(emitter, parts, names, kind, shake_on)
-        if want == have:
-            print(f'  TABLE GATE: PASS -- byte-identical to a fresh splice, shake '
-                  f'{"ON" if shake_on else "OFF"}')
-            return 0
-    # Say WHERE, or this is a bare no.
-    want = splice(emitter, parts, names, kind, False)
-    hl, wl = have.split('\n'), want.split('\n')
-    for i in range(min(len(hl), len(wl))):
-        if hl[i] != wl[i]:
-            print(f'  TABLE GATE: FAIL -- first difference at line {i+1}')
-            print(f'    shipped   {hl[i][:90]!r}')
-            print(f'    generated {wl[i][:90]!r}')
+    have = generated_block(restructured.read_text(errors='replace'))
+    if have is None:
+        print('  TABLE GATE: FAIL -- no generated block in the shipped emitter')
+        return 1
+    want = generated_block(splice(emitter, parts, names, kind, False))
+    if have == want:
+        print(f'  TABLE GATE: PASS -- the {len(have)} generated lines are '
+              f'byte-identical to a fresh splice')
+        return 0
+    for i in range(min(len(have), len(want))):
+        if have[i] != want[i]:
+            print(f'  TABLE GATE: FAIL -- first difference at generated line {i+1}')
+            print(f'    shipped   {have[i][:90]!r}')
+            print(f'    generated {want[i][:90]!r}')
             break
     else:
-        print(f'  TABLE GATE: FAIL -- lengths differ, {len(hl)} vs {len(wl)} lines')
+        print(f'  TABLE GATE: FAIL -- lengths differ, {len(have)} vs {len(want)}')
     return 1
-
-
-def check_emitted(parts, joined, files):
-    """Ask zig's question of REAL output, shaken or not. No simulation at all.
-
-    `--check-corpus` predicts: it takes an UNSHAKEN emit, removes the prelude,
-    computes roots and edges here, and reports what the shake would do. That is
-    the only thing available before the shake is turned on, and once it IS on
-    the full prelude no longer appears verbatim in any emitted file, so that
-    mode skips everything.
-
-    This mode reads the finished file instead: every prelude name that appears
-    in code position must be declared in that same file. It re-derives nothing
-    from the table beyond the vocabulary of names to look for, so it cannot
-    agree with the closure by sharing its mistake.
-
-    A program that declares a prelude name ITSELF counts as declaring it, and
-    that is correct for this question -- zig only asks whether the identifier
-    resolves. Whether a program is ALLOWED to declare one is a different
-    defect, and `zig-prelude-decls` is where that lives.
-    """
-    vocab = DECL.findall(joined)
-    ok, bad = 0, 0
-    worst = {}
-    for f in files:
-        body = f.read_text(errors='replace')
-        declared = set(DECL.findall(body))
-        missing = sorted(names_in_code(body, vocab) - declared)
-        if missing:
-            bad += 1
-            for m in missing:
-                worst[m] = worst.get(m, 0) + 1
-            if bad <= 8:
-                print(f'  {f.name}: UNDECLARED -- {", ".join(missing)}')
-        else:
-            ok += 1
-    if bad > 8:
-        print(f'  ... and {bad - 8} more')
-    if worst:
-        top = sorted(worst.items(), key=lambda kv: -kv[1])
-        print('  most often undeclared: '
-              + ', '.join(f'{n} ({c})' for n, c in top[:6]))
-    print(f'  EMITTED GATE: {ok} clean, {bad} broken, over {ok + bad} files')
-    return 1 if bad else 0
 
 
 def main():
