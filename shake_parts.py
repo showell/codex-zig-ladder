@@ -1,23 +1,54 @@
 #!/usr/bin/env python3
 """Cut `zig-prelude` into shakeable parts, and prove the cut is lossless.
 
-The prelude is one `Text` built from ~123 `& "..."` chunks, and the seam is
-already there: each chunk is EXACTLY one zig top-level declaration or one
-comment block. This reads them out and groups them into parts, where a part is
+The prelude is one `Text` built from 123 `& "..."` chunks, and the seam is
+already there: each chunk is one zig top-level declaration or one comment
+block. This reads them out and groups them into parts, where a part is
 (leading comments + one declaration) -- comments belong to the decl they
 explain, or shaking leaves a header of explanations for code that is gone.
 
 NOTHING HERE IS TYPED BY HAND. Hand-editing 123 string literals byte-exactly is
 where a week would go, and a single dropped `\\n` is indistinguishable from a
 wrong closure once both are downstream. So the table is generated, and the
-generator is gated:
+generator is gated. FOUR GATES, and they answer four different questions --
+which matters, because the first two were once mistaken for the whole set and
+two edge bugs shipped through them:
 
-    the parts, concatenated in order, must equal the prelude the plug ACTUALLY
-    EMITS -- not a self-check against my own decoder, but a comparison against
-    a real emitted .zig from a sandbox.
+    DECLARATION   every `^(pub )?(fn|const|var) NAME` in the joined text is a
+                  part name. A declaration no part is named after cannot be
+                  kept on its own account. Free, and it fails on the cut this
+                  file shipped with.
 
-That gate is the reason to trust anything built on top. Run it before trusting
-a shaken output, and again after any prelude edit.
+    IDENTITY      the parts, concatenated in order, equal the prelude the plug
+                  ACTUALLY EMITS -- compared against a real emitted .zig, not
+                  against my own decoder. Plus: each part's fragment list
+                  rebuilds its own text byte for byte.
+
+    CORPUS EDGE   --check-corpus. Shake each emitted program with its REAL
+                  roots and ask zig's question of the result: is anything
+                  referenced here not declared here. THIS IS THE ONLY ONE THAT
+                  SEES AN EDGE. The all-roots identity check cannot: with every
+                  name a root, reachability completes before any edge matters.
+
+    PROVE-GATE    --prove-gate. Suppress one declaration and require the corpus
+                  gate to name it, so its power is checked rather than assumed.
+
+Usage, in the order they are worth running:
+
+    ./shake_parts.py EMITTER --prove-gate   RUN/ast/*.zig
+    ./shake_parts.py EMITTER --check-corpus corpus/.codexzig/*.zig
+    ./shake_parts.py EMITTER --against      RUN/ast/codexir.zig
+    ./shake_parts.py EMITTER --splice OUT [--shake-on]
+
+EMITTER must be the chunk-list source, not generator output -- this consumes
+the chunk list and replaces it, so it is not idempotent and refuses rather
+than splicing an empty table over a good one. Take it from git if the working
+tree has already been restructured:
+
+    git show <rev>:codex/plugs/zig/ZigEmitter.codex
+
+The corpus files come from `corpus_run.py --transpile`, which is minutes and
+no QEMU.
 """
 
 import argparse
