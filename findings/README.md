@@ -1190,50 +1190,68 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
-## 66. Structural equality on a recursive sum is a SILENT WRONG ANSWER in the zig plug, on a path Update 52 opened
+## 66. The recursive structural-eq helper is synthesised BELOW the IR, so exactly one backend has it
 
-**Found 2026-08-28**, by a probe written for this Update. `probe-recursive-eq`,
-in the tier SET, with its two disagreeing rows admitted in `EXPECTED.txt`.
+**Found 2026-08-28. CORRECTED the same day after a cold read; the first
+version had the fact right and the cause wrong, and the cause is the useful
+half.** Probe `findings/probe-recursive-eq.codex`, in the tier SET, its two
+disagreeing rows admitted in `EXPECTED.txt`.
 
-Update 52 turned `==` on a self-recursive sum from a compile-time refusal into
-working code. Before it, the x86 back end answered `cdx-recursive-structural-eq`
--- "this backend compares a sum by inlining a field compare", and inlining has
-no correct bound. Update 52 synthesises one `__eq_<Sum>` helper per recursive
-sum the program actually compares and CALLS it, so the recursion terminates at
-runtime on the data. Confirmed by symbol: `__eq_Tree` appears exactly once in
-the probe's emitted CDX map.
-
-The zig plug has no structural path at all. `emit-zig-binary`'s `IrEq` arm
-special-cases Text and otherwise emits raw zig `==`; the emitted line is
-literally `(a_ == b_)`. Every record is a POINTER in that plug (finding 10, all
-of them), so `==` on a composite is IDENTITY.
-
-    row                          bare metal   zig
-    equal shape, two objects     yes          no     <-- disagrees
+    row                          bare metal   zig plug
+    equal shape, two objects     yes          no      <-- disagrees
     different shape              no           no
     a value compared to itself   yes          yes
-    equal shape, nested          yes          no     <-- disagrees
+    equal shape, nested          yes          no      <-- disagrees
     different shape, nested      no           no
 
-**IT COMPILES, RUNS, AND PRINTS A PLAUSIBLE ANSWER.** No `@compileError`, no
-marker, no refusal, no crash -- the shape of finding 42, and the reason the
-bare-metal oracle exists rather than a zig-arm self-check.
+Zig arm measured from `probe-recursive-eq.zig` (emits `(a_ == b_)`) built and
+run; `__eq_Tree` appears exactly once in the bare-metal CDX map.
 
-**The two agreeing rows are the diagnosis, not noise.** A pointer comparison
-gets `different shape` and `a value compared to itself` RIGHT. A probe carrying
-only equal-shape rows could not have told identity from a broken structural
-compare; these rows say which it is.
+**THE CAUSE, and it is a fix-location argument.** Codex has TWO structural
+equality mechanisms and they sit on opposite sides of the IR:
 
-**Not filed upstream as a defect against them** -- the gap is ours. Closing it
-means giving the emitter a structural path with a synthesised recursive helper,
-mirroring what `X86_64.codex` just gained, which is real work and not a
-one-liner. Filed here, and going to Damian as part of the Update 52 anomalies
-ISSUE rather than a PR (Steve's call 2026-08-28: throw Update 52's issues over
-the wall, do not deep-hunt them; their agents follow up holistically).
+- `deriving Eq` synthesises a source-level `__eq_<T>` in the DESUGARER
+  (`Ast/Desugarer.codex:663`, `:765-777`), and `lower-eq-dispatch`
+  (`IR/Lowering.codex:646-656`) rewrites `==` into a call to it **in the IR**.
+  Above the wire, so **every plug in the fleet inherits it for free.**
+- The recursive-sum helper is synthesised in the BACK END
+  (`Emit/X86_64.codex:2911`, `:3062`, `:3257-3271`, appended by
+  `X86_64Chapter.codex:1150`), **below the wire.** Only x86-64 has it.
 
-Related: finding 10 (records are pointers, all of them), finding 42 (the other
-silent wrong answer), COMPILER-30's sweep (the separate Update 52 defect that
-blocked the arms until `lowering-duplicate-noexpect-arms`).
+`grep -rl "eq-sum-is-recursive\|__eq_" codex/plugs/` returns nothing. So the
+plug cannot see it, and **this is not a zig problem**: their own
+`codex/test/recursive-eq.no-cross` says *"structural == on a recursive variant
+is synthesised by the x86-64 emitter only (COMPILER-24); arm64 answers ne where
+eq is expected, riscv unmeasured."* Two of their backends are already wrong.
+
+**Hoisting the recursive synthesis into lowering, where `deriving Eq` already
+lives, fixes zig, arm64 and riscv in one place.** That is the ask.
+
+**WHAT THE FIRST VERSION GOT WRONG.** It said "bare metal compares by contents;
+the zig plug compares by identity". **Bare metal does NOT compare a plain
+record by contents.** `emit-eq-op` falls through to `emit-comparison`
+(`X86_64.codex:2927`, `:3300-3308`), a raw register compare, and the source
+says so on purpose: *"It answers True for records, lists and sums on purpose.
+`emit-eq-op`'s fallthrough compares those by POINTER and means to."* There is
+no large invisible population of silent wrong answers, which the first version
+claimed. The zig plug has four sum representations
+(`ZigEmitter.codex:1383-1394`) and only one of them is silent:
+
+    sum shape                zig type        zig ==          bare metal      verdict
+    generic (tparams > 0)    union(enum)     compile error   structural      LOUD
+    all-nullary              enum            correct tag     emit-sum-tag-eq AGREE
+    self-recursive           *NameS ptr      identity        __eq_<Sum>      FINDING 66
+    non-recursive + payload  union(enum)     compile error   emit-sum-full-eq LOUD
+
+**Also corrected: Update 52 did not open this path.** The helper landed in
+`3942e362` (PR 93's absorb); `git diff 3942e362 968d4600 -- codex/compiler/Emit/`
+is two lines. Update 52 is where we happened to look.
+
+**Not filed as a defect against them** -- closing the zig side is ours. The
+fix-location argument goes to them, because it is worth more than our half.
+
+Related: finding 10 (records are pointers), finding 42 (the other silent wrong
+answer), [[reference_csharp_plug_is_gold_standard]].
 
 ## 65. An instance's HEAD TYPE names the dictionary it synthesises and never types it, so the dictionary's type argument is whatever the METHOD BODIES happen to pin
 
