@@ -1,31 +1,38 @@
-# What the zig ladder saw in Update 52, and what it could not see
+# The recursive structural-eq helper is synthesised below the IR, so it reaches one backend
 
 *Draft. Written by Claude, on Steve Howell's account and at his direction.
-Update 52's ceremony findings, apart from the duplicate-arm defect already
-sent as PR 96.*
+Supersedes an earlier draft of this file that had the cause wrong; a cold read
+caught it before sending.*
 
 ---
 
-## Summary
+## The claim
 
-Three things, in descending order of how much they should worry anyone.
+Codex has two structural-equality mechanisms and they sit on opposite sides of
+the IR. One reaches every backend. The other reaches exactly one.
 
-1. **Structural equality on a composite is a silent wrong answer in the zig
-   plug.** Bare metal compares by contents; the zig plug compares by identity.
-   It compiles, runs, and prints a plausible answer. **This is our gap, not
-   yours** -- we are reporting it because Update 52 widened it and because the
-   shape may not be unique to zig.
-2. **Neither of Update 52's headline compiler changes is reachable from our
-   rung population**, measured rather than assumed. That is a statement about
-   the limits of our evidence, and it is why our sweep was quiet where you
-   might have expected noise.
-3. **A small request about release-note spelling**, which costs you nothing
-   and saves anyone automating against the notes an afternoon.
+- **`deriving Eq`** synthesises a source-level `__eq_<T>` in the desugarer
+  (`Ast/Desugarer.codex:663`, `:765-777`), and `lower-eq-dispatch`
+  (`IR/Lowering.codex:646-656`) rewrites `==` into a call to it **in the IR**.
+  Above the wire, so every plug in the fleet inherits it for free.
+- **The recursive-sum helper** is synthesised in the back end
+  (`Emit/X86_64.codex:2911`, `:3062`, `:3257-3271`, appended by
+  `X86_64Chapter.codex:1150`). **Below the wire.** `grep -rl
+  "eq-sum-is-recursive\|__eq_" codex/plugs/` returns nothing.
 
-## 1. `==` on a composite: contents on bare metal, identity through the zig plug
+**You already know the consequence for one backend.**
+`codex/test/recursive-eq.no-cross` reads:
 
-**MEASURED.** `findings/probe-recursive-eq.codex`, in our tier set, both arms
-at the Update 52 pin `968d4600` (with PR 96 applied, or nothing builds):
+> structural == on a recursive variant is synthesised by the x86-64 emitter
+> only (COMPILER-24); arm64 answers ne where eq is expected, riscv unmeasured
+
+**The ask: hoist the recursive synthesis into lowering, where `deriving Eq`
+already lives.** That fixes arm64, riscv and the zig plug in one place, at the
+level where the other mechanism already works.
+
+## What we measured, and it is only a third witness
+
+`findings/probe-recursive-eq.codex` in our tier set, both arms:
 
     row                          bare metal   zig plug
     equal shape, two objects     yes          no      <-- disagrees
@@ -34,98 +41,73 @@ at the Update 52 pin `968d4600` (with PR 96 applied, or nothing builds):
     equal shape, nested          yes          no      <-- disagrees
     different shape, nested      no           no
 
-The two agreeing rows are the diagnosis rather than noise: a pointer
-comparison gets "different shape" and "a value compared to itself" RIGHT, so a
-probe carrying only equal-shape rows could not have told identity from a
-broken structural compare. These rows say which it is.
+`Tree = | Leaf (Integer) | Fork (Tree) (Tree)`, values built through functions
+so neither arm can fold two constructions into one object. `__eq_Tree` appears
+exactly once in the bare-metal CDX map. The zig arm emits `(a_ == b_)` — the
+`IrEq` arm at `ZigEmitter.codex:1303` special-cases Text and otherwise emits a
+raw `==`, and a self-recursive sum is a pointer in that plug, so `==` is
+identity.
 
-**Why Update 52 is where this surfaced.** Before it, the x86 back end refused
-`==` on a self-recursive sum outright -- `cdx-recursive-structural-eq`, "this
-backend compares a sum by inlining a field compare", and inlining has no
-correct bound. Update 52 replaced the refusal with a synthesised
-`__eq_<Sum>` helper, called rather than inlined, so the recursion terminates
-at runtime on the data. Confirmed by symbol: `__eq_Tree` appears exactly once
-in the probe's emitted CDX map. **A program asking this question did not
-compile before Update 52**, which is why no tier covered it.
+The two agreeing rows are the diagnosis rather than noise: a pointer comparison
+gets "different shape" and "a value compared to itself" right, so a probe with
+only equal-shape rows could not have told identity from a broken structural
+compare.
 
-**The plug side is a one-line cause.** `emit-zig-binary`'s `IrEq` arm
-special-cases Text and otherwise emits raw zig `==`; the emitted line is
-literally `(a_ == b_)`. Every record is a pointer in that plug, so `==` on a
-composite is identity.
+**This adds arm64's `ne` and zig's silent `no` to the same cause.** It is your
+own note that establishes the pattern; we are the second data point, not the
+discoverer.
 
-**Closing it is real work, which is why this is an issue and not a PR from
-us.** It means giving the emitter a structural path with a synthesised
-recursive helper, mirroring what `X86_64.codex` just gained. We expect to do
-it; we are not asking you to.
+## What is NOT wrong, so the report is not read as bigger than it is
 
-**The part worth your attention: we do not think recursion has anything to do
-with it.** `emit-sum-structural-eq` predates Update 52, so bare metal has
-compared non-recursive sums structurally all along, and the zig plug's raw
-`==` has answered by identity all along. If that is right, Update 52 did not
-create this divergence -- it only widened it to a case that previously
-refused, and the older and larger half has been invisible the whole time
-because **no tier in our set compares two composite values.** Every `==` in
-every tier we have compares a scalar: a list length, a field, an integer.
-`findings/probe-composite-eq.codex` is written to settle it.
+We checked, and these all agree:
 
-**Worth checking on your side:** whether any plug in the fleet that represents
-composites as references has the same answer, and whether your own battery
-compares two structurally-equal composite values anywhere. We could not find a
-test for the recursive path in `codex/test/` -- Update 52 added
-`show-partial-application` and four desk/app cases, and nothing that exercises
-`__eq_<Sum>`. That may simply mean it is covered somewhere we cannot see.
+| sum shape | zig type | zig `==` | bare metal | verdict |
+|---|---|---|---|---|
+| generic (`tparams > 0`) | `union(enum)` | compile error | structural | loud |
+| all-nullary | `enum` | correct tag compare | `emit-sum-tag-eq` | **agree** |
+| self-recursive | pointer | identity | `__eq_<Sum>` | **this issue** |
+| non-recursive + payload | `union(enum)` | compile error | `emit-sum-full-eq` | loud |
 
-## 2. What our sweep could NOT see, stated so our quiet is not mistaken for a clean bill
+And a plain record without `deriving Eq` is compared by pointer on **both**
+arms — `emit-eq-op` falls through to `emit-comparison`
+(`X86_64.codex:2927`, `:3300-3308`), which your source says is deliberate:
+*"It answers True for records, lists and sums on purpose… compares those by
+POINTER and means to."*
 
-**MEASURED.** Across the twelve compiler-chapter subjects our rungs compile:
+So there is exactly one silent divergence, not a family. An earlier draft of
+this issue claimed otherwise and we cut it.
 
-- **Zero `__eq_` symbols** in any subject's CDX map. Update 52's headline
-  codegen change never fired anywhere in our population.
-- **Zero CDX2052** in any subject's diagnostics. COMPILER-31's new refusal
-  never fired either.
+## What our ladder could not see this Update, stated so our quiet is not read as a clean bill
 
-All fourteen truths came back byte-identical to the Update 51 bank. The honest
-reading of that is **not** "Update 52 changed nothing" -- it is "Update 52's
-changes lie outside what twelve compiler-chapter subjects exercise." We
-mention it because a green DDC is only as good as the population it ran over,
-and ours did not reach the two things you changed most.
+Across the twelve compiler-chapter subjects our rungs compile: **zero `__eq_`
+symbols** in any subject's CDX map, so this path never fired anywhere in our
+population; and **no CDX2052 diagnostics** (an existing code that Update 52
+gave a new message under, `Types/TypeCheckerInference.codex:562-564`).
 
-For the same reason we are not claiming Update 52 is otherwise sound. We
-stopped after PR 96 deliberately.
+Our fourteen truths came back byte-identical to the Update 51 bank. The honest
+reading is not "Update 52 changed nothing" — it is that our population does not
+reach the parts that changed. We also did not have a green DDC at Update 52's
+release commit: six of twelve units could not be transpiled at all until the
+duplicate `NoExpectTy` arms were removed, which your change 20398 had already
+done at head. With that in, we now sweep **14/14 both arms**.
 
-## 3. A small request: name the release seed the same way twice
+## One small request
 
-`seed_identity.py` on our side derives which Update a checkout is holding by
-finding the release note that names the seed's hash. It refuses rather than
-guesses, because an interim seed named in the next Update's accumulator would
-otherwise get a release number it never earned.
+`GitHubUpdate52.md` publishes no SHA-256 for its seed. Updates 48–51 each gave
+the full 64-hex digest, and our side derives which Update a checkout holds by
+matching the seed's hash against the release note that names it — refusing
+rather than guessing, so an interim seed cannot inherit a release number. With
+no digest published, that derivation had nothing to match and refused Update 52.
 
-Update 51 wrote:
-
-    **Seed `C3181693` (2,917,073 bytes, SHA-256 ...
-
-Update 52 writes:
-
-    **The proofs, all at the release head against seed `61C81B04D0C3CC2E`:**
-
-which is a sixth distinct spelling, in sixteen digits rather than eight. Our
-deriver refused `u52` and would have banked Update 52 under its bare hash,
-outside the rotation everything else references. We fixed it on our side and
-the fix was slightly delicate, because Update 53's accumulator opens "through
-its release head (main 20354, seed `61C81B04D0C3CC2E`)" -- the same two
-phrases naming the same seed, one line apart in shape, so an over-broad rule
-makes 52 and 53 both claim it.
-
-**No change is needed for us.** But if a stable form is cheap -- one line per
-release note that always reads the same way -- it removes a class of silent
-mislabelling for anyone automating against the notes.
+**One line per note carrying the full digest** would remove a class of silent
+mislabelling for anyone automating against the notes. Nothing else needed.
 
 ## What we are not reporting
 
-PR 96 covers the duplicate `NoExpectTy` arms and the fact that Update 52
-cannot be transpiled to zig without them. Nothing else in this Update stopped
-a rung.
+We are not hunting Update 52 further; your agents cover it more holistically
+than we can from outside, and the section above says why our population is a
+weak instrument for it.
 
-We are deliberately not hunting Update 52 further. Your agents follow this up
-more holistically than we can from outside, and the ceremony above tells us
-our population cannot see the parts that changed most.
+Closing the zig side of the recursive helper is ours to do, and we expect to.
+The fix-location argument is worth more than our half of it, which is why this
+is an issue rather than a patch.
