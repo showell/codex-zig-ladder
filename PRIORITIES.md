@@ -198,6 +198,63 @@ refusing is honest, and choosing one is a DEFAULTING RULE.
   all 56 is what found `deck-bracket-contract` going `match -> differ`. The
   wins were all green; the wrong answer was in the files nobody predicted.
 
+## THE U52 CEREMONY IS HALF DONE, AND IT FOUND SOMETHING. Objective: DUE_DILIGENCE -> OUTBOUND. KEYBOARD, then BOX.
+
+**Sweep 6/14. Six units fail on ONE cause and it is Update 52's own.**
+COMPILER-30's `ErrorTy | NoExpectTy` sweep landed on three matches in
+`codex/compiler/IR/Lowering.codex` that ALREADY had a `NoExpectTy` arm with an
+identical body -- `lambda-expected-ty` (750), the inline `result-ty` in
+`lower-match` (869), `list-arm-ty` (918). Legal dead code in Codex;
+`error: duplicate switch value` in zig. Failing: lower, ir_to_codex,
+ir_to_codex_roundtrip, ir_to_wire, ir_to_x86, passes_to_x86. Green: lex, parse,
+desugar, scope, check, lir_to_x86.
+
+**Their own gate could not see it.** U52's note: *"csharp plug drops C#-refused
+duplicate match arms to unblock the DDC."* They hit this class during U52's
+release gate and unblocked it by teaching the C# plug to DROP duplicates, so
+their DDC went green over a source defect it had been taught to ignore. Ours
+stopped on it.
+
+**THE FIX IS WRITTEN, COMMITTED AND PUSHED, NOT SENT.** Branch
+`lowering-duplicate-noexpect-arms` at `49a8360a`, cut from `968d4600` in its own
+worktree `~/showell_repos/cobblestone-dup-arms`, on origin. Three deletions,
+bodies byte-identical at all three sites so removal is semantics-preserving.
+**Still owed before it can go:** a `compiler-backlog.md` row -- **COMPILER-34,
+because Damian has already claimed 33** in his issue-94 reply (unreleased) --
+and a `Ladder:` tag naming the chain that verified it, which needs the re-sweep.
+
+**THE BANK IS NOT TAKEN AND THAT IS A DECISION FOR STEVE.** The ceremony says
+bank only when the zig arms are green. The truths themselves are sound: 12/12
+units recorded, 14/14 truths, **all byte-identical to the u51 bank**, every one
+carrying seed `61c81b04` with its harness sha UNCHANGED from u51 -- a genuine
+single-variable re-measurement, not a stale-artifact pass. What is red is a plug
+that cannot compile the subject at all, which reads closer to the capacity
+carve-out ("a bank whose two biggest rungs can never execute measures less")
+than to the correctness bar that carve-out excludes. Options: bank the truths
+now with the red documented; or ride the fix on the pin, sweep green, bank a
+tree that is not the release; or wait for the PR to land. Not decided.
+
+**What is already banked and pushed:** `findings/gold/u52/` (21 tiers, SET
+GREEN, 21/21 content byte-identical to u51), the `seed_identity.py` repair
+(U52 announced its seed in a sixth spelling and the deriver refused `u52`),
+and the `cycle.sh` artifact-check repair.
+
+**The census did NOT move** -- CDX6020 x43, its pinned value. No re-pin owed.
+
+**STILL OWED, in order:**
+1. Steve's ruling on the bank.
+2. The re-sweep with the fix applied, which produces the `Ladder:` tag.
+3. Backlog row COMPILER-34, then send the PR.
+4. **The recursive-sum equality probe, NOT YET WRITTEN.** U52 turned structural
+   equality on a recursive sum from a hard refusal
+   (`cdx-recursive-structural-eq`) into a synthesised `__eq_<Sum>` helper. The
+   zig plug's `IrEq` arm (`ZigEmitter.codex:1303`) is raw zig `==` with no
+   structural path, and records are pointers in that plug -- so it should
+   either refuse or compare identity where bare metal now compares contents.
+   No tier covers it, because it was a compile error until this Update. Goes on
+   ladder `master` as a tier probe.
+5. Roc ports and the full tier set (both arms) -- neither run yet this Update.
+
 ## OUTBOUND: PR 95 IS OPEN, ISSUE 94 IS ANSWERED, AND THE PIN HAS MOVED AGAIN
 
 **PR 95 sent 2026-08-28 -- the zig plug emits the prelude LAST.** Rebased onto
