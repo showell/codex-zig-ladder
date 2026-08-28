@@ -497,6 +497,16 @@ def check_corpus(parts, joined, files, suppress=None):
     The roots are crude substring matches because that is what
     `zig-prelude-roots` does; simulating a smarter rule would check something
     that does not ship.
+
+    ITS ONE BLIND SPOT, NAMED: it catches "referenced but not declared" and
+    cannot catch "required but neither referenced nor declared" -- anything
+    zig resolves BY NAME rather than through a reference. `main` is the
+    obvious one, and it is safe for a checkable reason rather than a lucky
+    one: `zig-main` emits `fn main` and `fn cx_entry` into the PROGRAM region,
+    so neither is a prelude part and the shake cannot reach them. Checked the
+    whole list against zig's name-resolved declarations -- main, _start,
+    panic, std_options, os, root, log -- and no part is one. If a part ever
+    is, this gate will not see it go missing.
     """
     names = [n for n, _ in parts if n]
     vocab = DECL.findall(joined)          # every declaration, part or not
