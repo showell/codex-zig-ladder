@@ -269,7 +269,59 @@ subject maps, and zero CDX2052 anywhere. That is why nothing moved -- not "U52
 was clean" but "U52's changes lie outside what twelve compiler-chapter subjects
 exercise".
 
-## RUNNING UNATTENDED, AND THE TWO THINGS OWED WHEN STEVE IS BACK
+## ISSUE 97 IS FILED, THE BASE IS 14/14, AND U52 IS CLOSED OUT
+
+**Issue 97: https://github.com/damiant3/Cobblestone/issues/97** -- the
+recursive structural-eq helper is synthesised BELOW the IR, so it reaches one
+backend. `outbound/SENT-issue97-recursive-eq-below-ir.md`.
+
+**The argument, and it is a fix-location one, not a complaint.** `deriving Eq`
+synthesises `__eq_<T>` in the desugarer and `lower-eq-dispatch` rewrites `==`
+into a call to it IN THE IR, so every plug inherits it. The recursive-sum
+helper is synthesised in `X86_64.codex`, BELOW the wire, so only x86-64 has
+it. Their own `codex/test/recursive-eq.no-cross` already records arm64
+answering `ne` and riscv unmeasured -- we are the second data point, not the
+discoverer. **Hoist the synthesis into lowering and zig, arm64 and riscv are
+fixed together.**
+
+**A COLD READ SAVED THIS ONE, and the lesson is worth more than the issue.**
+The first draft led with "bare metal compares by contents; the zig plug
+compares by identity" and asked them to check their own test coverage. Both
+halves were false: `emit-eq-op` pointer-compares a plain record ON PURPOSE
+(`X86_64.codex:2927`, and the source says so), and
+`codex/test/recursive-eq.codex` has existed since `3942e362`. Telling a fleet
+we could not find their test, in a document asking them to check coverage,
+is the line a reader checks first. **Finding 66 was corrected in the register
+on the same evidence** -- the fact was right, the cause was wrong, and the
+cause was the useful half.
+
+**PR 96 was CLOSED, not absorbed:** their change 20398 carried the identical
+three deletions hours before we sent it. Independent rediscovery. **The half
+that survives is the one only we could see** -- that the zig plug refuses a
+redundant match arm where C# got tolerance at 20352 -- and it is queued in
+their plugs lane with our report as the evidence.
+
+**THE BASE IS VERIFIED: `zig-tree-shaking` @ `ff27e0e7`, SWEEP 14/14 both
+arms.** Five commits: PR 95's four plus the code fix. The `COMPILER-34` row
+was dropped, since upstream closed PR 96 without absorbing it and the row
+would otherwise ride silently into any future PR cut from this base. Truths
+byte-identical to the u51 bank AND to plain U52, so our fix is measurably
+bare-metal-inert.
+
+**Do NOT re-pin or re-bank.** Root asked us to re-pin at or past their main
+20423; `upstream/master` is still `968d4600` and none of 20398/20423/20490 has
+been mirrored, so there is nothing public to re-pin to -- and our base already
+carries the equivalent fix. Steve's call: the base is representative, get on
+with tree shaking.
+
+### Still open, cheap, not blocking
+
+**The zig column of a tier run is never banked.** Only the bare-metal gold is
+(`findings/gold/uNN/`). It is the most-cited number in our outbound reports and
+nothing on disk records it, which is why a cold reader could not verify our
+central table. Raised by the cold agent as its IF. Tooling, not tree shaking.
+
+## NEXT: TREE SHAKING -- SHOW IT IS FEASIBLE
 
 **A BASELINE REBANK IS RUNNING ON THE TREE-SHAKING BASE** (launched
 2026-08-28 15:40Z, detached, `ppid=1`, survives session exit). Sandbox
