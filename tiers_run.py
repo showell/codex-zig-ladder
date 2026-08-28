@@ -71,6 +71,7 @@ EXCLUDED = {
     'probe-deck-substring': 'needs a rewind and a clobber read by hand (finding 29)',
     'probe-arith-edges':    'abs minInt kills the zig arm on purpose, at compile time now (its own prose, finding 18 family)',
     'probe-prelude-collide': 'declares cx-print, cx-new and cx-concat; the zig arm will not compile at all (finding 67) -- re-include when zig-prelude-decls covers the 74 fn names',
+    'probe-cxlist':         'a record type named CxList; the zig arm will not compile (finding 67, the CamelCase half) -- re-include with probe-prelude-collide',
     'probe-deck-init':      'declares its own deck-record; the zig arm brackets it by name and faults (finding 25) -- re-include when the gate is ported',
 }
 

@@ -1,0 +1,26 @@
+Chapter: ProbeCxList
+  cites Foreword chapter Console
+
+ The five prelude declarations that are NOT `cx_`-prefixed: CxFn1..CxFn4 and
+ CxList, the comptime type constructors. Codex type names are CamelCase, so
+ unlike `cx-print` these are names a program might reasonably pick.
+
+Section: Main
+
+  CxList = record { size : Integer, label : Text }
+
+  CxFn1 = record { arg : Integer }
+
+  grow : CxList -> CxList
+  grow (c) = CxList { size = c.size + 1, label = c.label }
+
+  opening : [Console] Nothing = act
+   let a = CxList { size = 1, label = "one" }
+   in let b = grow a
+   in let c = grow b
+   in act
+     print-line-uni ("sizes: " & show (a.size) & " " & show (b.size) & " " & show (c.size))
+     print-line-uni ("label: " & c.label)
+     print-line-uni ("fn1  : " & show ((CxFn1 { arg = 7 }).arg))
+   end
+  end

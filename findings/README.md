@@ -1206,10 +1206,27 @@ in `zig-prelude-decls`:
 
       zig-sanitize (name) = ... if is-zig-prelude-decl s then s & "_" ...
 
-That list has 101 entries and covers **23** of the 96 declarations -- `std`,
-`main`, `cx_entry` and the file-scope `const`/`var` globals. **All 74 function
-names are absent**, so any Codex program with a top-level named `cx-print`,
-`cx-new`, `cx-concat`, `cx-text-eq` and 70 others fails to transpile.
+That list has 101 entries and covers **22** of the 96 declarations, **and not
+one of them is a function**. The 96 are 74 `fn` and 22 `const`/`var`; the
+reserved list holds exactly those 22 const/var globals, and its other 79
+entries are prelude LOCALS and parameters (`a`, `i`, `buf`). `main` and
+`cx_entry` are in it but are not prelude declarations at all -- `zig-main`
+emits them into the PROGRAM region. So the coverage of the prelude's own
+functions is zero, and any Codex program with a top-level named `cx-print`,
+`cx-new`, `cx-concat`, `cx-text-eq` or 70 others fails to transpile.
+
+**AND FIVE OF THE 74 ARE CAMELCASE, WHICH IS WHAT MAKES THIS MORE THAN A
+CURIOSITY.** 69 are `cx_`-prefixed, and `cx-` is effectively the plug's
+namespace -- a Codex author has little reason to enter it, which is why zero
+of the 578 corpus programs collide. The other five are `CxList` and
+`CxFn1`..`CxFn4`, the comptime type constructors, and Codex type names ARE
+CamelCase. `CxList` is a name a real program could pick without any sense of
+trespassing. Confirmed with a second probe, `probe-cxlist.codex`, which
+declares `CxList` and `CxFn1` as record types:
+
+    bare metal   runs, 3 lines banked, all correct
+    zig          error: duplicate struct member name 'CxList'
+                 error: duplicate struct member name 'CxFn1'
 
 **The cause is in the deriving script, not in anybody's judgement.**
 `build/check-zig-prelude-surface.ps1` derives the reserved surface from
