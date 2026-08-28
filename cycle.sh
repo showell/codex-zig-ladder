@@ -72,6 +72,24 @@ echo "plug fingerprint: $(cut -c1-16 "$(dirname "$PLUG_CDX")/zig-plug.fingerprin
 # diff FAILS the cycle. This is the check the README calls the one worth
 # running before any rung; a checker that reports without refusing is scroll.
 warmup_fail=0
+# A fresh sandbox carries no gitignored artifacts, and the README sends you
+# here FIRST on a fresh checkout -- so "missing" is the expected state on the
+# most likely run, not an exotic one. Say which state it is. Without this the
+# .ir is absent, plug_run.py raises a FileNotFoundError that `| tail -2` eats,
+# the diff then fails because the .truth is absent too, and the cycle reports
+# "WARMUP DIFF" -- which reads as the plug emitting wrong bytes when nothing
+# was emitted at all. The verdict was honest (it exits non-zero either way);
+# the CAUSE it named was wrong, and that is the half an operator acts on.
+missing=""
+for prog in "$@"; do
+    [ -s "$S/$prog.ir" ] && [ -s "$S/$prog.truth" ] || missing="$missing $prog"
+done
+if [ -n "$missing" ]; then
+    echo "cycle: no bare-metal artifacts for:$missing" >&2
+    echo "cycle: these are gitignored and a fresh tree has none." >&2
+    echo "cycle: run  ./warmups/regen.sh$missing  (one guest each), then retry." >&2
+    exit 1
+fi
 for prog in "$@"; do
     echo "=== $prog ==="
     python3 -u plug_run.py "$REPO/codex/plugs/zig/build-output/zig-plug.cdx" "$S/$prog.ir" "$S/$prog.zig" 2>&1 | tail -2
