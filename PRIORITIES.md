@@ -198,6 +198,44 @@ refusing is honest, and choosing one is a DEFAULTING RULE.
   all 56 is what found `deck-bracket-contract` going `match -> differ`. The
   wins were all green; the wrong answer was in the files nobody predicted.
 
+## OUTBOUND: PR 95 IS OPEN, ISSUE 94 IS ANSWERED, AND THE PIN HAS MOVED AGAIN
+
+**PR 95 sent 2026-08-28 -- the zig plug emits the prelude LAST.** Rebased onto
+`968d4600` (Update 52). Four commits: the emitter change, the
+`check-zig-prelude-surface.ps1` repair the change itself caused, the emitter
+prose that described the broken derivation, and backlog row 1.100. Graded on
+**589 emitted corpus programs, 589/589 build outcomes agree, 202 built and run
+both ways, 198 byte-identical, 4 identical but for panic-backtrace source
+positions, 0 disagreements**, plus `zigemit`/`codexir`/`codexzig` built both
+ways and driven, all byte-identical. Tag `postlude-corpus-589`,
+`postlude_verify.py`, log in `outbound/MEASURED-prelude-last.log`.
+
+**The technique is the reusable part and TREE SHAKING IS ITS SECOND CALLER:**
+calibrate a mechanical transform against a real before/after pair of PLUG
+OUTPUT (`codex-zig-transpiler` at `8595322` -> `daf36cf`), and then grading the
+transform over the corpus IS grading the plug -- no native builds, no
+transpiles. Three instrument traps cost more than the change did: the file
+basename lands in zig's type names, the exe path collided with the source
+directory and the summary called that agreement, and the work directory leaks
+into panic backtraces.
+
+**THE PIN HAS MOVED AGAIN: Update 52 is `968d4600`, seed `61C81B04`.** Do not
+rebank at `3942e362`. U52 touches `codex/plugs/zig/` not at all (0 lines) --
+but it moves the COMPILER, which compiles the plug and produces the IR the
+plug consumes, so nothing is claimed about what the plug now emits until it is
+measured.
+
+**Issue 94 answered in full 2026-08-28.** COMPILER-33 recorded with our
+fixtures credited, every MEASURED claim re-verified against head; the compound
+half will be ARGUED in that row, not patched blind. The `ErrorTy | NoExpectTy`
+split SHIPPED (main 20316, arm in all 56 plugs), so findings 58/59 rebase onto
+a marker that now exists. COMPILER-32 opened: 23 of 596 clean corpus programs
+carry `error`, 251 occurrences at one lowering site. Our free-vs-solved wire
+recommendation is rulings queue item 6. **And a LEAD back at finding 65:**
+`Desugarer.codex:1377` builds a synthesized dictionary's `__super-` field as
+an untyped name expression, plausibly where the `Sortable-dict-Integer`
+refusal lives.
+
 ## OUTBOUND: PR 93 LANDED, AND THE SECOND PR IS THE ONE THEY ASKED FOR
 
 **Damian, on the PR:** *"Absorbed and landed: main CL 20184 carries all six
