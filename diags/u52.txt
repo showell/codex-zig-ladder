@@ -1,0 +1,74 @@
+# diags bank u52
+# seed 61c81b04d0c3cc2ea34603670d0447b6390496d6abbaad5d11e037349d880e44
+#
+# counts per unit per code. Diagnostic TEXT is deliberately not banked:
+# a depot line:col is a per-Update fact and would move every row.
+#
+check                      CDX3005   3
+check                      CDX4010   191
+check                      CDX4030   1
+check                      CDX6020   2
+desugar                    CDX4010   106
+desugar                    CDX4030   1
+desugar                    CDX6020   1
+ir_to_codex                CDX3005   3
+ir_to_codex                CDX4010   197
+ir_to_codex                CDX4030   1
+ir_to_codex                CDX6020   2
+ir_to_codex_roundtrip      CDX3005   3
+ir_to_codex_roundtrip      CDX4010   197
+ir_to_codex_roundtrip      CDX4030   1
+ir_to_codex_roundtrip      CDX6020   2
+ir_to_wire                 CDX3005   3
+ir_to_wire                 CDX4010   196
+ir_to_wire                 CDX4030   1
+ir_to_wire                 CDX6020   2
+ir_to_x86                  CDX2053   6
+ir_to_x86                  CDX3005   4
+ir_to_x86                  CDX4010   782
+ir_to_x86                  CDX4030   1
+ir_to_x86                  CDX6020   13
+lex                        CDX4010   20
+lex                        CDX4030   1
+lir_to_x86                 CDX2053   3
+lir_to_x86                 CDX3005   4
+lir_to_x86                 CDX4010   100
+lir_to_x86                 CDX4030   1
+lir_to_x86                 CDX6020   4
+lower                      CDX3005   3
+lower                      CDX4010   196
+lower                      CDX4030   1
+lower                      CDX6020   2
+parse                      CDX4010   94
+parse                      CDX4030   1
+parse                      CDX6020   1
+passes_to_x86              CDX2053   6
+passes_to_x86              CDX3005   4
+passes_to_x86              CDX4010   826
+passes_to_x86              CDX4030   1
+passes_to_x86              CDX6020   13
+scope                      CDX4010   108
+scope                      CDX4030   1
+scope                      CDX6020   1
+#
+# totals
+*                          CDX2053   15
+*                          CDX3005   27
+*                          CDX4010   3013
+*                          CDX4030   12
+*                          CDX6020   43
+#
+# total diagnostics 3110
+# absent (no file written): 12
+#   lex.ir.diags
+#   parse.ir.diags
+#   desugar.ir.diags
+#   scope.ir.diags
+#   check.ir.diags
+#   lower.ir.diags
+#   ir_to_codex.ir.diags
+#   ir_to_codex_roundtrip.ir.diags
+#   lir_to_x86.ir.diags
+#   ir_to_wire.ir.diags
+#   ir_to_x86.ir.diags
+#   passes_to_x86.ir.diags

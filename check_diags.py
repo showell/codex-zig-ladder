@@ -148,6 +148,25 @@ def judge(path, population=False):
         elif verdict == 'NOTE':
             notes.append((code, lines))
 
+    # The whole population, before any judgement about it. Until 2026-08-28
+    # this loop did not exist and an OK verdict meant SILENT: on Update 52 that
+    # hid 3,013 of 3,110 diagnostics, so "the census did not move" was reported
+    # when all the census had said was that one NOTE class held its pin. OK
+    # still means "does not gate" -- it must not start failing sweeps -- but a
+    # class nobody can see is a class nobody can notice moving, and the counts
+    # that would have shown an optimiser change were exactly the invisible
+    # ones. Population scale only: per-rung this would print on every rung and
+    # teach the reader to skip it, which is the habit this file exists to break.
+    if population:
+        print('  -- population --')
+        for code, lines in sorted(census.items()):
+            entry = POLICY.get(code)
+            verdict = entry[0] if entry else 'UNKNOWN'
+            print(f'  {verdict:<7} {code} x{len(lines)}')
+        print(f'  -- {sum(len(l) for l in census.values())} diagnostics over '
+              f'{len(census)} codes. `bank_diags.py <ast-dir>` banks this set; '
+              f'`bank_diags.py --diff old new` says what moved.')
+
     # A pinned population that vanishes is as much a change as one that grows,
     # and the loop below only visits codes that are PRESENT -- so a class going
     # to zero would have been silent. That is the same "cannot tell clean from

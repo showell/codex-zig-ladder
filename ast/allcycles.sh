@@ -106,8 +106,19 @@ done
 # writes no <unit>-subject.cdx.diags, so a sweep that rebuilt any IR is
 # judging a smaller population, and a smaller population under-counts every
 # pin -- which reads as drift and is not. Say which sweep this was instead
-# of comparing anyway; the real answer is a banked diagnostics set, which
-# PRIORITIES carries as its own item.
+# of comparing anyway.
+#
+# Measured on Update 52, and it qualifies the sentence above: the OTHER half
+# does not exist either. All twelve <unit>.ir.diags were absent, because the
+# IR arm runs passes=text-plug and emits no diagnostics at all, so there is
+# nothing to write. "Both halves" has described one half for as long as it
+# has been written here. Nothing is wrong with the counts -- they were pinned
+# over the same one half -- but a reader was entitled to think otherwise.
+# bank_diags.py records the absent files on every bank so this stays visible
+# rather than being rediscovered.
+#
+# The real answer is still a banked diagnostics set, and it now exists:
+# bank_diags.py, banked under diags/<slug>.txt, diffed with --diff.
 if [ -n "$ir_rebuilt" ]; then
     echo "CENSUS NOT COMPARED: the IR for$ir_rebuilt was rebuilt by"
     echo "  ensure_ir.sh, so no bare-metal .diags exists for those units and"
