@@ -366,7 +366,7 @@ PRELUDE_TAIL = """
 """
 
 
-def splice(emitter, parts, names, kind):
+def splice(emitter, parts, names, kind, shake_on):
     lines = emitter.read_text(errors='replace').split('\n')
     if not any('chapter Shake' in l for l in lines[:8]):
         c = next(i for i, l in enumerate(lines) if l.strip().startswith('cites '))
@@ -395,8 +395,12 @@ def splice(emitter, parts, names, kind):
     table = '  zig-prelude-parts : List ShakePart =\n   [' + inner + ']'
     block = PRELUDE_HEAD + '\n\n'.join(defs) + '\n\n' + table + '\n' + PRELUDE_TAIL
     out = lines[:start] + block.split('\n') + lines[end:]
-    # Turn the shake ON at the one emit site: the prelude becomes a function of
-    # the program text that precedes it.
+    # The emit site, and whether the shake is ON there. This is a FLAG rather
+    # than a hand edit because the restructure and the behaviour change are two
+    # different claims: with the shake off, `zig-prelude` runs the real
+    # selection with every part name as a root and must move no byte, which is
+    # what makes the restructure reviewable on its own. Toggling that by hand
+    # in a 258 KB generated file is how the wrong one gets committed.
     site = ('   in types-text & defs-text & zig-main opening-entry-point (m.defs)'
             ' & zig-postlude-banner & zig-prelude')
     shaken = ('   in let zig-prog = types-text & defs-text & zig-main opening-entry-point (m.defs)\n'
@@ -404,7 +408,8 @@ def splice(emitter, parts, names, kind):
     hits = [i for i, l in enumerate(out) if l == site]
     if len(hits) != 1:
         raise SystemExit(f'shake_parts: expected 1 emit site, found {len(hits)}')
-    out[hits[0]:hits[0] + 1] = shaken.split('\n')
+    if shake_on:
+        out[hits[0]:hits[0] + 1] = shaken.split('\n')
     return '\n'.join(out)
 
 
@@ -559,6 +564,9 @@ def main():
                          'it still references was dropped')
     ap.add_argument('--gen-frags', dest='gen_frags', help='write generated Frag lists here')
     ap.add_argument('--splice', help='write a restructured ZigEmitter.codex here')
+    ap.add_argument('--shake-on', dest='shake_on', action='store_true',
+                    help='with --splice: select per program. Off, the emit site is\n'
+                         'unchanged and the restructure must move no byte.')
     a = ap.parse_args()
 
     chunks = read_chunks(pathlib.Path(a.emitter))
@@ -585,10 +593,12 @@ def main():
 
     if a.splice:
         names = [n for n, _ in parts if n]
-        out = splice(pathlib.Path(a.emitter), parts, names, decl_kinds(parts))
+        out = splice(pathlib.Path(a.emitter), parts, names, decl_kinds(parts),
+                     a.shake_on)
         pathlib.Path(a.splice).write_text(out)
         print(f'  spliced -> {a.splice}  ({len(out):,} bytes, '
-              f'{out.count(chr(10)) + 1} lines)')
+              f'{out.count(chr(10)) + 1} lines, shake '
+              f'{"ON -- selects per program" if a.shake_on else "OFF -- must move no byte"})')
         return 0
 
     if a.gen_frags:
