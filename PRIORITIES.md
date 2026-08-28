@@ -269,6 +269,43 @@ subject maps, and zero CDX2052 anywhere. That is why nothing moved -- not "U52
 was clean" but "U52's changes lie outside what twelve compiler-chapter subjects
 exercise".
 
+## PR 95 IS LANDED (internally), PR 96 IS IN REVIEW
+
+**PR 95 absorbed near-verbatim, 2026-08-28**: their main change 20500
+(dev-stream 20496), register row **`plugs-backlog.md` 2.01 -- NOT the 1.100 we
+drafted**, which collided with rows landed the same morning. Re-proven after a
+same-day seed move. **It ships publicly with the NEXT MIRROR PUSH; upstream
+`master` is still `968d4600`**, so nothing about our base changes yet.
+
+Their verification: the plug rebuilt; the banner-anchored surface check derives
+99 names over 4 subjects, all reserved, and the subjects' preludes are now
+REQUIRED to agree; the zig oracle answers 55/55 values byte-identical to
+x86-64; internal gate green one-pass. Damian: *"your repair of the check you
+broke is the part of this PR that earns its keep"* and *"the corpus grading
+(589 both ways, zero disagreements) made this a read-and-verify rather than an
+argue."*
+
+**BEWARE TWO DIFFERENT 55s.** "The greediest program reaches 55 of 93 prelude
+declarations" is OUR tree-shaking prototype measurement, now recorded in their
+row. "The zig oracle answers 55/55 values byte-identical" is that oracle's
+value count. Unrelated quantities, same number, one paragraph apart -- do not
+let a later reading fuse them.
+
+**PR 96 is in the compiler lane as of 2026-08-28, token-gated and atomic,
+aiming to land today.** Our atomicity ask is acknowledged fleet-wide; their
+changelists are one-subject by standing rule.
+
+**THE FIELD IS CLEAR FOR THE CHANNEL WORK.** Root: *"today's zig-plug surface
+is quiet on our side apart from your own PR 95 -- nobody here is in
+ZigEmitter, so your context-passing refactor has a clean field."* And **the
+prelude-shaking follow-on is recorded in row 2.01 as the larger half and is
+UNCLAIMED**, so it is ours to take.
+
+**When the mirror push lands:** rebase `zig-tree-shaking` onto the new
+upstream and DROP our four cherry-picked PR 95 commits, which will then be
+duplicates (git will usually drop them by patch-id, but check rather than
+assume). Do not edit `prelude-last` -- it is absorbed and closed.
+
 ## NEXT: THE ZIG EMITTER'S UPWARD CHANNEL, FOR A PRECISE TREE SHAKER
 
 **Steve's call. The channel is the deliverable; shaking is the concrete goal
