@@ -7,7 +7,7 @@ Chapter: ProbePreludeCollide
  appending an underscore, and that list is described in the emitter as "the
  UNION over the whole prelude". It is not. The prelude has 96 top-level
  declarations and the list names 23 of them: `std`, `main`, `cx_entry` and the
- file-scope `const`/`var` globals. The other 73 -- every `fn`, including
+ file-scope `const`/`var` globals. The other 74 -- every `fn`, including
  `cx_print`, `cx_new`, `cx_concat`, `cx_text_eq` -- are absent.
 
  The reason is in the deriving script rather than in anybody's judgement.
@@ -16,19 +16,36 @@ Chapter: ProbePreludeCollide
  own name. It has been printing OK over a surface missing three quarters of
  the declarations.
 
- So this defines `cx-print` and calls it. Bare metal does not care: prelude
- names are a zig concept and nothing on that arm collides. The zig arm emits
- the user's `fn cx_print` into a file that already declares one.
+ EVERY DEFINITION HERE IS CALLED TWICE AND NONE IS A LEAF. The first version
+ of this probe defined `cx-print` and `cx-new`, called each once, and passed
+ byte-identical on both arms -- because `inline-leaf-calls` and
+ `inline-single-caller` had removed both before the emitter ever saw them.
+ A probe that the optimiser deletes tests nothing. Two call sites defeats
+ `inline-single-caller`; calling a helper defeats `inline-leaf-calls`.
+
+ Bare metal does not care either way: prelude names are a zig concept and
+ nothing on that arm collides. The zig arm is where the question lives.
 
 Section: Main
 
+  cx-bump : Integer -> Integer
+  cx-bump (n) = n + 1
+
   cx-print : Integer -> Integer
-  cx-print (n) = n + 1
+  cx-print (n) = cx-bump n + 1
 
   cx-new : Integer -> Integer
-  cx-new (n) = n * 2
+  cx-new (n) = cx-bump n * 2
+
+  cx-concat : Integer -> Integer
+  cx-concat (n) = cx-bump n + cx-print n
 
   opening : [Console] Nothing = act
-   print-line-uni ("cx-print 41 : " & show (cx-print 41))
-   print-line-uni ("cx-new 21   : " & show (cx-new 21))
+   print-line-uni ("cx-print 41  : " & show (cx-print 41))
+   print-line-uni ("cx-print 10  : " & show (cx-print 10))
+   print-line-uni ("cx-new 21    : " & show (cx-new 21))
+   print-line-uni ("cx-new 5     : " & show (cx-new 5))
+   print-line-uni ("cx-concat 7  : " & show (cx-concat 7))
+   print-line-uni ("cx-concat 2  : " & show (cx-concat 2))
+   print-line-uni ("cx-bump 99   : " & show (cx-bump 99))
   end

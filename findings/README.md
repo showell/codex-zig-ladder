@@ -1190,6 +1190,59 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
+## 67. OURS. `zig-prelude-decls` is documented as the union over the whole prelude and covers 23 of its 96 declarations, so a program declaring `cx-print` will not compile
+
+**Reproduced on both arms.** `findings/probe-prelude-collide.codex`, run
+`20260828T192913Z-shake-on-corpus`:
+
+    bare metal   runs, 7 lines banked, all correct
+    zig          error: duplicate struct member name 'cx_print'
+                 error: duplicate struct member name 'cx_new'
+                 error: duplicate struct member name 'cx_concat'
+
+Zig forbids two container-level declarations with one name. The prelude
+declares 96, and `zig-sanitize` renames a program's name only when it appears
+in `zig-prelude-decls`:
+
+      zig-sanitize (name) = ... if is-zig-prelude-decl s then s & "_" ...
+
+That list has 101 entries and covers **23** of the 96 declarations -- `std`,
+`main`, `cx_entry` and the file-scope `const`/`var` globals. **All 74 function
+names are absent**, so any Codex program with a top-level named `cx-print`,
+`cx-new`, `cx-concat`, `cx-text-eq` and 70 others fails to transpile.
+
+**The cause is in the deriving script, not in anybody's judgement.**
+`build/check-zig-prelude-surface.ps1` derives the reserved surface from
+emitted output by reading `const NAME`, `var NAME`, `|capture|` and function
+PARAMETERS -- and never the function's own name:
+
+      [regex]::Matches($line, '\bfn\s+[A-Za-z_][A-Za-z0-9_]*\s*\(([^)]*)\)')
+          foreach ($p in $m.Groups[1].Value -split ',') { ... }
+
+It reads past `fn NAME` to get at the parameter list and drops the name on the
+way. So it has been printing `OK: every derived name is reserved` over a
+surface missing three quarters of the declarations, and the emitter's own
+prose -- "The list is the UNION over the whole prelude and stays that way" --
+describes something that has never been true.
+
+**THE FIRST VERSION OF THIS PROBE PASSED, AND THAT IS WORTH RECORDING.** It
+declared `cx-print` and `cx-new`, called each once, and came out byte-identical
+on both arms: `inline-leaf-calls` and `inline-single-caller` had removed both
+before the emitter ever saw them (`CDX4030` says so in the diagnostics). Two
+call sites and a non-leaf body is what makes the definitions survive to
+emission. A probe the optimiser deletes tests nothing.
+
+**The fix is small and MEASURED BYTE-NEUTRAL.** Add the 74 function names to
+`zig-prelude-decls` and teach the surface script to derive `fn NAME`. Adding a
+name changes emission only for a program that declares it, and **zero of the
+578 transpiled corpus programs declare any of the 74** -- checked against the
+program region of every emitted `.zig`. So the change is verifiable against a
+byte-identity sweep, and the programs it does affect currently do not compile
+at all.
+
+Not in the tier set: it kills the zig arm on purpose, so it sits in `EXCLUDED`
+until the fix lands, then rejoins.
+
 ## 66. The recursive structural-eq helper is synthesised BELOW the IR, so exactly one backend has it
 
 **Found 2026-08-28. CORRECTED the same day after a cold read; the first
