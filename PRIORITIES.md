@@ -269,6 +269,45 @@ subject maps, and zero CDX2052 anywhere. That is why nothing moved -- not "U52
 was clean" but "U52's changes lie outside what twelve compiler-chapter subjects
 exercise".
 
+## RUNNING UNATTENDED, AND THE TWO THINGS OWED WHEN STEVE IS BACK
+
+**A BASELINE REBANK IS RUNNING ON THE TREE-SHAKING BASE** (launched
+2026-08-28 15:40Z, detached, `ppid=1`, survives session exit). Sandbox
+`~/runs/20260828T152105Z-treeshake-base/`, log
+`ladder/logs/rebank-20260828-154013.log`.
+
+**Why it is prerequisite and not nice-to-have:** the tree-shaking plan's own
+gate is "thread the channel, ignore its result, require byte-identity against
+the bank for all 589 corpus programs and the rungs". The base (U52 + PR 95 +
+PR 96) has **no recorded truths at all**, so that gate had nothing to compare
+against. This run records them, and the channel refactor then starts with its
+oracle already in hand.
+
+**DO NOT BANK WHAT IT PRODUCES.** `seed_identity` names this tree `u52`,
+because our two PRs move compiler SOURCE and not the seed -- so
+`bank_truth.py` would write `truth/u52/` and claim Update 52 is green when
+plain Update 52 is 6/14 and cannot be transpiled at all. `rebank_all.sh` only
+RECORDS (`ast/*.truth`); banking is a separate deliberate act and must not
+happen here. Recorded truths are the baseline; the bank stays at u51.
+
+**Expect 14/14.** Anything less is real news: it would mean the combination
+breaks something neither PR broke alone.
+
+### Owed when Steve is back
+
+1. **THE UPDATE 52 ANOMALIES ISSUE, carrying finding 66.** Not written yet.
+   Finding 66 is the silent wrong answer -- recursive-sum `==` answers by
+   IDENTITY in the zig plug where bare metal now answers by CONTENTS, and it
+   compiles, runs and prints a plausible answer. Goes as an ISSUE, not a PR
+   (Steve's call): closing it means giving the emitter a structural path with
+   a synthesised recursive helper, mirroring what `X86_64.codex` gained, which
+   is real work. Include the coverage fact that frames it -- **zero `__eq_`
+   symbols in any of the twelve rung subjects, and zero CDX2052 anywhere**, so
+   both of Update 52's headline compiler changes are invisible to our whole
+   rung population. That is the honest reason nothing moved.
+2. **Then the upward channel**, on `zig-tree-shaking`, with the baseline this
+   run produced.
+
 ## PR 95 IS LANDED (internally), PR 96 IS IN REVIEW
 
 **PR 95 absorbed near-verbatim, 2026-08-28**: their main change 20500
