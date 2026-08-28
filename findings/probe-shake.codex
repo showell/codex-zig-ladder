@@ -1,150 +1,52 @@
 Chapter: ProbeShake
   cites Foreword chapter Console
+  cites Foreword chapter Shake
 
- The tree-shaking closure, with zero mention of zig, and the seven fixtures
- that settle it.
+ The fixtures for `Foreword chapter Shake`, which is the tree-shaking closure
+ with no target in it.
 
- The algorithm is reachability in a directed graph plus "keep the input
- order". Roots name parts; parts name other parts. Everything target-specific
- -- where roots come from, what the text means, how it is concatenated back --
- lives in the caller and is deliberately absent here.
+ THIS FILE DEFINES NO ALGORITHM. It cites the same chapter ZigEmitter cites,
+ so what is tested here is what runs there -- not a second copy that agrees
+ today. Two mechanisms for one concept is the failure this arrangement exists
+ to prevent, and the emitter's own notes already record it happening twice.
 
- This file exists so the algorithm can be proven BEFORE ZigEmitter is opened.
- It is also a tier, so it runs on bare metal and through the plug and the two
- must agree: the closure itself gets the double-compiling treatment.
+ It is a tier, so it runs on bare metal and through the plug and the two must
+ agree: the closure gets the double-compiling treatment rather than being
+ trusted.
 
- THE ORDER RULE IS LOAD-BEARING. `kept` comes back in the parts table's
- original order, never topologically sorted. Container-level declarations do
- not care about order -- PR 95 proved that by moving an entire prelude below
- the program it serves -- and preserving input order is what makes fixture 7
- possible: shake with every name as a root and you must get the whole table
- back, unchanged. That is the identity gate, and it separates "the parts table
- is mis-cut" from "the closure is wrong", two bugs that otherwise share a
- symptom.
+ FIXTURE 8 IS THE ONE THAT MATTERS AND ITS FIRST VERSION WAS DECORATION. It
+ was written as [Z, Y, X] with X depending on Y depending on Z -- where the
+ table order and a dependencies-first topological order are BOTH "Z Y X", so
+ it could not tell them apart and would have passed either implementation. It
+ is now [X, Y, Z], where the two orders differ. A fixture that cannot fail the
+ thing it is named after is decoration.
 
- UNMATCHED ROOTS ARE REPORTED, NOT SWALLOWED. A root naming no part is either
- a real missing dependency or an over-matching extractor, and this code cannot
- tell which. It returns them and lets the caller rule. `cite_resolve.py` in
- the ladder independently arrived at the same two-output shape for the same
- reason, on a different graph.
-
- FIXTURE 8 DISCRIMINATES AND THE FIRST VERSION DID NOT. It was written as
- [Z, Y, X] with X depending on Y depending on Z -- where the table order and a
- dependencies-first topological order are BOTH "Z Y X", so it could not tell
- them apart and would have passed either implementation. It is now [X, Y, Z],
- where table order is "X Y Z" and topological order is "Z Y X". A fixture that
- cannot fail the thing it is named after is decoration.
-
-Section: Types
-
-  Part = record {
-   name : Text,
-   needs : List Text
-  }
-
- A fragment of an emitted part. `Lit` is text that means nothing to the
- shaker; `Use` is text that is ALSO a dependency. Two constructors, one list,
- and the whole point of the split: `text` and `uses` are two PROJECTIONS of
- the same list, so they cannot disagree. There is no accumulator to thread and
- no second return value -- in a pure language that matters, because threading
- a writer through every emitter is the cost that got the structural route
- rejected the first time.
-
- `Use` is the only way to write another part's name. Recording the edge is not
- a step you can forget; it IS the step that emits the name.
-
-  Frag =
-    | Lit (Text)
-    | Use (Text)
+ FIXTURE 12 IS WHY FRAGMENTS BEAT SCANNING. Its text mentions `cx_ghost` and
+ its uses do not include it, because the name sits in a `ShakeLit`. No scanner
+ can reach that answer: it sees a name and must assume the worst, and that
+ imprecision cascades -- false edges near the root drag whole subtrees behind
+ them.
 
 Section: Instrument
 
-  mk : Text, List Text -> Part
-  mk (n) (ns) = Part { name = n, needs = ns }
+  mk : Text, List Text -> ShakePart
+  mk (n) (ns) = ShakePart { name = n, frags = mk-uses ns 0 [] }
 
-  contains : List Text, Text -> Boolean
-  contains (xs) (n) = contains-loop xs 0 n
+ A part built from bare dependency names, for the fixtures that care about the
+ graph rather than the text.
 
-  contains-loop : List Text, Integer, Text -> Boolean
-  contains-loop (xs) (i) (n) =
-   if i >= list-length xs then False
-   else if list-at xs i == n then True
-   else contains-loop xs (i + 1) n
+  mk-uses : List Text, Integer, List ShakeFrag -> List ShakeFrag
+  mk-uses (ns) (i) (acc) =
+   if i >= list-length ns then acc
+   else mk-uses ns (i + 1) (acc & [ShakeUse (list-at ns i)])
 
- Index of the part with this name, or 0 - 1. Linear is the right shape here:
- the tables are ~100 entries and a map would need an ordering this file
- deliberately does not impose.
+  names-of : List ShakePart -> List Text
+  names-of (ps) = names-of-loop ps 0 []
 
-  find-part : List Part, Text -> Integer
-  find-part (ps) (n) = find-part-loop ps 0 n
-
-  find-part-loop : List Part, Integer, Text -> Integer
-  find-part-loop (ps) (i) (n) =
-   if i >= list-length ps then 0 - 1
-   else if (list-at ps i).name == n then i
-   else find-part-loop ps (i + 1) n
-
- The closure. `work` is a queue that only ever grows, `i` walks it, and `acc`
- is the reached set. A name already in `acc` is skipped, so a cycle
- terminates; `work` grows only when a name is reached for the FIRST time, so
- it grows at most once per part and the walk is finite.
-
- Lists are copied with `&`, never `list-push`: push MUTATES its argument and
- returns the same object, so pushing onto a list the caller still holds
- changes it for everyone.
-
-  reach : List Part, List Text, Integer, List Text -> List Text
-  reach (ps) (work) (i) (acc) =
-   if i >= list-length work then acc
-   else let n = list-at work i
-   in if contains acc n then reach ps work (i + 1) acc
-      else let acc2 = acc & [n]
-      in let j = find-part ps n
-      in if j < 0 then reach ps work (i + 1) acc2
-         else reach ps (work & ((list-at ps j).needs)) (i + 1) acc2
-
-  kept : List Part, List Text -> List Text
-  kept (ps) (roots) = kept-loop ps 0 (reach ps roots 0 []) []
-
-  kept-loop : List Part, Integer, List Text, List Text -> List Text
-  kept-loop (ps) (i) (acc) (out) =
-   if i >= list-length ps then out
-   else let p = list-at ps i
-   in if contains acc (p.name) then kept-loop ps (i + 1) acc (out & [p.name])
-      else kept-loop ps (i + 1) acc out
-
-  unmatched : List Part, List Text -> List Text
-  unmatched (ps) (roots) = unmatched-loop ps roots 0 []
-
-  unmatched-loop : List Part, List Text, Integer, List Text -> List Text
-  unmatched-loop (ps) (roots) (i) (out) =
-   if i >= list-length roots then out
-   else let r = list-at roots i
-   in if find-part ps r < 0 then unmatched-loop ps roots (i + 1) (out & [r])
-      else unmatched-loop ps roots (i + 1) out
-
-  frag-text : List Frag -> Text
-  frag-text (fs) = frag-text-loop fs 0 ""
-
-  frag-text-loop : List Frag, Integer, Text -> Text
-  frag-text-loop (fs) (i) (acc) =
-   if i >= list-length fs then acc
-   else let f = list-at fs i
-   in when f
-    is Lit (t) -> frag-text-loop fs (i + 1) (acc & t)
-    is Use (n) -> frag-text-loop fs (i + 1) (acc & n)
-
-  frag-uses : List Frag -> List Text
-  frag-uses (fs) = frag-uses-loop fs 0 []
-
-  frag-uses-loop : List Frag, Integer, List Text -> List Text
-  frag-uses-loop (fs) (i) (acc) =
-   if i >= list-length fs then acc
-   else let f = list-at fs i
-   in when f
-    is Lit (t) -> frag-uses-loop fs (i + 1) acc
-    is Use (n) -> if contains acc n then frag-uses-loop fs (i + 1) acc
-                  else frag-uses-loop fs (i + 1) (acc & [n])
+  names-of-loop : List ShakePart, Integer, List Text -> List Text
+  names-of-loop (ps) (i) (acc) =
+   if i >= list-length ps then acc
+   else names-of-loop ps (i + 1) (acc & [(list-at ps i).name])
 
   join : List Text -> Text
   join (xs) = if list-length xs == 0 then "(none)" else join-loop xs 0 ""
@@ -155,9 +57,10 @@ Section: Instrument
    else if i == 0 then join-loop xs (i + 1) (list-at xs i)
    else join-loop xs (i + 1) (acc & " " & list-at xs i)
 
-  report : Text, List Part, List Text -> Text
+  report : Text, List ShakePart, List Text -> Text
   report (label) (ps) (roots) =
-   label & ": kept [" & join (kept ps roots) & "] unmatched [" & join (unmatched ps roots) & "]"
+   label & ": kept [" & join (names-of (shake-kept ps roots))
+   & "] unmatched [" & join (shake-unmatched ps roots) & "]"
 
 Section: Main
 
@@ -180,17 +83,20 @@ Section: Main
    in print-line-uni (report "8 order kept" ordered ["X"])
    let dup = [mk "A" ["B"], mk "B" []]
    in print-line-uni (report "9 dup roots " dup ["A", "A", "B"])
-   let f1 = [Lit "fn a() { ", Use "b", Lit "(); }"]
+   let f1 = [ShakeLit "fn a() { ", ShakeUse "b", ShakeLit "(); }"]
    in act
-     print-line-uni ("10 projection: text [" & frag-text f1 & "]")
-     print-line-uni ("11 uses      : [" & join (frag-uses f1) & "]")
+     print-line-uni ("10 projection: text [" & shake-frag-text f1 & "]")
+     print-line-uni ("11 uses      : [" & join (shake-frag-uses "a" f1) & "]")
    end
-   let f2 = [Lit "fn a() { cx_ghost(); ", Use "b", Lit "(); }"]
+   let f2 = [ShakeLit "fn a() { cx_ghost(); ", ShakeUse "b", ShakeLit "(); }"]
+   in print-line-uni ("12 lit is not a use: text mentions cx_ghost, uses [" & join (shake-frag-uses "a" f2) & "]")
+   let f3 = [ShakeUse "b", ShakeLit " and ", ShakeUse "b", ShakeLit " again"]
+   in print-line-uni ("13 use dedup : [" & join (shake-frag-uses "a" f3) & "]")
+   let f4 = [ShakeLit "fn a() { ", ShakeUse "a", ShakeLit "(); }"]
+   in print-line-uni ("14 self-edge dropped: [" & join (shake-frag-uses "a" f4) & "]")
+   let real = [ShakePart { name = "A", frags = f1 }, mk "b" []]
    in act
-     print-line-uni ("12 lit is not a use: text mentions cx_ghost, uses [" & join (frag-uses f2) & "]")
+     print-line-uni (report "15 closure over frags" real ["A"])
+     print-line-uni ("16 shake-text: [" & shake-text real ["A"] & "]")
    end
-   let f3 = [Use "b", Lit " and ", Use "b", Lit " again"]
-   in print-line-uni ("13 use dedup : [" & join (frag-uses f3) & "]")
-   let derived = [Part { name = "A", needs = frag-uses f1 }, mk "b" []]
-   in print-line-uni (report "14 closure over derived needs" derived ["A"])
   end

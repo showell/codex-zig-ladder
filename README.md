@@ -59,7 +59,8 @@ zig at all** -- `native_build.sh` exits 1, `codexir` does not build, and the
 tier set's zig arm and `codexzig` are blocked with it. `zigemit` survives only
 because it does not bundle `Lowering.codex`.
 
-Sent as **PR 96** with backlog row COMPILER-34, tag `u52-dup-arms-unblocked`;
+Sent as **PR 96** (closed unabsorbed -- their change 20398 already carried the
+identical fix), tag `u52-dup-arms-unblocked`;
 three deletions, and with them `native_build.sh` returns 0. Re-bank at Update
 52 when that lands, or at Update 53, whichever arrives first. Until then the
 ladder's answer to "which seed do you agree with" is honestly `C3181693`.

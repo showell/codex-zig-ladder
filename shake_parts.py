@@ -194,12 +194,102 @@ def decl_kinds(parts):
     return out
 
 
+def codex_name(zig_name, taken):
+    """A Codex definition name for a zig declaration name.
+
+    Codex definitions are lowercase and hyphenated; zig's are mixed case with
+    underscores. Lowercasing and swapping `_` for `-` is the whole rule, and
+    collisions are refused rather than resolved -- two parts sharing a Codex
+    name would silently make one unreachable, which is the failure this whole
+    exercise exists to prevent.
+    """
+    n = 'zig-p-' + zig_name.lower().replace('_', '-')
+    if n in taken:
+        raise SystemExit(f'shake_parts: Codex name collision on {n!r}')
+    taken.add(n)
+    return n
+
+
+PRELUDE_HEAD = """  ZigFrag =
+    | ZigLit (Text)
+    | ZigUse (Text)
+
+ A prelude declaration, cut so it can be selected. `frags` is the ONLY source
+ of both the text and the dependencies: zig-frag-text walks it for one,
+ zig-frag-uses for the other, so they cannot disagree. A ZigUse is the only
+ way another prelude name is written, which makes recording an edge the same
+ act as emitting the name rather than a separate one to forget.
+
+ A part's own declaration site is a ZigUse of itself, because the name is
+ written there like any other. The self-edge is harmless -- the walk skips a
+ name already reached -- and leaving it in keeps one rule ("a name in code
+ position is a ZigUse") instead of two.
+
+  ZigPart = record {
+   name : Text,
+   frags : List ZigFrag
+  }
+
+  zig-frag-text : List ZigFrag -> Text
+  zig-frag-text (fs) = zig-frag-text-loop fs 0 ""
+
+  zig-frag-text-loop : List ZigFrag, Integer, Text -> Text
+  zig-frag-text-loop (fs) (i) (acc) =
+   if i >= list-length fs then acc
+   else when (list-at fs i)
+    is ZigLit (t) -> zig-frag-text-loop fs (i + 1) (acc & t)
+    is ZigUse (n) -> zig-frag-text-loop fs (i + 1) (acc & n)
+
+"""
+
+PRELUDE_TAIL = """
+ The prelude, rebuilt from its parts and NOT YET SHAKEN. Every part, in table
+ order, which is exactly what the hand-written chunk list produced -- and that
+ is the point of this step: the restructure must move no byte before any
+ filtering is trusted. A dropped newline in part 41 and a wrong closure have
+ the same symptom, and this separates them.
+
+  zig-prelude : Text = zig-prelude-concat zig-prelude-parts 0 ""
+
+  zig-prelude-concat : List ZigPart, Integer, Text -> Text
+  zig-prelude-concat (ps) (i) (acc) =
+   if i >= list-length ps then acc
+   else zig-prelude-concat ps (i + 1) (acc & zig-frag-text ((list-at ps i).frags))
+"""
+
+
+def splice(emitter, parts, names, kind):
+    lines = emitter.read_text(errors='replace').split('\n')
+    start = next(i for i, l in enumerate(lines) if l.strip().startswith('zig-prelude : Text'))
+    end = start + 1
+    while end < len(lines) and CHUNK.match(lines[end]):
+        end += 1
+
+    taken, defs, rows = set(), [], []
+    for nm, text in parts:
+        fr = fragment(text, names, kind)
+        assert ''.join(v for _, v in fr) == text, nm
+        cn = codex_name(nm, taken)
+        body = ', '.join(f'Zig{k} "{escape(v)}"' for k, v in fr)
+        defs.append(f'  {cn} : List ZigFrag\n  {cn} = [{body}]')
+        rows.append(f'    ZigPart {{ name = "{nm}", frags = {cn} }}')
+
+    # Continuations indent to 4, matching zig-prelude-decls' own multi-line
+    # list literal. Codex is indentation-sensitive and a row at column 0 ends
+    # the definition rather than continuing it.
+    inner = (',\n' + ' ' * 4).join(r.strip() for r in rows)
+    table = '  zig-prelude-parts : List ZigPart =\n   [' + inner + ']'
+    block = PRELUDE_HEAD + '\n\n'.join(defs) + '\n\n' + table + '\n' + PRELUDE_TAIL
+    return '\n'.join(lines[:start] + block.split('\n') + lines[end:])
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('emitter', help='path to ZigEmitter.codex')
     ap.add_argument('--against', help='an emitted .zig to gate the cut against')
     ap.add_argument('--shake', help='an emitted .zig to shake, reporting what survives')
     ap.add_argument('--gen-frags', dest='gen_frags', help='write generated Frag lists here')
+    ap.add_argument('--splice', help='write a restructured ZigEmitter.codex here')
     a = ap.parse_args()
 
     chunks = read_chunks(pathlib.Path(a.emitter))
@@ -209,6 +299,14 @@ def main():
     named = [n for n, _ in parts if n]
     print(f'chunks {len(chunks)}   parts {len(parts)}   named {len(named)}   '
           f'anonymous {len(parts) - len(named)}   bytes {len(joined):,}')
+
+    if a.splice:
+        names = [n for n, _ in parts if n]
+        out = splice(pathlib.Path(a.emitter), parts, names, decl_kinds(parts))
+        pathlib.Path(a.splice).write_text(out)
+        print(f'  spliced -> {a.splice}  ({len(out):,} bytes, '
+              f'{out.count(chr(10)) + 1} lines)')
+        return 0
 
     if a.gen_frags:
         names = [n for n, _ in parts if n]

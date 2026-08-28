@@ -198,6 +198,8 @@ refusing is honest, and choosing one is a DEFAULTING RULE.
   all 56 is what found `deck-bracket-contract` going `match -> differ`. The
   wins were all green; the wrong answer was in the files nobody predicted.
 
+**COMPILER-34 NOW MEANS THE EQUALITY DEFECT, NOT THE DUPLICATE ARMS.** Our PR 96 row proposed 34 for the unreachable arms; PR 96 was closed without absorbing it, so that row never landed, and Damian then assigned **COMPILER-34 to issue 97's recursive structural-eq defect** (verified at head, landed main 20546, beside COMPILER-24). Any reference below to COMPILER-34 as the arms row is our un-absorbed draft, not a real row.
+
 ## STANDING DECISION: UPDATE 52 IS A FLAWED RELEASE, AND WE ARE WAITING
 
 **Steve, 2026-08-28.** Update 52 is a **known flawed release with respect to
