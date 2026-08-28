@@ -2,14 +2,14 @@ Chapter: ProbeScanCost
   cites Foreword chapter Console
   cites Foreword chapter TextSearch
 
- What does it cost to find 93 names in a program-sized text, in Codex, on the
+ What does it cost to find 96 names in a program-sized text, in Codex, on the
  venue the plug actually runs on?
 
  This exists because tree-shaking needs ROOTS, and the obvious way to get them
  is to scan the emitted program for each prelude name. `index-of` is not a
  builtin -- `index-of-loop` walks positions and `text-matches-at-loop` walks
  characters, both at Codex level -- so the obvious way is a naive O(n*m) search
- run 93 times over ~1.9 MB, under QEMU. That is either fine or catastrophic and
+ run 96 times over ~1.9 MB, under QEMU. That is either fine or catastrophic and
  guessing costs a native build to find out.
 
  So: a FIXED, SMALL amount of the same work, timed from outside, and
@@ -21,6 +21,14 @@ Chapter: ProbeScanCost
  than the worst.
 
  The result is printed so the work cannot be optimised away.
+
+ IT IS A TIER SO THE NUMBER HAS AN ARTIFACT BEHIND IT. What is banked is the
+ printed output, which is deterministic; the seconds are read from the wall
+ clock outside and recorded in the commit. That split is the point -- the
+ figures this produced (about 8.6M characters a second, so roughly 21 seconds
+ for the largest program we emit) are quoted in prose that goes into someone
+ else's compiler, and a number with nothing to re-run behind it does not
+ belong there.
 
 Section: Instrument
 

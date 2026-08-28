@@ -1,0 +1,34 @@
+Chapter: ProbePreludeCollide
+  cites Foreword chapter Console
+
+ Can a Codex program declare a name the zig prelude already declares?
+
+ `zig-sanitize` renames a name that appears in `zig-prelude-decls` by
+ appending an underscore, and that list is described in the emitter as "the
+ UNION over the whole prelude". It is not. The prelude has 96 top-level
+ declarations and the list names 23 of them: `std`, `main`, `cx_entry` and the
+ file-scope `const`/`var` globals. The other 73 -- every `fn`, including
+ `cx_print`, `cx_new`, `cx_concat`, `cx_text_eq` -- are absent.
+
+ The reason is in the deriving script rather than in anybody's judgement.
+ `build/check-zig-prelude-surface.ps1` reads emitted output for `const NAME`,
+ `var NAME`, `|capture|` and function PARAMETERS, and never for the function's
+ own name. It has been printing OK over a surface missing three quarters of
+ the declarations.
+
+ So this defines `cx-print` and calls it. Bare metal does not care: prelude
+ names are a zig concept and nothing on that arm collides. The zig arm emits
+ the user's `fn cx_print` into a file that already declares one.
+
+Section: Main
+
+  cx-print : Integer -> Integer
+  cx-print (n) = n + 1
+
+  cx-new : Integer -> Integer
+  cx-new (n) = n * 2
+
+  opening : [Console] Nothing = act
+   print-line-uni ("cx-print 41 : " & show (cx-print 41))
+   print-line-uni ("cx-new 21   : " & show (cx-new 21))
+  end
