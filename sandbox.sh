@@ -16,7 +16,9 @@
 # A run that needs natives must build them or be handed them on purpose.
 #
 #   ./sandbox.sh <label> [ladder-ref] [codex-repo] [codex-ref]
-#   ./sandbox.sh --prune [keep]        keep the newest N (default 10)
+#   ./sandbox.sh --prune [keep]        keep the newest N (default 10), and
+#                                      any run holding a KEEP file, whose
+#                                      first line says why
 #   ./sandbox.sh --list                live head of each worktree, MOVED if it
 #                                      no longer matches what it was cut from
 #
@@ -71,6 +73,15 @@ case "${1:-}" in
         mapfile -t old < <(ls -1dt "$ROOT"/*/ 2>/dev/null | tail -n +$((keep + 1)))
         [ ${#old[@]} -eq 0 ] && { echo "sandbox: nothing to prune (keeping $keep)"; exit 0; }
         for d in "${old[@]}"; do
+            # A run holding a KEEP file is not scratch. Newest-N is the wrong
+            # rule for a run that is an ORACLE rather than a by-product: the
+            # unshaken emitted corpus is the input every --check-corpus and
+            # --prove-gate needs, and once the shake is on nothing regenerates
+            # it. Age says nothing about that. KEEP says why, in the file.
+            if [ -f "$d/KEEP" ]; then
+                echo "keeping $d -- $(head -1 "$d/KEEP")"
+                continue
+            fi
             echo "pruning $d"
             for w in "$d"ladder "$d"codex; do
                 [ -d "$w" ] && git -C "$w" rev-parse --git-dir >/dev/null 2>&1 \
