@@ -42,6 +42,21 @@ Section: Types
    needs : List Text
   }
 
+ A fragment of an emitted part. `Lit` is text that means nothing to the
+ shaker; `Use` is text that is ALSO a dependency. Two constructors, one list,
+ and the whole point of the split: `text` and `uses` are two PROJECTIONS of
+ the same list, so they cannot disagree. There is no accumulator to thread and
+ no second return value -- in a pure language that matters, because threading
+ a writer through every emitter is the cost that got the structural route
+ rejected the first time.
+
+ `Use` is the only way to write another part's name. Recording the edge is not
+ a step you can forget; it IS the step that emits the name.
+
+  Frag =
+    | Lit (Text)
+    | Use (Text)
+
 Section: Instrument
 
   mk : Text, List Text -> Part
@@ -108,6 +123,29 @@ Section: Instrument
    in if find-part ps r < 0 then unmatched-loop ps roots (i + 1) (out & [r])
       else unmatched-loop ps roots (i + 1) out
 
+  frag-text : List Frag -> Text
+  frag-text (fs) = frag-text-loop fs 0 ""
+
+  frag-text-loop : List Frag, Integer, Text -> Text
+  frag-text-loop (fs) (i) (acc) =
+   if i >= list-length fs then acc
+   else let f = list-at fs i
+   in when f
+    is Lit (t) -> frag-text-loop fs (i + 1) (acc & t)
+    is Use (n) -> frag-text-loop fs (i + 1) (acc & n)
+
+  frag-uses : List Frag -> List Text
+  frag-uses (fs) = frag-uses-loop fs 0 []
+
+  frag-uses-loop : List Frag, Integer, List Text -> List Text
+  frag-uses-loop (fs) (i) (acc) =
+   if i >= list-length fs then acc
+   else let f = list-at fs i
+   in when f
+    is Lit (t) -> frag-uses-loop fs (i + 1) acc
+    is Use (n) -> if contains acc n then frag-uses-loop fs (i + 1) acc
+                  else frag-uses-loop fs (i + 1) (acc & [n])
+
   join : List Text -> Text
   join (xs) = if list-length xs == 0 then "(none)" else join-loop xs 0 ""
 
@@ -142,4 +180,17 @@ Section: Main
    in print-line-uni (report "8 order kept" ordered ["X"])
    let dup = [mk "A" ["B"], mk "B" []]
    in print-line-uni (report "9 dup roots " dup ["A", "A", "B"])
+   let f1 = [Lit "fn a() { ", Use "b", Lit "(); }"]
+   in act
+     print-line-uni ("10 projection: text [" & frag-text f1 & "]")
+     print-line-uni ("11 uses      : [" & join (frag-uses f1) & "]")
+   end
+   let f2 = [Lit "fn a() { cx_ghost(); ", Use "b", Lit "(); }"]
+   in act
+     print-line-uni ("12 lit is not a use: text mentions cx_ghost, uses [" & join (frag-uses f2) & "]")
+   end
+   let f3 = [Use "b", Lit " and ", Use "b", Lit " again"]
+   in print-line-uni ("13 use dedup : [" & join (frag-uses f3) & "]")
+   let derived = [Part { name = "A", needs = frag-uses f1 }, mk "b" []]
+   in print-line-uni (report "14 closure over derived needs" derived ["A"])
   end

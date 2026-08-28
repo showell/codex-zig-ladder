@@ -123,11 +123,83 @@ def closure(needs, roots):
     return acc
 
 
+def escape(t):
+    """Inverse of unescape(). Tested by round-trip, not by inspection."""
+    out = []
+    for c in t:
+        if c == '\\': out.append('\\\\')
+        elif c == '"': out.append('\\"')
+        elif c == '\n': out.append('\\n')
+        elif c == '\t': out.append('\\t')
+        else: out.append(c)
+    return ''.join(out)
+
+
+def fragment(text, names, kind):
+    """Split one part's text into Lit/Use fragments.
+
+    A name only becomes a Use where it appears in CODE. Inside a `//` comment
+    or a string literal it stays Lit, because it is not a reference there --
+    which is the precision a scanner cannot have, and the reason this is worth
+    generating once rather than deriving every time.
+
+    Longest name first, so `cx_print` cannot claim the head of `cx_print_line`.
+    """
+    order = sorted(names, key=len, reverse=True)
+    frags, buf, i, n = [], [], 0, len(text)
+    def flush():
+        if buf:
+            frags.append(('Lit', ''.join(buf)))
+            buf.clear()
+    while i < n:
+        c = text[i]
+        if c == '/' and text[i:i+2] == '//':          # comment to end of line
+            j = text.find('\n', i)
+            j = n if j < 0 else j
+            buf.append(text[i:j]); i = j; continue
+        if c == '"':                                   # string literal
+            j = i + 1
+            while j < n:
+                if text[j] == '\\': j += 2; continue
+                if text[j] == '"': j += 1; break
+                j += 1
+            buf.append(text[i:j]); i = j; continue
+        matched = None
+        for nm in order:
+            if not text.startswith(nm, i):
+                continue
+            before = text[i-1] if i else ' '
+            if before.isalnum() or before == '_':
+                continue
+            after = text[i+len(nm):]
+            if kind.get(nm) == 'fn':
+                if not after.lstrip(' ').startswith('('):
+                    continue
+            elif after[:1].isalnum() or after[:1] == '_':
+                continue
+            matched = nm; break
+        if matched:
+            flush(); frags.append(('Use', matched)); i += len(matched); continue
+        buf.append(c); i += 1
+    flush()
+    return frags
+
+
+def decl_kinds(parts):
+    out = {}
+    for n, t in parts:
+        if not n: continue
+        m = re.search(r'^(?:pub\s+)?(fn|const|var)\s+' + re.escape(n), t, re.M)
+        out[n] = m.group(1) if m else 'fn'
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('emitter', help='path to ZigEmitter.codex')
     ap.add_argument('--against', help='an emitted .zig to gate the cut against')
     ap.add_argument('--shake', help='an emitted .zig to shake, reporting what survives')
+    ap.add_argument('--gen-frags', dest='gen_frags', help='write generated Frag lists here')
     a = ap.parse_args()
 
     chunks = read_chunks(pathlib.Path(a.emitter))
@@ -137,6 +209,27 @@ def main():
     named = [n for n, _ in parts if n]
     print(f'chunks {len(chunks)}   parts {len(parts)}   named {len(named)}   '
           f'anonymous {len(parts) - len(named)}   bytes {len(joined):,}')
+
+    if a.gen_frags:
+        names = [n for n, _ in parts if n]
+        kind = decl_kinds(parts)
+        lines, uses_total, bad = [], 0, 0
+        for nm, text in parts:
+            fr = fragment(text, names, kind)
+            rebuilt = ''.join(v for _, v in fr)
+            if rebuilt != text:
+                print(f'  IDENTITY FAIL in part {nm!r}'); bad += 1; continue
+            uses_total += sum(1 for k, _ in fr if k == 'Use')
+            body = ', '.join(f'{k} "{escape(v)}"' for k, v in fr)
+            lines.append(f'  p-{nm} : List Frag\n  p-{nm} = [{body}]')
+        print(f'  fragments generated for {len(lines)}/{len(parts)} parts, '
+              f'{uses_total} Use edges, {bad} identity failures')
+        if bad:
+            return 1
+        print(f'  FRAGMENT IDENTITY GATE: PASS -- every part rebuilds byte-exactly')
+        pathlib.Path(a.gen_frags).write_text('\n\n'.join(lines) + '\n')
+        print(f'  wrote {a.gen_frags}')
+        return 0
 
     if a.shake:
         needs = needs_of(parts)
