@@ -1,0 +1,36 @@
+# key 32e957638e136a23
+-- length --
+empty is zero              : yes
+literal counts characters  : yes
+concat adds lengths        : yes
+built text has right length: yes
+-- character access, answers in CCE --
+code at 0                  : yes
+code at last               : yes
+E is 39, not 69            : yes
+across a concat boundary   : yes
+-- comparison and search --
+equal texts compare equal  : yes
+compare is antisymmetric   : yes
+unequal texts differ       : yes
+prefix sorts first         : yes
+starts-with true           : yes
+starts-with false          : yes
+built equals literal       : yes
+-- concat identities --
+empty on the left          : yes
+empty on the right         : yes
+associative                : yes
+-- immutability: the in-place concat depends on this --
+operand keeps its length   : yes
+operand keeps its bytes    : yes
+alias is undisturbed       : yes
+the grown text is right    : yes
+growing twice is stable    : yes
+-- storage: this is what the narrowing trades against --
+record field round trips   : yes
+record sibling undisturbed : yes
+list entry 0 round trips   : yes
+list entry 1 was built     : yes
+list entry 3 is empty      : yes
+list keeps its length      : yes

@@ -1,0 +1,7 @@
+# key 2d978e1e3378fc7c
+ascii A       41
+greek Gamma   198
+greek tau     199
+turnstile     68
+turnstile len 1
+roundtrip     ?

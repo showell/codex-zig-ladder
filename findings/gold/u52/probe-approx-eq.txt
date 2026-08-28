@@ -1,0 +1,4 @@
+# key f064b72434581afd
+one-ulp 1
+same 1
+far 0

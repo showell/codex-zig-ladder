@@ -1,0 +1,42 @@
+# key ff2e1141fe3abb8b
+-- reading: list-at and list-length, the two most-used builtins --
+length of three            : yes
+first element              : yes
+last element               : yes
+length of empty            : yes
+sum walks every element    : yes
+-- list-set-at MUTATES: the alias is the only witness --
+update is visible on it    : yes
+ALIAS sees the update      : yes
+original name sees it too  : yes
+neighbours undisturbed     : yes
+length unchanged           : yes
+  (yes on all = one list, mutated in place)
+-- list-push MUTATES the list the caller still holds --
+pushed list is longer      : yes
+ALIAS grew too             : yes
+alias sees the new element : yes
+old elements survive       : yes
+-- pushing onto an EMPTY list, where there may be nothing to mutate --
+push produced one element  : yes
+alias of empty grew        : yes
+  (the arms may honestly differ here -- an empty list has no block)
+-- list-insert-at MUTATES --
+insert made it longer      : yes
+ALIAS grew too             : yes
+inserted at the right index: yes
+the displaced one moved up : yes
+-- the escape hatch: `&` COPIES, and the alias must NOT see it --
+the copy is longer         : yes
+ALIAS did NOT grow         : yes
+  (no here and yes above = the two forms really differ)
+-- list-snoc --
+snoc appended              : yes
+snoc alias grew            : yes
+-- linked lists: 198 call sites, and no assertion until now --
+three pushes, three out    : yes
+sum survives the flatten   : yes
+empty flattens to empty    : yes
+-- capacity is a hint, not a bound (finding 21 as a standing test) --
+grew past its capacity     : yes
+contents survived growth   : yes
