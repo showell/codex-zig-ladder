@@ -50,13 +50,25 @@ def update_label(sha):
     section header that names the seed inline (the Update 48 form; interim
     sections are titled "Interim mirror push" and never match), or the
     artifacts table's `seed/Codex.cdx` row under "measured at the release
-    head" (the Update 49 form), or the bolded release line that opens
-    "**Release head: main <N>. Seed `<hash>`" (the Update 50 form) -- because a
+    head" (the Update 49 form), or a BOLDED line that names both the release
+    head and the seed -- because a
     bare substring match
     labels too much: prior-release seeds are back-referenced in later notes
     ("The release 46 seed was ..."), and interim seeds are named in the next
     Update's accumulator, so an interim checkout would get a release number
     it never earned. Two notes claiming one seed is a refusal, not a sort.
+
+    That last arm is bold-anchored rather than prose-anchored because the
+    back-reference is the near miss, not a distant one. Update 52 names its
+    release seed as "**The proofs, all at the release head against seed
+    `<hash>`:**" and Update 53's accumulator opens "through its release head
+    (main 20354, seed `<hash>`)" -- same two phrases, same seed, one line
+    apart in shape. Only the release announcement is bolded, so requiring the
+    bold is what keeps 52 and 53 from both claiming it and turning a correct
+    label into the two-notes refusal. It also covers the Update 50 form
+    ("**Release head: main <N>. Seed `<hash>`"), which it replaced rather
+    than joined. The hash is matched without its closing backtick because
+    Update 51 spells it in eight digits and Update 52 in sixteen.
     """
     prefix = sha[:PREFIX_LEN].upper()
     claims = []
@@ -69,8 +81,9 @@ def update_label(sha):
                                    or 'RELEASE MEASUREMENTS' in line
                                    or line.strip().lstrip('*').startswith('SEED `')
                                    or line.strip().startswith('| `SEED/CODEX.CDX` |')
-                                   or (line.strip().startswith('**RELEASE HEAD:')
-                                       and f'SEED `{prefix}`' in line)):
+                                   or (line.strip().startswith('**')
+                                       and 'RELEASE HEAD' in line
+                                       and f'SEED `{prefix}' in line)):
                 claims.append(int(m.group(1)))
                 break
     if len(claims) > 1:
