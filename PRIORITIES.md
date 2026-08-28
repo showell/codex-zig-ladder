@@ -399,6 +399,59 @@ upstream and DROP our four cherry-picked PR 95 commits, which will then be
 duplicates (git will usually drop them by patch-id, but check rather than
 assume). Do not edit `prelude-last` -- it is absorbed and closed.
 
+## THE SHAKER IS PARKED, AND A COLD READ FOUND TWO BUGS THE GATES CANNOT SEE
+
+**Parked 2026-08-28 to work on angry-gopher. Nothing shipped; the shake is OFF
+in the committed emitter, so nothing is broken by leaving it here.** Branch
+`zig-tree-shaking` @ `297649f2` in `~/showell_repos/cobblestone-treeshake`.
+
+**SHOWSTOPPER, verified: the prelude has 96 top-level declarations and only 93
+part names.** Three chunks carry a comment block AND a declaration, so
+`group()`'s first-line `DECL` match fails and the chunk is welded onto the NEXT
+part:
+
+    cx_heap_base     buried in part cx_buf_want         referenced by 5 parts
+    cx_utf8_to_cce   buried in part cx_read_file_uni
+    cx_vtag          buried in part cx_buf_write_byte   a PROGRAM can name it
+
+`cx_heap_base` is called by `cx_bump_alloc`, `cx_bump_resize`, `cx_bump_free`,
+`cx_address_of` and `cx_concat`, none of which reach `cx_buf_want`, so the shake
+keeps the callers and drops the declaration -- **468 of 589 corpus programs
+would fail** with `use of undeclared identifier`. `shake_parts.py`'s docstring
+claim that "each chunk is EXACTLY one zig top-level declaration or one comment
+block" is FALSE for three of 123. **Fix: assert every
+`(?m)^(?:pub )?(fn|const|var) NAME` in the joined text is a part name. Three
+lines, and it fails today.**
+
+**THE ORDER FIXTURE STILL CANNOT FAIL.** Fixture 8 was rewritten this afternoon
+from `[Z,Y,X]` to `[X,Y,Z]` to stop table order and TOPOLOGICAL order
+coinciding. But the realistic wrong implementation is DISCOVERY order -- return
+`shake-reach`'s accumulator and delete `shake-kept-loop` -- and table order
+equals discovery order on all eleven graph fixtures. **Fix: table `[C,A,B]`,
+`A->B->C`, root `A`: table gives `C A B`, discovery gives `A B C`.**
+
+**THE ALL-ROOTS IDENTITY GATE IS BLIND TO EVERY EDGE ERROR.** With every name a
+root, reachability completes before any edge matters, so it can only prove the
+cut and the concatenation. `297649f2` claims it proves "the walk, the ordering
+or a fragment list" -- it does not, which is why BOTH edge bugs survived it.
+
+**THE PRECISION CLAIM IN `acb8e21` IS MOSTLY THE VTABLE BUG.** Committed rule
+21/93, sound `\bNAME\b` 37/93, current fixed rule 36/93. The genuine win from
+code-position fragments is **six edges out of 154**, not half a prelude. The
+principle ("false edges near the root drag whole subtrees") is right; these
+numbers do not demonstrate it.
+
+**Also owed:** `probe-scancost.codex` is UNTRACKED and never banked, so the
+8.6M chars/s and 21 s figures -- which are pasted into prose destined for
+UPSTREAM SOURCE -- have no artifact behind them. And
+`build/check-zig-prelude-surface.ps1` requires subjects' preludes to AGREE,
+which shaking breaks by design; the check PR 95 just repaired will fail on the
+first shaken run, and nothing in either commit mentions it.
+
+**The architecture survives:** one algorithm in a Foreword chapter, two
+consumers, generated table, no-byte-moves staging. The cold read's own summary:
+*"The architecture is right. The gates are pointed at the wrong things."*
+
 ## NEXT: THE ZIG EMITTER'S UPWARD CHANNEL, FOR A PRECISE TREE SHAKER
 
 **Steve's call. The channel is the deliverable; shaking is the concrete goal

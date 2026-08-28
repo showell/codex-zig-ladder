@@ -1,0 +1,53 @@
+Chapter: ProbeScanCost
+  cites Foreword chapter Console
+  cites Foreword chapter TextSearch
+
+ What does it cost to find 93 names in a program-sized text, in Codex, on the
+ venue the plug actually runs on?
+
+ This exists because tree-shaking needs ROOTS, and the obvious way to get them
+ is to scan the emitted program for each prelude name. `index-of` is not a
+ builtin -- `index-of-loop` walks positions and `text-matches-at-loop` walks
+ characters, both at Codex level -- so the obvious way is a naive O(n*m) search
+ run 93 times over ~1.9 MB, under QEMU. That is either fine or catastrophic and
+ guessing costs a native build to find out.
+
+ So: a FIXED, SMALL amount of the same work, timed from outside, and
+ extrapolated. The needles are absent on purpose -- a miss is the worst case, because it
+ scans to the end -- and they SHARE THE `cx_` PREFIX the haystack is full of,
+ so every position starting `cx_` pays a multi-character compare before it
+ fails. A first draft used needles starting `zzz`, which never appears, so each
+ position failed on character one and the measurement was the best case rather
+ than the worst.
+
+ The result is printed so the work cannot be optimised away.
+
+Section: Instrument
+
+  grow : Text, Integer -> Text
+  grow (t) (n) = if n <= 0 then t else grow (t & t) (n - 1)
+
+  hits : Text, List Text, Integer, Integer -> Integer
+  hits (hay) (needles) (i) (acc) =
+   if i >= list-length needles then acc
+   else when index-of hay (list-at needles i)
+    is Just (p) -> hits hay needles (i + 1) (acc + 1)
+    is None -> hits hay needles (i + 1) acc
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   let base = "fn cx_ll_push(l: anytype, v: anytype) @TypeOf(l) { return l; }\n"
+   in let hay = grow base 14
+   in let needles = ["cx_ll_pushx", "cx_ll_popx", "cx_text_splitx", "cx_new_x",
+        "cx_ll_concatx", "cx_gpa_x", "cx_deck_basex", "cx_heap_memx",
+        "cx_char_encodex", "cx_text_comparex", "cx_bits_to_realx", "cx_ipowx",
+        "CxListx", "CxFn1x", "CxFn2x", "cx_ll_emptyx",
+        "cx_ll_ofx", "cx_ll_insert_atx", "cx_text_to_doublex", "cx_char_to_textx"]
+   in act
+     print-line-uni ("haystack chars : " & show (text-length hay))
+     print-line-uni ("needles        : " & show (list-length needles))
+     print-line-uni ("scanned chars  : " & show (text-length hay * list-length needles))
+     print-line-uni ("hits (expect 0): " & show (hits hay needles 0 0))
+   end
+  end
