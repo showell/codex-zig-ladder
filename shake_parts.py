@@ -639,6 +639,50 @@ def verify_table(emitter, parts, names, kind, restructured):
     return 1
 
 
+def check_emitted(parts, joined, files):
+    """Ask zig's question of REAL output, shaken or not. No simulation at all.
+
+    `--check-corpus` predicts: it takes an UNSHAKEN emit, removes the prelude,
+    computes roots and edges here, and reports what the shake would do. That is
+    the only thing available before the shake is turned on, and once it IS on
+    the full prelude no longer appears verbatim in any emitted file, so that
+    mode skips everything.
+
+    This mode reads the finished file instead: every prelude name that appears
+    in code position must be declared in that same file. It re-derives nothing
+    from the table beyond the vocabulary of names to look for, so it cannot
+    agree with the closure by sharing its mistake.
+
+    A program that declares a prelude name ITSELF counts as declaring it, and
+    that is correct for this question -- zig only asks whether the identifier
+    resolves. Whether a program is ALLOWED to declare one is a different
+    defect, and `zig-prelude-decls` is where that lives.
+    """
+    vocab = DECL.findall(joined)
+    ok, bad = 0, 0
+    worst = {}
+    for f in files:
+        body = f.read_text(errors='replace')
+        declared = set(DECL.findall(body))
+        missing = sorted(names_in_code(body, vocab) - declared)
+        if missing:
+            bad += 1
+            for m in missing:
+                worst[m] = worst.get(m, 0) + 1
+            if bad <= 8:
+                print(f'  {f.name}: UNDECLARED -- {", ".join(missing)}')
+        else:
+            ok += 1
+    if bad > 8:
+        print(f'  ... and {bad - 8} more')
+    if worst:
+        top = sorted(worst.items(), key=lambda kv: -kv[1])
+        print('  most often undeclared: '
+              + ', '.join(f'{n} ({c})' for n, c in top[:6]))
+    print(f'  EMITTED GATE: {ok} clean, {bad} broken, over {ok + bad} files')
+    return 1 if bad else 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('emitter', help='path to ZigEmitter.codex')
@@ -649,6 +693,9 @@ def main():
                          'exactly what this generator produces')
     ap.add_argument('--prove-gate', dest='prove_gate', nargs='+',
                     help='emitted .zig files: prove --check-corpus can fail')
+    ap.add_argument('--check-emitted', dest='check_emitted', nargs='+',
+                    help='emitted .zig files, ALREADY SHAKEN or not: every\n'
+                         'prelude name in code position must be declared there')
     ap.add_argument('--check-corpus', dest='check_corpus', nargs='+',
                     help='emitted .zig files: shake each and prove nothing '
                          'it still references was dropped')
@@ -719,6 +766,10 @@ def main():
 
     if a.prove_gate:
         return prove_gate(parts, joined, [pathlib.Path(x) for x in a.prove_gate])
+
+    if a.check_emitted:
+        return check_emitted(parts, joined,
+                             [pathlib.Path(x) for x in a.check_emitted])
 
     if a.check_corpus:
         return check_corpus(parts, joined,
