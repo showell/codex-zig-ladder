@@ -140,7 +140,7 @@ def normalise(out):
 
 def build_and_run(src, workdir, tag):
     """(build_ok, diagnostics, run_result) -- run only if the build succeeded."""
-    exe = workdir / tag
+    exe = workdir / f'exe-{tag}'
     b = subprocess.run(['zig', 'build-exe', '-femit-bin=' + str(exe), str(src),
                         '--cache-dir', str(workdir / ('cache-' + tag))],
                        capture_output=True, text=True)
@@ -187,7 +187,7 @@ def grade_ast(banner):
             row = [f'  {name:9s} {len(text):>9,} bytes']
             outs = {}
             for tag, path in (('a', a_src), ('b', b_src)):
-                exe = work / f'{name}.{tag}'
+                exe = work / f'exe-{name}.{tag}'
                 b = subprocess.run(['zig', 'build-exe', '-femit-bin=' + str(exe), str(path),
                                     '--cache-dir', str(work / f'cache-{tag}')],
                                    capture_output=True, text=True)
@@ -290,6 +290,12 @@ def main():
     print(f'  output byte-identical    {same_run}')
     print(f'  identical but for source positions in a panic backtrace  {moved_only}')
     print(f'  disagreements            {len(problems)}')
+    if srcs and not built:
+        print('\n  REFUSED: nothing built on either side, so every agreement above is '
+              'vacuous.\n  A run that grades no program is a broken instrument, not a pass.')
+        for name, why in problems[:3]:
+            print(f'    {name}: {why}')
+        return 3
     for name, why in problems:
         print(f'    {name}: {why}')
 
