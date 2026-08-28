@@ -5,6 +5,59 @@ One entry per decision, newest first. This file exists so the README and
 the memory notes can say "do X" without re-arguing it; if a rule here ever
 looks wrong, re-measure before overturning it.
 
+## Update 52 before the rungs: the arms that answer for the compiler alone (2026-08-28)
+
+Update 52 has to be judged on its own, and the obstacle is that TWO emitter
+deltas now sit between it and the u51 bank. PR 93's absorb (`3942e362`) moved
+`ZigEmitter.codex` by 202 lines and added `ZigStdio.codex`; PR 95 is open on
+top of that. The register said "U52 touches `codex/plugs/zig/` not at all --
+0 lines", and that is true only from `3942e362`. **Our bank is at `012a9d2e`,
+and from there the emitter has moved.** So a zig-arm diff u51->u52 carries two
+variables and a bare-metal one carries none.
+
+These are the measurements taken BEFORE any plug ran, each answering for the
+compiler by itself.
+
+**The host contracts did not move.** `ram-size-addr = 4072` (0xFE8) and
+`serial-ring-buf-size = 1048576` are identical at both pins, and
+`X86_64Boot.codex` -- what `ring_compile.py`'s cells 28704/28712 are pinned to
+-- is unchanged. `tools/codex-vm.c` did move 20 lines, which is the file the
+ceremony flags, but the change makes an unrecognised flag exit 2 instead of
+being ignored, in a Windows tool we never invoke. No contract our side
+hard-codes was touched.
+
+**The seed probe: byte-identical.** One subject (`plug-oracle-arith`), one
+host, one blob, only the seed varying:
+
+    u51  seed C3181693 -> 110,758 bytes  sha 759e0760baad38fc
+    u52  seed 61C81B04 -> 110,758 bytes  sha 759e0760baad38fc   4.9s each
+
+Weak evidence on its own -- one small subject, and it barely exercises the 266
+lines Update 52 moved in `X86_64.codex` -- but it is what the ceremony asks
+for: the new seed boots under our QEMU flags, takes the ring preload, and
+emits an image our reader parses.
+
+**The tier gold: 21 of 21 columns byte-identical.** `./tiers_run.py --bare`,
+SET GREEN, banked to `findings/gold/u52/`. `gold_key` is
+sha256(program text + seed), so all 21 keys moved on the re-pin and every file
+differs; with the key line excluded, every column is byte-identical to u51's.
+Arithmetic, buffers, CCE, chars, closures, composites, decks, identity, list
+mutation, lists, records, tail calls, text, text semantics, the memory model,
+fresh spans, peek-qword, record layout, char ops, char literals, approx-eq.
+
+This is the arm that cannot be muddied, and `gold_key`'s own docstring says
+why: "the plug is not in that list -- bare metal is the oracle precisely
+because no plug is in its path -- so a banked column stays valid across every
+emitter change." Twenty-one bare-metal columns agreeing across a seed re-pin
+is the strongest statement about Update 52 alone that is available before the
+rungs run.
+
+**What this does NOT say.** Nothing here has exercised the plug, and a green
+zig sweep afterwards is a self-contained U52 claim (plug-under-U52 against
+bare-metal-under-U52) that needs no attribution. Only a RED needs the split,
+and the split is available: the u51 emitter is one `git show` away and can be
+dropped into a second sandbox to A/B the rung that failed.
+
 ## Compiler-only sweep, 2026-08-27 21:52Z -- 14/14 green, and superseded on arrival
 
 Tree `53979eeb`: the u51 pin plus COMPILER-30 and findings 57, 58, 59.
