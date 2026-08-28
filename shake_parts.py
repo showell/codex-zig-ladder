@@ -178,6 +178,48 @@ def escape(t):
     return ''.join(out)
 
 
+# Where a prelude name is NOT a reference: line comments, string literals,
+# zig's `\\` multiline-string lines, and character literals. ONE definition,
+# shared by the generator that decides what becomes a `ShakeUse` and by the
+# checker that asks what the shaken output actually references -- if those two
+# disagreed about where code is, the gate would be checking a different program
+# than the one that ships.
+NONCODE = (r'//[^\n]*'                 # line comment
+           r'|\\\\[^\n]*'              # zig multiline-string line
+           r'|"(?:\\.|[^"\\])*"'       # string literal
+           r"|'(?:\\.|[^'\\])*'")      # character literal
+NONCODE_RE = re.compile(NONCODE)
+
+
+def skip_at(text, i):
+    """If a non-code token starts at `i`, return its end index; else None."""
+    m = NONCODE_RE.match(text, i)
+    return m.end() if m else None
+
+
+def names_in_code(text, names):
+    r"""The subset of `names` appearing in CODE position in `text`.
+
+    Independent of the closure: it re-derives usage from finished text rather
+    than from the edges the table recorded, which is what lets it catch an edge
+    the table is missing. One regex pass, because this runs over megabytes --
+    the non-code alternatives come FIRST, so a name inside a comment or a
+    string is consumed as part of that token and never offered as a match.
+
+    `\b` does the prefix work: `_` is a word character, so `\bcx_print\b`
+    cannot match inside `cx_print_line`.
+    """
+    pat = re.compile(NONCODE + r'|\b(?:'
+                     + '|'.join(re.escape(n) for n in names) + r')\b')
+    found = set()
+    for m in pat.finditer(text):
+        t = m.group(0)
+        if NONCODE_RE.fullmatch(t):
+            continue
+        found.add(t)
+    return found
+
+
 def fragment(text, names, kind):
     """Split one part's text into Lit/Use fragments.
 
@@ -196,17 +238,9 @@ def fragment(text, names, kind):
             buf.clear()
     while i < n:
         c = text[i]
-        if c == '/' and text[i:i+2] == '//':          # comment to end of line
-            j = text.find('\n', i)
-            j = n if j < 0 else j
-            buf.append(text[i:j]); i = j; continue
-        if c == '"':                                   # string literal
-            j = i + 1
-            while j < n:
-                if text[j] == '\\': j += 2; continue
-                if text[j] == '"': j += 1; break
-                j += 1
-            buf.append(text[i:j]); i = j; continue
+        j = skip_at(text, i)
+        if j is not None:                              # comment, string, char
+            buf.append(text[i:j]); i = max(j, i + 1); continue
         matched = None
         for nm in order:
             if not text.startswith(nm, i):
@@ -374,11 +408,155 @@ def splice(emitter, parts, names, kind):
     return '\n'.join(out)
 
 
+def frag_needs(parts, names, kind):
+    """Edges as the SHIPPED emitter computes them: from the fragment lists.
+
+    `needs_of` derives edges by scanning a part's whole text, which is not what
+    runs -- the emitter walks `ShakeUse` fragments. Simulating the shake with a
+    different edge rule than the one that ships would check the wrong thing.
+    """
+    out = {}
+    for nm, text in parts:
+        if not nm:
+            continue
+        seen = []
+        for k, v in fragment(text, names, kind):
+            if k == 'Use' and v != nm and v not in seen:
+                seen.append(v)
+        out[nm] = seen
+    return out
+
+
+def check_corpus(parts, joined, files, suppress=None):
+    """Shake each emitted program and prove nothing it still references is gone.
+
+    THIS IS THE GATE THE ALL-ROOTS IDENTITY CHECK CANNOT BE. With every part
+    name a root, reachability completes before any edge matters, so that check
+    proves the cut and the concatenation and nothing else -- both edge bugs
+    found so far walked straight through it. Here the roots are the real ones,
+    so a missing edge actually drops a part.
+
+    IT ASKS ABOUT DECLARATIONS, NOT PART NAMES, and the difference is the whole
+    value of it. A first version compared referenced PART NAMES against the
+    kept part names, and was blind to the orphan bug by construction:
+    `cx_heap_base` had no part, so it was never in the vocabulary being looked
+    for. Re-run against the old 93-part cut, it reported 14 clean. The question
+    that matters is zig's own -- is anything referenced here not declared
+    here -- so `declared` is read back out of the finished text and the
+    vocabulary is every declaration the FULL prelude has.
+
+    The roots are crude substring matches because that is what
+    `zig-prelude-roots` does; simulating a smarter rule would check something
+    that does not ship.
+    """
+    names = [n for n, _ in parts if n]
+    vocab = DECL.findall(joined)          # every declaration, part or not
+    kind = decl_kinds(parts)
+    needs = frag_needs(parts, names, kind)
+    text_of = dict(parts)
+
+    ok, bad, skipped, tot_kept, tot_all = 0, 0, 0, 0, 0
+    worst = {}
+    for f in files:
+        body = f.read_text(errors='replace')
+        cut = body.find(joined)
+        if cut < 0:
+            print(f'  {f.name}: prelude not found verbatim -- SKIPPED')
+            skipped += 1
+            continue
+        program = body[:cut] + body[cut + len(joined):]
+        roots = [n for n in names if n in program]
+        keep = set(closure(needs, roots))
+        kept_text = ''.join(text_of[n] for n in names
+                            if n in keep and n != suppress)
+        shaken = program + kept_text
+        declared = set(DECL.findall(kept_text))
+        missing = sorted(names_in_code(shaken, vocab) - declared)
+        tot_kept += len(keep)
+        tot_all += len(names)
+        if missing:
+            bad += 1
+            for m in missing:
+                worst[m] = worst.get(m, 0) + 1
+            if bad <= 5:
+                print(f'  {f.name}: UNDECLARED after shaking -- {", ".join(missing)}')
+        else:
+            ok += 1
+    if bad > 5:
+        print(f'  ... and {bad - 5} more')
+    if worst:
+        top = sorted(worst.items(), key=lambda kv: -kv[1])
+        print('  most often undeclared: '
+              + ', '.join(f'{n} ({c})' for n, c in top[:6]))
+    pct = 100 * tot_kept // max(tot_all, 1)
+    print(f'  CORPUS EDGE GATE: {ok} clean, {bad} broken, {skipped} skipped   '
+          f'(mean {pct}% of {len(names)} parts kept)')
+    return 1 if bad or (ok == 0 and skipped) else 0
+
+
+def prove_gate(parts, joined, files):
+    """Prove the corpus gate can FAIL, by breaking the prelude on purpose.
+
+    A gate nobody has seen fail is a claim, not an instrument, and this one has
+    already been wrong once in exactly that way: its first version compared
+    part names and reported 14 clean on a cut that would not have compiled.
+
+    THE VICTIM IS CHOSEN TO EXERCISE THE CLOSURE. The obvious pick -- most
+    incoming edges -- is `std`, which every program names directly, so
+    suppressing it proves only that the scanner works; reachability never
+    enters into it. The interesting part is one no program mentions, that
+    survives ONLY because something else reached it, which is exactly the class
+    the orphan bug hit. So the victim is the most-depended-on part that is
+    never a root in any of these programs.
+    """
+    names = [n for n, _ in parts if n]
+    needs = frag_needs(parts, names, decl_kinds(parts))
+    incoming = {n: 0 for n in names}
+    for dsts in needs.values():
+        for d in dsts:
+            if d in incoming:
+                incoming[d] += 1
+
+    rooted = set()
+    for f in files:
+        body = f.read_text(errors='replace')
+        cut = body.find(joined)
+        if cut < 0:
+            continue
+        program = body[:cut] + body[cut + len(joined):]
+        rooted |= {n for n in names if n in program}
+    indirect = [n for n in names if n not in rooted and incoming[n] > 0]
+    if not indirect:
+        print('  PROVE-GATE FAIL: every part is a root somewhere, so no victim '
+              'here would exercise the closure')
+        return 1
+    victim = max(indirect, key=lambda n: (incoming[n], n))
+    print(f'  victim: {victim} -- {incoming[victim]} incoming edges, named by no '
+          f'program, so it survives only through the closure')
+
+    print('  intact:')
+    if check_corpus(parts, joined, files) != 0:
+        print('  PROVE-GATE FAIL: the gate is red before anything was broken')
+        return 1
+    print(f'  with {victim} suppressed:')
+    rc = check_corpus(parts, joined, files, suppress=victim)
+    if rc == 0:
+        print(f'  PROVE-GATE FAIL: {victim} was removed and the gate stayed green')
+        return 1
+    print('  PROVE-GATE PASS: the gate is green when intact and red when broken')
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('emitter', help='path to ZigEmitter.codex')
     ap.add_argument('--against', help='an emitted .zig to gate the cut against')
     ap.add_argument('--shake', help='an emitted .zig to shake, reporting what survives')
+    ap.add_argument('--prove-gate', dest='prove_gate', nargs='+',
+                    help='emitted .zig files: prove --check-corpus can fail')
+    ap.add_argument('--check-corpus', dest='check_corpus', nargs='+',
+                    help='emitted .zig files: shake each and prove nothing '
+                         'it still references was dropped')
     ap.add_argument('--gen-frags', dest='gen_frags', help='write generated Frag lists here')
     ap.add_argument('--splice', help='write a restructured ZigEmitter.codex here')
     a = ap.parse_args()
@@ -433,6 +611,13 @@ def main():
         pathlib.Path(a.gen_frags).write_text('\n\n'.join(lines) + '\n')
         print(f'  wrote {a.gen_frags}')
         return 0
+
+    if a.prove_gate:
+        return prove_gate(parts, joined, [pathlib.Path(x) for x in a.prove_gate])
+
+    if a.check_corpus:
+        return check_corpus(parts, joined,
+                            [pathlib.Path(x) for x in a.check_corpus])
 
     if a.shake:
         needs = needs_of(parts)
