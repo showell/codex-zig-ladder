@@ -1,0 +1,5 @@
+# key d93cde1c0eff70da
+haystack chars : 1032192
+needles        : 20
+scanned chars  : 20643840
+hits (expect 0): 0
