@@ -323,45 +323,6 @@ with tree shaking.
 nothing on disk records it, which is why a cold reader could not verify our
 central table. Raised by the cold agent as its IF. Tooling, not tree shaking.
 
-## NEXT: TREE SHAKING -- SHOW IT IS FEASIBLE
-
-**A BASELINE REBANK IS RUNNING ON THE TREE-SHAKING BASE** (launched
-2026-08-28 15:40Z, detached, `ppid=1`, survives session exit). Sandbox
-`~/runs/20260828T152105Z-treeshake-base/`, log
-`ladder/logs/rebank-20260828-154013.log`.
-
-**Why it is prerequisite and not nice-to-have:** the tree-shaking plan's own
-gate is "thread the channel, ignore its result, require byte-identity against
-the bank for all 589 corpus programs and the rungs". The base (U52 + PR 95 +
-PR 96) has **no recorded truths at all**, so that gate had nothing to compare
-against. This run records them, and the channel refactor then starts with its
-oracle already in hand.
-
-**DO NOT BANK WHAT IT PRODUCES.** `seed_identity` names this tree `u52`,
-because our two PRs move compiler SOURCE and not the seed -- so
-`bank_truth.py` would write `truth/u52/` and claim Update 52 is green when
-plain Update 52 is 6/14 and cannot be transpiled at all. `rebank_all.sh` only
-RECORDS (`ast/*.truth`); banking is a separate deliberate act and must not
-happen here. Recorded truths are the baseline; the bank stays at u51.
-
-**Expect 14/14.** Anything less is real news: it would mean the combination
-breaks something neither PR broke alone.
-
-### Owed when Steve is back
-
-1. **THE UPDATE 52 ANOMALIES ISSUE, carrying finding 66.** Not written yet.
-   Finding 66 is the silent wrong answer -- recursive-sum `==` answers by
-   IDENTITY in the zig plug where bare metal now answers by CONTENTS, and it
-   compiles, runs and prints a plausible answer. Goes as an ISSUE, not a PR
-   (Steve's call): closing it means giving the emitter a structural path with
-   a synthesised recursive helper, mirroring what `X86_64.codex` gained, which
-   is real work. Include the coverage fact that frames it -- **zero `__eq_`
-   symbols in any of the twelve rung subjects, and zero CDX2052 anywhere**, so
-   both of Update 52's headline compiler changes are invisible to our whole
-   rung population. That is the honest reason nothing moved.
-2. **Then the upward channel**, on `zig-tree-shaking`, with the baseline this
-   run produced.
-
 ## PR 95 IS LANDED (internally), PR 96 IS IN REVIEW
 
 **PR 95 absorbed near-verbatim, 2026-08-28**: their main change 20500
@@ -399,88 +360,42 @@ upstream and DROP our four cherry-picked PR 95 commits, which will then be
 duplicates (git will usually drop them by patch-id, but check rather than
 assume). Do not edit `prelude-last` -- it is absorbed and closed.
 
-## THE SHAKE IS ON AND THE WHOLE CORPUS AGREES. Objective: COMPLETENESS. What is left is a PR and one finding.
+## OUTBOUND: PR 98 IS SENT. Objective: OUTBOUND. Waiting.
 
-**Where the code is.** Ladder `master`. Emitter: branch `zig-tree-shaking` @
-`74b5de94`, worktree `~/showell_repos/cobblestone-treeshake`, **shake ON**. Do
-not touch `prelude-last` (PR 95 under absorption) or
-`lowering-duplicate-noexpect-arms` (PR 96 open).
+**[PR 98](https://github.com/damiant3/Cobblestone/pull/98), branch
+`zig-tree-shaking`, tip `16751b22`, worktree
+`~/showell_repos/cobblestone-treeshake`. Tag `u52-shake-578` carries every run
+and number.** The tree-shaken prelude AND finding 67 in one PR, because both
+repair `build/check-zig-prelude-surface.ps1` for unrelated reasons -- Steve's
+call: any overlap, one PR.
 
-**THE FULL CORPUS PASSES, run `20260828T192913Z-shake-on-corpus`.** Natives
-built from the shaken emitter, 607 programs transpiled through them, 578
-emitted:
+**It STACKS and the PR says so.** Base is `968d4600` plus PR 95's four commits
+and PR 96's two; the new work is the last eight, `ff27e0e7..16751b22`. **If
+either lands CHANGED, re-cut this branch rather than editing the sent ones.**
 
-    EMITTED GATE     578 clean, 0 broken     nothing referenced is undeclared
-    SUB-SELECTION    578 ok,    0 not        each prelude is the whole, in
-                                             table order, minus parts
+    build/check-zig-prelude-surface.ps1   +125   both changes land here
+    codex/foreword/core/Shake.codex       +136   the algorithm, target-agnostic
+    codex/plugs/zig/ZigEmitter.codex      +674   generated parts table + reserved list
+    codex/compiler/IR/Lowering.codex        -3   PR 96's, carried
 
-**And the simulation was exactly right.** `codexir.zig` kept 79 of 96 parts at
-32,533 prelude bytes -- the same two numbers `shake_parts.py` predicted before
-any build. The 643-byte difference from the raw region size is the banner
-block, identical either way.
+**What was said that we may be asked about.** That `Foreword chapter Shake` is
+new CORE-LIBRARY surface with one consumer, and we offered to move it under
+the plug if they would rather; that we do not run the non-zig plugs; and that
+this is NOT a size or compile-time win -- zig already dead-strips and the
+shaken `codexir` binary is 4,096 bytes LARGER. Better said by us than
+discovered by them.
 
-**Reduction, measured over 578 real shaken programs:**
+**Finding 67 stays LIVE in the register until absorbed**, marked as sent here.
+Its two probes are back in the tier set and green.
 
-    prelude kept   min 25%   median 43%   max 65%
-    reduction      best 75%  median 57%   worst 35%
-    smallest quartile by program size (145 programs): 61% smaller
+**Verification behind it, all in the tag:**
 
-The old "58% for a small program" note was right after all; it just had
-nothing behind it until now. **Still not a compile-time argument** -- zig
-already dead-strips, and the shaken `codexir` native is 4,096 bytes LARGER
-than the unshaken one. The case remains legibility and un-blinding the corpus
-oracle.
+    corpus, shake on      578 clean / 0 broken, 578 sub-selections / 0 not
+    byte-neutrality       all 578 corpus .zig byte-identical across the fix
+    restructure inert     codexir.zig byte-identical, md5 b77431b7
+    tier set, both arms   27 tiers: green 20, noted 7, RED 0 -- SET GREEN
 
-**FIVE GATES, AND EACH KNOWS WHAT IT CANNOT SEE.**
-
-    DECLARATION    every top-level decl in the joined text is a part name
-    IDENTITY       parts concatenated equal a REAL emitted prelude
-    CORPUS EDGE    --check-corpus, PREDICTS from an unshaken emit
-    EMITTED        --check-emitted, reads FINISHED output, shaken or not
-    TABLE          --verify-table, the shipped table is what the generator makes
-
-`--check-emitted` exists because `--check-corpus` needs the full prelude
-verbatim to simulate, so with the shake ON it would have skipped all 578 and
-printed nothing alarming. `--prove-gate` keeps the corpus gate honest;
-`--check-emitted` was proved the same way, by deleting `fn cx_new` from a real
-shaken file and requiring it to be named.
-
-The corpus gate's one blind spot is written down: it catches "referenced but
-not declared" and cannot catch "required but neither referenced nor declared".
-Checked -- no part is a name zig resolves for itself (`main`, `_start`,
-`panic`, `std_options`, `os`, `root`, `log`); `zig-main` emits `main` and
-`cx_entry` into the PROGRAM region, so the shake cannot reach them.
-
-**WHAT IS LEFT.**
-
-1. **FINDING 67, and it is ours to fix.** `zig-prelude-decls` is documented as
-   "the UNION over the whole prelude" and covers 23 of the 96 declarations;
-   all 74 function names are absent, so a program declaring `cx-print`,
-   `cx-new` or `cx-concat` does not compile. Reproduced both arms. **The fix is
-   measured byte-neutral: zero of the 578 corpus programs declare any of the
-   74**, so a byte-identity sweep can verify it. Add the names, teach
-   `check-zig-prelude-surface.ps1` to derive `fn NAME`, re-run the sweep,
-   re-include `probe-prelude-collide` in the tier set.
-2. **Port `shake_subselection.py` to `check-zig-prelude-surface.ps1`.** The
-   algorithm is validated on all 578 -- each emitted prelude must be a
-   sub-selection of one known whole in table order, which is STRONGER than the
-   "they must all be identical" it replaces, since that tests neither ordering
-   nor completeness. The surface then comes from the whole, keeping
-   `zig-prelude-decls` a union. The port is mechanical.
-3. **THE PR.** Everything above is one coherent change to the zig plug and it
-   has never been sent. Needs a `plugs-backlog.md` row and a `Ladder:` tag
-   naming this chain.
-4. **The accumulator, when the upward channel lands.** Steve's design: make the
-   helper the only spelling of a builtin so recording cannot be forgotten. The
-   surface is **21 hand-written sites, 14 names** -- not the 246 first claimed,
-   which counted the prelude's own text and the reserved list. `check_builtin_
-   sites.py` is the ratchet that makes it by construction; it refuses a 22nd
-   site today. Keep the scan afterwards as a gate asserting accumulator-roots
-   is a superset of scan-roots. **The fragment table stays load-bearing either
-   way** -- 30 of `lex.zig`'s 51 kept parts are reached only through
-   prelude-internal edges, which no accumulator at a call site would ever see.
-
-## NEXT AFTER THE SHAKER PR, IN THIS ORDER (Steve's call 2026-08-28)
+## NEXT, IN THIS ORDER (Steve's call 2026-08-28), NOW THAT PR 98 IS SENT
 
 **1. POINT codex-zig-transpiler AT THE TREE-SHAKING BRANCH. Objective:
 ERGONOMICS. BOX.** A smaller fixed point and a much more readable
@@ -527,24 +442,41 @@ the transpiler twice** -- once against the shaker and again after the Tup
 prune. Keeping the two exercises separate is worth the box time; do not
 quietly merge them to save a build.
 
-## NEXT: THE ZIG EMITTER'S UPWARD CHANNEL, FOR A PRECISE TREE SHAKER
+## THE ZIG EMITTER'S UPWARD CHANNEL. Objective: COMPLETENESS. Not started.
 
-**Steve's call. The channel is the deliverable; shaking is the concrete goal
-that makes it real.** See the memory `project_zig_emitter_upward_channel`.
+**Steve's call, and it OUTLIVED the reason it was raised.** It was proposed as
+the way to get precise roots for tree shaking. Shaking shipped without it (PR
+98) and **the channel is NOT needed for roots** -- crude and code-position
+roots are identical on every program tried, structurally so: a Codex text
+literal is emitted as CCE hex escapes, so a program's own strings cannot carry
+a prelude name in a form the scan can see. See the memory
+`project_zig_emitter_upward_channel` for the other reasons, which stand.
 
-**THE BASE IS BUILT, PUSHED AND VERIFIED: branch `zig-tree-shaking` @
-`eb55cfc3`, worktree `~/showell_repos/cobblestone-treeshake`, on origin.** Six
-commits on `968d4600`: PR 95's four (prelude-last) then PR 96's two,
-cherry-picked. The two touch disjoint files, so it composed linearly with no
-conflicts. **Verified current-and-not-broken:** `native_build.sh` exit=0, zero
-errors, `codexir` 25.6 MB; and PR 95 is confirmed live in the output --
-emitted `codexir.zig` opens on the program, banner at 17003, `cx_new` at 17605
-of 17831 lines.
+`emit-zig-expr : IRExpr, ZigCtx, Integer -> Text` returns text and nothing
+else; `ZigCtx`'s 11 fields thread strictly DOWN. An accumulator means changing
+that return type through **152 Text-returning functions**. That is the cost,
+and it is why the scan exists.
 
-Keep it clean: **do not touch `prelude-last` (PR 95 is under absorption) or
-`lowering-duplicate-noexpect-arms` (PR 96 is open)**. Work happens on
-`zig-tree-shaking`. If either PR is absorbed with changes, rebase the base
-rather than editing the sent branches.
+**THE HAND-WRITTEN SURFACE IS 21 SITES / 14 NAMES, not the 246 first claimed**
+-- that count had swept in the prelude's own text and the reserved list.
+`check_builtin_sites.py` buckets them and is a RATCHET: it refuses a 22nd
+hand-written site (verified, 21 exits 0 and a synthetic 22nd exits 1), so the
+surface can shrink toward zero and cannot silently grow.
+
+Steve's design, and it is the right one: make a helper the ONLY spelling of a
+builtin, taking the accumulator, so recording cannot be forgotten.
+`ZigBuiltinEmitter.emit` is 54 entries of one uniform shape and is mechanical;
+the 21 inline sites cluster (6 x cx_ll_empty, 3 x cx_new, 4 in one
+ZigNameEntry table).
+
+**Keep the scan afterwards, as a GATE asserting accumulator-roots is a
+superset of scan-roots.** That turns the 21-site completeness argument from
+something argued into something checked, and it is nearly free.
+
+**AND THE FRAGMENT TABLE STAYS LOAD-BEARING EITHER WAY.** An accumulator gives
+ROOTS, not the closure: 30 of `lex.zig`'s 51 kept parts are reached only
+through prelude-internal edges, which no accumulator at a call site would ever
+see.
 
 ## THE U52 CEREMONY IS HALF DONE, AND IT FOUND SOMETHING. Objective: DUE_DILIGENCE -> OUTBOUND. KEYBOARD, then BOX.
 

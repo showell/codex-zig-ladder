@@ -1190,7 +1190,9 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
-## 67. OURS. `zig-prelude-decls` is documented as the union over the whole prelude and covers 23 of its 96 declarations, so a program declaring `cx-print` will not compile
+## 67. OURS. `zig-prelude-decls` is documented as the union over the whole prelude and covers 22 of its 96 declarations, so a program declaring `cx-print` will not compile
+
+**FIXED AND SENT: [PR 98](https://github.com/damiant3/Cobblestone/pull/98), branch `zig-tree-shaking`, backlog row `plugs-backlog.md` 2.02, `Ladder: u52-shake-578`.** Both probes are back in the tier set and green. Stays live here until absorbed.
 
 **Reproduced on both arms.** `findings/probe-prelude-collide.codex`, run
 `20260828T192913Z-shake-on-corpus`:
