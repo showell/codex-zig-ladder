@@ -1,0 +1,45 @@
+CALIBRATION against real plug output (generated/arith.zig, 8595322 -> daf36cf)
+  before 40941  after 41661  delta 720  banner 720
+  transform reproduces the plug byte for byte: YES
+
+GRADING 589 emitted programs, prelude-first vs prelude-last
+
+  25/589  built 9  ran 9  identical 9
+  50/589  built 21  ran 21  identical 21
+  75/589  built 28  ran 28  identical 28
+  100/589  built 39  ran 39  identical 39
+  125/589  built 41  ran 41  identical 41
+  150/589  built 44  ran 44  identical 44
+  175/589  built 53  ran 53  identical 53
+  200/589  built 55  ran 55  identical 55
+  225/589  built 60  ran 60  identical 60
+  250/589  built 63  ran 63  identical 63
+  275/589  built 77  ran 77  identical 77
+  300/589  built 85  ran 85  identical 85
+  325/589  built 101  ran 101  identical 98
+  350/589  built 108  ran 108  identical 105
+  375/589  built 114  ran 114  identical 111
+  400/589  built 119  ran 119  identical 116
+  425/589  built 131  ran 131  identical 128
+  450/589  built 142  ran 142  identical 139
+  475/589  built 151  ran 151  identical 148
+  500/589  built 162  ran 162  identical 158
+  525/589  built 175  ran 175  identical 171
+  550/589  built 190  ran 190  identical 186
+  575/589  built 197  ran 197  identical 193
+
+==================================================================
+  programs graded          589
+  build outcome agrees     589
+  of which built           202
+  zig diagnostics agree    589
+  ran both ways            202
+  output byte-identical    198
+  identical but for source positions in a panic backtrace  4
+  disagreements            0
+
+GRADING the 3 emitted programs in ast/ -- the compiler transpiled through this plug
+
+  zigemit     445,173 bytes  built both ways; exit 0, 42,547 bytes on stderr; output byte-identical: YES
+  codexir   1,924,806 bytes  built both ways; exit 0, 18,350 bytes on stderr; output byte-identical: YES
+  codexzig  2,276,581 bytes  built both ways; exit 0, 41,596 bytes on stderr; output byte-identical: YES
