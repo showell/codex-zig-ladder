@@ -1,0 +1,81 @@
+Chapter: ProbeRecursiveEq
+  cites Foreword chapter Console
+
+ Structural equality on a SELF-RECURSIVE sum, which Update 52 turned from a
+ compile-time refusal into working code.
+
+ Before Update 52 the x86 back end answered `==` on a sum containing itself
+ with `cdx-recursive-structural-eq`: "This backend compares a sum by inlining
+ a field compare", and inlining has no correct bound, so any depth limit
+ compares only part of the value. Update 52 replaced the refusal with a
+ synthesised `__eq_<Sum>` helper per recursive sum the program actually
+ compares, called rather than inlined, so the recursion terminates at runtime
+ on the data.
+
+ That is why no tier covered this until now: it could not be written down. A
+ program asking the question did not compile.
+
+ The zig plug has no structural path at all. `emit-zig-binary`'s IrEq arm
+ (ZigEmitter.codex) special-cases Text and otherwise emits raw zig `==`. In
+ that plug every record is a POINTER -- finding 10, all of them, not just the
+ ones spelled `mutable` -- so `==` on a composite is either identity or a zig
+ compile error, depending on the representation the sum got. Bare metal now
+ compares CONTENTS. Whichever way the zig arm answers, this file is where the
+ two stop agreeing.
+
+ EVERY VALUE IS BUILT THROUGH A FUNCTION, and that is not decoration. Tier 9
+ learned it the expensive way: a one-line wrapper let the inliner collapse two
+ constructions into `cx_address_of(c) == cx_address_of(c)`, a tautology that
+ would have passed on any arm including a broken one. Two trees written as
+ literals side by side invite the same folding, and a constant-folded `True`
+ answers the question without ever running the comparison.
+
+ The different-shape rows are the control. An arm comparing pointers answers
+ "no" to every row here, including the ones that should be yes -- so a file
+ with only equal-shape rows could not tell a pointer comparison from a broken
+ structural one. The self-comparison row is the second control: it is the one
+ row a pointer comparison gets RIGHT, so an arm answering yes/no/yes has been
+ caught doing identity rather than structure.
+
+ Expected on bare metal under Update 52: yes, no, yes, yes, no.
+
+Section: Types
+
+  Tree =
+    | Leaf (Integer)
+    | Fork (Tree) (Tree)
+
+Section: Instrument
+
+  show-yn : Boolean -> Text
+  show-yn (b) = if b then "yes" else "no"
+
+Section: Shapes
+
+  small : Integer -> Tree
+  small (n) = Fork (Leaf n) (Leaf (n + 1))
+
+  deep : Integer -> Tree
+  deep (n) = Fork (small n) (Fork (Leaf n) (small (n + 2)))
+
+Section: Main
+
+  opening : [Console] Nothing = act
+   print-line-uni "-- one level of recursion --"
+   let a = small 1
+   in let b = small 1
+   in let c = small 9
+   in act
+     print-line-uni ("equal shape, two objects   : " & show-yn (a == b))
+     print-line-uni ("different shape            : " & show-yn (a == c))
+     print-line-uni ("a value compared to itself : " & show-yn (a == a))
+   end
+   print-line-uni "-- nested, so a depth-one compare cannot pass by luck --"
+   let d = deep 3
+   in let e = deep 3
+   in let f = deep 4
+   in act
+     print-line-uni ("equal shape, two objects   : " & show-yn (d == e))
+     print-line-uni ("different shape            : " & show-yn (d == f))
+   end
+  end
