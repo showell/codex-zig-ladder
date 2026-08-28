@@ -30,7 +30,18 @@ CHUNK = re.compile(r'^\s*&?\s*"(.*)"\s*$')
 # One zig top-level declaration, as the prelude writes them. `fn Cx...` covers
 # the comptime type constructors (CxFn1, CxList); `var`/`const` cover the heap
 # and table globals.
-DECL = re.compile(r'^(?:pub\s+)?(?:fn|const|var)\s+([A-Za-z_][A-Za-z0-9_]*)')
+#
+# ANCHORED AT COLUMN 0 AND SEARCHED, NOT MATCHED AT THE CHUNK HEAD. The first
+# rule here asked whether a chunk BEGAN with a declaration, and three of 123 do
+# not: they carry their explanatory comment block and the declaration in one
+# chunk, so the chunk read as a pure comment and welded onto the part BELOW it.
+# `cx_heap_base`, `cx_utf8_to_cce` and `cx_vtag` were the casualties -- declared
+# inside a part that nothing calling them reaches, so the shake kept every
+# caller and dropped the declaration. 468 of 589 corpus programs would have
+# failed with `use of undeclared identifier`, and no fixture could see it.
+# Column 0 is what makes the search safe: zig indents everything inside a body,
+# and a comment line begins with `//`.
+DECL = re.compile(r'(?m)^(?:pub\s+)?(?:fn|const|var)\s+([A-Za-z_][A-Za-z0-9_]*)')
 
 
 def unescape(s):
@@ -69,20 +80,52 @@ def read_chunks(emitter):
 def group(chunks):
     """Parts: (name, text). A comment chunk rides with the decl BELOW it.
 
+    A chunk is named by the declaration it CONTAINS, wherever in the chunk that
+    declaration starts -- three chunks put a comment block and a declaration in
+    one string, and reading only the chunk's first line lost all three. No
+    chunk holds two top-level declarations, checked here rather than assumed,
+    because a chunk that did would need splitting and silently naming it after
+    the first is exactly the failure this file exists to prevent.
+
     Trailing comment chunks with no decl after them become a part named '' --
     kept unconditionally, because there is nothing to reach them by.
     """
     parts, pending = [], []
     for c in chunks:
-        m = DECL.match(c.lstrip())
-        if m:
-            parts.append((m.group(1), ''.join(pending) + c))
+        found = DECL.findall(c)
+        if len(found) > 1:
+            raise SystemExit(
+                f'shake_parts: one chunk declares {len(found)} top-level names '
+                f'{found}; a part is one declaration, so this chunk must be split '
+                f'in the prelude source before it can be shaken.')
+        if found:
+            parts.append((found[0], ''.join(pending) + c))
             pending = []
         else:
             pending.append(c)
     if pending:
         parts.append(('', ''.join(pending)))
     return parts
+
+
+def check_every_decl_is_a_part(parts, joined):
+    """Every top-level declaration in the prelude must BE a part name.
+
+    The shake drops a part by name. A declaration that no part is named after
+    cannot be kept on its own account -- it survives only when whichever part
+    swallowed it happens to be kept, which is a coincidence, not a dependency.
+    This is the gate that catches it, and it is the difference between an
+    unreachable name and a broken build.
+    """
+    names = {n for n, _ in parts if n}
+    orphans = [d for d in DECL.findall(joined) if d not in names]
+    if orphans:
+        raise SystemExit(
+            'shake_parts: DECLARATION GATE FAIL -- the prelude declares '
+            f'{", ".join(orphans)} but no part is named after them, so the shake '
+            'can drop the declaration while keeping its callers. Fix the cut, '
+            'not the gate.')
+    return len(names)
 
 
 def needs_of(parts):
@@ -354,10 +397,13 @@ def main():
             'ZigEmitter.codex`), not against generator output.')
     parts = group(chunks)
     joined = ''.join(t for _, t in parts)
+    check_every_decl_is_a_part(parts, joined)
 
     named = [n for n, _ in parts if n]
     print(f'chunks {len(chunks)}   parts {len(parts)}   named {len(named)}   '
           f'anonymous {len(parts) - len(named)}   bytes {len(joined):,}')
+    print(f'  DECLARATION GATE: PASS -- all {len(DECL.findall(joined))} top-level '
+          f'declarations are part names')
 
     if a.splice:
         names = [n for n, _ in parts if n]
