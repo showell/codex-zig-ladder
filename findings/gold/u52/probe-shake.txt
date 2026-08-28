@@ -1,0 +1,10 @@
+# key 0ae9b04618a7c55a
+1 chain      : kept [A B C] unmatched [(none)]
+2 diamond   : kept [A B C D] unmatched [(none)]
+3 cycle     : kept [A B] unmatched [(none)]
+4 island    : kept [A B] unmatched [(none)]
+5 no roots  : kept [(none)] unmatched [(none)]
+6 unknown   : kept [(none)] unmatched [nope]
+7 identity  : kept [A B] unmatched [(none)]
+8 order kept: kept [X Y Z] unmatched [(none)]
+9 dup roots : kept [A B] unmatched [(none)]

@@ -54,6 +54,7 @@ PROBES = [
     'probe-char-literal',
     'probe-approx-eq',
     'probe-recursive-eq',   # finding 66; the path Update 52 opened
+    'probe-shake',          # the tree-shaking closure, target-agnostic
 ]
 # Zig-only refusal probes: the property IS a plug-arm refusal, and bare
 # metal has no oracle for it -- upstream corrupts silently in the same
