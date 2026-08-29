@@ -39,6 +39,11 @@ JUSTIFICATIONS.md. This file is the thread, not the record.
   of `truth/u53`. Verified against every release seed 42-53; the delta is one
   row.
 
+- Retired the `cobblestone-treeshake` worktree -- PR 98 landed, so its
+  purpose is served. Branch `zig-tree-shaking` kept, local and on origin, as
+  the record. `cobblestone-pin` moved off `16751b22` to `58b08c38`, so the
+  transpiler's `$COBBLESTONE_ROOT` is the release we are banking.
+
 ## Steps (continued)
 
 - **Step 2, the seed canary: GREEN.** Sandbox
