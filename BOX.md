@@ -35,7 +35,10 @@ be deleted, not kept for completeness.
 ## During
 
 1. Detach with a log, announce the path, watch with a Monitor -- never piped
-   through `head`.
+   through `head`, and **never watch by `pgrep -f` on the job's own command
+   line.** Run from a session shell, the pattern matches the watcher's own
+   argv and the watch waits forever on itself. Watch the LOG or the artifact
+   the job writes, which is the thing you actually care about anyway.
 2. Do not change HEAD, check out, or edit anything in the tree the run is
    reading. Branch surgery waits for the verdict.
 3. Nothing in the codex tree gets run by hand while a sweep is up --
