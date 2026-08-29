@@ -45,7 +45,20 @@ for n in sorted(set(want) | set(now)):
     print(f'  {n:9s} banked {want.get(n)}  here {now.get(n)}  {mark}')
 verdict, _ = cr.bank_describes_this_tree(bank)
 print(f'\nbank_describes_this_tree -> {verdict}')
-print('CONFIRMED: the bank is about a tree it never saw' if verdict == 'same'
-      else 'NOT CONFIRMED: the identity did not survive the move')
+# 'different' is a correct answer, not a malfunction, and this script cannot
+# tell the two apart: it is handed a census and a tree and never learns
+# whether they were meant to match. Cut from the banked refs, 'different'
+# means the fingerprint failed to survive relocation. Cut from anything
+# else, it means the check did its job. Say both and let the caller know
+# which it asked for -- the alternative is a line that names a cause nobody
+# computed, which is the habit this whole mechanism exists to break.
+if verdict == 'same':
+    print('SAME: the bank is about this tree, which it has never seen.')
+    print('  Cut from the banked refs, that is the confirmation.')
+else:
+    print('DIFFERENT: this tree was not built from what the bank records.')
+    print('  Cut from the banked refs, that is a FAILURE -- the identity did')
+    print('  not survive relocation. Cut from any other ref, it is the check')
+    print('  working: compare the refs before reading it either way.')
 sys.exit(0 if verdict == 'same' else 1)
 PY
