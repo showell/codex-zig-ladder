@@ -91,7 +91,39 @@ JUSTIFICATIONS.md. This file is the thread, not the record.
     on itself. `4809bfe` puts that in BOX.md beside the `pkill -f` rule it
     shares a root with.
 
+- **Steps 3-5, the rebank: 14 OF 14 GREEN.** Sandbox
+  `20260829T165939Z-u53-rebank` (ladder `fc208a2`, codex `58b08c38`), log
+  `logs/rebank-20260829-170007.log`. Truth arms 12 units clean, sweep 14/14 in
+  777 s, zero ORACLE DIFF, 43m32s end to end. Update 52 was 6/14 and could not
+  be transpiled at all; this is the release that unblocked the zig arm.
+  - Banked `truth/u53/` (`dedbcb9`), the first bank carrying an `ARMS` file:
+    **agreed 14 of 14**, derived from `ast/<rung>.diff` rather than declared.
+    Presence check: all 14 provenance sidecars stamped `b066ceb5fe8fc9e8`, 12
+    distinct harness shas, one per unit.
+  - `bank_diff u51 -> u53`: **three moved, eleven held.**
+    `ir_to_x86_on_fib`, `ir_to_x86_on_cce`, `passes_to_x86_on_mid` -- but NOT
+    `lir_to_x86` or `passes_to_x86_on_arith`, so a subset of the x86 family and
+    not the whole of it. The canary called this shape from a five-second probe.
+  - Diagnostics census: 3,110 over 5 codes, all known to `check_diags.py`
+    POLICY, zero UNKNOWN. **No POLICY re-pin owed** -- it is keyed by code, not
+    by count.
+  - README banked-against table moved to Update 53 / `B066CEB5`; tagged
+    `u53-14of14`.
+- **codexzig, the ceremony gate: the FIXED POINT HOLDS.** `build.py` on
+  transpiler `master` against `cobblestone-pin @ 58b08c38`, 451.5 s, exit 0;
+  both passes 2,445,785 bytes and byte-identical. Committed as transpiler
+  `91c600d`. Presence check: `generated/PROVENANCE` names the U53 checkout and
+  the 3,064,878-byte seed, and the run took minutes -- a 3 s warm run would
+  have re-checked the Update 52 artifacts and said nothing.
+  - **It overwrote `generated/local/codexzig`, which safari-codex reads.** That
+    slot is gitignored, so it is shared by every branch and a checkout does not
+    switch it. No damage -- safari's newest artifact predated the window -- but
+    the recovery was a hand `cp -p`, which is not a method: it holds safari's
+    size+mtime cache key constant across a transpiler swap. Fixed properly by
+    rebuilding from the branch rather than copying.
+
 ## Not done yet
 
-- Truth arms and the bank (`rebank_all.sh`, ~60 min), then the zig arms,
-  natives, the tier set both arms, and the census.
+- Rebase `zig-plug-real-int-conversions` onto U53 and rebuild codexzig from it,
+  so safari's slot is filled by a build with provenance.
+- The tier set both arms, the corpus census, and the owed outbound PRs.
