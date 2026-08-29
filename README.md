@@ -34,29 +34,36 @@ the operating procedure.
 
 | | |
 |---|---|
-| Seed | `C3181693` (2,917,073 bytes) |
-| Update | 51 (`012a9d2e`, the release `7a6c5682` plus its addendum and the PR 92 emitter repair; the `pin` is the Codex branch this bank was measured on -- see "The checkout") |
+| Seed | `B066CEB5` (3,064,878 bytes) |
+| Update | 53 (`58b08c38`; pin branch `u53-rebank`, length ZERO -- no cherry-picks, because the outbound queue emptied into this release. See "The checkout") |
 | Rungs | **14 of 14 green** |
-| Banked | `truth/u51/`; every bank is kept. u45-u48 were pruned by a `--keep 3` that is retired, and live in git history |
+| Banked | `truth/u53/`; every bank is kept. u45-u48 were pruned by a `--keep 3` that is retired, and live in git history |
 
 This table is the point of the whole arrangement, so it is the first thing on
 the page and it is allowed to be unflattering. A ladder that cannot say which
 seed it agrees with is not evidence about anything.
 
-**IT STILL SAYS UPDATE 51, AND THAT IS DELIBERATE. UPDATE 52 IS A FLAWED
-RELEASE FOR THE ZIG EMITTER AND WAS NOT BANKED.** Its truths were measured and
-are sound -- twelve units, fourteen truths, every one byte-identical to the u51
-bank, each carrying seed `61C81B04` with its harness sha unchanged -- but the
-zig arms came back **6 of 14**, and the green-arms rule of the day said not
-to bank over that.
+**Update 53 is the release that unblocked the zig arm.** Update 52 could not be
+transpiled to zig at all -- its arms came back 6 of 14 and `native_build.sh`
+exited 1 -- so it was never banked, and this table said Update 51 for a week.
+Update 53 sweeps 14 of 14 with zero diffs.
 
-**That rule is retired, and this is the case that retired it.** A truth is a
-bare-metal measurement; the plug's arms cannot reach one, so a red arm was
-never a reason to withhold a good measurement. The cost is on this page: the
-next bank's diff reaches back to u51 across two seeds instead of one, for
-nothing. Every Update is banked now, and what the arms said rides in `ARMS`
-beside `SEED`. What stays gated on green arms is this table and the
-`uNN-14of14` tag -- the claim, not the measurement.
+**Update 52 was skipped, and the rule that skipped it is retired.** Its truths
+were measured and sound (fourteen truths, every one byte-identical to the u51
+bank) but the green-arms rule of the day said not to bank over red arms. A
+truth is a bare-metal measurement and the plug's arms cannot reach one, so a
+red arm was never a reason to withhold a good measurement. The cost is visible
+below: this bank diffs against u51, across two seeds, for nothing. Every Update
+is banked now, and what the arms said rides in `ARMS` beside `SEED`. What stays
+gated on green arms is this table and the `uNN-14of14` tag -- the claim, not
+the measurement.
+
+**Three truths moved from u51 and eleven did not.** `ir_to_x86_on_fib`,
+`ir_to_x86_on_cce` and `passes_to_x86_on_mid` -- but NOT `lir_to_x86` or
+`passes_to_x86_on_arith`, so it is a subset of the x86 family rather than all
+of it. The five-second seed canary predicted this shape before the rebank was
+started: diagnostics byte-identical between the two seeds, the emitted image
+1,552 bytes larger and diverging from byte 9. Front end holds, image moves.
 
 The cause is Update 52's own and it is one defect: COMPILER-30's
 `ErrorTy | NoExpectTy` arm sweep landed on three matches in
