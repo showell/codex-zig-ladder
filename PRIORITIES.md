@@ -311,6 +311,13 @@ Sized by them as one entry, not a campaign.
   tree, so a fresh `--bank` at U53 finally gives a comparand that describes
   itself. Arm A's run is the right measurement to bank.
 - **Finding 68's Update 52 probe**, above.
+- **Derive the seed label from `TechnicalDetails.md`, not the release notes.**
+  Damian said on issue 97 that the digest was published at our pin all along
+  and that the notes are not getting it back; the notes have since named the
+  seed four different ways in four Updates and `seed_identity.py` has needed
+  teaching twice, most recently today. The digest file carries the full 64 hex
+  digits and is in the release commit. Small, and it retires a recurring
+  breakage rather than patching its next instance.
 - **The shaker machinery is retired** (`111bcdc`): `shake_parts.py`,
   `shake_subselection.py`, `postlude_verify.py` deleted -- the first cannot run
   against the shape it produced -- and the `treeshake-base` KEEP sandbox with

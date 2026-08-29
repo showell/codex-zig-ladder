@@ -70,6 +70,15 @@ def update_label(sha):
     than joined. The hash is matched without its closing backtick because
     Update 51 spells it in eight digits and Update 52 in sixteen.
 
+    THE RIGHT FIX IS TO STOP READING THE NOTES. Damian told us on issue 97,
+    2026-08-28, that the digest was published at our pin all along -- it moved
+    to `TechnicalDetails.md`, which is in the release commit -- and that the
+    release notes are not getting it back. That file carries the full 64 hex
+    digits and did so at Update 53's pin too. Four Updates have named the seed
+    four different ways in the notes and this function has needed teaching
+    twice; the digest file has been stable throughout. Moving to it is ours to
+    do and is not done yet.
+
     The word `seed` before the hash is NOT required, and dropping it is what
     Update 53 cost. Its line is "**The proofs, all at the release head
     against `<hash>`:**" -- Update 52's line to the character except that the

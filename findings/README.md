@@ -1477,56 +1477,6 @@ does not matter". The excluded site was two programs, and it took one evening
 to find them. `Desugarer.codex:78` -- `ForExpr`'s `map-list` lambda -- is the
 remaining one, still unmeasured, still excluded, and now on notice.
 
-## 63. OURS, PRE-EXISTING, and NOT BEING FIXED -- finding 60's code was dropped and this is what it exposed. The discard rule checks the wrong SCOPE: `zig-occurs body n` sees the continuation, and zig sees the whole function
-
-**CORRECTED 2026-08-27 after steps 1 and 2. The first version of this entry
-blamed emitter inlining and an `IrApply`, and both halves were wrong.** The
-correction is the finding.
-
-**Step 2 -- where the inlining happens: THE COMPILER, not the emitter.**
-`ident2` is not on the wire at all. `called-twice` lowers to
-
-    (let "a" (list int-default) (name "x" (list int-default))
-     (let "b" (list int-default) (name "x" (list int-default))
-      (apply (apply (name "list-at" ...) (name "a" ...)) (int-lit 0) ...)))
-
-so `let a = ident2 x` is already `let a = x`. **`zig-let-discard` therefore
-sees an `IrName`, not an `IrApply`, and the predicate SHOULD have fired.**
-
-**Why it did not, and this is the actual defect.** The rule is
-`zig-name-is-local ctx n & zig-occurs body n`, and `body` is the let's
-CONTINUATION -- the code after the binding. Here the continuation reads `a`,
-not `x`, so `zig-occurs` answers False and the discard is kept. But `x` is read
-at `const a = x;`, which comes BEFORE the discard. **Zig's "read elsewhere" is
-the whole enclosing function; ours is everything after this point.** The rule
-is right and its scope is wrong.
-
-So this is not a separate finding from 60 after all. It is finding 60's rule
-with a scope that happens to agree with zig's whenever the earlier use is
-absent, which is most of the time.
-
-**Step 1 -- how often it bites: ONCE, in 595 emitted programs.** Scanning
-every emitted `.zig` for `_ = <ident>;` where the identifier is genuinely READ
-elsewhere on the same line (excluding declarations and the discard itself)
-finds four sites in two files. Three are `_ = _ctx2;` in `par-nested`, which
-refuses for an unrelated and pre-existing reason
-(`expected type 'i64', found 'CxFn1(void,i64)'`) and never reaches a discard
-error. The fourth is `roc-list-called-twice`, the port written to probe this.
-
-**So the honest sizing is: one program, and it is one we wrote.** The pattern
-needs an unused binding whose value is a name that was read EARLIER, which the
-depot's own corpus produces nowhere. Roc's aliasing cluster produces it
-readily -- case 20 is exactly that shape -- so it will recur as ports land, but
-it is not blocking anything today.
-
-**What a fix would need**, if it is ever worth doing: the enclosing
-definition's body at the discard site, so the occurrence check can use zig's
-scope instead of the continuation. `emit-zig-def` has it; threading it through
-would touch `ZigCtx`. **That is a bigger change than the defect currently
-justifies**, and the earlier plan -- test the emitted STRING rather than the
-tree -- is now known to be solving the wrong problem, since the node was an
-`IrName` all along.
-
 ## 62. The `is not declared at this site` marker covers TWO causes, and only one of them is finding 59
 
 **REPORTED UPSTREAM: issue 94, "The question we cannot answer from outside" -- this entry is the evidence that a marker string cannot attribute a cause, which is why that section asks for a wire distinction rather than a patch.**
