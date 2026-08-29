@@ -200,104 +200,60 @@ emits for a type the program GENUINELY does not constrain -- `list-test`'s
 `cl-is-empty (cl-nil)`, matrix case g, `\k -> 1`. Any type is correct,
 refusing is honest, and choosing one is a DEFAULTING RULE.
 
-## STANDING DECISION: UPDATE 52 IS A FLAWED RELEASE, AND WE ARE WAITING
+## UPDATE 53 LANDED 2026-08-29, AND THE WAIT IS OVER
 
-**Steve, 2026-08-28.** Update 52 is a **known flawed release with respect to
-the zig emitter** and is recorded as such in `README.md`'s banked-against
-table. It was NOT banked: the truths are sound but the arms came back 6/14, and
-`native_build.sh` exits 1, so Update 52 cannot be transpiled to zig at all.
-**The ladder's honest answer to "which seed do you agree with" is still
-`C3181693` (Update 51).**
+`58b08c38`, seed `B066CEB5FE8FC9E8` (3,064,878 bytes). The ceremony log is
+[U53.log](U53.log); the pin is `u53-rebank` at the release commit, **length
+ZERO**, and the outbound queue emptied into it. What it settled:
 
-**Apart from PR 96, we are NOT hunting Update 52 further. We are waiting for
-the dust to settle.** Damian's agents are on it and will follow up more
-holistically than we can from outside; the ceremony has already told us the two
-headline compiler changes are invisible to our rung population, so more of the
-same probing buys little. What we DO find gets written into an ISSUE, not
-chased into a PR -- unless it is a clear fix we can verify without much compute,
-which is the bar PR 96 met and finding 66 does not.
+- **PR 98 absorbed BYTE-IDENTICALLY.** `ZigEmitter.codex`, `Shake.codex` and
+  `check-zig-prelude-surface.ps1` in U53 are our `zig-tree-shaking` files
+  exactly -- verified by diff, not taken on trust. Row `plugs-backlog.md`
+  2.04. They re-measured rather than carrying our numbers and reproduced
+  **finding 67** independently, crediting it by our register number.
+- **PR 95 shipped publicly here**, row 2.01, with our
+  `MEASURED-prelude-last.log` quoted by name.
+- **PR 96 closed as already-fixed** (their 20398). The U52 duplicate-arm
+  blocker is gone at source; the zig arm is unverified until the rebank runs
+  it.
+- **Finding 66 is COMPILER-34**, every citation verified at head, our zig
+  probe named as the third witness, and `codex/test/deriving-eq-recursive`
+  is now a test in their tree. The Update 52 anomalies ISSUE is therefore
+  DISCHARGED -- issue 97 carried it and was answered.
+- **Update 52 was never banked and now never will be.** The green-arms rule
+  that caused that is retired (`c5547e3`); see README's banked-against
+  section. The consequence we live with is one rebank's worth: u53's bank
+  diffs against u51, two seeds back.
 
-**What that leaves owed, and it is small:** the Update 52 anomalies ISSUE,
-carrying finding 66 (recursive-sum equality is a silent wrong answer) and
-anything else worth naming. Then re-bank at whichever of Update 52-plus-PR-96
-or Update 53 arrives first.
+**Retire on rebase, all three fully landed:** `prelude-last`,
+`zig-tree-shaking`, `lowering-duplicate-noexpect-arms`.
 
-**Not owed, explicitly retired:** a u51 diagnostics baseline (Steve: not worth
-the compute -- `diags/u52.txt` is the first entry of the series and Update 53
-gets the first real diff), the Roc ports, and the full tier set at Update 52.
-None of them can run a zig arm at this pin anyway.
+## OWED OUTBOUND: THE SECOND COMPILER PR, AND THEY ARE ASKING FOR IT
 
-## PR 95 IS LANDED (internally), PR 96 IS IN REVIEW
+Update 53's "Open from Update 52" **opens** with it: *"Steve Howell's second
+PR is expected against the Update 52 pin"* -- the empty-list carrier, the
+instance-method span site, `subst-type-vars-from-arg`'s learning arms, and
+`lower-nonempty-list`, *"all measured on his branch and RESERVED for him in
+the COMPILER-30 row. Absorb on arrival."*
 
-**PR 95 absorbed near-verbatim, 2026-08-28**: their main change 20500
-(dev-stream 20496), register row **`plugs-backlog.md` 2.01 -- NOT the 1.100 we
-drafted**, which collided with rows landed the same morning. Re-proven after a
-same-day seed move. **It ships publicly with the NEXT MIRROR PUSH; upstream
-`master` is still `968d4600`**, so nothing about our base changes yet.
+Branch `compiler-only-second-pr`, three unsent commits on PR 93's landed
+base. **It needs a rebase onto U53 first**, where `Lowering.codex` moved
+twice under COMPILER-32 (steps 1-3, with one `lower-lazy` edit reverted
+mid-release when the battery caught `lazy-smoke` red). Re-verify every line
+citation against the new base -- standing rule, and this base moved more
+than most.
 
-Their verification: the plug rebuilt; the banner-anchored surface check derives
-99 names over 4 subjects, all reserved, and the subjects' preludes are now
-REQUIRED to agree; the zig oracle answers 55/55 values byte-identical to
-x86-64; internal gate green one-pass. Damian: *"your repair of the check you
-broke is the part of this PR that earns its keep"* and *"the corpus grading
-(589 both ways, zero disagreements) made this a read-and-verify rather than an
-argue."*
+## PLUGS ROW 2.02 IS ROUTED TO US AND UNOWNED. Objective: COMPLETENESS.
 
-**BEWARE TWO DIFFERENT 55s.** "The greediest program reaches 55 of 93 prelude
-declarations" is OUR tree-shaking prototype measurement, now recorded in their
-row. "The zig oracle answers 55/55 values byte-identical" is that oracle's
-value count. Unrelated quantities, same number, one paragraph apart -- do not
-let a later reading fuse them.
+PR 96's other half. The compiler no longer emits the duplicate arms, but the
+general shape stands: **the zig plug has no equivalent of the duplicate-arm
+drop C# got at 20352**, so where the compiler emits a combined arm the zig
+plug refuses a program that is legal Codex and every other lane accepts.
 
-**PR 96 is in the compiler lane as of 2026-08-28, token-gated and atomic,
-aiming to land today.** Our atomicity ask is acknowledged fleet-wide; their
-changelists are one-subject by standing rule.
-
-**THE FIELD IS CLEAR FOR THE CHANNEL WORK.** Root: *"today's zig-plug surface
-is quiet on our side apart from your own PR 95 -- nobody here is in
-ZigEmitter, so your context-passing refactor has a clean field."* And **the
-prelude-shaking follow-on is recorded in row 2.01 as the larger half and is
-UNCLAIMED**, so it is ours to take.
-
-**When the mirror push lands:** rebase `zig-tree-shaking` onto the new
-upstream and DROP our four cherry-picked PR 95 commits, which will then be
-duplicates (git will usually drop them by patch-id, but check rather than
-assume). Do not edit `prelude-last` -- it is absorbed and closed.
-
-## OUTBOUND: PR 98 IS SENT. Objective: OUTBOUND. Waiting.
-
-**[PR 98](https://github.com/damiant3/Cobblestone/pull/98), branch
-`zig-tree-shaking`, tip `16751b22`, worktree
-`~/showell_repos/cobblestone-treeshake`. Tag `u52-shake-578` carries every run
-and number.** The tree-shaken prelude AND finding 67 in one PR, because both
-repair `build/check-zig-prelude-surface.ps1` for unrelated reasons -- Steve's
-call: any overlap, one PR.
-
-**It STACKS and the PR says so.** Base is `968d4600` plus PR 95's four commits
-and PR 96's two; the new work is the last eight, `ff27e0e7..16751b22`. **If
-either lands CHANGED, re-cut this branch rather than editing the sent ones.**
-
-    build/check-zig-prelude-surface.ps1   +125   both changes land here
-    codex/foreword/core/Shake.codex       +136   the algorithm, target-agnostic
-    codex/plugs/zig/ZigEmitter.codex      +674   generated parts table + reserved list
-    codex/compiler/IR/Lowering.codex        -3   PR 96's, carried
-
-**What was said that we may be asked about.** That `Foreword chapter Shake` is
-new CORE-LIBRARY surface with one consumer, and we offered to move it under
-the plug if they would rather; that we do not run the non-zig plugs; and that
-this is NOT a size or compile-time win -- zig already dead-strips and the
-shaken `codexir` binary is 4,096 bytes LARGER. Better said by us than
-discovered by them.
-
-**Finding 67 stays LIVE in the register until absorbed**, marked as sent here.
-Its two probes are back in the tier set and green.
-
-**Verification behind it, all in the tag:**
-
-    corpus, shake on      578 clean / 0 broken, 578 sub-selections / 0 not
-    byte-neutrality       all 578 corpus .zig byte-identical across the fix
-    restructure inert     codexir.zig byte-identical, md5 b77431b7
-    tier set, both arms   27 tiers: green 20, noted 7, RED 0 -- SET GREEN
+Their row says the compiler half is verified and *"the zig half is NOT, and
+that is the open work here... measure the zig arm rather than inferring it
+from the C# one -- the two plugs took different routes to the same
+requirement."* Sized by them as one entry, not a campaign.
 
 ## THE ZIG EMITTER'S UPWARD CHANNEL. Objective: COMPLETENESS. Not started.
 
@@ -1466,9 +1422,14 @@ next queue entry displaces them:
   overrunning it is detected, printed, ignored, and then faults at twice the
   reservation. Doc-only, with a ten-second no-VM reproduction. Tag
   `deck-reservation-advisory`.
-On top of the six that landed in Update 50's interim push. Nothing is
-prepared and unsent, and the one question any of them left is the item
-above.
+On top of the six that landed in Update 50's interim push.
+
+**Current state, 2026-08-29 (Update 53).** PRs 95, 96 and 98 are all closed
+-- 95 and 98 absorbed, 96 as already-fixed -- so nothing we have SENT is
+outstanding. **One thing is prepared and unsent and they are asking for it:**
+the second compiler PR, which has its own section near the top of this file.
+Plugs row 2.02 is routed to us and unowned, and is COMPLETENESS work rather
+than an outbound debt.
 
 ## Per-Update ceremony
 
