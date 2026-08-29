@@ -202,11 +202,46 @@ JUSTIFICATIONS.md. This file is the thread, not the record.
     "markers to match" claim, made on the old base, no longer holds on U53 --
     and the difference between those two measurements is Update 53.
 
+- **Shadowed match arms: PR 103, and the two-arm run that graded it**
+  (2026-08-29, `dup-arms-u53`, sandboxes `20260829T205145Z-u53-dup-arms` and
+  `20260829T220422Z-u53-dup-baseline`, both retired). Codex `88daa0a8` on
+  `58b08c38` closes plugs-backlog 2.02: a zig `switch` prong refuses a value
+  an earlier prong names, and an or-pattern expands on the wire into exactly
+  that shape. Bare metal green on `test/ops/match-shadowed-arm` with
+  `real-saturating-finite` as control.
+  - **The falsifier ran on both arms**: the new test builds through the fixed
+    plug and is refused by plain U53 with exactly two `duplicate switch value`
+    errors, one per shape. That is what settles the change reached the build.
+  - **Two-arm corpus, the plug as the only variable.** Zero verdicts moved
+    across 326 built programs; 581 of 582 emitted `.zig` byte-identical.
+  - **The one that moved was already in the corpus.** `circbuf-test` emitted
+    two `.None` prongs in one switch at plain U53 -- a real 2.02 instance,
+    not ours -- and now emits one. It stays refused behind an unrelated
+    `switch must handle all possibilities`, and neither arm's log ever
+    contains the string `duplicate switch value`, so zig never reported the
+    duplicate at all. **A verdict-only comparison would have called this
+    change inert and been wrong about why.**
+
 ## Not done yet
 
 - Send the second compiler PR (three fixes; the fourth they asked for is
   measured-and-withdrawn).
 - Finding 68: settle whether Update 53 introduced it, with one probe at the
   Update 52 seed.
-- Re-bank the corpus census at U53, so there is finally a comparand that
-  records its own base.
+- ~~Re-bank the corpus census at U53~~ **-- this item does not work as
+  written, and re-banking would not deliver it** (2026-08-29). The bank's
+  staleness gate is `bank_describes_this_tree`, which compares
+  `meta.tools` -- the shas of the two native binaries. Zig bakes the build
+  directory into each binary for its stack traces, so the shas move whenever
+  the tree does, and every ladder run is in a fresh sandbox by construction.
+  Measured: the main checkout's natives carry
+  `20260826T160728Z-u50-harness-lift`, and the bank, the main tree and the
+  two dup-arms arms have four mutually distinct tool identities. So the
+  banner fires on every run whatever the source did, a bank taken today is
+  "not about this tree" tomorrow, and the gate can only ever say one thing.
+  **The real fix is a source-derived tool identity** -- the bundle
+  fingerprint of plug + harness + seed + zig version, which
+  `zigc_verify.sh` already computes for its build cache -- or making the
+  natives reproducible by keeping the path out of them. Both are infra
+  changes; STEVE'S CALL before either is built. Note `meta.base` is worth
+  keeping regardless: it records the refs, which is the half that works.

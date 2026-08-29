@@ -246,6 +246,43 @@ PROVENANCE line this item asks for is half-written already: the tree a
 binary was built in is recoverable from the binary, so the file only owes
 the two commits and the timestamp.
 
+## The corpus bank's staleness gate can only ever say "stale" (2026-08-29)
+
+`corpus_run.py` opens its verdict diff with
+`*** THE BANK IS NOT ABOUT THIS TREE ***` whenever `bank_describes_this_tree`
+is false, and that function compares `meta.tools`: the shas of the two native
+binaries. Zig bakes the build directory into each binary for its stack
+traces, so those shas move whenever the tree moves -- and every ladder run
+happens in a fresh sandbox on purpose.
+
+The gate therefore fires on every run regardless of what the source did. A
+bank taken today is "not about this tree" tomorrow. It is the mirror of the
+stamp guards deleted in `bd570e7`: one could only ever pass, this one can
+only ever fail, and both look like checks.
+
+**Measured, not argued.** Four mutually distinct tool identities for what is
+substantially one toolchain: bank `6c1711aa/6eb2621b`, main checkout
+`10850a2d/9fdf7112`, dup-arms `dfed25e4/8e5b843f`, dup-baseline
+`c27ca4e2/f715286e`. The main checkout's binaries carry
+`/home/steve/runs/20260826T160728Z-u50-harness-lift/ladder/ast` -- built in a
+sandbox on 08-26 and copied in, path and all.
+
+**What it costs.** U53.log carried "re-bank the corpus census at U53, so
+there is finally a comparand that records its own base" as an open item. It
+would not have worked: the new bank goes stale the moment the next sandbox is
+cut. The 2026-08-29 dup-arms run paid for this the long way -- its corpus leg
+could conclude nothing, and settling the question needed a whole second arm.
+
+**Two candidate fixes, neither built, Steve's call.** Make the tool identity
+SOURCE-derived -- the bundle fingerprint of plug + harness + seed + zig
+version, which `zigc_verify.sh` already computes for its build cache -- so it
+tracks what the tools were built FROM. Or keep the path out of the binaries
+so they are reproducible, which is the root-cause fix but trades against the
+panic traces the corpus reads on a crash. `meta.base` already records the
+refs and should stay either way; it is the half that works.
+
+**Until one is built, a bank diff is not evidence.** Two arms, or nothing.
+
 ## Generated files do not belong in the repo tree (Steve, 2026-08-27)
 
 **Steve's ruling, no action taken the night it was made:** *"gitignore is
