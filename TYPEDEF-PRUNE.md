@@ -61,6 +61,46 @@ One emitter gap closes and it belongs entirely to dead code:
 `vec: @compileError(...)` inside `HolderS`. The program was failing to
 transpile on account of a declaration it did not ask for.
 
+## The corpus --run, finished 2026-08-29
+
+Real `zig run` -- compile AND execute -- over every clean program, diffed
+against the hand-verified `.expected` files. On `typedef-prune-on-shaker`,
+run `20260828T225229Z-tdshake`:
+
+    326 clean programs; building and running 326
+    match 291, no-expected 23, refused 8, hardware-only 2, differ 1, crashed 1
+
+**The one `differ` is `recursive-eq`, and it is FINDING 66, not this change.**
+
+    want  eq ne eq eq ne ...
+    got   ne ne ne ne ne ...
+
+That is the recursive structural-equality helper answering `ne` to everything
+-- the silent wrong answer already filed as finding 66 and owed to the U52
+issue. It is a plug defect on a path this prune does not touch.
+
+**The one `crashed` is `tcp-reliability`**: `panic: index out of bounds: index
+0, len 0`. NOT ATTRIBUTED. It may predate this change; nothing here shows
+either way, and the run's own header says so:
+
+    *** THE BANK IS NOT ABOUT THIS TREE ***
+    Every row below is a difference between two measurements, not a change
+    this run caused.
+
+So the verdict diff below cannot be read as caused by the prune. **To attribute
+`tcp-reliability`, run `corpus_run.py --run` on `f67-byteneutral` -- the same
+stack minus the prune -- and compare.** That is the one measurement this file
+still owes.
+
+**What the verdict diff shows anyway**, against a bank from 08-27 that predates
+several changes: a long list of `refused -> match` and `markers -> match`, plus
+`type-name-existence markers -> match`, which is the program whose only failure
+was a type it never used. Several `zigemit -> codex-refused` rows move the
+other way and are equally unattributed.
+
+**None of this bears on the seven open defects above.** A corpus that passes
+tells you the corpus lacks the shape.
+
 ## THE OPEN DEFECTS, ranked by whether they can drop a LIVE type
 
 Found by a cold review, 2026-08-28. None was caught by any gate here, and the
