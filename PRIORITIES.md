@@ -55,6 +55,16 @@ type` is never walked, and the pass has no bail-out where the def prune has
 one. That file is the whole record: branch, what is verified, every defect with
 its file and line, and what to do when it is picked up.
 
+**Its LADDER half is reverted on master, and that is new (2026-08-29,
+`45fa31c`).** `9220f84` had taught both harness generators to mirror the
+driver's type-def prune, but the driver half lives only on the parked branch --
+so ladder master called `ir-prune-unreachable-typedefs`, a name no release
+defines, and `native_build.sh` could not build `codexir` against ANY release.
+It died at CDX3002 ninety-two seconds into a thirteen-minute build, and nothing
+had needed natives since the prune was parked, so nobody had noticed. When the
+prune is picked up, revert the revert in the same change that lands the driver
+half; `check_harness_gates.py` catches the mismatch in either direction.
+
 **The one line to carry away from it:** a missed root fails SILENTLY --
 `zig-find-ctor` returning `-1` reclassifies a constructor as a plain value name
 -- so under-collection yields wrong zig, not a diagnostic. Every gate run
@@ -154,6 +164,11 @@ turning the location into a mutable record FIELD.
 
 **Four findings came out of it, and only one is ours.**
 
+**57, 58 and 59 are SENT as PR 101 (2026-08-29), rebased onto Update 53 and
+re-measured there: clean 326 -> 330, zero verdicts moved. 60 and 61 are still
+ours and still unsent -- they live on `roc-ports-type-recovery`, which predates
+the shaker, so they need EXTRACTING rather than rebasing.**
+
 - **57, COMPILER, FIXED and measured.** `subst-type-vars-from-arg` had no arm
   for any user-declared parametric type, so a branch join kept a variable both
   branches had resolved.
@@ -200,94 +215,105 @@ emits for a type the program GENUINELY does not constrain -- `list-test`'s
 `cl-is-empty (cl-nil)`, matrix case g, `\k -> 1`. Any type is correct,
 refusing is honest, and choosing one is a DEFAULTING RULE.
 
-## UPDATE 53 LANDED 2026-08-29, AND THE WAIT IS OVER
+## UPDATE 53 IS BANKED. The ladder agrees with `B066CEB5` for the first time since Update 51.
 
-`58b08c38`, seed `B066CEB5FE8FC9E8` (3,064,878 bytes). The ceremony log is
-[U53.log](U53.log); the pin is `u53-rebank` at the release commit, **length
-ZERO**, and the outbound queue emptied into it. What it settled:
+`58b08c38`, pin `u53-rebank` at the release commit, **length ZERO** -- no
+cherry-picks, because the outbound queue emptied into it. Tag `u53-14of14`,
+bank `truth/u53/` with the first-ever `ARMS` file (`agreed 14 of 14`). The
+ceremony log is [U53.log](U53.log); it has the numbers and the order.
 
-- **PR 98 absorbed BYTE-IDENTICALLY.** `ZigEmitter.codex`, `Shake.codex` and
-  `check-zig-prelude-surface.ps1` in U53 are our `zig-tree-shaking` files
-  exactly -- verified by diff, not taken on trust. Row `plugs-backlog.md`
-  2.04. They re-measured rather than carrying our numbers and reproduced
-  **finding 67** independently, crediting it by our register number.
-- **PR 95 shipped publicly here**, row 2.01, with our
-  `MEASURED-prelude-last.log` quoted by name.
-- **PR 96 closed as already-fixed** (their 20398). The U52 duplicate-arm
-  blocker is gone at source; the zig arm is unverified until the rebank runs
-  it.
-- **Finding 66 is COMPILER-34**, every citation verified at head, our zig
-  probe named as the third witness, and `codex/test/deriving-eq-recursive`
-  is now a test in their tree. The Update 52 anomalies ISSUE is therefore
-  DISCHARGED -- issue 97 carried it and was answered.
-- **Update 52 was never banked and now never will be.** The green-arms rule
-  that caused that is retired (`c5547e3`); see README's banked-against
-  section. The consequence we live with is one rebank's worth: u53's bank
-  diffs against u51, two seeds back.
+**Four instruments agree the release is minimal.** 14/14 rungs with zero
+diffs; `bank_diff u51 -> u53` moved three truths of fourteen and all three are
+x86 image emission (NOT `lir_to_x86` or `passes_to_x86_on_arith`, so a subset
+of that family rather than the whole of it); 26/26 tier gold columns
+byte-identical; 69/69 safari-codex artifacts byte-identical across the
+transpiler change. The five-second seed canary predicted that shape before the
+rebank was started.
 
-**Retire on rebase, all three fully landed:** `prelude-last`,
-`zig-tree-shaking`, `lowering-duplicate-noexpect-arms`.
+**Update 52 was never banked and now never will be.** The green-arms rule that
+caused that is retired (`c5547e3`); `--keep 3` with it. Every Update is banked
+now and the arms ride in `ARMS` beside `SEED`.
 
-## OWED OUTBOUND: THE SECOND COMPILER PR, AND THEY ARE ASKING FOR IT
+## IN FLIGHT WITH DAMIAN: three PRs and one issue, all opened 2026-08-29
 
-Update 53's "Open from Update 52" **opens** with it: *"Steve Howell's second
-PR is expected against the Update 52 pin"* -- the empty-list carrier, the
-instance-method span site, `subst-type-vars-from-arg`'s learning arms, and
-`lower-nonempty-list`, *"all measured on his branch and RESERVED for him in
-the COMPILER-30 row. Absorb on arrival."*
+**Nothing is prepared and unsent.** What is out:
 
-Branch `compiler-only-second-pr`, three unsent commits on PR 93's landed
-base. **It needs a rebase onto U53 first**, where `Lowering.codex` moved
-twice under COMPILER-32 (steps 1-3, with one `lower-lazy` edit reverted
-mid-release when the battery caught `lazy-smoke` red). Re-verify every line
-citation against the new base -- standing rule, and this base moved more
-than most.
+- **[PR 99](https://github.com/damiant3/Cobblestone/pull/99)** -- the prelude
+  parts table forbids the only way to add a prelude part. Comment-only, and
+  **our error**: the note shipped with our own PR 98, names a generator that
+  lives in this repository and a source file that no longer exists, and cost
+  the reals work a wrong turn. Row `plugs-backlog` 2.05. Not re-measured, and
+  the PR says so.
+- **[PR 100](https://github.com/damiant3/Cobblestone/pull/100)** -- the f64
+  real conversions, which safari-codex needs. Corpus A/B, reals as the only
+  variable: clean **326 -> 328**, zero verdicts moved. New test
+  `codex/test/ops/real-int-conversions` settled on BARE METAL with
+  `real-saturating-finite` (upstream's `.expected`) as the control in the same
+  pass. Row 2.06, tag `reals-u53`.
+- **[PR 101](https://github.com/damiant3/Cobblestone/pull/101)** -- findings
+  57/58/59, the three of four they reserved. Clean **326 -> 330**, zero
+  verdicts moved, zero lost. The fourth, the instance-method span site, is
+  **measured and withdrawn** -- it moves no parameter cell, leaves both targets
+  red, and perturbs tvar numbering, so it is not even inert. Tag
+  `second-compiler-pr-u53`.
+- **[Issue 102](https://github.com/damiant3/Cobblestone/issues/102)** --
+  finding 68, filed rather than patched because COMPILER-32 is mid-stream on
+  the same function.
 
-## OWED OUTBOUND: THE REALS, AND A PROSE FIX WE SHIPPED WRONG
+**PR 101 carries the push-back, and the argument is not an opinion.**
+`expected-or-recorded-ty` IS PR 93's `lambda-expected-ty` renamed and
+generalised -- the remedy for this family. Update 53 applied it to
+`lower-apply-lambda-chain` and that produced finding 68. **A family-fix created
+a new instance of the family**, which is why site-by-site has stopped
+converging, and it is a better argument than "you keep missing sites."
 
-**Objective: OUTBOUND, and it is safari-codex's blocker.** Branch
-`zig-plug-real-int-conversions` (worktree `cobblestone-realconv`). Two things
-in one small PR:
+## FINDING 68 IS THE ONE TO WATCH. Objective: HUNTING, already found.
 
-- **`real-to-int` / `real-from-int`**, the f64 conversions: two builtin
-  emitter rows, two new prelude parts, two reserved names. Measured against
-  what bare metal does -- `cvttsd2si` truncates toward zero and answers
-  INT64_MIN for NaN, infinity and out-of-range, so the zig guards are the
-  mirror of the hardware rather than decoration.
-- **The prose fix, and it is ours to make because we shipped the error.**
-  `ZigEmitter.codex:3838` in Update 53 says the parts table is "GENERATED by
-  the ladder's `shake_parts.py` ... Do not hand-edit; edit the prelude source
-  and regenerate." **Both halves are false and the instruction cannot be
-  followed**: `zig-prelude` is now `shake-text` over the table, so the source
-  it names is gone, and `shake_parts.py` reads that vanished shape before it
-  dispatches, so no mode of it can run. It cost the safari real support a
-  wrong turn -- there was no way to add a prelude helper without hand-editing
-  the file that forbids it. The corrected paragraph is already written on this
-  branch and says what the format is, that a NEW part is written by hand, and
-  that an EXISTING part still should not be touched because its bytes are what
-  the migration gate certified.
+A `let` bound to an immediately-applied lambda chain records the LAMBDA's type
+where the use site reads the application's result. One binding, two types, in
+one statement. **Compiler, not plug** -- the seed's own wire carries the
+identical contradiction, so there is nothing plug-side to fix and a plug
+"repair" would mean choosing between two types the compiler asserted.
 
-**The delta against U53's emitter is +31/-3**, because this branch is the
-shaker plus two commits and Update 53's emitter IS the shaker, byte for byte.
-So the rebase onto the u53 pin is close to a no-op -- which is what makes
-safari's unblock an afternoon rather than a project.
+**Why it matters beyond four programs.** A defect BOTH ARMS share is invisible
+to fourteen rungs by construction; it surfaced only because the corpus BUILDS
+the emitted output and zig rejected it. The rungs ask "do the arms agree"; the
+corpus asks "does the answer work." Today those were different questions.
 
-Our side of the shaker is retired (`111bcdc`): `shake_parts.py`,
-`shake_subselection.py` and `postlude_verify.py` are deleted, and the
-`treeshake-base` KEEP sandbox with them, because the two modes its unshaken
-corpus existed to feed cannot run any more.
+**Reach: `roc-fold-{sum,count,product,empty}`.** `roc-fold-empty` is the one
+that matters -- PR 101's empty-list carrier clears it and it lands here.
+
+**OPEN: did Update 53 introduce it?** The COMPILER-30 row carries our own
+earlier report that `roc-fold-empty` goes "markers to match" on the Update 52
+pin, which disagrees with today. One probe at the Update 52 seed settles it.
+The self-contradictory wire needs no baseline and stands regardless.
 
 ## PLUGS ROW 2.02 IS ROUTED TO US AND UNOWNED. Objective: COMPLETENESS.
 
 PR 96's other half. The compiler no longer emits the duplicate arms, but the
 general shape stands: **the zig plug has no equivalent of the duplicate-arm
-drop C# got at 20352**, so where the compiler emits a combined arm the zig
-plug refuses a program that is legal Codex and every other lane accepts.
+drop C# got at 20352**, so where the compiler emits a combined arm the zig plug
+refuses a program that is legal Codex and every other lane accepts.
 
 Their row says the compiler half is verified and *"the zig half is NOT, and
-that is the open work here... measure the zig arm rather than inferring it
-from the C# one -- the two plugs took different routes to the same
-requirement."* Sized by them as one entry, not a campaign.
+that is the open work here... measure the zig arm rather than inferring it from
+the C# one -- the two plugs took different routes to the same requirement."*
+Sized by them as one entry, not a campaign.
+
+## OWED, SMALL, AND NOT YET DONE
+
+- **Re-bank the corpus census at Update 53.** Today's census is from
+  2026-08-27 and was taken on natives built from `a961dcb6`, a BRANCH, and
+  nothing in it could say so -- which cost twenty minutes of diagnosis before
+  the banner was read. `corpus_run.py` now records `base` (codex commit and
+  branch, ladder commit, seed) at bank time and the mismatch banner names the
+  tree, so a fresh `--bank` at U53 finally gives a comparand that describes
+  itself. Arm A's run is the right measurement to bank.
+- **Finding 68's Update 52 probe**, above.
+- **The shaker machinery is retired** (`111bcdc`): `shake_parts.py`,
+  `shake_subselection.py`, `postlude_verify.py` deleted -- the first cannot run
+  against the shape it produced -- and the `treeshake-base` KEEP sandbox with
+  them.
 
 ## THE ZIG EMITTER'S UPWARD CHANNEL. Objective: COMPLETENESS. Not started.
 
@@ -473,14 +499,6 @@ wrong instrument for the two that are left -- more of the same data cannot
 separate two findings that share a marker string. Recorded because reaching for
 a bigger measurement when the problem is attribution is a mistake worth not
 repeating.
-
-## THE SEED IS MOVING, SO A REBANK IS OWED
-
-CL 20189 is a **new seed built from the change**. When the mirror push lands,
-the pin moves and every banked truth is against the old seed. **Do not start
-the second PR's measurement on the old pin once the mirror is public** --
-re-pin, rebank, then measure. The PR stays open until that push, and closes
-with it.
 
 ## AFTER THAT: THE OTHER THREE PORTS, WHICH ARE A DIFFERENT CLASS
 
@@ -1458,12 +1476,16 @@ next queue entry displaces them:
   `deck-reservation-advisory`.
 On top of the six that landed in Update 50's interim push.
 
-**Current state, 2026-08-29 (Update 53).** PRs 95, 96 and 98 are all closed
--- 95 and 98 absorbed, 96 as already-fixed -- so nothing we have SENT is
-outstanding. **One thing is prepared and unsent and they are asking for it:**
-the second compiler PR, which has its own section near the top of this file.
-Plugs row 2.02 is routed to us and unowned, and is COMPLETENESS work rather
-than an outbound debt.
+**Current state, end of 2026-08-29 (Update 53).** PRs 95, 96 and 98 closed
+-- 95 and 98 absorbed, 96 as already-fixed. **Three PRs and one issue are now
+OPEN**: 99 (prelude prose, ours to fix), 100 (the reals), 101 (findings
+57/58/59 plus the withdrawn fourth), and issue 102 (finding 68). All four went
+out on 2026-08-29 and all carry a ladder tag. **Nothing is prepared and
+unsent.** See "IN FLIGHT WITH DAMIAN" near the top for what each says.
+
+What is NOT an outbound debt but is owed to us: plugs row 2.02, routed to us
+and unowned; findings 60 and 61, ours and unsent, needing extraction from a
+pre-shaker branch; and safari-codex's four findings, none written up.
 
 ## Per-Update ceremony
 
