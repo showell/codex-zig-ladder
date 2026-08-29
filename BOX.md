@@ -5,6 +5,10 @@ each one has already cost something; the reasoning and the incident ledger
 behind them is the note
 [what a BOX job costs when it is wrong](http://143.244.172.148:9100/notes/what-a-box-job-costs-when-it-is-wrong.md).
 
+**Scope: any non-trivial process, not only a job that boots a guest.** The
+items are written for compute runs because that is where they were paid for,
+but a measurement, a rebase, a rebuild or a comparison earns the same list.
+
 **The one-line version.** The failure mode on this box is not a crash. It is
 a job that completes, reports a verdict, and the verdict is about something
 other than what you thought. Every item below exists to make a result
@@ -46,9 +50,19 @@ be deleted, not kept for completeness.
 7. `./sandbox.sh <label>`, then `cd <path>/ladder && . ../env`. Without
    `. ../env` the sandbox is decoration and `CODEX_ROOT` still points at the
    shared checkout.
-8. Design the **presence check** now: one baseline-free assertion that the
+8. **Read the provenance of everything you will COMPARE AGAINST, before the
+   run.** A bank, a census, a gold column, an `.expected` -- each is a claim
+   some earlier run made, not ground truth, and each records what produced it:
+   `corpus/census.json` has a `meta` block, `truth/uNN/` has `SEED` plus a
+   prov sidecar per rung, `findings/gold/uNN/` keys each column on program text
+   AND seed. If the comparand came from a different base than the run you are
+   about to make, the diff measures the BASE CHANGE and not your change. Then
+   either re-measure the baseline or say plainly, before showing anyone the
+   rows, that the comparison is not clean. A verdict that "moved" against a
+   stale baseline has moved for two reasons and the rows cannot tell you which.
+9. Design the **presence check** now: one baseline-free assertion that the
    change is visible in the output. A soundness gate is blind to a no-op.
-9. `python3 check_paths.py` and `python3 check_harness_gates.py` (5 s each), `compute_lock.py --probe` if detaching,
+10. `python3 check_paths.py` and `python3 check_harness_gates.py` (5 s each), `compute_lock.py --probe` if detaching,
    and say the expected cost out loud before launching anything over 20 s.
    A job that takes no lock of its own -- the transpiler is one -- makes this
    check the only guard there is. `check_harness_gates.py` is the mechanical
@@ -73,8 +87,13 @@ be deleted, not kept for completeness.
 
 ## After
 
-1. Read the verdict from the file. Any claim of a maximum, count, set, or
-   absence must come from a command that saw everything.
+1. Read the verdict from the file, and read the HEAD of it as well as the
+   tail. Any claim of a maximum, count, set, or absence must come from a
+   command that saw everything. **A tool that has something to warn you about
+   prints it BEFORE the rows, which is exactly where `tail` cannot see it** --
+   `corpus_run.py` prints `*** THE BANK IS NOT ABOUT THIS TREE ***` above its
+   verdict diff, and a `tail -25` starts below it and shows only the rows the
+   banner was disowning.
 2. Run the presence check. A *perfectly* clean result on a change that should
    move bytes is a suspect, not a win.
 3. Push any branch out of the sandbox immediately -- a sandbox commit lives
