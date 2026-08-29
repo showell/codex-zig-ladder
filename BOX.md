@@ -20,26 +20,35 @@ be deleted, not kept for completeness.
 
 ## Before
 
-1. `python3 ladder_status.py` -- seed, banks, tag, lock, what is computing.
+1. **DO WE NEED THIS NOW? Name the consumer and when they read it.** Not "is
+   this a good idea" -- who reads the result, and how soon. A run whose answer
+   nobody consumes for weeks is worse than not running it: it ages into
+   something that has to be re-validated before it can be trusted, and the
+   re-validation costs about what the run cost. If the honest answer is "we
+   might want it later", the cheaper plan is almost always to run it LATER,
+   when there is a question, against a tree nobody has to reason about the
+   staleness of. Ask this before the box is touched and before anything below
+   is worked.
+2. `python3 ladder_status.py` -- seed, banks, tag, lock, what is computing.
    If any line disagrees with what you believe, stop and find out why.
-2. Write one line: what this run settles, and **what result would change my
+3. Write one line: what this run settles, and **what result would change my
    mind.** No falsifier means the answer will confirm whatever was hoped.
-3. **Know which branch you are running out of and WHAT IT CARRIES.** Not the
+4. **Know which branch you are running out of and WHAT IT CARRIES.** Not the
    name -- the contents. `git log <base>..HEAD` and `git diff --stat <base>`
    on every tree in play, and ask what each unlanded commit assumes about the
    other trees. A branch that mirrors a change which landed nowhere is the
    trap: ladder master carried a harness calling `ir-prune-unreachable-typedefs`,
    a compiler pass defined only on a parked branch, so it could not build
    natives against ANY release -- and its name said nothing at all about that.
-4. Name the arm -- bare metal (the seed under QEMU) or ours (`native/codexir`).
+5. Name the arm -- bare metal (the seed under QEMU) or ours (`native/codexir`).
    A question about *the compiler* takes the seed. "Whatever was in front of
    me" is not an answer.
-5. **Every tree the job touches is clean and on the branch you think --
+6. **Every tree the job touches is clean and on the branch you think --
    including the ones it only reads.** `git status --short` and
    `rev-parse --abbrev-ref HEAD` on each. A SHARED checkout is the trap:
    moving `CODEX_ROOT` to a new pin moves it under every other project
    pointed at the same directory, and nothing announces that.
-6. **Know what the job WRITES, and who else reads it.** Name the output paths
+7. **Know what the job WRITES, and who else reads it.** Name the output paths
    before launching. A GITIGNORED artifact is the dangerous kind: no branch
    switch protects it, `git status` never shows it, and another project may
    resolve it by path with no idea which branch produced it. If a job would
@@ -47,10 +56,10 @@ be deleted, not kept for completeness.
    rebuild** -- never plan to restore by hand afterwards. A hand-copied
    artifact has no provenance, and `cp -p` in particular forges the mtime that
    somebody's change-detector is reading.
-7. `./sandbox.sh <label>`, then `cd <path>/ladder && . ../env`. Without
+8. `./sandbox.sh <label>`, then `cd <path>/ladder && . ../env`. Without
    `. ../env` the sandbox is decoration and `CODEX_ROOT` still points at the
    shared checkout.
-8. **Read the provenance of everything you will COMPARE AGAINST, before the
+9. **Read the provenance of everything you will COMPARE AGAINST, before the
    run.** A bank, a census, a gold column, an `.expected` -- each is a claim
    some earlier run made, not ground truth, and each records what produced it:
    `corpus/census.json` has a `meta` block, `truth/uNN/` has `SEED` plus a
@@ -60,9 +69,9 @@ be deleted, not kept for completeness.
    either re-measure the baseline or say plainly, before showing anyone the
    rows, that the comparison is not clean. A verdict that "moved" against a
    stale baseline has moved for two reasons and the rows cannot tell you which.
-9. Design the **presence check** now: one baseline-free assertion that the
+10. Design the **presence check** now: one baseline-free assertion that the
    change is visible in the output. A soundness gate is blind to a no-op.
-10. `python3 check_paths.py` and `python3 check_harness_gates.py` (5 s each), `compute_lock.py --probe` if detaching,
+11. `python3 check_paths.py` and `python3 check_harness_gates.py` (5 s each), `compute_lock.py --probe` if detaching,
    and say the expected cost out loud before launching anything over 20 s.
    A job that takes no lock of its own -- the transpiler is one -- makes this
    check the only guard there is. `check_harness_gates.py` is the mechanical
