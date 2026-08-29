@@ -66,7 +66,27 @@ JUSTIFICATIONS.md. This file is the thread, not the record.
     `cycle.sh` -- and the canary is bare-metal only, so it does not need
     them.
 
+- **Step 3, the pin: `u53-rebank` at `58b08c38`, LENGTH ZERO.** No
+  cherry-picks owed -- the outbound queue emptied into this release. Pushed
+  to `origin`. `ladder_status` reads `codex u53-rebank = upstream/master
+  exactly`.
+- **Step 3, tier bare columns: SET GREEN, 26 of 26.** Sandbox
+  `20260829T165157Z-u53-tiers-bare` (ladder `85a096a`, codex `58b08c38`),
+  log `tiers-bare.log`, banked as `findings/gold/u53/` (`60f36d2`). The 27th
+  tier is a zig-only refusal probe with no bare column by design.
+  - Presence check: **26 fresh, 0 cache hits, 0 stale.** `gold_key` is
+    sha256(program text + seed sha), so the new seed invalidated every column
+    and none could be read from u52's bank.
+  - **All 26 columns are byte-identical to u52's.** Update 53 moved nothing
+    observable in the primitive tier population on bare metal, which agrees
+    with the canary's byte-identical diagnostics.
+  - Carried back and verified per file by content, not by count.
+  - Cost the checklist a fix: the completion watch used
+    `pgrep -f 'tiers_run.py --bare'` and matched its own argv, so it waited
+    on itself. `4809bfe` puts that in BOX.md beside the `pkill -f` rule it
+    shares a root with.
+
 ## Not done yet
 
-- Pin branch `u53-rebank`, tier bare columns, truth arms, bank, zig arms,
-  tiers, census.
+- Truth arms and the bank (`rebank_all.sh`, ~60 min), then the zig arms,
+  natives, the tier set both arms, and the census.
