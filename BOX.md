@@ -77,5 +77,13 @@ be deleted, not kept for completeness.
 6. **Add the line to `U<NN>.log`** -- what was run and what it answered, one
    line, pointing at the commit or the log that holds the detail.
 7. Record anything the log does not carry where it survives the session --
-   PRIORITIES, the register, JUSTIFICATIONS -- then commit, clear untracked
-   clutter, and close the PRIORITIES item the task came from.
+   PRIORITIES, the register, JUSTIFICATIONS -- and close the PRIORITIES item
+   the task came from.
+8. **Commit any work from the current repo, if appropriate.** A run leaves
+   tracked files changed in the repo it ran from and nothing announces it:
+   `build.py` rewrites eight tracked artifacts, a sweep rewrites every emitted
+   `.zig`. Run `git status` in EVERY repo the job touched, not just the one you
+   were thinking about, and clear untracked clutter while you are there. Then
+   verify the push landed -- `git ls-remote` against the local sha -- because a
+   rebased branch fails non-fast-forward and the echo that says "pushed" is
+   not the thing that pushed.
