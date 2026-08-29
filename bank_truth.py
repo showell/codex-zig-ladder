@@ -22,13 +22,9 @@ files down.
 So EVERY Update is banked, including one the ladder never agreed with. A truth
 is a bare-metal measurement -- `oracle_lib.sh` runs the seed under QEMU for it
 and the plug's arms "live next door, because nothing they do can reach a
-bare-metal truth" -- so a red zig arm cannot make one dishonest. There was a
-rule here that banked only over green arms, and it cost exactly what a rule
-against the purpose of the file costs: Update 52's truths were measured, were
-byte-identical to u51's, and were discarded, so the next Update's diff reaches
-back two seeds instead of one. What the arms said is RECORDED instead, in
-ARMS beside SEED, and the claim they gate is the `uNN-14of14` tag -- which
-cannot be written over red arms without lying, its own name being the rule.
+bare-metal truth" -- so a red zig arm cannot make one dishonest, and is not
+grounds to withhold one. What the arms said is RECORDED instead, in ARMS beside
+SEED. The claim they gate is the `uNN-14of14` tag, whose own name is the rule.
 
 The Update prefix is in the name as well as the directory on purpose: a file
 pulled out of its directory to be mailed, pasted or diffed still says what it
