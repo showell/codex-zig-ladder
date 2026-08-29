@@ -107,8 +107,16 @@ be deleted, not kept for completeness.
    move bytes is a suspect, not a win.
 3. Push any branch out of the sandbox immediately -- a sandbox commit lives
    on no branch and dies with the prune.
-4. Carry the artifacts back (banks, gold, logs) before pruning; `KEEP` with a
-   reason on its first line if the run is an oracle rather than a by-product.
+4. Carry the artifacts back (banks, gold, logs), then **RETIRE THE SANDBOX.
+   Retiring is the default and keeping is the exception.** A `KEEP` needs what
+   Before-1 needs: a named consumer and roughly when they read it. "It might
+   save time later" is not one -- kept trees are footguns far more often than
+   they are savings, because the next person reaches for the stale natives or
+   the stale verdicts instead of rebuilding, and measures against a base
+   nobody checked. If the answer is written down -- in `U<NN>.log`, a register
+   entry, a PR body -- the sandbox holds nothing, and a run is reproducible
+   from a pin in about fifteen minutes anyway. Write the retirement condition
+   INTO the `KEEP` so it can actually fire.
 5. Stamp provenance: ladder commit, codex commit, sandbox, natives.
 6. **Add the line to `U<NN>.log`** -- what was run and what it answered, one
    line, pointing at the commit or the log that holds the detail.
