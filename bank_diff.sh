@@ -29,6 +29,19 @@ else
     [ -n "$NEW" ] || { echo "fewer than two banks under truth/"; exit 1; }
 fi
 echo "diffing $OLD -> $NEW"
+# What each bank's zig arms said, because "all rungs byte-identical" is a claim
+# about BARE METAL and reads like a clean bill of health for the ladder. Every
+# Update is banked now, red arms included (bank_truth.py's header has the
+# reason), so the caveat has to travel with the comparison or a bank the ladder
+# never agreed with is indistinguishable from one it did. Banks taken before
+# ARMS existed say so rather than guessing.
+for b in "$OLD" "$NEW"; do
+    if [ -f "$T/truth/$b/ARMS" ]; then
+        echo "  $b arms: $(head -1 "$T/truth/$b/ARMS")"
+    else
+        echo "  $b arms: not recorded (banked before ARMS)"
+    fi
+done
 moved=0
 for f in "$T/truth/$OLD/$OLD"-*.truth; do
     m=${f##*/$OLD-}

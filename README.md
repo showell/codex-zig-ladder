@@ -37,7 +37,7 @@ the operating procedure.
 | Seed | `C3181693` (2,917,073 bytes) |
 | Update | 51 (`012a9d2e`, the release `7a6c5682` plus its addendum and the PR 92 emitter repair; the `pin` is the Codex branch this bank was measured on -- see "The checkout") |
 | Rungs | **14 of 14 green** |
-| Banked | `truth/u51/`; the newest three `uNN` banks are kept (`bank_truth.py --keep`), older ones live in git history. A `seed-` bank is outside that rotation and ages out only by hand |
+| Banked | `truth/u51/`; every bank is kept. u45-u48 were pruned by a `--keep 3` that is retired, and live in git history |
 
 This table is the point of the whole arrangement, so it is the first thing on
 the page and it is allowed to be unflattering. A ladder that cannot say which
@@ -47,8 +47,16 @@ seed it agrees with is not evidence about anything.
 RELEASE FOR THE ZIG EMITTER AND WAS NOT BANKED.** Its truths were measured and
 are sound -- twelve units, fourteen truths, every one byte-identical to the u51
 bank, each carrying seed `61C81B04` with its harness sha unchanged -- but the
-zig arms came back **6 of 14**, so banking it would have frozen a question
-mid-answer, which is exactly what the green-arms rule exists to prevent.
+zig arms came back **6 of 14**, and the green-arms rule of the day said not
+to bank over that.
+
+**That rule is retired, and this is the case that retired it.** A truth is a
+bare-metal measurement; the plug's arms cannot reach one, so a red arm was
+never a reason to withhold a good measurement. The cost is on this page: the
+next bank's diff reaches back to u51 across two seeds instead of one, for
+nothing. Every Update is banked now, and what the arms said rides in `ARMS`
+beside `SEED`. What stays gated on green arms is this table and the
+`uNN-14of14` tag -- the claim, not the measurement.
 
 The cause is Update 52's own and it is one defect: COMPILER-30's
 `ErrorTy | NoExpectTy` arm sweep landed on three matches in
@@ -1490,17 +1498,22 @@ because a wrong answer IS the measurement.
   a big rung usually means the deck scale -- the seed's compile-time memory
   reservation -- needs raising (the `decks=` entries in `oracle_lib.sh`'s
   `mode_flags`), not that something broke.
-- **Bank only when the zig arms are green too** (`bank_truth.py`).
+- **Bank as soon as the truth arms are green** (`bank_truth.py`), whatever
+  the zig arms have done or whether they have run at all. A truth is a
+  bare-metal measurement and the plug cannot reach one; `bank_truth.py`
+  derives what the arms said from `ast/<rung>.diff` and records it in
+  `ARMS` beside `SEED`, where `bank_diff.sh` reads it back. Green arms gate
+  the banked-against table and the `uNN-14of14` tag, whose own name is the
+  rule.
   Terminology, because a crashed session once nearly tagged over its
   absence: the rebank RECORDS working truths (`ast/<m>.truth`; its
   "banked" log lines mean this) -- the BANK is `truth/uNN/`, written
   only by an explicit `bank_truth.py`, which `rebank_all.sh` never
   runs. "All banked" in a rebank log does not mean the bank exists.
   `--force` REPLACES the destination with the ready subset; after an
-  interrupted rebank, re-run the missing units instead. It
-  refuses mixed-harness sets on its own; the green-arms rule is ours, from
-  the merge, and it exists because a bank taken over red arms freezes a
-  question mid-answer.
+  interrupted rebank, re-run the missing units instead. It refuses
+  mixed-harness sets on its own, which is the one bank rule that catches a
+  real lie and is still in code.
 - Diff the new bank against the previous one: `./bank_diff.sh` (defaults
   to the two newest banks, so this instruction cannot go stale per
   rebank). Byte-identical rungs are the headline when they happen (u45 to

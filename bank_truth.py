@@ -4,9 +4,13 @@
 A truth is a measurement, not a build product. Everything else the ladder
 writes regenerates from a script beside it, which is why `ast/*.truth` is in
 .gitignore along with the subjects and the emitted zig -- but a truth
-regenerates only by running the rung again, for an hour, against a seed that
-may no longer be on disk. So the working copies stay unversioned beside the
-rung, and a bank is taken deliberately, here.
+regenerates only by running the rung again, for an hour. So the working
+copies stay unversioned beside the rung, and a bank is taken deliberately,
+here.
+
+The hour is the whole cost, and it is not the seed: `seed/Codex.cdx` is tracked
+upstream, so every Update's seed is one `git show` away forever. Preciousness
+here argues for keeping banks, never for rationing them.
 
 Banking is what makes two Updates comparable. `truth/u45/u45-lower.truth` and
 `truth/u46/u46-lower.truth` are the same measurement of the same rung under two
@@ -14,6 +18,17 @@ compilers, and the diff between them is the only artifact that says what an
 Update actually changed in the emitted image. That is the capability the
 separate repository was for, and it does not exist until something writes the
 files down.
+
+So EVERY Update is banked, including one the ladder never agreed with. A truth
+is a bare-metal measurement -- `oracle_lib.sh` runs the seed under QEMU for it
+and the plug's arms "live next door, because nothing they do can reach a
+bare-metal truth" -- so a red zig arm cannot make one dishonest. There was a
+rule here that banked only over green arms, and it cost exactly what a rule
+against the purpose of the file costs: Update 52's truths were measured, were
+byte-identical to u51's, and were discarded, so the next Update's diff reaches
+back two seeds instead of one. What the arms said is RECORDED instead, in
+ARMS beside SEED, and the claim they gate is the `uNN-14of14` tag -- which
+cannot be written over red arms without lying, its own name being the rule.
 
 The Update prefix is in the name as well as the directory on purpose: a file
 pulled out of its directory to be mailed, pasted or diffed still says what it
@@ -32,8 +47,6 @@ half another.
 """
 
 import argparse
-import pathlib
-import re
 import shutil
 import sys
 
@@ -52,10 +65,35 @@ def ladder_rungs():
     raise SystemExit('oracle_lib.sh: no LADDER_RUNGS= line; cannot tell what the ladder is')
 
 
+def arm_verdict(rungs):
+    """What the zig arms said about these truths, derived rather than declared.
+
+    An arm writes `ast/<rung>.diff`: empty when the emitted zig matched the
+    bare-metal truth byte for byte, the differences when it did not. ABSENT is
+    a third state and it is not a synonym for red -- `zig_arm` returns before
+    it diffs anything when the zig will not build, so a unit that failed to
+    compile leaves every rung it carries with no diff at all. That is what "6
+    of 14" meant for Update 52: six agreed, and eight never got a verdict.
+
+    Nothing here gates the bank. A reader diffing two banks needs to know which
+    of them the ladder actually agreed with, and the bank is the only artifact
+    that travels with the answer.
+    """
+    ast = LADDER / 'ast'
+    agreed, differed, no_result = [], [], []
+    for m in rungs:
+        d = ast / f'{m}.diff'
+        if not d.is_file():
+            no_result.append(m)
+        elif d.stat().st_size == 0:
+            agreed.append(m)
+        else:
+            differed.append(m)
+    return agreed, differed, no_result
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument('--keep', type=int, default=3,
-                    help='how many banked Updates to keep; older ones are removed (default 3)')
     ap.add_argument('--force', action='store_true',
                     help='bank even if a truth is older than the harness that would produce it')
     args = ap.parse_args()
@@ -152,10 +190,22 @@ def main():
             shutil.copy2(prov, tmp / f"{s['slug']}-{m}.truth.prov")
             banked_prov += 1
     (tmp / 'SEED').write_text(f"{s['sha256']}\n{s['bytes']}\n{s['update']}\n")
+    agreed, differed, no_result = arm_verdict(rungs)
+    arms = [f'agreed {len(agreed)} of {len(rungs)}']
+    if differed:
+        arms.append(f'differed {len(differed)}: {" ".join(differed)}')
+    if no_result:
+        arms.append(f'no result {len(no_result)}: {" ".join(no_result)}')
+    (tmp / 'ARMS').write_text('\n'.join(arms) + '\n')
     if dest.exists():
         shutil.rmtree(dest)
     tmp.rename(dest)
     print(f"banked {len(ready)} truths as {s['slug']}-<rung>.truth")
+    # The arms are reported, never enforced. A bank taken before the zig arms
+    # have run at all is a complete bank of bare-metal truths whose ARMS says
+    # so, which is the ordinary state now that bare metal goes first.
+    for line in arms:
+        print(f'       arms: {line}')
     # Say it either way. A bank whose sidecars are missing still works as a
     # bank and CANNOT be restored from, and a reader who is told only the
     # truth count has no way to know which kind they have.
@@ -167,18 +217,14 @@ def main():
               "this bank CANNOT be restored from; re-bank from a tree that "
               "has them if you want that")
 
-    # Keeping every Update forever is how a directory of measurements becomes a
-    # directory nobody reads. Three is enough to see a trend and small enough
-    # to scan. Pruning goes by the NAME, oldest Update number first -- never by
-    # directory mtime, which re-banking does not bump -- and touches nothing
-    # but u<N> directories, so seed-<hex> banks (deliberate, unreleased) and
-    # anything else living under truth/ are left alone.
-    banks = sorted((int(m.group(1)), p)
-                   for p in (LADDER / 'truth').iterdir()
-                   if p.is_dir() and (m := re.fullmatch(r'u(\d+)', p.name)))
-    for _, old in banks[:-args.keep] if len(banks) > args.keep else []:
-        shutil.rmtree(old)
-        print(f'removed old bank {old.name} (keeping {args.keep})')
+    # Every bank is kept. There was a --keep 3 here that pruned by Update
+    # number, and it had already deleted u45 through u48 from the working tree;
+    # banking u53 would have taken u49. It rationed nothing worth rationing --
+    # a bank is 1.2 MB of text against a 31 MB .git -- and removing one from
+    # the working tree does not shrink git, which holds every byte regardless.
+    # Its stated reason was legibility, "small enough to scan", but nobody
+    # scans 332 KB of x86 output; bank_diff.sh is what makes a bank legible and
+    # it reads the pair it is given.
     return 0
 
 
