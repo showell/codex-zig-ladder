@@ -1,0 +1,37 @@
+# Update 53 ceremony log
+
+Upstream `58b08c38`, seed `B066CEB5FE8FC9E8` (3,064,878 bytes).
+
+What was changed and what was run, in order, one line each. Detail lives in
+the commit it points to; findings go to the register, measurements to
+JUSTIFICATIONS.md. This file is the thread, not the record.
+
+## Changes
+
+- `c5547e3` bank_truth: bank every Update, keep every bank, record what the
+  arms said. Retires the green-arms rule and `--keep 3`; adds `ARMS`.
+
+## Steps
+
+- **Read before running anything.** Fetched U53. Our four hard-coded host
+  contracts hold (ram-size cell 4072, ring 5242880 / 1048576, wpos 28704,
+  rpos 28712 -- same files, same counts as U52).
+  - **New refusal to know about:** `opening.codex`'s entry point no longer
+    falls through to `TEXT`; an unknown mode is now `CODEGEN-ERRORS:1` +
+    `CODEGEN-HALTED`. The ladder sends only `CDX`, `TEXT` and `IR-CCE`, all
+    named modes. Checked, not assumed.
+  - **PR 98 absorbed byte-identically** -- `ZigEmitter.codex`,
+    `Shake.codex` and `check-zig-prelude-surface.ps1` in U53 are our
+    `zig-tree-shaking` files exactly. Plugs row 2.04. PR 95 is row 2.01.
+  - **PR 96 closed as already-fixed** (their 20398); the U52 duplicate-arm
+    blocker is gone at source, unverified by a run. It left plugs row 2.02
+    open and unowned: the zig plug has no equivalent of the duplicate-arm
+    drop C# got, so it refuses legal Codex.
+  - Finding 66 is COMPILER-34; finding 67 credited by our number.
+  - **Owed outbound:** U53 opens its "Open from Update 52" asking for our
+    second compiler PR (`compiler-only-second-pr`, 3 unsent commits),
+    reserved in the COMPILER-30 row. Needs a rebase onto U53.
+
+## Not done yet
+
+- Pin branch, canary, truth arms, bank, zig arms, tiers, census.
