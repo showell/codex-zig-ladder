@@ -571,22 +571,28 @@ def print_bank_diff(bank, programs):
         # moved this" and "the base did".
         was, isnow = (bank.get('meta') or {}).get('base'), current_base()
         if was:
-            def show(v):
+            def norm(v):
                 # "HEAD" is what banks before 2026-08-29 recorded for a
-                # detached worktree, which is every one of them. Reading it
-                # back as a branch name would repeat the original mistake at
-                # the other end.
-                if v == 'HEAD':
-                    return '(detached)'
+                # DETACHED worktree, which is every one of them, and None is
+                # how the same fact is spelled now. Comparing the spellings
+                # would report a move where nothing moved -- the original
+                # mistake repeated at the reading end.
+                return None if v == 'HEAD' else v
+
+            def show(k, v):
                 if isinstance(v, list):
-                    return ', '.join(v) if v else '(nothing points at it)'
-                return v or '(absent)'
+                    return ', '.join(v) or '(nothing points at it)'
+                if v is None:
+                    return '(no branch: detached)'
+                return v[:12] if k in ('codex', 'ladder') else v
+
             for k in ('codex', 'codex_branch', 'codex_points_at', 'ladder', 'seed'):
-                a, b = was.get(k), isnow.get(k)
                 if k == 'codex_points_at' and k not in was:
                     continue        # the bank predates the field; not a move
+                a, b = norm(was.get(k)), norm(isnow.get(k))
                 if a != b:
-                    print(f'      {k:16s} bank {show(a):<28} now {show(b):<28} <-')
+                    print(f'      {k:16s} bank {show(k, a):<26} '
+                          f'now {show(k, b):<26} <-')
         else:
             print('      base      bank RECORDED NO BASE -- taken before this was')
             print('                written down, so which tree it measured is')
