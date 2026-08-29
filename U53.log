@@ -168,9 +168,23 @@ JUSTIFICATIONS.md. This file is the thread, not the record.
   eleven lines the zig arm reproduces byte-identically. Bare metal for that test
   is owed before it is sent.
 
+- **The reals PR is measured, both arms.** Two-arm corpus A/B, reals as the
+  only variable, `run.jsonl` against `run.jsonl` with the census out of the
+  path: same 614-program population, **clean 326 -> 328, zero verdicts moved**
+  among the shared programs. The two that move are `engine-animation`, which
+  uses `real-to-int` directly, and `rasterizer-test`, which reaches it through
+  `Game chapter Rasterizer` and `Math chapter Geometry`.
+- **Bare metal settles the new test's `.expected`.** Sandbox
+  `20260829T192936Z-u53-reals-baremetal`, seed `B066CEB5`: all eleven lines
+  byte-identical. `real-saturating-finite` ran in the same pass as the CONTROL
+  -- its `.expected` is upstream's from `b643e7cb` -- and matched, so the rig
+  is checked against an answer it could not have influenced. `bare_expected.py`
+  is that rig, carried back.
+
 ## Not done yet
 
-- Bare-metal `.expected` for the new reals test; send the reals PR.
 - The second compiler PR U53 asks for by name.
 - Finding 68: settle whether Update 53 introduced it, with one probe at the
   Update 52 seed.
+- Re-bank the corpus census at U53, so there is finally a comparand that
+  records its own base.
