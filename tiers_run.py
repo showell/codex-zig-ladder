@@ -99,7 +99,17 @@ def run_refusal(stem):
 
 def natives_stamp():
     """Which build answered the zig column: sha of the two native binaries.
-    The emitter sha would name the SOURCE; the binaries name what ran."""
+    The emitter sha would name the SOURCE; the binaries name what ran.
+
+    WITHIN one tree only. Each native bakes its own build directory in --
+    `<sandbox>/ladder/ast` appears verbatim in both binaries -- and every
+    sandbox is a fresh directory, so two builds of IDENTICAL source in two
+    sandboxes always stamp differently. The stamp answers "are these the
+    binaries I measured a moment ago", never "is this the same build as
+    yesterday's run". Comparing it across sandboxes is a guard that cannot
+    fire: it reads as a difference whatever the source did. To ask whether a
+    source change reached a build, use a behavioural falsifier -- a program
+    that compiles one way and not the other."""
     h = hashlib.sha256()
     for name in ('codexir', 'zigemit'):
         p = HERE / 'native' / name

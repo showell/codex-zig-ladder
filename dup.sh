@@ -6,8 +6,11 @@ cd "$(dirname "$0")" || exit 2
 S="$SANDBOX"; ST="$S/CHAIN-STATUS.txt"
 say() { echo "[$(date -u +%H:%M:%S)] $*" | tee -a "$ST"; }
 say "DUP-ARMS -- codex $(git -C "$CODEX_ROOT" rev-parse --short HEAD), ladder $(git rev-parse --short HEAD)"
-say "plain-U53 natives were ec0d7989cbe3; a match here means the fix never reached the build"
 if ./native_build.sh > "$S/natives.log" 2>&1; then say "natives GREEN"; else say "natives RED"; exit 1; fi
+# The stamp identifies THESE binaries for the rest of this run. It is not
+# comparable to any other run's: the build directory is baked into both
+# natives and every sandbox has a different one. What settles "did the fix
+# reach the build" is gate 1 below, which is behavioural.
 say "natives stamp: $(python3 -c 'import tiers_run; print(tiers_run.natives_stamp())' 2>/dev/null || echo '?')"
 
 # 1. THE PRESENCE CHECK: the new test must build and run now. It fails with two

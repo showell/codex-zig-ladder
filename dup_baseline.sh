@@ -30,9 +30,11 @@ say "BASELINE -- codex $(git -C "$CODEX_ROOT" rev-parse --short HEAD), ladder $(
 say "comparand: $FIXED (codex 88daa0a8, natives 291590b54956)"
 
 if ./native_build.sh > "$S/natives.log" 2>&1; then say "natives GREEN"; else say "natives RED"; exit 1; fi
-STAMP=$(python3 -c 'import tiers_run; print(tiers_run.natives_stamp())' 2>/dev/null || echo '?')
-say "natives stamp: $STAMP"
-if [ "$STAMP" = "291590b54956" ]; then say "STAMP MATCHES THE FIXED ARM -- this is not a baseline"; exit 1; fi
+# Identifies these binaries within this run and nothing beyond it: the build
+# directory is baked into both natives, so two sandboxes never stamp alike
+# even on identical source. The arm is established by the presence check
+# below, which is behavioural and can actually fail.
+say "natives stamp: $(python3 -c 'import tiers_run; print(tiers_run.natives_stamp())' 2>/dev/null || echo '?')"
 
 # THE PRESENCE CHECK, baseline-free: this arm must still REFUSE the new test.
 # If it builds, the tree is not plain U53 and the whole comparison is void.
