@@ -1190,6 +1190,62 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
+## 68. A `let` bound to an immediately-applied lambda chain records the LAMBDA'S type, not the application's result, so the IR contradicts itself
+
+**BOTH ARMS, so the rungs cannot see it.** Update 53, pin `u53-rebank` at
+`58b08c38`, length ZERO -- no local patch under this.
+
+`codex/test/roc-fold-sum.codex:51` applies a lambda to three arguments:
+
+    let total = (\xs base step -> fold-loop xs base step 0) [1, 2, 3, 4] 0 (\acc x -> acc + x)
+
+`total` is an Integer. The IR binds it as a three-argument function:
+
+    (let "total" (fn (list int-default) (fn int-default
+                   (fn (fn int-default (fn int-default int-default)) int-default))) ...)
+
+and then reads it back at the use site as `int-default`
+(`(name "total" int-default)` under `show`). **One binding, two types.** The
+binding carries the type of the LAMBDA; the use site carries the type of the
+APPLICATION, which is the correct one.
+
+**Bare metal says the same thing, which is what makes it the compiler's.**
+`run_seed_probe.sh` on the same chapter, seed `B066CEB5`: the seed's own
+IR-CCE wire binds `total` to the identical function type and uses it as
+`int-default`. So this is not our plug rendering the type checker wrong --
+`native/codexir` and the seed agree, and they agree on something
+self-contradictory.
+
+**Why the ladder stayed green over it.** A defect BOTH arms share is invisible
+to a byte-identity comparison, which is what fourteen rungs are. It surfaces
+only when the emitted zig is actually built: `zig build-exe` rejects
+`expected type 'i64', found 'CxFn3(...)'` because the plug faithfully emitted
+what the IR said. The corpus builds; the rungs compare. This is the case that
+distinguishes them.
+
+**The site is `lower-apply-lambda-chain`** (`codex/compiler/IR/Lowering.codex`),
+which Update 53 changed under COMPILER-32 step 3:
+
+    -   in let fn-ty = build-curried-fun-ty arg-irs 0 n ty
+    +   in let want = expected-or-recorded-ty ty ctx sp
+    +   in let fn-ty = build-curried-fun-ty arg-irs 0 n want
+    -   in apply-chain-fold func-ir arg-irs 0 n (ir-expr-type func-ir) ty sp
+    +   in apply-chain-fold func-ir arg-irs 0 n (ir-expr-type func-ir) want sp
+
+At a `let` with no annotation `ty` is the no-expectation sentinel, so `want` is
+now whatever the checker recorded at `sp` -- and the value flowing into the
+binding is the lambda's type rather than the result of applying it.
+
+**Reach: three corpus programs**, `roc-fold-sum`, `roc-fold-count`,
+`roc-fold-product`, all the same shape.
+
+**NOT YET ESTABLISHED: whether Update 53 introduced this.** The corpus baseline
+(census 2026-08-27) was measured on natives built from `a961dcb6`, a branch
+rather than a release, so the `markers -> refused` transition crosses a base
+change and is not clean evidence on its own. What needs no baseline is the
+observation above: the seed's wire contradicts itself today. Settling the
+"since when" wants one bare-metal probe at the Update 52 seed.
+
 ## 67. OURS. `zig-prelude-decls` is documented as the union over the whole prelude and covers 22 of its 96 declarations, so a program declaring `cx-print` will not compile
 
 **FIXED AND SENT: [PR 98](https://github.com/damiant3/Cobblestone/pull/98), branch `zig-tree-shaking`, backlog row `plugs-backlog.md` 2.02, `Ladder: u52-shake-578`.** Both probes are back in the tier set and green. Stays live here until absorbed.

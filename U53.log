@@ -144,7 +144,33 @@ JUSTIFICATIONS.md. This file is the thread, not the record.
   - It also clears the other tree I moved: the sweep ran with `CODEX_ROOT` on
     `u53-rebank`, not the `u52-rebank` safari's README names.
 
+- **Natives, tier set, corpus census: all three legs GREEN.** Sandbox
+  `20260829T183727Z-u53-chain2` (ladder `de998e0`, codex `58b08c38`), 14 min.
+  Natives stamp `ec0d7989cbe3` -- the presence check, since the previous set
+  was `939d57187a37` from a U50-era pin three days stale.
+  - **Tier set: 20 green, 7 noted, 0 RED -- SET GREEN.** Every noted row reads
+    `0 unexpected, 0 expected-but-agreeing`, so `EXPECTED.txt` is exactly
+    current: no known arm-disagreement has silently closed.
+  - **Corpus: 614 programs, 43 verdicts moved.** Nineteen are improvements
+    (16 `refused -> match`, 3 `markers -> match`). Seven are Update 53's own
+    new tests. Thirteen `zigemit -> codex-refused` are refusal tests the
+    compiler now refuses.
+  - **Three are FINDING 68**, and it is the reason this leg was worth running:
+    `roc-fold-{sum,count,product}` emit zig that will not typecheck, because
+    the IR binds a `let` to the LAMBDA'S type where the use site reads the
+    application's result. **Bare metal produces the same contradiction**
+    (`run_seed_probe.sh`, seed `B066CEB5`), so it is the compiler's and not our
+    plug's -- and a defect both arms share is invisible to fourteen rungs by
+    construction. The rungs compare; the corpus builds.
+- **The reals PR is polished on `zig-plug-real-conversions`** (worktree
+  `cobblestone-reals`), off `58b08c38`: two commits, the banner rewrite dropped
+  because PR 99 owns it, plus a new `codex/test/ops/real-int-conversions` whose
+  eleven lines the zig arm reproduces byte-identically. Bare metal for that test
+  is owed before it is sent.
+
 ## Not done yet
 
-- The tier set both arms, the corpus census, and the owed outbound PRs (the
-  reals, and the second compiler PR U53 asks for by name).
+- Bare-metal `.expected` for the new reals test; send the reals PR.
+- The second compiler PR U53 asks for by name.
+- Finding 68: settle whether Update 53 introduced it, with one probe at the
+  Update 52 seed.
