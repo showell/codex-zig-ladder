@@ -1236,36 +1236,39 @@ recording both commits. Then:
 but the newest N and prunes the worktrees.
 
 The failure this prevents is not a run that crashes. It is a run that reads
-yesterday's artifact and PASSES. Nearly every output the ladder produces is
+yesterday's artifact and PASSES. Every output the ladder produces is
 gitignored -- `ast/*.truth`, `*.truth.prov`, `*.ir`, `*.zig`, `*-subject.codex`,
-`native/*` -- so a shared checkout quietly accumulates a complete set of
-plausible, real, stale files under exactly the names the next run looks for.
+`*-source.codex`, `native/*` -- so a shared checkout quietly accumulates a
+complete set of plausible, real, stale files under exactly the names the next
+run looks for.
 
-**"Nearly" is one file, and it is deliberate: `ast/zigemit-source.codex` is
-TRACKED.** It is the committed provenance snapshot -- diffing it says which
-tree a build came from, and in one finding that was the evidence that settled
-which of two trees a measurement belonged to (`findings/CLOSED.md`, the
-closure defect: a build on the pin rewrites `cx_heap_*` to `cx_arena_state`,
-a build on PR 77's tip leaves it byte-identical). A fingerprint says THAT
-something changed; this says WHAT.
+**`ast/zigemit-source.codex` was the one exception until 2026-08-29**, tracked
+as a "committed provenance snapshot" on the theory that diffing it says which
+tree a build came from; it was once the evidence that settled which of two
+trees a closure measurement belonged to. Untracked now, because the theory
+did not survive being measured. The committed copy was 279,579 bytes against
+the 366,757 a real Update 53 bundle produces -- three days and six ZigEmitter
+commits stale, 2,380 lines out, a quarter smaller than reality. Diffing
+against it did not say which tree a build came from; it said which tree, plus
+everything that had happened since, with no way to tell those apart. The
+stale-bank problem in miniature.
 
-The cost is real and worth stating rather than discovering. Every native build
-rewrites it, so it shows as modified after any run and has been committed by
-accident at least once (`f4878d0`, a findings commit that carried a
-regenerated bundle). And a fresh sandbox DOES carry it -- so this one file is
-a hole in the guarantee below. Nothing currently reads it stale, because
-`tool_identity.built_from` needs the ring plug bundle too and that one IS
-ignored, so a fresh tree answers "not bundled" rather than answering wrongly.
-That protection is a coincidence of the gitignore, not a design. Do not
-relax it without replacing it.
+It could not have stayed current either. `build_one` deletes the subject and
+re-bundles before every build, so the tracked file was never a deliberate
+snapshot -- it was whichever bundle somebody last happened to commit, and the
+last one arrived as a side effect of a findings commit (`f4878d0`). **Nothing
+was lost by untracking it: git history holds every snapshot ever committed,
+so `git show <sha>:ast/zigemit-source.codex` still recovers the one that
+settled the closure finding.** Tracking the live file only ever added the
+chance to read a stale one.
 Two instances in one afternoon on 2026-08-21: a debug-instrumented
 `native/codexir` and a clobbered `ast/codexir.zig` left where a later census
 would have used them without complaint, and blobs written to fixed `/tmp`
 paths that a second experiment would have overwritten.
 
-A fresh worktree carries none of those -- the one exception named above
-excepted -- which is the whole point: a run that needs natives must build them
-or be handed them deliberately, and cannot inherit them by accident. Worktrees share the object store, so the cost is
+A fresh worktree carries none of those, which is the whole point: a run that
+needs natives must build them or be handed them deliberately, and cannot
+inherit them by accident. Worktrees share the object store, so the cost is
 the working tree rather than the history -- about 400-700 MB a sandbox against
 119 GB free on the droplet.
 
@@ -1787,11 +1790,11 @@ The bundlers are PowerShell (`ast/bundle_<m>.ps1`), because they call the
 repository's own `plug-build-lib.ps1` to resolve chapter cites. That is why pwsh
 is a requirement here.
 
-Everything generated is ignored and regenerates from a script beside it, with
-one deliberate exception: `ast/zigemit-source.codex` is committed as a
-provenance snapshot, for the reason given under "One sandbox per experiment".
-The scripts are the record; that one file is a record of which tree last built
-it, which is a different job.
+Everything generated is ignored and regenerates from a script beside it. The
+scripts are the record. There are no exceptions as of 2026-08-29; the last
+one, `ast/zigemit-source.codex`, is written up under "One sandbox per
+experiment" as a worked example of why a generated file in source control
+goes stale and misleads rather than documenting anything.
 
 ## Open questions
 

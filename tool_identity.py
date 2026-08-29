@@ -68,15 +68,14 @@ def built_from(name):
     """
     subject = AST / SUBJECT[name]
     plug = AST / PLUG
-    # BOTH, and the conjunction is load-bearing in a way worth naming.
-    # ast/zigemit-source.codex is TRACKED -- the committed provenance snapshot
-    # -- so a fresh worktree carries a copy of it that no build in that tree
-    # produced. The ring plug bundle beside it is gitignored and therefore
-    # genuinely absent, which is the only reason a fresh tree answers None
-    # here instead of fingerprinting a stale subject. That is a coincidence of
-    # the gitignore, not a design. If PLUG ever becomes tracked, or this test
-    # ever weakens to `or`, a fresh tree starts answering confidently and
-    # wrongly.
+    # BOTH, and both are gitignored, so a fresh worktree genuinely has
+    # neither and this returns None rather than fingerprinting something no
+    # build here produced. That was a coincidence until 2026-08-29:
+    # zigemit-source.codex was tracked, so a fresh tree carried a stale copy,
+    # and only the ring plug bundle's absence kept the answer honest. It is
+    # untracked now and the guarantee is real -- see README, "One sandbox per
+    # experiment". Keep it that way: a tracked input here means a fresh tree
+    # starts answering confidently and wrongly.
     if not (subject.is_file() and plug.is_file()):
         return None
     h = hashlib.sha256()
