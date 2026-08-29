@@ -94,18 +94,11 @@ bash "$T/ast/ringplug_build.sh" > ast/ringplug.build.log 2>&1 \
 # links it. Four shas, so a change to any of them misses and every other run
 # hits. The subject is deliberately NOT in this list -- it arrives on stdin
 # at step 4 and cannot reach the binary, which is the whole point.
-want=$(python3 - <<'FP'
-import hashlib, pathlib, subprocess, sys
-sys.path.insert(0, '.')
-import seed_identity
-h = hashlib.sha256()
-for f in ('ast/zigc-subject.codex', 'ast/ringplug-source.codex'):
-    h.update(pathlib.Path(f).read_bytes())
-h.update(seed_identity.seed_sha256().encode())
-h.update(subprocess.run(['zig', 'version'], capture_output=True, text=True).stdout.strip().encode())
-print(h.hexdigest())
-FP
-)
+#
+# The list moved to tool_identity.py on 2026-08-29, when corpus_run.py needed
+# the same four for the same reason. It was correct here first; what it did
+# not have was a name.
+want=$(python3 -c "import sys; sys.path.insert(0, '.'); import tool_identity; print(tool_identity.built_from('zigc') or '')")
 [ -n "$want" ] || { echo "FINGERPRINT FAILED"; exit 1; }
 
 if [ -x "$T/zigc" ] && [ "$(cat "$T/zigc.fp" 2>/dev/null)" = "$want" ]; then

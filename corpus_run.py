@@ -42,6 +42,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # ladder-root-bootstrap
 import compute_lock
+import tool_identity
 from cite_resolve import resolve
 from ladder_root import CODEX, LADDER
 
@@ -416,9 +417,16 @@ def load_bank():
 
 
 def current_tools():
-    """The shas of the natives this invocation is actually running."""
-    return {t.name: hashlib.sha256(t.read_bytes()).hexdigest()[:16]
-            for t in (CODEXIR, ZIGEMIT)}
+    """What the natives this invocation runs were BUILT FROM.
+
+    Not their binary shas. Zig bakes the build directory into every binary,
+    and every ladder run is a fresh sandbox, so binary shas differ on every
+    run whatever the source did -- which made this function's answer, and
+    therefore the staleness banner below, a constant. tool_identity derives
+    the answer from the four inputs that decide the binary instead. See its
+    module docstring for the incident.
+    """
+    return tool_identity.natives()
 
 
 def current_base():
@@ -451,21 +459,34 @@ def current_base():
 
 
 def bank_describes_this_tree(bank):
-    """Whether the bank was taken with the natives now in `native/`.
+    """Whether the bank was taken with the tools now in `native/`.
 
     A diff against a bank taken with DIFFERENT tools is a diff between two
     measurements, not a report about a change -- and it reads identically to
     the real thing unless something says so. Saying so is this function.
+
+    Three answers, not two. UNKNOWABLE is for a bank from before 2026-08-29,
+    whose `tools` field holds binary shas: those are not comparable to
+    anything, here or in the bank, so the honest report is that the question
+    cannot be asked of it rather than a diff of two incomparable numbers. It
+    is also the answer when this tree has not been bundled and the
+    fingerprints come back None.
     """
-    want = (bank.get('meta') or {}).get('tools') or {}
-    return want == current_tools(), want
+    meta = bank.get('meta') or {}
+    want = meta.get('built_from')
+    if want is None:
+        return 'unknowable', meta.get('tools') or {}
+    now = current_tools()
+    if any(v is None for v in now.values()):
+        return 'unknowable', want
+    return ('same' if want == now else 'different'), want
 
 
 def write_bank(programs):
     meta = {
         'date': datetime.date.today().isoformat(),
         'zig': zig_version(),
-        'tools': current_tools(),
+        'built_from': current_tools(),
         'base': current_base(),
     }
     CENSUS.write_text(json.dumps({'meta': meta, 'programs': programs},
@@ -510,17 +531,27 @@ def print_bank_diff(bank, programs):
     # unrelated measurements subtracted from each other, which is exactly how
     # 94 phantom regressions got reported on 2026-08-27. Loud, and before the
     # rows, because the rows are what gets read.
-    same, want = bank_describes_this_tree(bank)
-    if not same:
+    verdict, want = bank_describes_this_tree(bank)
+    if verdict != 'same':
         now = current_tools()
-        print(f'\n*** THE BANK IS NOT ABOUT THIS TREE ***')
-        for t in sorted(set(want) | set(now)):
-            mark = '  ' if want.get(t) == now.get(t) else '<-'
-            print(f'      {t:9s} bank {want.get(t, "(absent)")}  '
-                  f'now {now.get(t, "(absent)")} {mark}')
-        # The shas say the binaries differ. They cannot say whether the bank
-        # came from a RELEASE or from a branch carrying unlanded work, and that
-        # is the difference between "my change moved this" and "the base did".
+        if verdict == 'unknowable':
+            print('\n*** THIS BANK CANNOT SAY WHICH TREE IT IS ABOUT ***')
+            print('      It records `tools` as BINARY shas, which is what banks')
+            print('      held before 2026-08-29. A binary carries its own build')
+            print('      directory, so those numbers are not comparable to this')
+            print('      tree or to each other. Re-bank to get an answer at all.')
+            for t in sorted(want):
+                print(f'      {t:9s} bank {want[t]} (a binary sha, incomparable)')
+        else:
+            print('\n*** THE BANK IS NOT ABOUT THIS TREE ***')
+            for t in sorted(set(want) | set(now)):
+                mark = '  ' if want.get(t) == now.get(t) else '<-'
+                print(f'      {t:9s} bank {want.get(t, "(absent)")}  '
+                      f'now {now.get(t, "(absent)")} {mark}')
+        # The fingerprints say the tools were built from different sources.
+        # They cannot say whether the bank came from a RELEASE or from a branch
+        # carrying unlanded work, and that is the difference between "my change
+        # moved this" and "the base did".
         was, isnow = (bank.get('meta') or {}).get('base'), current_base()
         if was:
             for k in ('codex', 'codex_branch', 'ladder', 'seed'):

@@ -124,22 +124,29 @@ CODEX_ROOT="$PIN" "$T/native_build.sh" > "$T/logs/overnight-restore-natives.log"
 # their committed state, which is exactly what froze the tracked copies at an
 # old census while census.json advanced -- the two then disagreed about 94
 # programs. The bank is corpus/census.json and it is written only by --bank.
+# Did the restore land on the tools the census was banked with? This asked
+# the question of the BINARY shas until 2026-08-29 and could not answer it:
+# a binary carries its own build directory, so it differed every time and
+# the check printed a standing excuse about cross-venue CPU targets beneath
+# a NOTE that never went away. The excuse was half true and load-bearing on
+# nothing. Source fingerprints ARE comparable across venues and sandboxes,
+# so a mismatch here is now a real finding: the restore did not restore.
 python3 - "$T" <<'PY'
-import hashlib, json, pathlib, sys
+import json, pathlib, sys
 T = pathlib.Path(sys.argv[1])
-meta = json.load(open(T / 'corpus' / 'census.json'))
-want = meta.get('meta', {}).get('tools') or meta.get('tools')
+sys.path.insert(0, str(T))
+import tool_identity
+want = (json.load(open(T / 'corpus' / 'census.json')).get('meta') or {}).get('built_from')
 for name in ('codexir', 'zigemit'):
-    got = hashlib.sha256((T / 'native' / name).read_bytes()).hexdigest()[:16]
-    exp = want[name][:16] if isinstance(want, dict) else None
-    state = 'RESTORED' if got == exp else f'NOTE: differs from banked meta ({exp})'
-    print(f'  {name}: {got} {state}')
-    if got != exp:
-        # Cross-venue, this is expected: the banked shas are laptop-built
-        # binaries and zig targets the native host CPU. The rebuild ITSELF
-        # is the restore; the sha match only proves same-host identity.
-        print(f'  ({name} freshly rebuilt from the pin; a binary-sha match '
-              'is only expected on the host that banked the census)')
+    got = tool_identity.built_from(name)
+    if want is None:
+        print(f'  {name}: {got}  (census predates source-derived identity; '
+              'nothing to compare -- re-bank)')
+    elif got == want.get(name):
+        print(f'  {name}: {got} RESTORED')
+    else:
+        print(f'  {name}: {got} DIFFERS from the banked {want.get(name)} '
+              '-- the restore did not land on the banked tools')
 PY
 
 PHASE=done; STAMP "chain complete"
