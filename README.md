@@ -1018,22 +1018,28 @@ Then the smaller pieces:
   host. Read their headers; "The venue" below says where they stand.
 
 Costs -- this section is the one home for timing figures; re-measure and
-update them here at every rebank. Measured 2026-08-27 (seed `C3181693`,
-pin `012a9d2e`, this 8 GB box, `CODEX_MEM_MB=3072` TCG, per-unit
-`rung_stamp` timestamps in the log):
+update them here at every rebank. Measured 2026-08-29 (seed `B066CEB5`,
+pin `u53-rebank` at `58b08c38`, this 8 GB box, `CODEX_MEM_MB=3072` TCG,
+per-unit timestamps in `logs/rebank-20260829-170007.log`):
 
-- **`rebank_all.sh` end to end is 42 minutes** (2541 s) -- 28 for the
-  twelve truth arms (1680 s), 51 s for the plug build, 13.5 for the
-  trailing sweep (861 s). Truth arms, cheapest first: lex 14s, parse 47s,
-  desugar 56s, scope 69s, check 118s, lower 157s, ir_to_codex 147s,
-  roundtrip 149s, lir_to_x86 31s, ir_to_wire 162s, **ir_to_x86 346s,
-  passes_to_x86 384s**. The last two are 43 per cent of the truth side
-  between them and always have been.
-- **The sweep** runs all fourteen rungs in 13.5 minutes (861 s, of which
-  51 s is the plug rebuild before the first rung): lex 4s, parse 12s,
-  desugar 16s, scope 18s, check 140s, lower 113s, ir_to_codex 57s,
-  roundtrip 115s, lir_to_x86 4s, ir_to_wire 60s, ir_to_x86 111s,
-  passes_to_x86 160s.
+- **`rebank_all.sh` end to end is 43.5 minutes** (2612 s) -- 31.5 for the
+  twelve truth arms (1894 s) and 13 for the trailing sweep (777 s elapsed
+  by its own report, 718 s across the units). Truth arms, cheapest first:
+  lex 17s, parse 56s, desugar 64s, scope 71s, check 129s, lower 168s,
+  ir_to_codex 178s, roundtrip 164s, lir_to_x86 29s, ir_to_wire 186s,
+  **ir_to_x86 362s, passes_to_x86 470s**. The last two are 44 per cent of
+  the truth side between them and always have been -- 43 per cent at
+  Update 51, so the shape is stable across two seeds.
+- **The sweep** runs all fourteen rungs in 13 minutes: lex 5s, parse 19s,
+  desugar 20s, scope 24s, check 55s, lower 64s, ir_to_codex 69s,
+  roundtrip 68s, lir_to_x86 6s, ir_to_wire 63s, ir_to_x86 132s,
+  passes_to_x86 193s.
+- **The rest of a cycle, same box and seed.** `native_build.sh` 341 s;
+  `tiers_run.py` as a set 26 s once the natives exist (the bare columns
+  come from `findings/gold/uNN/` and cost nothing); `corpus_run.py --run`
+  over 614 programs 463 s; `codexzig`'s eight stages 449 s, three of them
+  guests. A natives-plus-tiers-plus-corpus chain is therefore about
+  14 minutes, which is what makes it cheap enough to run on every Update.
   `sweep_canary.sh` (lex+parse+desugar) is a REMOTE driver -- it sources
   `sweep_lib.sh`, calls `run_unit_remote`, and assumes `sweep_prep.sh` has
   run -- and its own header budgets 2-3 minutes including the straw. Adding
