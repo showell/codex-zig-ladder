@@ -75,10 +75,17 @@ tier set's zig arm and `codexzig` are blocked with it. `zigemit` survives only
 because it does not bundle `Lowering.codex`.
 
 Sent as **PR 96** (closed unabsorbed -- their change 20398 already carried the
-identical fix), tag `u52-dup-arms-unblocked`;
-three deletions, and with them `native_build.sh` returns 0. Re-bank at Update
-52 when that lands, or at Update 53, whichever arrives first. Until then the
-ladder's answer to "which seed do you agree with" is honestly `C3181693`.
+identical fix), tag `u52-dup-arms-unblocked`; three deletions, and with them
+`native_build.sh` returns 0. **That is closed: Update 53 arrived carrying the
+fix and is what this table is banked against.** The paragraph above is kept
+because the defect class is live -- PR 103 is the zig plug learning to drop a
+shadowed arm rather than refuse it -- not because the ladder is still waiting
+on anything.
+
+This paragraph said "the ladder's answer is honestly `C3181693`" for a week
+after that stopped being true, sitting three lines under a table that already
+said Update 53. Whatever else is wrong here, prefer `ladder_status.py`: the
+table is maintained by hand and this is what hand-maintenance does.
 
 Note for anyone reading a green result from this period: their own release
 gate did not see this, because Update 52 unblocked its DDC by teaching the C#
@@ -1059,11 +1066,20 @@ per-unit timestamps in `logs/rebank-20260829-170007.log`):
   mechanism; nobody has ablated it, so read it as the likely cause rather
   than a measured one.
 - **The census re-pin** (`native_build.sh`, then `corpus_run.py --changed
-  --bank`): the natives are 11 minutes, and the census itself is 10
-  minutes for the whole corpus -- transpile of 596 programs plus
-  build-and-run of the clean ones, no QEMU anywhere. Every Update
-  re-pin reruns all of it, because the natives change and so every
-  emitted zig moves.
+  --bank`): the natives are 11 minutes, and the census itself is about 8-10
+  minutes for the whole corpus -- transpile of 614 programs plus
+  build-and-run of the 326 clean ones, no QEMU anywhere. Every Update re-pin
+  reruns all of it, because the natives are rebuilt and every emitted zig has
+  to be re-derived before it can be compared.
+
+  **It does not follow that the emitted zig MOVES, and this line used to say
+  it did.** That is the binary-sha fallacy in prose: the natives change on
+  every build -- their shas move for reasons as trivial as the directory they
+  were built in -- while the zig they emit usually does not. Measured
+  2026-08-29 across a real plug change: 581 of 582 emitted files
+  byte-identical. Across Update 52 to 53: 69 of 69. Re-derive everything;
+  expect almost all of it to come back the same, and treat the handful that
+  moved as the result.
 
 Run long jobs detached and watch for the markers above.
 
@@ -1220,23 +1236,93 @@ recording both commits. Then:
 but the newest N and prunes the worktrees.
 
 The failure this prevents is not a run that crashes. It is a run that reads
-yesterday's artifact and PASSES. Every output the ladder produces is
+yesterday's artifact and PASSES. Nearly every output the ladder produces is
 gitignored -- `ast/*.truth`, `*.truth.prov`, `*.ir`, `*.zig`, `*-subject.codex`,
 `native/*` -- so a shared checkout quietly accumulates a complete set of
 plausible, real, stale files under exactly the names the next run looks for.
+
+**"Nearly" is one file, and it is deliberate: `ast/zigemit-source.codex` is
+TRACKED.** It is the committed provenance snapshot -- diffing it says which
+tree a build came from, and in one finding that was the evidence that settled
+which of two trees a measurement belonged to (`findings/CLOSED.md`, the
+closure defect: a build on the pin rewrites `cx_heap_*` to `cx_arena_state`,
+a build on PR 77's tip leaves it byte-identical). A fingerprint says THAT
+something changed; this says WHAT.
+
+The cost is real and worth stating rather than discovering. Every native build
+rewrites it, so it shows as modified after any run and has been committed by
+accident at least once (`f4878d0`, a findings commit that carried a
+regenerated bundle). And a fresh sandbox DOES carry it -- so this one file is
+a hole in the guarantee below. Nothing currently reads it stale, because
+`tool_identity.built_from` needs the ring plug bundle too and that one IS
+ignored, so a fresh tree answers "not bundled" rather than answering wrongly.
+That protection is a coincidence of the gitignore, not a design. Do not
+relax it without replacing it.
 Two instances in one afternoon on 2026-08-21: a debug-instrumented
 `native/codexir` and a clobbered `ast/codexir.zig` left where a later census
 would have used them without complaint, and blobs written to fixed `/tmp`
 paths that a second experiment would have overwritten.
 
-A fresh worktree carries none of those, which is the whole point: a run that
-needs natives must build them or be handed them deliberately, and cannot
-inherit them by accident. Worktrees share the object store, so the cost is
+A fresh worktree carries none of those -- the one exception named above
+excepted -- which is the whole point: a run that needs natives must build them
+or be handed them deliberately, and cannot inherit them by accident. Worktrees share the object store, so the cost is
 the working tree rather than the history -- about 400-700 MB a sandbox against
 119 GB free on the droplet.
 
 Pointing `CODEX_ROOT` inside the sandbox is deliberate too: it makes "someone
 pulled the shared checkout mid-run" stop being a thing that can happen.
+
+## What identifies a run
+
+A ladder result is never identified by one thing. It takes a pair of refs --
+which Codex tree was measured, and which ladder tree did the measuring -- plus
+an identity for the two native tools that did it. Neither repo's `git log`
+holds the pair, which is what `U<NN>.log` and a sandbox's `MANIFEST` are for.
+
+**The natives cannot identify themselves, and this cost real time to learn.**
+Zig bakes the build directory into every binary it produces, for stack traces.
+Every ladder run happens in a fresh sandbox by design. So a sha over
+`native/codexir` moves on every single run whatever the source did -- the main
+checkout's binaries still read
+`/home/steve/runs/20260826T160728Z-u50-harness-lift/ladder/ast` out of a plain
+`grep -a`, because they were built in a sandbox and copied in.
+
+Three mechanisms compared those shas across runs and none of them could work.
+Two of them could only ever report a difference, which made a guard phrased
+"the stamp must have changed, or the fix never reached the build" pass every
+time; one could only ever report the bank as stale, which made the census
+banner fire on every run and re-banking pointless. **A check that has lost the
+ability to fail has not lost the ability to look like a check**, and that is
+the failure mode this whole tree is built to prevent.
+
+`tool_identity.py` names a tool by its INPUTS instead -- the four things
+`build_one` actually feeds it:
+
+    the bundled subject   what this tool IS
+    the ring plug bundle  what transpiled it
+    the seed              what compiled it
+    the zig version       what linked it
+
+None of them mentions a path, which is the property that makes the answer
+portable. `zigc_verify.sh` had exactly this list inline since 2026-08-25,
+where it turns a seven-minute build into an 8.7-second cache check; it was
+right there first and simply had no name until `corpus_run.py` became the
+second user.
+
+So the corpus census records both halves. `meta.built_from` is the tool
+identity; `meta.base` is the source coordinates -- codex sha, branch (or
+`null` and a `codex_points_at` list when detached, which is the normal case),
+ladder sha, seed. `bank_describes_this_tree` answers three ways: **same**,
+**different**, and **unknowable** for a bank taken before 2026-08-29, whose
+`tools` field holds binary shas that cannot be compared to anything.
+
+**The general rule, and the one worth carrying elsewhere: identify a
+measurement by its source coordinates, never by its materialised artifacts.**
+A repo and a ref survive being rebuilt, copied, relocated and pruned. A binary
+does not. And when you build the thing that does the identifying, check that
+it can say NO -- `census_confirm.sh` exists to ask a bank about a tree it has
+never seen, and its negative control (cut at a different ref, expect
+`different`) is not optional.
 
 ## Operating rules
 
@@ -1274,21 +1360,38 @@ pulled the shared checkout mid-run" stop being a thing that can happen.
 How the Codex clone `CODEX_ROOT` points at is managed. This lived in nobody's
 head for a while and the head it lived in got confused, so, written down:
 
-**We measure on our fork's STACK, not on bare upstream, and the stack is a
-BRANCH.** `u50-rebank` points at the pin (`0c4327d5`, which is
-`upstream/master` verbatim). `u50-stack` is that plus the changes we have
-sent and they have not yet taken -- the optimistic version of the next
-Update -- because a number taken on bare upstream is a number about a
-compiler already missing our own fixes. `git diff u50-rebank..u50-stack` is
-exactly the stack, and `ladder_status.py` prints it.
+**The pin is a branch named for the Update.** `uNN-rebank` points at the
+release and nothing else; `ladder_status.py` prints whether it still equals
+`upstream/master`, and today it says `u53-rebank = upstream/master exactly`.
+**At Update 53 the stack has length ZERO** -- the outbound queue emptied into
+the release, so there is currently no `u53-stack` branch and nothing to carry.
 
-As of 2026-08-26 that is one commit carrying four files: `ZigEmitter.codex`
-(PR 85, finding 42) and `IRTextParser.codex` plus two C# call sites (PR 89).
-When a PR lands upstream, drop its part at the pin move rather than carrying
-it twice.
+**When there IS a stack, it is a BRANCH, not working-tree edits**, named
+`uNN-stack`, and `git diff uNN-rebank..uNN-stack` is exactly what we are
+carrying. Drop a PR's part at the next pin move rather than carrying it twice.
 
-**These were uncommitted working-tree edits until 2026-08-26**, and this
-paragraph used to say they were uncommitted on purpose. They were not: they
+**Which of the two you measure on depends on what the number is FOR, and this
+used to be written as one rule.** It is two.
+
+- **A finding, a defect number, a claim in a PR: measure on the STACK.** A
+  number taken on bare upstream is a number about a compiler already missing
+  our own fixes, and it will be wrong in the direction that flatters us.
+  Name the branch in the PR, so the reader can reproduce it.
+- **A BASELINE that later runs are compared against -- the corpus census
+  above all -- is banked on PLAIN UPSTREAM.** It is the tree everything else
+  is measured against, so it has to be one Damian would recognise. A census
+  banked on our stack folds our unlanded branches into every future
+  comparison silently, and the rows never say so. `rebank.sh` enforces this
+  and says why in its header; the 2026-08-29 census is banked at `58b08c38`,
+  bare.
+
+The distinction is not pedantry. The two answers differ by exactly the work
+we have sent and they have not taken, which is the quantity a reviewer most
+needs held still.
+
+**The stack's contents were uncommitted working-tree edits until
+2026-08-26**, and this paragraph used to say they were uncommitted on
+purpose. They were not: they
 were applied to test something and never committed, and the justification
 was written afterwards. A patch is not a commit -- a `git checkout`, a pin
 move, or a stash nobody pops drops it silently, and the next measurement is
@@ -1684,8 +1787,11 @@ The bundlers are PowerShell (`ast/bundle_<m>.ps1`), because they call the
 repository's own `plug-build-lib.ps1` to resolve chapter cites. That is why pwsh
 is a requirement here.
 
-Everything generated is ignored and regenerates from a script beside it. The
-scripts are the record.
+Everything generated is ignored and regenerates from a script beside it, with
+one deliberate exception: `ast/zigemit-source.codex` is committed as a
+provenance snapshot, for the reason given under "One sandbox per experiment".
+The scripts are the record; that one file is a record of which tree last built
+it, which is a different job.
 
 ## Open questions
 
@@ -1693,10 +1799,12 @@ scripts are the record.
   `zigc_verify.sh`, which does the elided middle step and caches the
   expensive build by fingerprint (`rm zigc` forces a rebuild). Its header
   states the reason it exists: "a number nothing re-checks is a number that
-  was true once." **What is still wrong: the transcript names
+  was true once." **Still wrong, verified 2026-08-29: the transcript names
   `ast/repro-mid.codex`, which does not exist and is gitignored
   (`ast/.gitignore`). `zigc_verify.sh` defaults to `ast/repro.codex`, which
-  is tracked.**
+  is tracked.** The fingerprint it caches on moved to `tool_identity.py` on
+  2026-08-29 and is now 16 hex where it was 64, so the first run after that
+  change rebuilds `zigc` once.
 - ~~`passes_to_x86_on_arith`'s paragraph points at finding 11~~ Resolved. Finding 11 was
   withdrawn as filed: the cause was ours, a harness that skipped the driver's
   RESOLVE phase. What survived it -- `emit-record` laying a record out by a
