@@ -122,8 +122,29 @@ JUSTIFICATIONS.md. This file is the thread, not the record.
     size+mtime cache key constant across a transpiler swap. Fixed properly by
     rebuilding from the branch rather than copying.
 
+- **realconv rebased onto U53, and codexzig rebuilt from it.** The branch was
+  two commits above the shaker whose emitter IS U53's byte for byte, so
+  `ZigEmitter.codex` replayed clean; only `plugs-backlog.md` conflicted, where
+  upstream had renumbered our drafts. Resolved by taking upstream's file whole
+  and appending only the reals row, renumbered 2.03 -> **2.06** (2.05 is
+  reserved for PR 99, in flight). Zero duplicate row numbers.
+  - Rebuilt: transpiler `747968f` from `cobblestone-realconv @ da6526f4`,
+    448.8 s, **fixed point HOLDS**, arith matches all nine lines. Presence
+    check: the emitted zig carries `cx_real_to_int` and `cx_real_from_int`
+    twice each and no `no emitter for real-*` refusal.
+  - The hand-placed binaries are deleted. `generated/local/codexzig` is now
+    produced by a build with provenance rather than by `cp -p`.
+- **safari-codex sweeps GREEN on the new binary.** 44 s -- COLD, which is the
+  presence check: the new binary changes safari's size+mtime cache key, so a
+  3 s warm run would have graded the old artifacts and told us nothing.
+  - **All 69 tracked artifacts byte-identical to the U52-based build**, and
+    65 of them were rewritten during the sweep, so this is "regenerated and
+    inert" rather than "never touched". 0 of 19 emitted files carry a
+    missing-emitter refusal; 11 use the real conversions.
+  - It also clears the other tree I moved: the sweep ran with `CODEX_ROOT` on
+    `u53-rebank`, not the `u52-rebank` safari's README names.
+
 ## Not done yet
 
-- Rebase `zig-plug-real-int-conversions` onto U53 and rebuild codexzig from it,
-  so safari's slot is filled by a build with provenance.
-- The tier set both arms, the corpus census, and the owed outbound PRs.
+- The tier set both arms, the corpus census, and the owed outbound PRs (the
+  reals, and the second compiler PR U53 asks for by name).
