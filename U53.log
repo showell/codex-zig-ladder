@@ -181,9 +181,31 @@ JUSTIFICATIONS.md. This file is the thread, not the record.
   is checked against an answer it could not have influenced. `bare_expected.py`
   is that rig, carried back.
 
+- **The second compiler PR is rebased onto U53 and measured.** Branch
+  `compiler-second-pr-u53` (worktree `cobblestone-second`), three commits,
+  compiler-only, +94/-4. Two cherry-picked clean; the third conflicted where
+  U53's COMPILER-32 work rewrote the same arm, both widening the sentinel test
+  and changing which sentinel is passed down -- resolved to OUR semantics in
+  THEIR convention, since taking either side whole would have reverted one of
+  them.
+  - A/B against arm A (plain U53, natives `ec0d7989cbe3`; this run
+    `432bbd594ba9`): **clean 326 -> 330, 0 lost, 0 verdicts moved** among the
+    326 shared. No regression.
+  - Newly clean: `hamt-test`, `kvstore-test` (finding 59's named targets, both
+    `match`), `ota-gate-real` (unpredicted), and `roc-fold-empty`.
+  - **`list-test` stays blocked, and that is the documented outcome** --
+    finding 59 is recorded FIXED, PARTIAL with finding 62 explaining why. The
+    run reproduces the original result exactly.
+  - **`roc-fold-empty` clears finding 58 and lands on finding 68**, refused
+    with the identical `expected 'i64', found 'CxFn3(...)'`. Its source is the
+    same construct as the other three finding-68 programs. So the register's
+    "markers to match" claim, made on the old base, no longer holds on U53 --
+    and the difference between those two measurements is Update 53.
+
 ## Not done yet
 
-- The second compiler PR U53 asks for by name.
+- Send the second compiler PR (three fixes; the fourth they asked for is
+  measured-and-withdrawn).
 - Finding 68: settle whether Update 53 introduced it, with one probe at the
   Update 52 seed.
 - Re-bank the corpus census at U53, so there is finally a comparand that

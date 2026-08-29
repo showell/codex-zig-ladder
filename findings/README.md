@@ -1236,8 +1236,27 @@ At a `let` with no annotation `ty` is the no-expectation sentinel, so `want` is
 now whatever the checker recorded at `sp` -- and the value flowing into the
 binding is the lambda's type rather than the result of applying it.
 
-**Reach: three corpus programs**, `roc-fold-sum`, `roc-fold-count`,
-`roc-fold-product`, all the same shape.
+**Reach: FOUR corpus programs.** `roc-fold-sum`, `roc-fold-count`,
+`roc-fold-product` -- and `roc-fold-empty`, which is the one that matters,
+because it is what finding 58's fix would otherwise clear. Measured
+2026-08-29 on Update 53 plus findings 57/58/59: `roc-fold-empty` moves out of
+`markers` (so the empty-list fix works and the program now gets past it) and
+lands on this, with the identical error:
+
+    expected type 'i64', found 'CxFn3(*CxList(i64), i64, CxFn2(i64,i64,i64), i64)'
+
+Its source is the same construct as the other three, differing only in the
+list contents -- `roc-fold-empty:44` against `roc-fold-sum:51`:
+
+    let total = (\xs base step -> fold-loop xs base step 0) [] 42 (\acc x -> acc + x)
+
+**This is evidence, not proof, that Update 53 introduced it.** The
+COMPILER-30 row records our own earlier report that `roc-fold-empty` goes
+"markers to match" on the old base, which is a claim about a tree where this
+defect was not yet present. That claim and today's measurement disagree, and
+the difference between them is Update 53. Settling it still wants one probe at
+the Update 52 seed; until then the baseline-free observation stands on its
+own -- the seed's wire contradicts itself today.
 
 **NOT YET ESTABLISHED: whether Update 53 introduced this.** The corpus baseline
 (census 2026-08-27) was measured on natives built from `a961dcb6`, a branch
