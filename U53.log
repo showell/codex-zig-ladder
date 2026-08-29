@@ -228,13 +228,25 @@ JUSTIFICATIONS.md. This file is the thread, not the record.
   measured-and-withdrawn).
 - Finding 68: settle whether Update 53 introduced it, with one probe at the
   Update 52 seed.
-- **Re-bank the corpus census at U53 -- UNBLOCKED, and now worth doing**
-  (2026-08-29, `1453691`). `tool_identity.py` makes the tool identity
-  source-derived, so a bank taken today can be agreed with tomorrow and the
-  banner can go quiet honestly. Do it on the next full corpus run rather
-  than spending eight minutes on its own. The original wording of this item
-  is kept below because the reason it did not work is the interesting part.
-  The bank's
+- **Re-bank the corpus census at U53 -- DONE** (2026-08-29, sandboxes
+  `20260829T224156Z-u53-rebank-census` and `20260829T225538Z-u53-census-confirm`,
+  both retired). Banked at PLAIN upstream `58b08c38`, not on our stack, so the
+  census stays a baseline Damian would recognise. 614 programs against the old
+  bank's 606, none dropped. `meta` now records `base` -- codex ref, ladder ref
+  and seed -- alongside `built_from`, where the old bank recorded neither.
+  - The self-check inside `rebank.sh` passed: a bank describes the tree that
+    wrote it. That was 'different' by construction until today.
+  - **The check that matters is cross-tree and it passed too.** A second
+    sandbox at the same two refs, bundled independently with its own pwsh and
+    its own generator, computed `8632b51e/f4a03c87` -- the banked numbers
+    exactly -- and `bank_describes_this_tree` answered `same` about a tree the
+    bank had never seen. A fingerprint that quietly encoded the sandbox would
+    have passed the self-check and failed this one, which is why both exist.
+  - Nit not fixed, deliberately: `meta.base.codex_branch` reads `HEAD` because
+    a sandbox worktree is detached. The codex sha beside it is authoritative,
+    so this is cosmetic, but "HEAD" reads like a branch name and is not one.
+  - The original wording of this item is kept below because the reason it did
+    not work is the interesting part. The bank's
   staleness gate is `bank_describes_this_tree`, which compares
   `meta.tools` -- the shas of the two native binaries. Zig bakes the build
   directory into each binary for its stack traces, so the shas move whenever
