@@ -228,8 +228,13 @@ JUSTIFICATIONS.md. This file is the thread, not the record.
   measured-and-withdrawn).
 - Finding 68: settle whether Update 53 introduced it, with one probe at the
   Update 52 seed.
-- ~~Re-bank the corpus census at U53~~ **-- this item does not work as
-  written, and re-banking would not deliver it** (2026-08-29). The bank's
+- **Re-bank the corpus census at U53 -- UNBLOCKED, and now worth doing**
+  (2026-08-29, `1453691`). `tool_identity.py` makes the tool identity
+  source-derived, so a bank taken today can be agreed with tomorrow and the
+  banner can go quiet honestly. Do it on the next full corpus run rather
+  than spending eight minutes on its own. The original wording of this item
+  is kept below because the reason it did not work is the interesting part.
+  The bank's
   staleness gate is `bank_describes_this_tree`, which compares
   `meta.tools` -- the shas of the two native binaries. Zig bakes the build
   directory into each binary for its stack traces, so the shas move whenever

@@ -273,15 +273,30 @@ would not have worked: the new bank goes stale the moment the next sandbox is
 cut. The 2026-08-29 dup-arms run paid for this the long way -- its corpus leg
 could conclude nothing, and settling the question needed a whole second arm.
 
-**Two candidate fixes, neither built, Steve's call.** Make the tool identity
-SOURCE-derived -- the bundle fingerprint of plug + harness + seed + zig
-version, which `zigc_verify.sh` already computes for its build cache -- so it
-tracks what the tools were built FROM. Or keep the path out of the binaries
-so they are reproducible, which is the root-cause fix but trades against the
-panic traces the corpus reads on a crash. `meta.base` already records the
-refs and should stay either way; it is the half that works.
+**BUILT the same day** (`tool_identity.py`, Steve's call to go ahead). The
+tool identity is now SOURCE-derived: the sha of the bundled subject, the ring
+plug bundle that transpiles it, the seed that compiles it and the zig that
+links it -- the four inputs `build_one` actually feeds a native, none of which
+mentions a path. `zigc_verify.sh` had exactly this list inline since 08-25 and
+was its first user; it calls the module now.
 
-**Until one is built, a bank diff is not evidence.** Two arms, or nothing.
+Measured before it was believed: the same four inputs in a different sandbox
+give the same fingerprint, an unbundled tree answers "cannot tell" rather than
+a wrong number, a byte added to the plug bundle moves BOTH tools, and a byte
+added to one subject moves only that one. `bank_describes_this_tree` answers
+three ways now -- same, different, and UNKNOWABLE for a pre-08-29 bank whose
+`tools` field holds binary shas that cannot be compared to anything. **`same`
+is reachable for the first time.**
+
+The root-cause fix -- keeping the path out of the binaries so they are
+reproducible -- was NOT done and is a separate question. It trades against the
+panic traces the corpus reads when a program crashes, and nothing needs it now
+that identity comes from source.
+
+**Re-banking the corpus census at U53 is now worth doing**, and was not before:
+a bank written today records `built_from` and a run tomorrow can agree with it.
+Until that bank exists, a bank diff is still not evidence. Two arms, or
+nothing.
 
 ## Generated files do not belong in the repo tree (Steve, 2026-08-27)
 
