@@ -32,6 +32,41 @@ JUSTIFICATIONS.md. This file is the thread, not the record.
     second compiler PR (`compiler-only-second-pr`, 3 unsent commits),
     reserved in the COMPILER-30 row. Needs a rebase onto U53.
 
+- `248b938` BOX.md: the before/during/after checklist for compute jobs.
+  Its After step now requires a line in this file.
+- `2403dad` seed_identity: U53's release note drops the word "seed" before
+  the hash, so the bank would have been named `truth/seed-b066ceb5` instead
+  of `truth/u53`. Verified against every release seed 42-53; the delta is one
+  row.
+
+## Steps (continued)
+
+- **Step 2, the seed canary: GREEN.** Sandbox
+  `20260829T164725Z-u53-canary` (ladder `2403dad`, codex `58b08c38`), log
+  `canary.log`. One subject -- `codex/test/plug-oracle-arith.codex`,
+  unchanged between U52 and U53, so the seed is the only variable --
+  compiled by both seeds on bare metal.
+  - Both 5.0 s, `SIZE:` declared == got on both, no error anywhere in the
+    log. The new seed boots under our QEMU flags, takes the ring preload,
+    and our reader parses its output.
+  - **The find, before any compute:** `seed_identity.py` did not recognise
+    U53's note (`2403dad` above). This is the second release form it has
+    needed teaching, and the canary is where it should be caught.
+  - **It previews the bank diff.** Diagnostics BYTE-IDENTICAL (14 lines,
+    same codes and positions); map same 189 rows, 2 bytes; image 1,552 bytes
+    LARGER and diverging from byte 9. So expect the x86/image truths to move
+    and the front-end truths to hold.
+  - Presence checks, both baseline-free: the extracted seeds hash to
+    `61c81b04d0c3cc2e`/2,933,240 and `b066ceb5fe8fc9e8`/3,064,878; and the
+    two outputs DIFFER, which is what says the `seed=` parameter was honoured
+    rather than silently ignored. Byte-identical output here would have been
+    a canary that tested nothing and passed.
+  - `check_paths.py` reports FAIL on the two `zig-plug` build-output
+    artifacts. That is the ordinary fresh-sandbox state -- they appear after
+    `cycle.sh` -- and the canary is bare-metal only, so it does not need
+    them.
+
 ## Not done yet
 
-- Pin branch, canary, truth arms, bank, zig arms, tiers, census.
+- Pin branch `u53-rebank`, tier bare columns, truth arms, bank, zig arms,
+  tiers, census.
