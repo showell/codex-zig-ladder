@@ -1190,7 +1190,7 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
-## 68. A `let` bound to an immediately-applied lambda chain records the LAMBDA'S type, not the application's result, so the IR contradicts itself
+## 68. SENT as issue 102. A `let` bound to an immediately-applied lambda chain records the LAMBDA'S type, not the application's result, so the IR contradicts itself
 
 **BOTH ARMS, so the rungs cannot see it.** Update 53, pin `u53-rebank` at
 `58b08c38`, length ZERO -- no local patch under this.
