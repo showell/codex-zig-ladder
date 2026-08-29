@@ -231,6 +231,21 @@ binaries would be the thorough version and neither is warranted: the stamp
 already catches "are these the binaries I think", and this only has to
 answer "where did they come from".
 
+**Amended 2026-08-29, and it makes the item cheaper.** The stamp is
+machine-checkable WITHIN a tree and nowhere else. Both natives already bake
+their build directory in as a literal -- `<sandbox>/ladder/ast` reads out of
+zigemit and codexir with a plain `grep -a` -- so the sha over their bytes
+moves whenever the sandbox does. Two builds of identical source in two
+sandboxes never stamp alike. Anything that compares stamps across runs is a
+guard that cannot fire, and `dup.sh` shipped one; it is gone.
+
+Two consequences. Comparing a stamp to a remembered value is worthless, so
+"did my change reach this build" needs a BEHAVIOURAL falsifier -- a program
+that compiles one way and not the other -- and never a stamp. And the
+PROVENANCE line this item asks for is half-written already: the tree a
+binary was built in is recoverable from the binary, so the file only owes
+the two commits and the timestamp.
+
 ## Generated files do not belong in the repo tree (Steve, 2026-08-27)
 
 **Steve's ruling, no action taken the night it was made:** *"gitignore is
