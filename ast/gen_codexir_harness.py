@@ -95,8 +95,7 @@ Section: Driver
       annotations = ch.annotations,
       ground-effects = ch.ground-effects
     }}
-    in let pruned = ir-prune-unreachable-roots ir irc-emit-roots
-    in print-text (emit-ir-chapter pruned meta (ir-prune-unreachable-typedefs pruned (ch.type-defs)))
+    in print-text (emit-ir-chapter (ir-prune-unreachable-roots ir irc-emit-roots) meta (ch.type-defs))
   end
 '''
 

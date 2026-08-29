@@ -222,3 +222,15 @@ each emit call against the driver's, verified to fire), and it is the origin of
    (`ast/truthcycle_*.sh`, ~27 min of guests), then `allcycles.sh`. **No bank
    is required**: the property is arm-versus-arm on the same tree, and
    `restore_truths.py` is only a cache for skipping the recomputation.
+
+**THE LADDER HALF IS REVERTED ON MASTER, AND MUST BE RE-APPLIED WITH THE
+BRANCH.** `9220f84` taught both harness generators to mirror the driver's
+type-def prune. The driver half lives only on `prune-unreachable-typedefs`, so
+master was left calling `ir-prune-unreachable-typedefs`, a name no released
+Update defines -- and `native_build.sh` therefore could not build `codexir`
+against ANY release: `CDX3002: Undefined name`, 92 seconds in. Found running
+the Update 53 natives. Reverted here; when the prune is picked up, revert the
+revert in the same change that lands the driver half. `check_harness_gates.py`
+catches the mismatch in either direction and exits 1, so the pairing is
+enforced rather than remembered.
+

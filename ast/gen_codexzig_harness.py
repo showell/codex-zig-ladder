@@ -99,8 +99,7 @@ Section: Driver
       annotations = ch.annotations,
       ground-effects = ch.ground-effects
     }}
-    in let czg-pruned = ir-prune-unreachable-roots ir czg-emit-roots
-    in let ir-text = emit-ir-chapter czg-pruned meta (ir-prune-unreachable-typedefs czg-pruned (ch.type-defs))
+    in let ir-text = emit-ir-chapter (ir-prune-unreachable-roots ir czg-emit-roots) meta (ch.type-defs)
     in let parsed = parse-ir-chapter ir-text
     in print-text (emit-zig-chapter (parsed.chapter) (parsed.type-defs))
   end
