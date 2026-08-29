@@ -1,0 +1,5 @@
+# key 8c117994c777bda6
+found-x 1
+found-a 0
+lit-lit 1
+code-of-x 36

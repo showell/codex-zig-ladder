@@ -1,0 +1,7 @@
+# key 9113b1de3f58fed8
+arg-swap 15
+acc-grows 1 2 3 4
+mutual even
+unused-param 12
+control-nontail 55
+shadow-guard 3

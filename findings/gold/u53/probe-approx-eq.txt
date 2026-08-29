@@ -1,0 +1,4 @@
+# key d5b80ee009a351ad
+one-ulp 1
+same 1
+far 0

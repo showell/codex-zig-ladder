@@ -1,0 +1,8 @@
+# key 77d6d0a609f2730a
+cx-print 41  : 43
+cx-print 10  : 12
+cx-new 21    : 44
+cx-new 5     : 12
+cx-concat 7  : 17
+cx-concat 2  : 7
+cx-bump 99   : 100
