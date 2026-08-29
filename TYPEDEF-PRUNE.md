@@ -17,6 +17,14 @@ emit sites.
 
 ## Where the code is
 
+**The measurement sandboxes are deleted (2026-08-29) and nothing here needed
+them.** Four trees, 1.8 GB, all cut while the version with the defects below
+was being built. Every pointer in this file is a branch, a tag or a commit,
+all of them pushed; the numbers recorded here are the answers those runs
+produced. Anything wanted again is a fresh sandbox and about fifteen minutes,
+against a tree whose staleness nobody has to reason about.
+
+
     branch    prune-unreachable-typedefs   @ 3d331701   (pushed)
               cut from 2d5a7532 -- PR 96's tip, the minimal buildable U52 base
     worktree  ~/showell_repos/cobblestone-typedefs
@@ -64,8 +72,8 @@ transpile on account of a declaration it did not ask for.
 ## The corpus --run, finished 2026-08-29
 
 Real `zig run` -- compile AND execute -- over every clean program, diffed
-against the hand-verified `.expected` files. On `typedef-prune-on-shaker`,
-run `20260828T225229Z-tdshake`:
+against the hand-verified `.expected` files. On `typedef-prune-on-shaker`
+at `c8e1cda7`:
 
     326 clean programs; building and running 326
     match 291, no-expected 23, refused 8, hardware-only 2, differ 1, crashed 1
@@ -88,9 +96,11 @@ either way, and the run's own header says so:
     this run caused.
 
 So the verdict diff below cannot be read as caused by the prune. **To attribute
-`tcp-reliability`, run `corpus_run.py --run` on `f67-byteneutral` -- the same
-stack minus the prune -- and compare.** That is the one measurement this file
-still owes.
+`tcp-reliability`, run `corpus_run.py --run` on `zig-tree-shaking` at
+`16751b22` -- which IS this stack minus the two prune commits -- and compare.**
+That is the one measurement this file still owes. It wants a fresh sandbox cut
+at that commit; do NOT reuse an old one, since the natives must come from the
+tree being measured.
 
 **What the verdict diff shows anyway**, against a bank from 08-27 that predates
 several changes: a long list of `refused -> match` and `markers -> match`, plus
