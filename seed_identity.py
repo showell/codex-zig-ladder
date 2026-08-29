@@ -69,6 +69,18 @@ def update_label(sha):
     ("**Release head: main <N>. Seed `<hash>`"), which it replaced rather
     than joined. The hash is matched without its closing backtick because
     Update 51 spells it in eight digits and Update 52 in sixteen.
+
+    The word `seed` before the hash is NOT required, and dropping it is what
+    Update 53 cost. Its line is "**The proofs, all at the release head
+    against `<hash>`:**" -- Update 52's line to the character except that the
+    word is gone -- so an arm keyed on "SEED `<hash>`" missed it, and the
+    release would have banked as `seed-b066ceb5` rather than `u53`. Caught by
+    the canary before the rebank, which is the second time this function has
+    needed teaching by a new release form (Update 50 was the first). The
+    relaxation is safe by census rather than by argument: across every note in
+    the tree there are FOUR bolded lines containing "release head" and three
+    carry a hash, each its own Update's. The bold is still doing the work that
+    separates a release announcement from the back-reference one line away.
     """
     prefix = sha[:PREFIX_LEN].upper()
     claims = []
@@ -83,7 +95,7 @@ def update_label(sha):
                                    or line.strip().startswith('| `SEED/CODEX.CDX` |')
                                    or (line.strip().startswith('**')
                                        and 'RELEASE HEAD' in line
-                                       and f'SEED `{prefix}' in line)):
+                                       and f'`{prefix}' in line)):
                 claims.append(int(m.group(1)))
                 break
     if len(claims) > 1:
