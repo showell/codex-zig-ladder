@@ -1115,38 +1115,6 @@ shape is unknown, and the stale-temporary path is reasoned from python's
 scoping rather than observed. Run the reproducer before filing
 upstream.
 
-## 61. OURS. A generic function whose type parameter appears ONLY in its return type is called with no type argument, though the IR carries the instantiation
-
-**REPORTED UPSTREAM: issue 94 section 4 -- included as OURS and already fixed, as evidence about where the wire is thin rather than as a request.**
-
-**Found 2026-08-27**, when finding 59 cleared `hamt-test` and `kvstore-test`
-to `clean` and they then failed the zig build. **This is the next gap, not a
-regression** -- both were `markers` before and had never been built.
-
-    fn hamt_empty(comptime T58: type) HamtMap(T58)                emitted
-    hamt_empty()                                                  called
-    zig: error: expected 1 argument(s), found 0
-
-    fn hamt_set(comptime T65: type, m: HamtMap(T65), ...)         emitted
-    hamt_set(i64, m0, "...", 42)                                  called -- CORRECT
-
-**The emitter already threads type arguments, and the rule it uses is the
-defect.** It derives them from the VALUE arguments: `hamt-set` takes an
-`m : HamtMap(T)` and a `value : T`, so `T` is readable off the call. `hamt-empty`
-takes nothing at all -- its type parameter appears only in the RETURN type --
-so there is nothing to read and it emits none.
-
-**The answer is on the wire and is not being asked for.** At the call site the
-IR types `hamt-empty` as `(ctd "HamtMap" (args int-default))`, fully
-instantiated. The instantiation is not missing; the emitter derives it from
-the wrong place.
-
-**This is the smallest concrete piece of the monomorphisation item, and it
-argues for the comptime direction.** No specialisation engine is needed for
-it: read the call site's own instantiated type and pass it. It is also the
-case that a specialisation engine would find hardest, because there is no
-argument to specialise ON.
-
 ## 65a. The finding 65 fix WORKS on plain classes and ADDS A MARKER on a superclass chain -- NOT READY TO SHIP
 
 **REPORTED UPSTREAM: issue 94, "Leads, explicitly not findings" -- sent as a LEAD, with the superclass failure stated as a failure and the fix explicitly not offered.**
@@ -1661,7 +1629,15 @@ into.
 scoping pass that produced the nine-program estimate grouped by message, and
 that is why one of the three predicted programs did not move.
 
-## 60. OURS. An unused `let` emits a discard that zig refuses when the discarded name is also read elsewhere
+## 60. OURS, and the FIX IS DELIBERATELY DROPPED -- the knowledge is the deliverable. An unused `let` emits a discard that zig refuses when the discarded name is also read elsewhere
+
+**THE CODE WAS DROPPED ON PURPOSE (Steve, 2026-08-27, `ef359636`), and this
+entry is what survives.** Three builds, the rule wrong twice, and the second
+wrong version shipped a WRONG ANSWER into a build -- `deck-bracket-contract`
+went `match -> differ`, a silently wrong deck-bracket count. What it buys is
+one Roc port. *"The third rule is correct as far as we know, and 'as far as we
+know' is doing too much work in a thing that has been wrong twice."* Do not
+resurrect the code without a reason the register does not already carry.
 
 **THE RULE, MEASURED against zig 0.16 rather than inferred from one error
 message -- and the inference was wrong twice before this table existed:**

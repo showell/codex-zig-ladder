@@ -1609,4 +1609,36 @@ same rule broken in a fourth place, at a different stage.
 for riscv and java, with the wiring tracked in their plugs register. The
 question this finding asked was already answered when it was filed; this
 closes the fix.
+| 61 | A generic function whose type parameter appears only in its RETURN type is called with no type argument | **Update 53** -- the arity-0 branch of `emit-zig-name` now calls `zig-call-type-args`, which is the fix we reported in issue 94 section 4, with a `zig-drop-trailing-sep` wrapper of theirs. Confirmed by output, not by reading: `hamt-test`'s emitted zig defines `fn hamt_empty(comptime T58: type)` and calls it `hamt_empty(i64)`, and both `hamt-test` and `kvstore-test` grade `match`. |
 
+## 61. OURS. A generic function whose type parameter appears ONLY in its return type is called with no type argument, though the IR carries the instantiation
+
+**REPORTED UPSTREAM: issue 94 section 4 -- included as OURS and already fixed, as evidence about where the wire is thin rather than as a request.**
+
+**Found 2026-08-27**, when finding 59 cleared `hamt-test` and `kvstore-test`
+to `clean` and they then failed the zig build. **This is the next gap, not a
+regression** -- both were `markers` before and had never been built.
+
+    fn hamt_empty(comptime T58: type) HamtMap(T58)                emitted
+    hamt_empty()                                                  called
+    zig: error: expected 1 argument(s), found 0
+
+    fn hamt_set(comptime T65: type, m: HamtMap(T65), ...)         emitted
+    hamt_set(i64, m0, "...", 42)                                  called -- CORRECT
+
+**The emitter already threads type arguments, and the rule it uses is the
+defect.** It derives them from the VALUE arguments: `hamt-set` takes an
+`m : HamtMap(T)` and a `value : T`, so `T` is readable off the call. `hamt-empty`
+takes nothing at all -- its type parameter appears only in the RETURN type --
+so there is nothing to read and it emits none.
+
+**The answer is on the wire and is not being asked for.** At the call site the
+IR types `hamt-empty` as `(ctd "HamtMap" (args int-default))`, fully
+instantiated. The instantiation is not missing; the emitter derives it from
+the wrong place.
+
+**This is the smallest concrete piece of the monomorphisation item, and it
+argues for the comptime direction.** No specialisation engine is needed for
+it: read the call site's own instantiated type and pass it. It is also the
+case that a specialisation engine would find hardest, because there is no
+argument to specialise ON.

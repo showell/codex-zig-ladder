@@ -165,9 +165,10 @@ turning the location into a mutable record FIELD.
 **Four findings came out of it, and only one is ours.**
 
 **57, 58 and 59 are SENT as PR 101 (2026-08-29), rebased onto Update 53 and
-re-measured there: clean 326 -> 330, zero verdicts moved. 60 and 61 are still
-ours and still unsent -- they live on `roc-ports-type-recovery`, which predates
-the shaker, so they need EXTRACTING rather than rebasing.**
+re-measured there: clean 326 -> 330, zero verdicts moved. 60 and 61 need
+nothing: 61 landed in Update 53 from our issue-94 report, and 60's code was
+dropped on purpose in `ef359636` with the knowledge kept in its register
+entry.**
 
 - **57, COMPILER, FIXED and measured.** `subst-type-vars-from-arg` had no arm
   for any user-declared parametric type, so a branch join kept a variable both
@@ -1484,8 +1485,17 @@ out on 2026-08-29 and all carry a ladder tag. **Nothing is prepared and
 unsent.** See "IN FLIGHT WITH DAMIAN" near the top for what each says.
 
 What is NOT an outbound debt but is owed to us: plugs row 2.02, routed to us
-and unowned; findings 60 and 61, ours and unsent, needing extraction from a
-pre-shaker branch; and safari-codex's four findings, none written up.
+and unowned; and safari-codex's four findings, none written up.
+
+**Findings 60 and 61 are NOT owed, checked 2026-08-29 and both closed without
+work.** 61 is FIXED IN UPDATE 53 -- the arity-0 branch of `emit-zig-name` now
+calls `zig-call-type-args`, which is the fix we reported in issue 94 section 4;
+confirmed by output rather than source, since `hamt-test`'s emitted zig calls
+`hamt_empty(i64)` against `fn hamt_empty(comptime T58: type)` and both it and
+`kvstore-test` grade `match`. 60's code was DROPPED on Steve's own call
+(`ef359636`): three builds, the rule wrong twice, the second wrong version
+shipping a wrong answer into a build, and one Roc port bought. Its register
+entry keeps the measured zig rule, which was the expensive part.
 
 ## Per-Update ceremony
 
