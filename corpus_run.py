@@ -421,6 +421,35 @@ def current_tools():
             for t in (CODEXIR, ZIGEMIT)}
 
 
+def current_base():
+    """WHICH TREES produced this run, in terms a human can act on.
+
+    A native's sha says two runs used different binaries. It cannot say what
+    those binaries were built FROM, and the difference between "a release" and
+    "a branch with unlanded work on it" is the whole question when a verdict
+    moves. `truth/uNN/` has recorded the seed and the harness content per rung
+    since 2026-08-25; the census recorded neither, so a bank could say the
+    tools differed and never that the baseline was a branch.
+
+    Best effort by construction: a detached worktree has no branch name and
+    says so rather than guessing.
+    """
+    def git(root, *args):
+        try:
+            r = subprocess.run(['git', '-C', str(root), *args],
+                               capture_output=True, text=True, timeout=10)
+            return r.stdout.strip() or None
+        except Exception:
+            return None
+    seed = CODEX / 'seed' / 'Codex.cdx'
+    return {
+        'codex': git(CODEX, 'rev-parse', 'HEAD'),
+        'codex_branch': git(CODEX, 'rev-parse', '--abbrev-ref', 'HEAD'),
+        'ladder': git(LADDER, 'rev-parse', 'HEAD'),
+        'seed': hashlib.sha256(seed.read_bytes()).hexdigest()[:16] if seed.is_file() else None,
+    }
+
+
 def bank_describes_this_tree(bank):
     """Whether the bank was taken with the natives now in `native/`.
 
@@ -437,6 +466,7 @@ def write_bank(programs):
         'date': datetime.date.today().isoformat(),
         'zig': zig_version(),
         'tools': current_tools(),
+        'base': current_base(),
     }
     CENSUS.write_text(json.dumps({'meta': meta, 'programs': programs},
                                  indent=1, sort_keys=True))
@@ -488,6 +518,22 @@ def print_bank_diff(bank, programs):
             mark = '  ' if want.get(t) == now.get(t) else '<-'
             print(f'      {t:9s} bank {want.get(t, "(absent)")}  '
                   f'now {now.get(t, "(absent)")} {mark}')
+        # The shas say the binaries differ. They cannot say whether the bank
+        # came from a RELEASE or from a branch carrying unlanded work, and that
+        # is the difference between "my change moved this" and "the base did".
+        was, isnow = (bank.get('meta') or {}).get('base'), current_base()
+        if was:
+            for k in ('codex', 'codex_branch', 'ladder', 'seed'):
+                a, b = was.get(k), isnow.get(k)
+                if a != b:
+                    sa = (a or '(absent)')[:12]
+                    sb = (b or '(absent)')[:12]
+                    print(f'      {k:12s} bank {sa:<16} now {sb:<16} <-')
+        else:
+            print('      base      bank RECORDED NO BASE -- taken before this was')
+            print('                written down, so which tree it measured is')
+            print(f'                unknowable. This run is {(isnow.get("codex_branch") or "?")}'
+                  f' @ {(isnow.get("codex") or "?")[:12]}.')
         print('    Every row below is a difference between two measurements,')
         print('    not a change this run caused. Re-bank, or read it as such.')
     old = bank['programs']
