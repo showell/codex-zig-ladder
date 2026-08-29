@@ -24,13 +24,28 @@ be deleted, not kept for completeness.
    bare metal (the seed under QEMU) or ours (`native/codexir`). A question
    about *the compiler* takes the seed. "Whatever was in front of me" is not
    an answer.
-4. `./sandbox.sh <label>`, then `cd <path>/ladder && . ../env`. Without
+4. **Every tree the job touches is clean and on the branch you think --
+   including the ones it only reads.** `git status --short` and
+   `rev-parse --abbrev-ref HEAD` on each. A SHARED checkout is the trap:
+   moving `CODEX_ROOT` to a new pin moves it under every other project
+   pointed at the same directory, and nothing announces that.
+5. **Know what the job WRITES, and who else reads it.** Name the output paths
+   before launching. A GITIGNORED artifact is the dangerous kind: no branch
+   switch protects it, `git status` never shows it, and another project may
+   resolve it by path with no idea which branch produced it. If a job would
+   clobber something another project depends on, **redirect the job or plan to
+   rebuild** -- never plan to restore by hand afterwards. A hand-copied
+   artifact has no provenance, and `cp -p` in particular forges the mtime that
+   somebody's change-detector is reading.
+6. `./sandbox.sh <label>`, then `cd <path>/ladder && . ../env`. Without
    `. ../env` the sandbox is decoration and `CODEX_ROOT` still points at the
    shared checkout.
-5. Design the **presence check** now: one baseline-free assertion that the
+7. Design the **presence check** now: one baseline-free assertion that the
    change is visible in the output. A soundness gate is blind to a no-op.
-6. `python3 check_paths.py` (5 s), `compute_lock.py --probe` if detaching,
+8. `python3 check_paths.py` (5 s), `compute_lock.py --probe` if detaching,
    and say the expected cost out loud before launching anything over 20 s.
+   A job that takes no lock of its own -- the transpiler is one -- makes this
+   check the only guard there is.
 
 ## During
 
