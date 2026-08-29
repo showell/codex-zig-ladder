@@ -20,16 +20,22 @@ be deleted, not kept for completeness.
    If any line disagrees with what you believe, stop and find out why.
 2. Write one line: what this run settles, and **what result would change my
    mind.** No falsifier means the answer will confirm whatever was hoped.
-3. Name the tree and the arm -- which repo, which branch, which commit, and
-   bare metal (the seed under QEMU) or ours (`native/codexir`). A question
-   about *the compiler* takes the seed. "Whatever was in front of me" is not
-   an answer.
-4. **Every tree the job touches is clean and on the branch you think --
+3. **Know which branch you are running out of and WHAT IT CARRIES.** Not the
+   name -- the contents. `git log <base>..HEAD` and `git diff --stat <base>`
+   on every tree in play, and ask what each unlanded commit assumes about the
+   other trees. A branch that mirrors a change which landed nowhere is the
+   trap: ladder master carried a harness calling `ir-prune-unreachable-typedefs`,
+   a compiler pass defined only on a parked branch, so it could not build
+   natives against ANY release -- and its name said nothing at all about that.
+4. Name the arm -- bare metal (the seed under QEMU) or ours (`native/codexir`).
+   A question about *the compiler* takes the seed. "Whatever was in front of
+   me" is not an answer.
+5. **Every tree the job touches is clean and on the branch you think --
    including the ones it only reads.** `git status --short` and
    `rev-parse --abbrev-ref HEAD` on each. A SHARED checkout is the trap:
    moving `CODEX_ROOT` to a new pin moves it under every other project
    pointed at the same directory, and nothing announces that.
-5. **Know what the job WRITES, and who else reads it.** Name the output paths
+6. **Know what the job WRITES, and who else reads it.** Name the output paths
    before launching. A GITIGNORED artifact is the dangerous kind: no branch
    switch protects it, `git status` never shows it, and another project may
    resolve it by path with no idea which branch produced it. If a job would
@@ -37,15 +43,17 @@ be deleted, not kept for completeness.
    rebuild** -- never plan to restore by hand afterwards. A hand-copied
    artifact has no provenance, and `cp -p` in particular forges the mtime that
    somebody's change-detector is reading.
-6. `./sandbox.sh <label>`, then `cd <path>/ladder && . ../env`. Without
+7. `./sandbox.sh <label>`, then `cd <path>/ladder && . ../env`. Without
    `. ../env` the sandbox is decoration and `CODEX_ROOT` still points at the
    shared checkout.
-7. Design the **presence check** now: one baseline-free assertion that the
+8. Design the **presence check** now: one baseline-free assertion that the
    change is visible in the output. A soundness gate is blind to a no-op.
-8. `python3 check_paths.py` (5 s), `compute_lock.py --probe` if detaching,
+9. `python3 check_paths.py` and `python3 check_harness_gates.py` (5 s each), `compute_lock.py --probe` if detaching,
    and say the expected cost out loud before launching anything over 20 s.
    A job that takes no lock of its own -- the transpiler is one -- makes this
-   check the only guard there is.
+   check the only guard there is. `check_harness_gates.py` is the mechanical
+   form of step 3: it asks whether what this branch's harnesses assume matches
+   the compiler they are pointed at, and exits 1 when it does not.
 
 ## During
 
