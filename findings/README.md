@@ -1233,79 +1233,7 @@ change and is not clean evidence on its own. What needs no baseline is the
 observation above: the seed's wire contradicts itself today. Settling the
 "since when" wants one bare-metal probe at the Update 52 seed.
 
-## 67. OURS. `zig-prelude-decls` is documented as the union over the whole prelude and covers 22 of its 96 declarations, so a program declaring `cx-print` will not compile
-
-**FIXED AND SENT: [PR 98](https://github.com/damiant3/Cobblestone/pull/98), branch `zig-tree-shaking`, backlog row `plugs-backlog.md` 2.02, `Ladder: u52-shake-578`.** Both probes are back in the tier set and green. Stays live here until absorbed.
-
-**Reproduced on both arms.** `findings/probe-prelude-collide.codex`, run
-`20260828T192913Z-shake-on-corpus`:
-
-    bare metal   runs, 7 lines banked, all correct
-    zig          error: duplicate struct member name 'cx_print'
-                 error: duplicate struct member name 'cx_new'
-                 error: duplicate struct member name 'cx_concat'
-
-Zig forbids two container-level declarations with one name. The prelude
-declares 96, and `zig-sanitize` renames a program's name only when it appears
-in `zig-prelude-decls`:
-
-      zig-sanitize (name) = ... if is-zig-prelude-decl s then s & "_" ...
-
-That list has 101 entries and covers **22** of the 96 declarations, **and not
-one of them is a function**. The 96 are 74 `fn` and 22 `const`/`var`; the
-reserved list holds exactly those 22 const/var globals, and its other 79
-entries are prelude LOCALS and parameters (`a`, `i`, `buf`). `main` and
-`cx_entry` are in it but are not prelude declarations at all -- `zig-main`
-emits them into the PROGRAM region. So the coverage of the prelude's own
-functions is zero, and any Codex program with a top-level named `cx-print`,
-`cx-new`, `cx-concat`, `cx-text-eq` or 70 others fails to transpile.
-
-**AND FIVE OF THE 74 ARE CAMELCASE, WHICH IS WHAT MAKES THIS MORE THAN A
-CURIOSITY.** 69 are `cx_`-prefixed, and `cx-` is effectively the plug's
-namespace -- a Codex author has little reason to enter it, which is why zero
-of the 578 corpus programs collide. The other five are `CxList` and
-`CxFn1`..`CxFn4`, the comptime type constructors, and Codex type names ARE
-CamelCase. `CxList` is a name a real program could pick without any sense of
-trespassing. Confirmed with a second probe, `probe-cxlist.codex`, which
-declares `CxList` and `CxFn1` as record types:
-
-    bare metal   runs, 3 lines banked, all correct
-    zig          error: duplicate struct member name 'CxList'
-                 error: duplicate struct member name 'CxFn1'
-
-**The cause is in the deriving script, not in anybody's judgement.**
-`build/check-zig-prelude-surface.ps1` derives the reserved surface from
-emitted output by reading `const NAME`, `var NAME`, `|capture|` and function
-PARAMETERS -- and never the function's own name:
-
-      [regex]::Matches($line, '\bfn\s+[A-Za-z_][A-Za-z0-9_]*\s*\(([^)]*)\)')
-          foreach ($p in $m.Groups[1].Value -split ',') { ... }
-
-It reads past `fn NAME` to get at the parameter list and drops the name on the
-way. So it has been printing `OK: every derived name is reserved` over a
-surface missing three quarters of the declarations, and the emitter's own
-prose -- "The list is the UNION over the whole prelude and stays that way" --
-describes something that has never been true.
-
-**THE FIRST VERSION OF THIS PROBE PASSED, AND THAT IS WORTH RECORDING.** It
-declared `cx-print` and `cx-new`, called each once, and came out byte-identical
-on both arms: `inline-leaf-calls` and `inline-single-caller` had removed both
-before the emitter ever saw them (`CDX4030` says so in the diagnostics). Two
-call sites and a non-leaf body is what makes the definitions survive to
-emission. A probe the optimiser deletes tests nothing.
-
-**The fix is small and MEASURED BYTE-NEUTRAL.** Add the 74 function names to
-`zig-prelude-decls` and teach the surface script to derive `fn NAME`. Adding a
-name changes emission only for a program that declares it, and **zero of the
-578 transpiled corpus programs declare any of the 74** -- checked against the
-program region of every emitted `.zig`. So the change is verifiable against a
-byte-identity sweep, and the programs it does affect currently do not compile
-at all.
-
-Not in the tier set: it kills the zig arm on purpose, so it sits in `EXCLUDED`
-until the fix lands, then rejoins.
-
-## 66. The recursive structural-eq helper is synthesised BELOW the IR, so exactly one backend has it
+## 66. SENT as issue 97, and OPEN upstream as COMPILER-34. The recursive structural-eq helper is synthesised BELOW the IR, so exactly one backend has it
 
 **Found 2026-08-28. CORRECTED the same day after a cold read; the first
 version had the fact right and the cause wrong, and the cause is the useful
@@ -1549,7 +1477,7 @@ does not matter". The excluded site was two programs, and it took one evening
 to find them. `Desugarer.codex:78` -- `ForExpr`'s `map-list` lambda -- is the
 remaining one, still unmeasured, still excluded, and now on notice.
 
-## 63. OURS, and PRE-EXISTING. The discard rule checks the wrong SCOPE: `zig-occurs body n` sees the continuation, and zig sees the whole function
+## 63. OURS, PRE-EXISTING, and NOT BEING FIXED -- finding 60's code was dropped and this is what it exposed. The discard rule checks the wrong SCOPE: `zig-occurs body n` sees the continuation, and zig sees the whole function
 
 **CORRECTED 2026-08-27 after steps 1 and 2. The first version of this entry
 blamed emitter inlining and an `IrApply`, and both halves were wrong.** The
@@ -1736,7 +1664,7 @@ ORIGINAL, leaving the alias unread, does not. One half of a one-respect pair
 failing is a much stronger signal than a lone red program, and Roc keeps
 eleven more cases in that cluster.
 
-## 59. A non-empty list literal takes its element type from the CONTEXT even when the context's type is an unbound variable and the literal's own elements are correctly typed
+## 59. SENT as PR 101 (fix is PARTIAL -- see finding 62). A non-empty list literal takes its element type from the CONTEXT even when the context's type is an unbound variable and the literal's own elements are correctly typed
 
 **Found 2026-08-27 at the keyboard, no guest**, while scoping monomorphisation.
 **Blocks `hamt-test`, `kvstore-test`, `list-test` outright**, and is half of
@@ -1785,7 +1713,7 @@ answer is not "erase the variable" but "use the one that is bound here".
 `branch-recorded-ty`'s `usable-witness-ty` refuses any witness with typevars,
 so it cannot be reused as-is for that case.
 
-## 58. A list literal's element type is never recorded, so an empty list whose element type the checker resolved reaches the plug as `(list error)`
+## 58. SENT as PR 101. A list literal's element type is never recorded, so an empty list whose element type the checker resolved reaches the plug as `(list error)`
 
 **Found 2026-08-27 at the keyboard, no guest**, diagnosing the last of the
 eleven Roc ports. Blocks `roc-fold-empty` and nothing else in the corpus so
@@ -1815,7 +1743,7 @@ real span (`Desugarer.codex:47`, `is ListExpr (elems) (sp)`), unlike
 `LambdaExpr` which carried none. So this needs no CST change: record the type
 in `infer-list`, and have `lower-empty-list` ask before it falls to `ErrorTy`.
 
-## 57. `subst-type-vars-from-arg` cannot learn a type variable from any USER-DECLARED parametric type, so a branch join keeps a variable both of its branches had resolved
+## 57. SENT as PR 101. `subst-type-vars-from-arg` cannot learn a type variable from any USER-DECLARED parametric type, so a branch join keeps a variable both of its branches had resolved
 
 **Found 2026-08-27 at the keyboard, no guest.** Blocks three of the eleven
 Roc ports -- `roc-iter-map`, `roc-iter-keep-if`, `roc-iter-drop-if` -- which

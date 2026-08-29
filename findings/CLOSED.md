@@ -35,6 +35,8 @@ outbound queue is what says where each one stands.
 | 35 | A non-ASCII identifier is emitted raw, and zig's identifiers are ASCII | Fixed on the heap branch (`1249ad8a`) -- non-ASCII identifiers are transliterated. |
 | 37 | The 512 MB stack is protecting the parser's header scan, and that scan is mutual TAIL recursion | Update 50's interim push -- PR 82 absorbed; the two top-level scans return their item, so each tail-calls ITSELF. |
 | 40 | The zig plug calls a curried definition flat, so an under-applied chain it cannot inline will not compile | Update 50's interim push -- PR 83 absorbed verbatim; an over-applied definition applies the rest through the returned closure. |
+| 61 | A generic function whose type parameter appears only in its RETURN type is called with no type argument | **Update 53** -- the arity-0 branch of `emit-zig-name` now calls `zig-call-type-args`, which is the fix we reported in issue 94 section 4, with a `zig-drop-trailing-sep` wrapper of theirs. Confirmed by output, not by reading: `hamt-test`'s emitted zig defines `fn hamt_empty(comptime T58: type)` and calls it `hamt_empty(i64)`, and both `hamt-test` and `kvstore-test` grade `match`. |
+| 67 | `zig-prelude-decls` is documented as the union over the whole prelude and covered 22 of its 96 declarations | **Update 53**, via our own PR 98. The repaired `build/check-zig-prelude-surface.ps1` in U53 is byte-identical to the one that PR sent: it derives the surface from the parts table rather than a common prefix, and counts the 74 functions the old parameter regex read past. Damian's row 2.04 reproduced the count independently at 74 fn + 22 const/var. |
 
 ## Closed by absorption -- one line each, because the text is in git
 
@@ -1609,7 +1611,6 @@ same rule broken in a fourth place, at a different stage.
 for riscv and java, with the wiring tracked in their plugs register. The
 question this finding asked was already answered when it was filed; this
 closes the fix.
-| 61 | A generic function whose type parameter appears only in its RETURN type is called with no type argument | **Update 53** -- the arity-0 branch of `emit-zig-name` now calls `zig-call-type-args`, which is the fix we reported in issue 94 section 4, with a `zig-drop-trailing-sep` wrapper of theirs. Confirmed by output, not by reading: `hamt-test`'s emitted zig defines `fn hamt_empty(comptime T58: type)` and calls it `hamt_empty(i64)`, and both `hamt-test` and `kvstore-test` grade `match`. |
 
 ## 61. OURS. A generic function whose type parameter appears ONLY in its return type is called with no type argument, though the IR carries the instantiation
 
@@ -1642,3 +1643,75 @@ argues for the comptime direction.** No specialisation engine is needed for
 it: read the call site's own instantiated type and pass it. It is also the
 case that a specialisation engine would find hardest, because there is no
 argument to specialise ON.
+
+## 67. OURS. `zig-prelude-decls` is documented as the union over the whole prelude and covers 22 of its 96 declarations, so a program declaring `cx-print` will not compile
+
+**FIXED AND SENT: [PR 98](https://github.com/damiant3/Cobblestone/pull/98), branch `zig-tree-shaking`, backlog row `plugs-backlog.md` 2.02, `Ladder: u52-shake-578`.** Both probes are back in the tier set and green. Stays live here until absorbed.
+
+**Reproduced on both arms.** `findings/probe-prelude-collide.codex`, run
+`20260828T192913Z-shake-on-corpus`:
+
+    bare metal   runs, 7 lines banked, all correct
+    zig          error: duplicate struct member name 'cx_print'
+                 error: duplicate struct member name 'cx_new'
+                 error: duplicate struct member name 'cx_concat'
+
+Zig forbids two container-level declarations with one name. The prelude
+declares 96, and `zig-sanitize` renames a program's name only when it appears
+in `zig-prelude-decls`:
+
+      zig-sanitize (name) = ... if is-zig-prelude-decl s then s & "_" ...
+
+That list has 101 entries and covers **22** of the 96 declarations, **and not
+one of them is a function**. The 96 are 74 `fn` and 22 `const`/`var`; the
+reserved list holds exactly those 22 const/var globals, and its other 79
+entries are prelude LOCALS and parameters (`a`, `i`, `buf`). `main` and
+`cx_entry` are in it but are not prelude declarations at all -- `zig-main`
+emits them into the PROGRAM region. So the coverage of the prelude's own
+functions is zero, and any Codex program with a top-level named `cx-print`,
+`cx-new`, `cx-concat`, `cx-text-eq` or 70 others fails to transpile.
+
+**AND FIVE OF THE 74 ARE CAMELCASE, WHICH IS WHAT MAKES THIS MORE THAN A
+CURIOSITY.** 69 are `cx_`-prefixed, and `cx-` is effectively the plug's
+namespace -- a Codex author has little reason to enter it, which is why zero
+of the 578 corpus programs collide. The other five are `CxList` and
+`CxFn1`..`CxFn4`, the comptime type constructors, and Codex type names ARE
+CamelCase. `CxList` is a name a real program could pick without any sense of
+trespassing. Confirmed with a second probe, `probe-cxlist.codex`, which
+declares `CxList` and `CxFn1` as record types:
+
+    bare metal   runs, 3 lines banked, all correct
+    zig          error: duplicate struct member name 'CxList'
+                 error: duplicate struct member name 'CxFn1'
+
+**The cause is in the deriving script, not in anybody's judgement.**
+`build/check-zig-prelude-surface.ps1` derives the reserved surface from
+emitted output by reading `const NAME`, `var NAME`, `|capture|` and function
+PARAMETERS -- and never the function's own name:
+
+      [regex]::Matches($line, '\bfn\s+[A-Za-z_][A-Za-z0-9_]*\s*\(([^)]*)\)')
+          foreach ($p in $m.Groups[1].Value -split ',') { ... }
+
+It reads past `fn NAME` to get at the parameter list and drops the name on the
+way. So it has been printing `OK: every derived name is reserved` over a
+surface missing three quarters of the declarations, and the emitter's own
+prose -- "The list is the UNION over the whole prelude and stays that way" --
+describes something that has never been true.
+
+**THE FIRST VERSION OF THIS PROBE PASSED, AND THAT IS WORTH RECORDING.** It
+declared `cx-print` and `cx-new`, called each once, and came out byte-identical
+on both arms: `inline-leaf-calls` and `inline-single-caller` had removed both
+before the emitter ever saw them (`CDX4030` says so in the diagnostics). Two
+call sites and a non-leaf body is what makes the definitions survive to
+emission. A probe the optimiser deletes tests nothing.
+
+**The fix is small and MEASURED BYTE-NEUTRAL.** Add the 74 function names to
+`zig-prelude-decls` and teach the surface script to derive `fn NAME`. Adding a
+name changes emission only for a program that declares it, and **zero of the
+578 transpiled corpus programs declare any of the 74** -- checked against the
+program region of every emitted `.zig`. So the change is verifiable against a
+byte-identity sweep, and the programs it does affect currently do not compile
+at all.
+
+Not in the tier set: it kills the zig arm on purpose, so it sits in `EXCLUDED`
+until the fix lands, then rejoins.
