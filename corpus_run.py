@@ -439,8 +439,20 @@ def current_base():
     since 2026-08-25; the census recorded neither, so a bank could say the
     tools differed and never that the baseline was a branch.
 
-    Best effort by construction: a detached worktree has no branch name and
-    says so rather than guessing.
+    A detached worktree has no branch name and says so, rather than guessing.
+    This docstring claimed that before the code did it: `rev-parse
+    --abbrev-ref HEAD` answers the literal string "HEAD" when detached, and
+    every ladder run is detached, so the field read like a branch named HEAD
+    on every bank ever taken. `symbolic-ref --quiet` declines instead, which
+    is the honest None.
+
+    None on its own would make the field useless, though, because detached is
+    the NORMAL case here -- so `codex_points_at` carries the names that do
+    resolve this commit: branches, remote-tracking refs and tags alike. That
+    is what answers the question the field exists for. A row reading
+    `upstream/master` is a release; a row reading only a local branch name is
+    unlanded work; an empty list is a commit nothing points at any more, which
+    is worth knowing before trusting the bank.
     """
     def git(root, *args):
         try:
@@ -449,10 +461,15 @@ def current_base():
             return r.stdout.strip() or None
         except Exception:
             return None
+    def points_at(root):
+        out = git(root, 'for-each-ref', '--points-at', 'HEAD',
+                  '--format=%(refname:short)')
+        return sorted(out.split('\n')) if out else []
     seed = CODEX / 'seed' / 'Codex.cdx'
     return {
         'codex': git(CODEX, 'rev-parse', 'HEAD'),
-        'codex_branch': git(CODEX, 'rev-parse', '--abbrev-ref', 'HEAD'),
+        'codex_branch': git(CODEX, 'symbolic-ref', '--quiet', '--short', 'HEAD'),
+        'codex_points_at': points_at(CODEX),
         'ladder': git(LADDER, 'rev-parse', 'HEAD'),
         'seed': hashlib.sha256(seed.read_bytes()).hexdigest()[:16] if seed.is_file() else None,
     }
@@ -554,17 +571,28 @@ def print_bank_diff(bank, programs):
         # moved this" and "the base did".
         was, isnow = (bank.get('meta') or {}).get('base'), current_base()
         if was:
-            for k in ('codex', 'codex_branch', 'ladder', 'seed'):
+            def show(v):
+                # "HEAD" is what banks before 2026-08-29 recorded for a
+                # detached worktree, which is every one of them. Reading it
+                # back as a branch name would repeat the original mistake at
+                # the other end.
+                if v == 'HEAD':
+                    return '(detached)'
+                if isinstance(v, list):
+                    return ', '.join(v) if v else '(nothing points at it)'
+                return v or '(absent)'
+            for k in ('codex', 'codex_branch', 'codex_points_at', 'ladder', 'seed'):
                 a, b = was.get(k), isnow.get(k)
+                if k == 'codex_points_at' and k not in was:
+                    continue        # the bank predates the field; not a move
                 if a != b:
-                    sa = (a or '(absent)')[:12]
-                    sb = (b or '(absent)')[:12]
-                    print(f'      {k:12s} bank {sa:<16} now {sb:<16} <-')
+                    print(f'      {k:16s} bank {show(a):<28} now {show(b):<28} <-')
         else:
             print('      base      bank RECORDED NO BASE -- taken before this was')
             print('                written down, so which tree it measured is')
-            print(f'                unknowable. This run is {(isnow.get("codex_branch") or "?")}'
-                  f' @ {(isnow.get("codex") or "?")[:12]}.')
+            at = ', '.join(isnow.get('codex_points_at') or []) or 'no named ref'
+            print(f'                unknowable. This run is {(isnow.get("codex") or "?")[:12]}'
+                  f' ({at}).')
         print('    Every row below is a difference between two measurements,')
         print('    not a change this run caused. Re-bank, or read it as such.')
     old = bank['programs']
