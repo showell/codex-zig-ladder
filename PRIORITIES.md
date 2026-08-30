@@ -256,6 +256,21 @@ against zig's libm at 6.7e-16 worst error by `findings/atan/`.
   nobody checks: Cordic claims 0.1% and delivers 0.45%. Generalise the rig from
   one function to a table of them, and Cordic is its first customer.
 
+  **THE CORPUS CANNOT SEE A FOREWORD CHANGE AT ALL, and that is by design.**
+  Learned the expensive way on 2026-08-30: a full two-arm corpus run for the arc
+  tangent came back 0 stage moves, 0 verdict moves, 582 of 582 byte-identical --
+  and the population never moved off 614, which is how we found out the run was
+  BLIND rather than reassuring. `corpus_run.py` globs `TESTS.glob('*.codex')`,
+  non-recursively, and says why in its own comment: a test that cites another
+  chapter is a driver, `codexir` resolves no cites, so "until there is a
+  resolver, the honest corpus is the self-contained programs." A foreword
+  function is reachable ONLY through a cite. **Any change under
+  `codex/foreword/` is invisible to the corpus, and so is every test under a
+  `codex/test/` subdirectory.** Twenty-eight minutes of box time to answer a
+  question the instrument cannot be asked. What DOES answer it: run the cited
+  chapter's own consumers through `bare_expected.py` -- their `.expected` files
+  were written by Damian against the base tree, so they ARE the baseline arm.
+
   **The real upgrade the atan run rehearsed is an INVERSION worth naming.** For
   a defect fix, bare metal is the only oracle there is -- it defines what Codex
   does. For a library function there is an EXTERNAL standard, so the truth came
