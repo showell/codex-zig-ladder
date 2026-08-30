@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
-"""Read a `codex/test/ops/` test's answer off BARE METAL, to settle its .expected.
+"""Read a `codex/test/` test's answer off BARE METAL, to settle its .expected.
 
     ./bare_expected.py <stem> [<stem> ...]
+
+A stem is a bare name, not a path: every one of the 1086 tests under
+`codex/test/*/` has a unique stem, so the directory is derivable and asking for
+it would be asking for something already known. `ops/` was the only directory
+this could reach until 2026-08-30; `forewords/` holds 316 tests and the library
+findings need it.
 
 An `.expected` in the depot is a claim about what the SEED prints. Writing one
 from what the zig arm prints, or from what the instruction set documents, is a
@@ -31,10 +37,16 @@ if not stems:
 work = LADDER / 'ast'
 bad = 0
 for stem in stems:
-    src = CODEX / 'codex' / 'test' / 'ops' / f'{stem}.codex'
-    if not src.is_file():
-        print(f'{stem}: no {src}'); bad = 1; continue
-    print(f'\n######## {stem}  ({src.stat().st_size} bytes)', flush=True)
+    found = sorted((CODEX / 'codex' / 'test').glob(f'*/{stem}.codex'))
+    if not found:
+        print(f'{stem}: no codex/test/*/{stem}.codex'); bad = 1; continue
+    if len(found) > 1:
+        # Stems are unique today. If that ever stops being true, say so rather
+        # than picking one -- the wrong test settling an .expected is silent.
+        print(f'{stem}: AMBIGUOUS, {len(found)} matches: '
+              + ', '.join(str(f.relative_to(CODEX)) for f in found)); bad = 1; continue
+    src = found[0]
+    print(f'\n######## {stem}  ({src.parent.name}/, {src.stat().st_size} bytes)', flush=True)
     unit = tier_run.resolved_unit(src)
     blob = work / f'bm-{stem}.blob'
     blob.write_bytes(b'CDX map\n' + unit.encode() + b'\x04')
