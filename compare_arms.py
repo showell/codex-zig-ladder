@@ -252,14 +252,17 @@ def compare(base_sb, head_sb):
                        'only_head': sorted(set(ftr) - set(btr))},
         'stages': {'base': _hist(btr), 'head': _hist(ftr)},
         'verdict_moves': [], 'zig_differs': [], 'zig_same': 0,
+        'verdict_comparable': 0,
     }
     for n in sorted(set(btr) & set(ftr)):
         b, f = btr[n], ftr[n]
         if b.get('stage') != f.get('stage'):
             out.setdefault('stage_moves', []).append(
                 {'name': n, 'base': b.get('stage'), 'head': f.get('stage')})
-        if n in bvd and n in fvd and bvd[n] != fvd[n]:
-            out['verdict_moves'].append({'name': n, 'base': bvd[n], 'head': fvd[n]})
+        if n in bvd and n in fvd:
+            out['verdict_comparable'] = out.get('verdict_comparable', 0) + 1
+            if bvd[n] != fvd[n]:
+                out['verdict_moves'].append({'name': n, 'base': bvd[n], 'head': fvd[n]})
         bs, fs = b.get('zig_sha'), f.get('zig_sha')
         if bs and fs:
             if bs == fs:
@@ -307,10 +310,12 @@ def render(meta, cmp_):
     for s in sorted(set(cmp_['stages']['base']) | set(cmp_['stages']['head'])):
         L.append(f"| {s} | {cmp_['stages']['base'].get(s,0)} | {cmp_['stages']['head'].get(s,0)} |")
     for key, title in (('stage_moves', 'Stage moves'),
-                       ('verdict_moves', 'Verdict moves'),
+                       ('verdict_moves', f"Verdict moves (of "
+                        f"{cmp_.get('verdict_comparable', 0)} programs that "
+                        f"produced a verdict on BOTH arms)"),
                        ('zig_differs', 'Emitted zig differs')):
         rows = cmp_[key]
-        L += ['', f'## {title} ({len(rows)})']
+        L += ['', f'## {title}' + (f' ({len(rows)})' if '(' not in title else f': {len(rows)}')]
         if not rows:
             L += ['', 'none']
             continue

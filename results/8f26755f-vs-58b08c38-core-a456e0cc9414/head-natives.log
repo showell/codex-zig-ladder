@@ -1,0 +1,29 @@
+############ ring plug
+[ringplug] bundled 7188 lines, 372879 bytes
+blob: 372880 bytes
+  SIZE: 512312, got 512312
+ast/ringplug.cdx built (b0c0411476db)
+############ zigemit
+[zigemit] bundled 7176 lines, 372557 bytes
+blob: 372558 bytes of source
+--- compiling zigemit to IR (seed, QEMU, venue: local)
+  SIZE: 1185796, got 1185796
+wrote ast/zigemit.ir
+wrote ast/zigemit.ir.map (302 bytes)
+--- transpiling zigemit through the plug (QEMU, venue: local)
+--- building the native binary
+    /home/steve/runs/20260830T182959Z-cmp-head-8f26755f-vs-/ladder/native/zigemit 13753570 bytes
+############ zigemit built
+############ codexir
+/home/steve/runs/20260830T182959Z-cmp-head-8f26755f-vs-/ladder/ast/CodexIrHarness.codex: 4546 bytes
+[codexir-subject] bundled 56655 lines, 2665724 bytes
+blob: 2665729 bytes of source
+--- compiling codexir to IR (seed, QEMU, venue: local)
+  SIZE: 8949694, got 8949694
+wrote ast/codexir.ir
+wrote ast/codexir.ir.map (302 bytes)
+--- transpiling codexir through the plug (QEMU, venue: local)
+--- building the native binary
+    /home/steve/runs/20260830T182959Z-cmp-head-8f26755f-vs-/ladder/native/codexir 25592994 bytes
+############ codexir built
+############ both built in /home/steve/runs/20260830T182959Z-cmp-head-8f26755f-vs-/ladder/native

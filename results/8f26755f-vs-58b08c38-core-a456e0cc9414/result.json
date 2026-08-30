@@ -1,0 +1,401 @@
+{
+ "meta": {
+  "id": "8f26755f-vs-58b08c38-core-a456e0cc9414",
+  "base_ref": "58b08c38",
+  "head_ref": "8f26755f",
+  "base_sha": "58b08c385c2b4bfb79d349990ff62f9fa13c0d53",
+  "head_sha": "8f26755fdd421737d3dd59d8b490587433c74159",
+  "scope": "core",
+  "ladder_sha": "e9ef925042044390fd6f3be0300b7b7653378dea",
+  "when": "2026-08-30T19:28:23+00:00",
+  "host": "ubuntu-s-2vcpu-8gb-160gb-intel-nyc1",
+  "base_tree": "/home/steve/runs/20260830T182956Z-cmp-base-8f26755f-vs-",
+  "head_tree": "/home/steve/runs/20260830T182959Z-cmp-head-8f26755f-vs-",
+  "forced": [],
+  "natives": {
+   "native/zigemit": {
+    "base": "4e9fb8cd0c4def6b",
+    "head": "6f1ecc6c4b29421e"
+   },
+   "native/codexir": {
+    "base": "44007da1912d4a62",
+    "head": "1bb0de8800f6cb1c"
+   }
+  },
+  "run_selection": {
+   "differing": 48,
+   "population": 1233,
+   "skipped": 1185,
+   "names": [
+    "builtin-alloc",
+    "circbuf-test",
+    "db-csv-roundtrip",
+    "db-full-test",
+    "db-row-update",
+    "device-math",
+    "engine-animation",
+    "engine-culling-cost",
+    "engine-mesh-gen",
+    "engine-near-clip",
+    "engine-render-heap",
+    "engine-shading",
+    "engine-shadow",
+    "engine-software-render",
+    "engine-texture-cost",
+    "gop-scene-viewport",
+    "gpu-devicemath-atan",
+    "hamt-test",
+    "int-min-literal",
+    "kvstore-test",
+    "list-test",
+    "match-shadowed-arm",
+    "matrix3-test",
+    "ota-gate-real",
+    "pow-on-real",
+    "rasterizer-test",
+    "raytracer-test",
+    "real-approx-equality",
+    "real-approx-modes",
+    "real-bitcast",
+    "real-bitcast-f64",
+    "real-int-conversions",
+    "real-literal-rounding",
+    "real-neg-neg",
+    "real-negate",
+    "real-saturating",
+    "real-saturating-finite",
+    "real-trapping",
+    "real-trapping-overflow",
+    "roc-fold-empty",
+    "roc-iter-drop-if",
+    "roc-iter-keep-if",
+    "roc-iter-map",
+    "sparkplug-encode",
+    "unit-real-arith",
+    "vec-array",
+    "vec-lanes-smoke",
+    "vec-mask-hazards"
+   ]
+  }
+ },
+ "compare": {
+  "population": {
+   "base": 1229,
+   "head": 1233,
+   "only_base": [],
+   "only_head": [
+    "gpu-devicemath-atan",
+    "match-shadowed-arm",
+    "real-bitcast-f64",
+    "real-int-conversions"
+   ]
+  },
+  "stages": {
+   "base": {
+    "markers": 298,
+    "clean": 709,
+    "unresolved": 8,
+    "codex-refused": 210,
+    "timeout": 4
+   },
+   "head": {
+    "markers": 285,
+    "clean": 726,
+    "unresolved": 8,
+    "codex-refused": 210,
+    "timeout": 4
+   }
+  },
+  "verdict_moves": [],
+  "zig_differs": [
+   {
+    "name": "builtin-alloc",
+    "base_lines": 1173,
+    "head_lines": 1208
+   },
+   {
+    "name": "circbuf-test",
+    "base_lines": 434,
+    "head_lines": 434
+   },
+   {
+    "name": "db-csv-roundtrip",
+    "base_lines": 1620,
+    "head_lines": 1620
+   },
+   {
+    "name": "db-full-test",
+    "base_lines": 4000,
+    "head_lines": 4000
+   },
+   {
+    "name": "db-row-update",
+    "base_lines": 1267,
+    "head_lines": 1267
+   },
+   {
+    "name": "device-math",
+    "base_lines": 407,
+    "head_lines": 428
+   },
+   {
+    "name": "engine-animation",
+    "base_lines": 927,
+    "head_lines": 939
+   },
+   {
+    "name": "engine-culling-cost",
+    "base_lines": 1506,
+    "head_lines": 1508
+   },
+   {
+    "name": "engine-mesh-gen",
+    "base_lines": 1671,
+    "head_lines": 1673
+   },
+   {
+    "name": "engine-near-clip",
+    "base_lines": 1466,
+    "head_lines": 1468
+   },
+   {
+    "name": "engine-render-heap",
+    "base_lines": 1498,
+    "head_lines": 1500
+   },
+   {
+    "name": "engine-shading",
+    "base_lines": 1473,
+    "head_lines": 1475
+   },
+   {
+    "name": "engine-shadow",
+    "base_lines": 1619,
+    "head_lines": 1615
+   },
+   {
+    "name": "engine-software-render",
+    "base_lines": 1515,
+    "head_lines": 1514
+   },
+   {
+    "name": "engine-texture-cost",
+    "base_lines": 1506,
+    "head_lines": 1508
+   },
+   {
+    "name": "gop-scene-viewport",
+    "base_lines": 1550,
+    "head_lines": 1551
+   },
+   {
+    "name": "hamt-test",
+    "base_lines": 622,
+    "head_lines": 622
+   },
+   {
+    "name": "int-min-literal",
+    "base_lines": 333,
+    "head_lines": 349
+   },
+   {
+    "name": "kvstore-test",
+    "base_lines": 644,
+    "head_lines": 644
+   },
+   {
+    "name": "list-test",
+    "base_lines": 519,
+    "head_lines": 519
+   },
+   {
+    "name": "matrix3-test",
+    "base_lines": 559,
+    "head_lines": 579
+   },
+   {
+    "name": "ota-gate-real",
+    "base_lines": 572,
+    "head_lines": 572
+   },
+   {
+    "name": "pow-on-real",
+    "base_lines": 312,
+    "head_lines": 322
+   },
+   {
+    "name": "rasterizer-test",
+    "base_lines": 653,
+    "head_lines": 668
+   },
+   {
+    "name": "raytracer-test",
+    "base_lines": 785,
+    "head_lines": 799
+   },
+   {
+    "name": "real-approx-equality",
+    "base_lines": 342,
+    "head_lines": 348
+   },
+   {
+    "name": "real-approx-modes",
+    "base_lines": 351,
+    "head_lines": 357
+   },
+   {
+    "name": "real-bitcast",
+    "base_lines": 330,
+    "head_lines": 346
+   },
+   {
+    "name": "real-literal-rounding",
+    "base_lines": 326,
+    "head_lines": 336
+   },
+   {
+    "name": "real-neg-neg",
+    "base_lines": 334,
+    "head_lines": 349
+   },
+   {
+    "name": "real-negate",
+    "base_lines": 364,
+    "head_lines": 384
+   },
+   {
+    "name": "real-saturating",
+    "base_lines": 355,
+    "head_lines": 371
+   },
+   {
+    "name": "real-saturating-finite",
+    "base_lines": 355,
+    "head_lines": 377
+   },
+   {
+    "name": "real-trapping",
+    "base_lines": 355,
+    "head_lines": 371
+   },
+   {
+    "name": "real-trapping-overflow",
+    "base_lines": 339,
+    "head_lines": 355
+   },
+   {
+    "name": "roc-fold-empty",
+    "base_lines": 337,
+    "head_lines": 337
+   },
+   {
+    "name": "roc-iter-drop-if",
+    "base_lines": 349,
+    "head_lines": 347
+   },
+   {
+    "name": "roc-iter-keep-if",
+    "base_lines": 349,
+    "head_lines": 347
+   },
+   {
+    "name": "roc-iter-map",
+    "base_lines": 349,
+    "head_lines": 347
+   },
+   {
+    "name": "sparkplug-encode",
+    "base_lines": 893,
+    "head_lines": 903
+   },
+   {
+    "name": "unit-real-arith",
+    "base_lines": 376,
+    "head_lines": 374
+   },
+   {
+    "name": "vec-array",
+    "base_lines": 419,
+    "head_lines": 429
+   },
+   {
+    "name": "vec-lanes-smoke",
+    "base_lines": 385,
+    "head_lines": 395
+   },
+   {
+    "name": "vec-mask-hazards",
+    "base_lines": 413,
+    "head_lines": 423
+   }
+  ],
+  "zig_same": 963,
+  "stage_moves": [
+   {
+    "name": "engine-animation",
+    "base": "markers",
+    "head": "clean"
+   },
+   {
+    "name": "hamt-test",
+    "base": "markers",
+    "head": "clean"
+   },
+   {
+    "name": "int-min-literal",
+    "base": "markers",
+    "head": "clean"
+   },
+   {
+    "name": "kvstore-test",
+    "base": "markers",
+    "head": "clean"
+   },
+   {
+    "name": "ota-gate-real",
+    "base": "markers",
+    "head": "clean"
+   },
+   {
+    "name": "pow-on-real",
+    "base": "markers",
+    "head": "clean"
+   },
+   {
+    "name": "rasterizer-test",
+    "base": "markers",
+    "head": "clean"
+   },
+   {
+    "name": "real-approx-equality",
+    "base": "markers",
+    "head": "clean"
+   },
+   {
+    "name": "real-literal-rounding",
+    "base": "markers",
+    "head": "clean"
+   },
+   {
+    "name": "real-neg-neg",
+    "base": "markers",
+    "head": "clean"
+   },
+   {
+    "name": "real-negate",
+    "base": "markers",
+    "head": "clean"
+   },
+   {
+    "name": "roc-fold-empty",
+    "base": "markers",
+    "head": "clean"
+   },
+   {
+    "name": "unit-real-arith",
+    "base": "markers",
+    "head": "clean"
+   }
+  ]
+ }
+}

@@ -1,0 +1,60 @@
+hardware-only: 2 programs classify instead of running (hardware-only.txt)
+corpus: 1229 programs from /home/steve/runs/20260830T182956Z-cmp-base-8f26755f-vs-/codex/codex/test  [scope core: everything but apps/, which is ~90% of the cost for 28% of the programs]
+  by directory: . 614, forewords 316, errors 203, ops 43, lib 40, ui 7, cost 5, examples 1
+  population: 58b08c38, clean -- reproducible from that ref
+  100/1229
+  200/1229
+  300/1229
+  400/1229
+  500/1229
+  600/1229
+  700/1229
+  800/1229
+  900/1229
+  1000/1229
+  1100/1229
+  1200/1229
+
+1229 programs: clean 709, markers 298, codex-refused 210, unresolved 8, timeout 4
+
+emitter gaps, by how many programs hit them (140 distinct):
+    140  no emitter for poke-32
+    136  no emitter for peek-32
+    112  no emitter for poke-byte
+     72  no emitter for poke-16
+     67  no emitter for alloc-bytes
+     47  no emitter for bit-not
+     42  no emitter for port-out-32
+     42  no emitter for port-in-32
+     27  no emitter for block-read-sector
+     21  no emitter for process-get-scope
+     20  no emitter for poke-mmio-32
+     19  show on a Real needs __real_to_text, which this plug does not have
+     18  no emitter for read-mmio-32
+     17  no emitter for real-to-int
+     17  no emitter for block-write-sector
+     15  no emitter for real-from-int
+     14  no emitter for atomic-load
+     13  no emitter for net-recv-raw
+     13  no emitter for vec-splat
+     12  no emitter for real-to-bits
+     12  no emitter for process-spawn
+     10  no emitter for net-send-raw
+     10  no emitter for process-wait
+      9  no emitter for raw-bytes-to-text
+      9  no emitter for atomic-store
+      8  no emitter for gpu-mem-write
+      7  no emitter for process-get-cap
+      7  no emitter for to-real-approx
+      7  no emitter for poke-mmio
+      7  effect handlers not supported
+      7  no emitter for uefi-read-key
+      6  no emitter for port-in-byte
+      6  no emitter for peek-16
+      6  no emitter for port-out-byte
+      6  no emitter for uefi-read-key-ex
+      5  no emitter for process-get-network-scope
+      5  no emitter for real-approx-to-bits
+      5  no emitter for gpu-out
+      5  no emitter for bits-to-real
+      5  no emitter for to-real-trapping
