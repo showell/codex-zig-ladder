@@ -249,9 +249,14 @@ were amended this evening to carry per-program counts from
 `results/8f26755f-vs-58b08c38-core-a456e0cc9414/`, and to drop corpus tables
 measured over a population we could not describe correctly.
 
-What is left in `safari-codex/FINDINGS.md`: item 2 (Cordic), item 5 (the
-missing diagnostics), items 7 and 8 (angry-gopher). Item 1 is an issue nobody
-has written yet; item 4 is diagnosed and unsent.
+**Item 2 (Cordic) went as [PR 108](https://github.com/damiant3/Cobblestone/pull/108)
+the same evening**, docstring correction plus `math-cordic-accuracy`; the model
+is `findings/cordic/`, and it needed no box time because the algorithm is
+integer arithmetic that transcribes faithfully into Python.
+
+What is left in `safari-codex/FINDINGS.md`: item 5 (the missing diagnostics),
+items 7 and 8 (angry-gopher). Item 1 is an issue nobody has written yet; item 4
+is diagnosed and unsent. Both are ISSUES rather than PRs and both are cheap.
 
 **Steve's call, 2026-08-30, after [what the safari port surfaced](http://143.244.172.148:9100/notes/what-the-safari-port-surfaced.md):**
 
