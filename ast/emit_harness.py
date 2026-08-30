@@ -236,8 +236,16 @@ def notices_reporter(prefix):
     `write-binary` is the only Codex-level route to fd 1 and it takes raw bytes;
     `Foreword chapter CCE` already carries `text-to-utf8-bytes`, the symmetric
     partner of `utf8-bytes-to-text`, so no builtin and no compiler change is
-    needed. Finding 69 recorded three ways to do this and all three were wrong
-    about the cost, because this function was not found until later.
+    needed.
+
+    NO EMBEDDED NEWLINE IN A LITERAL. `czg-halted` ends a line inside a text
+    literal and closes it with a bare `"` on the next, which compiles. The same
+    shape with anything AFTER the closing quote -- `")` -- does not: CDX0007,
+    unterminated text literal, reported at the character following it. Rather
+    than depend on which of those the lexer accepts, the line terminator here is
+    appended as the BYTE it becomes, 10, after the Text is converted. That also
+    keeps the accumulator a byte list rather than a Text, so this does not
+    rebuild a growing string per diagnostic (finding 22).
 
     INFOS ARE COUNTED, NOT PRINTED. One port's fifteen units carried 3,685
     CDX4010 `bounds proven` infos against ten real CDX3006 warnings. Printing
@@ -250,16 +258,18 @@ def notices_reporter(prefix):
         f"  {P}-sev-word (s) = if s == sev-warning then \"warning\" else \"notice\"{nl}"
         f"{nl}"
         f"  {P}-notice-line : Diagnostic -> Text{nl}"
-        f"  {P}-notice-line (d) ={nl}"
-        f"   let w = {P}-sev-word (d.severity){nl}"
-        f"   in \"CDX\" & show (d.code) & \" \" & w & \": \" & (d.message) & \"{nl}\"{nl}"
+        f"  {P}-notice-line (d) ="
+        f" \"CDX\" & show (d.code) & \" \" & {P}-sev-word (d.severity) & \": \" & (d.message){nl}"
         f"{nl}"
-        f"  {P}-notices : List Diagnostic, Integer, Text -> Text{nl}"
+        f"  {P}-line-bytes : Text -> List Integer{nl}"
+        f"  {P}-line-bytes (t) = list-push (text-to-utf8-bytes t) 10{nl}"
+        f"{nl}"
+        f"  {P}-notices : List Diagnostic, Integer, List Integer -> List Integer{nl}"
         f"  {P}-notices (ds) (i) (acc) ={nl}"
         f"   if i >= list-length ds then acc{nl}"
         f"   else let d = list-at ds i{nl}"
         f"   in if (d.severity) == sev-info then {P}-notices ds (i + 1) acc{nl}"
-        f"   else {P}-notices ds (i + 1) (acc & {P}-notice-line d){nl}"
+        f"   else {P}-notices ds (i + 1) (acc & {P}-line-bytes ({P}-notice-line d)){nl}"
         f"{nl}"
         f"  {P}-info-count : List Diagnostic, Integer, Integer -> Integer{nl}"
         f"  {P}-info-count (ds) (i) (n) ={nl}"
@@ -271,10 +281,10 @@ def notices_reporter(prefix):
         f"  {P}-report : DiagnosticBag -> List Integer{nl}"
         f"  {P}-report (b) ={nl}"
         f"   let ds = bag-diagnostics b{nl}"
-        f"   in let body = {P}-notices ds 0 \"\"{nl}"
+        f"   in let body = {P}-notices ds 0 []{nl}"
         f"   in let n = {P}-info-count ds 0 0{nl}"
-        f"   in if n == 0 then text-to-utf8-bytes body{nl}"
-        f"   else text-to-utf8-bytes (body & \"codexzig: \" & show n & \" info diagnostics not shown{nl}\"){nl}"
+        f"   in if n == 0 then body{nl}"
+        f"   else body & {P}-line-bytes (\"codexzig: \" & show n & \" info diagnostics not shown\"){nl}"
     )
 
 

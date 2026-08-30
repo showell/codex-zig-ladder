@@ -1,0 +1,22 @@
+Chapter: F69Warns
+
+ A program that compiles cleanly and produces exactly one WARNING, to prove
+ codexzig now reports what it used to discard.
+
+ `is-digit` is a builtin. Defining one shadows it, which is CDX3005 -- a
+ warning, not an error, so the halt gate does not fire and the old harness
+ said nothing at all. That is the whole point of the probe: it must build,
+ and it must still tell you something.
+
+ We say:
+
+Section: Shadow
+
+  is-digit : Char -> Boolean
+  is-digit (c) = char-code c == 3
+
+Section: Entry
+
+  opening : [Console] Nothing = act
+    print-line-uni (if is-digit (char-at "0" 0) then "zero is a digit" else "no")
+  end

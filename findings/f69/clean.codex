@@ -1,0 +1,13 @@
+Chapter: F69Clean
+
+ The control: a program with nothing to report. codexzig's stdout must be
+ EMPTY for this one, or the reporter is manufacturing output rather than
+ relaying it.
+
+ We say:
+
+Section: Entry
+
+  opening : [Console] Nothing = act
+    print-line-uni "nothing to report"
+  end
