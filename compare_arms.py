@@ -35,6 +35,7 @@ from affected import changed_paths, classify, affected
 
 HERE = pathlib.Path(__file__).resolve().parent
 RESULTS = HERE / 'results'
+SCOPE = ['core']            # set from --scope; a list so sweep() can read it
 CODEX_SRC = pathlib.Path.home() / 'showell_repos' / 'NewRepository'
 
 
@@ -93,8 +94,8 @@ def build_and_transpile(sandbox, arm, artifacts):
                log=artifacts / f'{arm}-natives.log')
     if rc:
         raise SystemExit(f'{arm}: native_build.sh failed, see {arm}-natives.log')
-    rc, out = sh(['./corpus_run.py', '--transpile'], cwd=ladder, env=env,
-                 log=artifacts / f'{arm}-transpile.log')
+    rc, out = sh(['./corpus_run.py', '--transpile', '--scope', SCOPE[0]],
+                 cwd=ladder, env=env, log=artifacts / f'{arm}-transpile.log')
     if rc:
         raise SystemExit(f'{arm}: --transpile failed, see {arm}-transpile.log')
     return out
@@ -235,6 +236,7 @@ def main():
     ap.add_argument('--plan', action='store_true',
                     help='say what this run would do and stop. Two seconds.')
     a = ap.parse_args()
+    SCOPE[0] = a.scope if a.scope in ('core', 'all') else 'core'
 
     base_sha, head_sha = resolve_ref(a.base_ref), resolve_ref(a.head_ref)
     rid = run_id(base_sha, head_sha, a.scope)
