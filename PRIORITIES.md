@@ -254,9 +254,23 @@ the same evening**, docstring correction plus `math-cordic-accuracy`; the model
 is `findings/cordic/`, and it needed no box time because the algorithm is
 integer arithmetic that transcribes faithfully into Python.
 
-What is left in `safari-codex/FINDINGS.md`: item 5 (the missing diagnostics),
-items 7 and 8 (angry-gopher). Item 1 is an issue nobody has written yet; item 4
-is diagnosed and unsent. Both are ISSUES rather than PRs and both are cheap.
+**EVERY COBBLESTONE ITEM IS CLOSED as of 2026-08-30 evening.** Item 1 went as
+[issue 109](https://github.com/damiant3/Cobblestone/issues/109) (the overflow mode
+is discarded in lowering, so no plug can honour it), item 4 as
+[issue 110](https://github.com/damiant3/Cobblestone/issues/110)
+(`inline-single-caller` erases a definition depending on how many OTHER places
+call it), and **item 5 turned out to be OURS** — filed as finding 69, nothing to
+send. Items 7 and 8 are angry-gopher and are DEFERRED at Steve's call, to be done
+from that repo.
+
+**Finding 69 is the live one, and it is worth fixing.** `codexzig` merges the
+driver's four diagnostic bags and then asks only `bag-has-errors`, so every
+warning and info is discarded on a clean compile — the safari port's fifteen
+units hid ten real CDX3006 name collisions that way. Not a one-line fix: the
+diagnostic printers live in `opening.codex`, which cannot be bundled beside a
+harness defining `opening`, so even the error path prints a count rather than a
+report. Printing `bag-warnings` unformatted is the cheap version and still beats
+silence. Sibling of finding 49, which is the same shape one step worse.
 
 **Steve's call, 2026-08-30, after [what the safari port surfaced](http://143.244.172.148:9100/notes/what-the-safari-port-surfaced.md):**
 
