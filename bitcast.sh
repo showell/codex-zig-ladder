@@ -42,11 +42,19 @@ say "--- presence check: real-bitcast-f64 must build and match through the fixed
 T="$CODEX_ROOT/codex/test/ops/real-bitcast-f64"
 if ./native/codexir < "$T.codex" 2> "$S/rb.ir" > /dev/null \
    && ./native/zigemit < "$S/rb.ir" 2> "$S/rb.zig" > /dev/null; then
-  ( cd "$S" && "$HOME/zig-0.16.0/zig" run rb.zig > "$S/rb.out" 2> "$S/rb.err" )
+  # THE EMITTED PROGRAM PRINTS TO STDERR, which is the plug's convention and
+  # not an accident: cx_print_line writes there so a transpiled program's
+  # output cannot be confused with the transpiler's own stdout. Comparing
+  # `.expected` against stdout therefore diffs it against an EMPTY FILE and
+  # reports a clean run as RED -- which is what this check did on its first
+  # outing. dup.sh already knew; this did not mirror it.
+  ( cd "$S" && "$HOME/zig-0.16.0/zig" run rb.zig > "$S/rb.stdout" 2> "$S/rb.err" )
+  # A zig BUILD failure also lands on stderr, so this is not "trust stderr":
+  # the diff below is what separates a program that ran from one that did not.
   if grep -q "no emitter for real-to-bits\|no emitter for bits-to-real" "$S/rb.zig"; then
     say "PRESENCE CHECK FAILED -- the plug still refuses the builtins; the change did not reach the build"; exit 1
-  elif diff -u "$T.expected" "$S/rb.out" > "$S/rb.diff" 2>&1; then
-    say "presence check GREEN -- builds and matches .expected ($(wc -l < "$S/rb.out") lines)"
+  elif diff -u "$T.expected" "$S/rb.err" > "$S/rb.diff" 2>&1; then
+    say "presence check GREEN -- builds and matches .expected ($(wc -l < "$S/rb.err") lines)"
   else
     say "PRESENCE CHECK RED -- built but DIFFERS from .expected; see rb.diff"
     head -20 "$S/rb.diff" | tee -a "$ST"
