@@ -161,7 +161,7 @@ def arm_env(sandbox):
     return env
 
 
-def build_and_transpile(sandbox, arm, artifacts):
+def build_and_transpile(sandbox, arm, artifacts, resume=False):
     """Natives, then transpile the WHOLE population. The cheap half.
 
     Native-only, no QEMU and no zig compilation, so this is minutes for the
@@ -169,6 +169,9 @@ def build_and_transpile(sandbox, arm, artifacts):
     number that decides what the expensive half has to touch.
     """
     ladder = sandbox / 'ladder'
+    if resume and (ladder / 'corpus' / 'transpile.json').is_file():
+        print(f'    {arm}: transpile.json present, reusing it', flush=True)
+        return ''
     env = arm_env(sandbox)
     rc, _ = sh(['./native_build.sh'], cwd=ladder, env=env,
                log=artifacts / f'{arm}-natives.log')
@@ -200,8 +203,19 @@ def differing_names(base_sb, head_sb):
 
 
 def run_subset(sandbox, arm, artifacts, names):
-    """The expensive half, over the differing set only."""
+    """The expensive half, over the differing set only.
+
+    FILTERED TO WHAT THIS ARM ACTUALLY HAS. The differing set is a union and
+    deliberately includes programs present on one arm only -- a new test has no
+    counterpart to be byte-identical to, so it must run. Handing that union to
+    the other arm asks it to run four tests its tree does not contain, which
+    `corpus_run.py --run-only` refuses by name. It should: the alternative is a
+    runner that silently skips what it was told to run.
+    """
     ladder = sandbox / 'ladder'
+    have = {r['name'] for r in json.loads(
+        (ladder / 'corpus' / 'transpile.json').read_text())}
+    names = [n for n in names if n in have]
     sel = ladder / 'corpus' / 'to-run.txt'
     sel.parent.mkdir(exist_ok=True)
     sel.write_text('\n'.join(names) + ('\n' if names else ''))
@@ -315,16 +329,21 @@ def main():
                     help='do not retire the sandboxes (needs a reason in the result)')
     ap.add_argument('--plan', action='store_true',
                     help='say what this run would do and stop. Two seconds.')
+    ap.add_argument('--resume', action='store_true',
+                    help='reuse the sandboxes a failed run left, and skip any '
+                         'arm whose transpile.json is already on disk')
     a = ap.parse_args()
     SCOPE[0] = a.scope if a.scope in ('core', 'all') else 'core'
 
     base_sha, head_sha = resolve_ref(a.base_ref), resolve_ref(a.head_ref)
     rid = run_id(base_sha, head_sha, a.scope)
     dest = RESULTS / rid
-    if dest.exists():
+    trees = dest / 'trees.json'
+    if dest.exists() and not a.resume:
         raise SystemExit(f'{rid} already exists -- that comparison has been run.\n'
-                         f'  {dest}\nDelete it to redo, or change the scope.')
-    dest.mkdir(parents=True)
+                         f'  {dest}\nDelete it to redo, --resume to continue it, '
+                         f'or change the scope.')
+    dest.mkdir(parents=True, exist_ok=True)
 
     print(f'run {rid}')
     print(f'  base {a.base_ref} {base_sha[:8]}')
@@ -370,8 +389,16 @@ def main():
         dest.rmdir()
         return 0
 
-    base_sb = cut(f'cmp-base-{rid[:12]}', base_sha)
-    head_sb = cut(f'cmp-head-{rid[:12]}', head_sha)
+    if a.resume and trees.is_file():
+        rec = json.loads(trees.read_text())
+        base_sb, head_sb = pathlib.Path(rec['base']), pathlib.Path(rec['head'])
+        print('  --resume: reusing the trees the failed run left')
+    else:
+        base_sb = cut(f'cmp-base-{rid[:12]}', base_sha)
+        head_sb = cut(f'cmp-head-{rid[:12]}', head_sha)
+        # Written the moment they exist, so a failure is resumable rather than
+        # a repeat of the expensive half.
+        trees.write_text(json.dumps({'base': str(base_sb), 'head': str(head_sb)}))
     print(f'  base tree {base_sb}\n  head tree {head_sb}')
 
     meta = {'id': rid, 'base_ref': a.base_ref, 'head_ref': a.head_ref,
@@ -386,7 +413,7 @@ def main():
     try:
         for arm, sb in (('base', base_sb), ('head', head_sb)):
             print(f'  [1/3] natives + transpile, {arm} ...', flush=True)
-            build_and_transpile(sb, arm, dest)
+            build_and_transpile(sb, arm, dest, resume=a.resume)
 
         # WHICH ARM ARE YOU STANDING ON. The two arms must not share natives.
         # A comparison whose arms were built from the same tree reports perfect
