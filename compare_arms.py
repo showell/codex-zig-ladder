@@ -219,7 +219,8 @@ def run_subset(sandbox, arm, artifacts, names):
     sel = ladder / 'corpus' / 'to-run.txt'
     sel.parent.mkdir(exist_ok=True)
     sel.write_text('\n'.join(names) + ('\n' if names else ''))
-    rc, out = sh(['./corpus_run.py', '--run', '--run-only', str(sel)],
+    rc, out = sh(['./corpus_run.py', '--run', '--reuse-transpile',
+                  '--scope', SCOPE[0], '--run-only', str(sel)],
                  cwd=ladder, env=arm_env(sandbox),
                  log=artifacts / f'{arm}-corpus.log')
     if rc:

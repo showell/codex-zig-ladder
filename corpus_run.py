@@ -745,6 +745,12 @@ def main():
     ap.add_argument('--first', metavar='FILE',
                     help='program names to transpile FIRST, one per line, so a '
                          'run stopped early already holds the interesting part')
+    ap.add_argument('--reuse-transpile', action='store_true',
+                    help='load corpus/transpile.json instead of transpiling '
+                         'again. --run always transpiles first, so a caller '
+                         'that already has the transpile (compare_arms, which '
+                         'needs BOTH arms before it can choose what to run) '
+                         'otherwise pays the cheap phase twice per arm.')
     ap.add_argument('--run-only', metavar='FILE',
                     help='transpile the FULL population but RUN only the program '
                          'names in FILE, one per line. Not a slice of the corpus: '
@@ -815,11 +821,33 @@ def main():
     # A limited run is a smoke test; the json files are the full-corpus census
     # and a slice must not overwrite them (one did, 2026-08-19).
     persist = not (a.limit or a.only)
-    results, hist = stage_transpile(names, WORK)
-    if persist:
+    if a.reuse_transpile:
+        prior_json = WORK / 'transpile.json'
+        if not prior_json.is_file():
+            raise SystemExit(f'--reuse-transpile: no {prior_json}')
+        results = json.loads(prior_json.read_text())
+        hist = collections.Counter()
+        for r in results:
+            for m in set(r.get('markers', ())):
+                hist[m] += 1
+        got, want = {r['name'] for r in results}, {n.stem for n in names}
+        if got != want:
+            raise SystemExit(
+                f'--reuse-transpile: {prior_json} holds {len(got)} programs and '
+                f'this scope selects {len(want)}; they must be the same set. '
+                f'Only in file: {len(got - want)}. Only in scope: {len(want - got)}.')
+        print(f'--reuse-transpile: {len(results)} programs read from '
+              f'{prior_json.name}, not re-transpiled')
+    else:
+        results, hist = stage_transpile(names, WORK)
+    # `persist` gates BOTH files, and only the transpile half should be skipped
+    # on a reuse -- run.jsonl is the verdict record the comparison reads, and
+    # turning it off here would have produced a run that completed and wrote
+    # nothing to compare.
+    if persist and not a.reuse_transpile:
         (WORK / 'transpile.json').write_text(json.dumps(results, indent=1))
         (WORK / 'gaps.json').write_text(json.dumps(hist.most_common(), indent=1))
-    else:
+    elif not persist:
         print('\n--limit run: census json left untouched')
 
     # TRANSPILE EVERYTHING, RUN ONLY WHAT MOVED. A program whose emitted zig is
