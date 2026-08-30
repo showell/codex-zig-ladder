@@ -71,7 +71,18 @@ be deleted, not kept for completeness.
    stale baseline has moved for two reasons and the rows cannot tell you which.
 10. Design the **presence check** now: one baseline-free assertion that the
    change is visible in the output. A soundness gate is blind to a no-op.
-11. `python3 check_paths.py` and `python3 check_harness_gates.py` (5 s each), `compute_lock.py --probe` if detaching,
+11. **A GATE YOU ARE SHIPPING MUST BE SHOWN TO FIRE.** Item 10 asks whether
+   your CHANGE executed. This asks whether the CHECK would notice if the answer
+   were wrong, which is a different question and the only one that survives a
+   green run. A comparison whose every row reads `ok` has never executed its own
+   mismatch branch -- so the branch that gives the test its entire value is the
+   one line nobody has run, and a typo in it looks exactly like success.
+   Perturb one expected value by the smallest amount that must fail, confirm
+   that row and only that row goes red, and revert. One guest.
+   `codex/test/forewords/gpu-devicemath-atan` was written, run, and read as
+   proof with 34 rows of `ok` before anyone noticed its `MISMATCH` arm had never
+   executed.
+12. `python3 check_paths.py` and `python3 check_harness_gates.py` (5 s each), `compute_lock.py --probe` if detaching,
    and say the expected cost out loud before launching anything over 20 s.
    A job that takes no lock of its own -- the transpiler is one -- makes this
    check the only guard there is. `check_harness_gates.py` is the mechanical
