@@ -257,6 +257,32 @@ now and the arms ride in `ARMS` beside `SEED`.
   **measured and withdrawn** -- it moves no parameter cell, leaves both targets
   red, and perturbs tvar numbering, so it is not even inert. Tag
   `second-compiler-pr-u53`.
+- **PREPARED AND NOT SENT: the f64 BITCAST pair, `zig-plug-real-bitcast`,
+  STACKED ON PR 100.** Row 2.07. Measured 2026-08-30 in sandboxes
+  `20260830T154212Z-u53-bitcast-fixed` and `20260830T154214Z-u53-bitcast-base`;
+  evidence kept at `runs/bitcast-evidence/`. Both arms agree on the new
+  `codex/test/ops/real-bitcast-f64` -- bare metal 12/12 at seed B066CEB5 with
+  `real-saturating-finite` as the control in the same pass, zig 12/12 with no
+  marker left. Corpus A/B **against 13edc9a6, PR 100's head, not plain U53**:
+  0 stage moves, 0 verdict moves of 328, 579 of 582 emitted `.zig`
+  byte-identical. Tier set 27 tiers SET GREEN, 0 unexpected.
+  - **The three that moved falsified the written prediction, and that is the
+    result worth keeping.** The prediction said 614 of 614 byte-identical
+    because "no corpus program can call these builtins". Three do --
+    `sparkplug-encode`, `vec-array`, `vec-mask-hazards` already carried the
+    `no emitter for real-to-bits` marker and now carry `cx_real_to_bits`. They
+    stay at stage `markers` behind unrelated refusals, so the VERDICT claim
+    held while the reasoning under it did not.
+  - **The shaker is proven in passing.** `cx_bits_to_real`, the sibling part
+    those three do not use, is in none of them, and neither new part reaches
+    the other 579 programs. A prelude gained two declarations and 579 emitted
+    files did not notice -- the first direct evidence the shake is per-part.
+  - **The commit does not yet carry any of this.** `2f7e7375`'s message claims
+    no measurement at all. `runs/bitcast-evidence/COMMIT-MESSAGE.txt` is the
+    text to amend in before the PR is opened.
+  - Outliers `recursive-eq` (differs) and `tcp-reliability` (crashes) are
+    IDENTICAL on both arms and belong to the base.
+
 - **[Issue 102](https://github.com/damiant3/Cobblestone/issues/102)** --
   finding 68, filed rather than patched because COMPILER-32 is mid-stream on
   the same function.
