@@ -65,10 +65,23 @@ def run_id(base_sha, head_sha, scope):
 
 
 def cut(label, ref):
+    """Cut a sandbox and RECOGNISE its path, rather than trusting a position.
+
+    This took `out.strip().splitlines()[-1]`, which is wrong for a reason worth
+    keeping: `sh` concatenates stdout and stderr, sandbox.sh writes the path to
+    stdout and its human notes to stderr, so the last line was a note. The
+    script then tried to open `'    (no natives, ...)/env'`. Parsing human
+    output by position is a guess; checking that the thing you found is
+    actually a sandbox is not.
+    """
     rc, out = sh([str(HERE / 'sandbox.sh'), label, 'HEAD', str(CODEX_SRC), ref])
     if rc:
         raise SystemExit(f'sandbox.sh failed:\n{out}')
-    return pathlib.Path(out.strip().splitlines()[-1])
+    found = [pathlib.Path(l.strip()) for l in out.splitlines() if l.strip().startswith('/')]
+    for cand in reversed(found):
+        if (cand / 'ladder').is_dir() and (cand / 'env').is_file():
+            return cand
+    raise SystemExit(f'sandbox.sh printed no path holding ladder/ and env:\n{out}')
 
 
 def arm_env(sandbox):
