@@ -241,11 +241,17 @@ now and the arms ride in `ARMS` beside `SEED`.
 register; it was re-verified against u53 on 2026-08-30 and three of its six
 Cobblestone items moved, so read it there rather than trusting a summary here.
 
-Sent so far: **PR 105** (the f64 bitcasts) and **issue 106** (the wide Real
-literal, whose mechanism is stated in Cobblestone's own comment at
-`ZigEmitter.codex:3885`). In flight from this cycle: the **`real-atan` offer**,
-branch `foreword-real-atan` in `~/showell_repos/cobblestone-atan`, measured
-against zig's libm at 6.7e-16 worst error by `findings/atan/`.
+**THE OUTBOUND QUEUE IS EMPTY as of 2026-08-30 evening.** Everything the safari
+port owed is sent: **PR 105** (f64 bitcasts), **issue 106** (the wide Real
+literal), **PR 107** (the Real arc tangent, measured against zig's libm at
+6.7e-16 by `findings/atan/`). PRs 99, 100, 101 and 103 were already open and
+were amended this evening to carry per-program counts from
+`results/8f26755f-vs-58b08c38-core-a456e0cc9414/`, and to drop corpus tables
+measured over a population we could not describe correctly.
+
+What is left in `safari-codex/FINDINGS.md`: item 2 (Cordic), item 5 (the
+missing diagnostics), items 7 and 8 (angry-gopher). Item 1 is an issue nobody
+has written yet; item 4 is diagnosed and unsent.
 
 **Steve's call, 2026-08-30, after [what the safari port surfaced](http://143.244.172.148:9100/notes/what-the-safari-port-surfaced.md):**
 
