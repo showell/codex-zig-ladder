@@ -1158,7 +1158,7 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
-## 69. `codexzig` reports no WARNINGS at all: our harness merges the bag, asks only whether it holds errors, and drops everything else
+## 69. FIXED 2026-08-30. `codexzig` reported no warnings, and the cause was TWO things: the harness dropped every non-error, and the bag it dropped them from was never the driver's
 
 Found 2026-08-30, answering item 5 of `safari-codex/FINDINGS.md`, which asked
 which of two causes it was and said the answer mattered more than a patch.
@@ -1186,8 +1186,38 @@ real: `bar-quad` in both `Tower` and `GuardRail`, `tower-beyond` and
 port had been green its whole life and was one refactor away from a mention
 resolving by file order.
 
-**THE HARDER HALF, found 2026-08-30 while scoping the fix: THERE IS NOWHERE TO
-PRINT THEM.** This is the real reason the pass was never made, and it is not the
+**FIXED, AND THE SECOND DIAGNOSIS WAS ALSO WRONG.** The reporter went in, the
+build was green, the fixed point held -- and it printed nothing for a probe the
+seed warns about. The harness merged four bags "the driver merges", copied
+faithfully, and **those four were never the driver's list**.
+`opening.codex:479-482` builds three more ITSELF from `scan.def-headers`,
+because no phase returns them:
+
+    entry-dup-bag = bag-from-list (check-entry-point-duplicate assignments-s)
+    shadow-bag    = bag-from-list (check-shadowed-builtins (scan.def-headers) ...)
+    collide-bag   = bag-from-list (check-cross-chapter-collisions ...)
+
+**`collide-bag` is CDX3006**, the cross-chapter collision -- the exact
+diagnostic whose ten instances started this finding. No reporter could have
+found them.
+
+**So the EXISTING error gate has been incomplete since it was added**, which is
+the part worth carrying elsewhere: `cdx-duplicate-cite` is `sev-error` and rides
+in a bag the harness never merged, so a program with duplicate cites passes the
+gate and emits zig. The gate was the careful part and it had a hole.
+
+Verified on the built binary: a probe defining `is-digit` reports one CDX3005 on
+stdout and still emits a program; a clean probe reports nothing; no diagnostic
+text appears in the emitted zig; and the emitted zig for a clean program is
+BYTE-IDENTICAL to the pre-change binary's. `findings/f69/verify.sh` is the
+script, and the last two checks are why it is a script.
+
+Landed in both copies of the harness -- the ladder's generator and
+codex-zig-transpiler's hand-maintained `source/CodexZigHarness.codex` -- with
+`check_harness_twin.py` now enforcing that their code cannot diverge again.
+
+**THE ORIGINAL SECOND OBSTACLE, kept because the reasoning is still true: THERE
+WAS NOWHERE TO PRINT THEM.** This is the real reason the pass was never made, and it is not the
 one the harness docstring gives.
 
 `print-text` is `cx_print` is `std.debug.print` -- **stderr** -- and stderr is
