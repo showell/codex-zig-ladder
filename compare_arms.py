@@ -340,6 +340,28 @@ def main():
             print(f'  [1/3] natives + transpile, {arm} ...', flush=True)
             build_and_transpile(sb, arm, dest)
 
+        # WHICH ARM ARE YOU STANDING ON. The two arms must not share natives.
+        # A comparison whose arms were built from the same tree reports perfect
+        # agreement and means nothing, and nothing about the output would say
+        # so. Cheap, total, and checked rather than trusted.
+        import hashlib as _h
+        def _sha(f):
+            return _h.sha256(f.read_bytes()).hexdigest()[:16] if f.is_file() else None
+        same = []
+        for tool in ('native/zigemit', 'native/codexir'):
+            b, f = base_sb / 'ladder' / tool, head_sb / 'ladder' / tool
+            sb_, sf = _sha(b), _sha(f)
+            meta.setdefault('natives', {}).setdefault(tool, {})['base'] = sb_
+            meta['natives'][tool]['head'] = sf
+            if sb_ is not None and sb_ == sf:
+                same.append(tool)
+        if same and any(q.startswith(('codex/plugs/', 'codex/compiler/')) for q in changed):
+            raise SystemExit(
+                'ARMS SHARE NATIVES: ' + ', '.join(same) + ' are byte-identical '
+                'across the two trees, but this change touches the plug or the '
+                'compiler. Either the sandboxes were built from the same tree or '
+                'the build did not rerun. The comparison would be meaningless.')
+
         names, total = differing_names(base_sb, head_sb)
         meta['run_selection'] = {'differing': len(names), 'population': total,
                                  'skipped': total - len(names), 'names': names}
