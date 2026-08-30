@@ -44,7 +44,7 @@ is wrong and the IR loses a root.
 import pathlib
 
 from emit_harness import (frontend_source, HOSTED_DECK_BYTES, LIFT_PROSE,
-                          halt_gate, halt_formatter)
+                          halt_gate, halt_formatter, notices_reporter)
 
 HERE = pathlib.Path(__file__).parent
 
@@ -76,6 +76,8 @@ Section: Halt
 
 {halt_formatter('czg', 'zig')}
 
+{notices_reporter('czg')}
+
 Section: Roots
 
  opening.codex:1316, copied because that chapter cannot ride along.
@@ -101,7 +103,10 @@ Section: Driver
     }}
     in let ir-text = emit-ir-chapter (ir-prune-unreachable-roots ir czg-emit-roots) meta (ch.type-defs)
     in let parsed = parse-ir-chapter ir-text
-    in print-text (emit-zig-chapter (parsed.chapter) (parsed.type-defs))
+    in act
+      write-binary (czg-report czg-bag)
+      print-text (emit-zig-chapter (parsed.chapter) (parsed.type-defs))
+    end
   end
 '''
 

@@ -221,6 +221,63 @@ def halt_formatter(prefix, artifact):
     )
 
 
+def notices_reporter(prefix):
+    """The `<prefix>-report` definition: every diagnostic the bag holds that is
+    NOT an error, as UTF-8 bytes ready for stdout.
+
+    WHY STDOUT AND NOT print-text. `print-text` is `cx_print` is
+    `std.debug.print`, which is stderr -- and stderr is where the emitted zig
+    goes, because `codexzig < prog.codex 2> prog.zig` is the invocation. A
+    harness that printed a warning would inject it into the artifact. The plug
+    says so itself at `zig-p-cx-deck-report`: "STDOUT, never stderr. stderr
+    carries the program's output and every comparison in the ladder diffs it,
+    so a measurement written there would corrupt the thing being measured."
+
+    `write-binary` is the only Codex-level route to fd 1 and it takes raw bytes;
+    `Foreword chapter CCE` already carries `text-to-utf8-bytes`, the symmetric
+    partner of `utf8-bytes-to-text`, so no builtin and no compiler change is
+    needed. Finding 69 recorded three ways to do this and all three were wrong
+    about the cost, because this function was not found until later.
+
+    INFOS ARE COUNTED, NOT PRINTED. One port's fifteen units carried 3,685
+    CDX4010 `bounds proven` infos against ten real CDX3006 warnings. Printing
+    every non-error would bury the thing worth reading in its own telemetry.
+    """
+    nl = chr(10)
+    P = prefix
+    return (
+        f"  {P}-sev-word : Integer -> Text{nl}"
+        f"  {P}-sev-word (s) = if s == sev-warning then \"warning\" else \"notice\"{nl}"
+        f"{nl}"
+        f"  {P}-notice-line : Diagnostic -> Text{nl}"
+        f"  {P}-notice-line (d) ={nl}"
+        f"   let w = {P}-sev-word (d.severity){nl}"
+        f"   in \"CDX\" & show (d.code) & \" \" & w & \": \" & (d.message) & \"{nl}\"{nl}"
+        f"{nl}"
+        f"  {P}-notices : List Diagnostic, Integer, Text -> Text{nl}"
+        f"  {P}-notices (ds) (i) (acc) ={nl}"
+        f"   if i >= list-length ds then acc{nl}"
+        f"   else let d = list-at ds i{nl}"
+        f"   in if (d.severity) == sev-info then {P}-notices ds (i + 1) acc{nl}"
+        f"   else {P}-notices ds (i + 1) (acc & {P}-notice-line d){nl}"
+        f"{nl}"
+        f"  {P}-info-count : List Diagnostic, Integer, Integer -> Integer{nl}"
+        f"  {P}-info-count (ds) (i) (n) ={nl}"
+        f"   if i >= list-length ds then n{nl}"
+        f"   else let d = list-at ds i{nl}"
+        f"   in if (d.severity) == sev-info then {P}-info-count ds (i + 1) (n + 1){nl}"
+        f"   else {P}-info-count ds (i + 1) n{nl}"
+        f"{nl}"
+        f"  {P}-report : DiagnosticBag -> List Integer{nl}"
+        f"  {P}-report (b) ={nl}"
+        f"   let ds = bag-diagnostics b{nl}"
+        f"   in let body = {P}-notices ds 0 \"\"{nl}"
+        f"   in let n = {P}-info-count ds 0 0{nl}"
+        f"   in if n == 0 then text-to-utf8-bytes body{nl}"
+        f"   else text-to-utf8-bytes (body & \"codexzig: \" & show n & \" info diagnostics not shown{nl}\"){nl}"
+    )
+
+
 def frontend_source(src, passes, scan=True, deck_bytes=None, resolve=True, lift=False):
     """The compiler's own sequence from source text to a lowered IRChapter,
     bound as `ir`. Every program built here runs exactly this -- the oracle
