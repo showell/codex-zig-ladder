@@ -284,7 +284,6 @@ def main():
     forced = sorted(r[len('codex/test/'):] for r, _ in hits) if scope_kind != 'all' else []
     if forced:
         print(f'  forced into the sweep regardless of scope: {len(forced)}')
-    meta['forced'] = forced
     if a.plan:
         print(f'\n  would write {dest}')
         print('  --plan: stopping before any box time is spent')
@@ -300,7 +299,8 @@ def main():
             'ladder_sha': git(['rev-parse', 'HEAD'], cwd=HERE),
             'when': datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds'),
             'host': __import__('socket').gethostname(),
-            'base_tree': str(base_sb), 'head_tree': str(head_sb)}
+            'base_tree': str(base_sb), 'head_tree': str(head_sb),
+            'forced': forced}
 
     ok = False
     try:

@@ -47,6 +47,42 @@ EMBEDDED = re.compile(r'^Chapter:\s*(\w+)--(.+?)\s*$', re.M)
 IMPLICIT = (('Foreword', 'ListUtils'), ('Foreword', 'Tuple'))
 
 
+class _CaseInsensitive(dict):
+    """A dict that answers like a PowerShell hashtable, because it IS one.
+
+    `$QuireDirs` is a PowerShell hashtable and PowerShell hashtable keys are
+    CASE-INSENSITIVE by default: `$QuireDirs['Ui']` returns the entry stored
+    under 'UI'. A Python dict is case-sensitive, so porting the table
+    faithfully and the LOOKUP carelessly changed the semantics -- the classic
+    shape, where the data crosses correctly and the behaviour around it does
+    not.
+
+    What it cost, found 2026-08-30: the depot spells the quire `UI` 493 times
+    and `Ui` 14 times, and the 14 include `foreword/ui/FontAtlas.codex:3` and
+    `foreword/ui/TrueTypeFont.codex:3-4` -- inside the LIBRARY, so the failure
+    reaches any program that cites those chapters transitively. Every one of
+    them came back `unresolved` and was silently dropped from every sweep this
+    harness has ever run, including three programs in the top-level 614 and
+    `foreword-all-compile`, whose entire assertion is that all 419 foreword
+    chapters build.
+    """
+    def get(self, key, default=None):
+        v = super().get(key)
+        if v is not None:
+            return v
+        lk = key.lower()
+        for k, val in self.items():
+            if k.lower() == lk:
+                return val
+        return default
+
+    def __getitem__(self, key):
+        v = self.get(key)
+        if v is None:
+            raise KeyError(key)
+        return v
+
+
 def quire_dirs():
     """The registry, read from the depot rather than copied.
 
@@ -56,7 +92,8 @@ def quire_dirs():
     """
     text = (CODEX / 'build' / 'quire-map.ps1').read_text(errors='replace')
     body = text.split('$QuireDirs = @{', 1)[1].split('}', 1)[0]
-    return {q: d.replace('\\', '/') for q, d in QUIRE_LINE.findall(body)}
+    return _CaseInsensitive(
+        (q, d.replace('\\', '/')) for q, d in QUIRE_LINE.findall(body))
 
 
 def resolve(path, dirs=None):
