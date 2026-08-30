@@ -1158,6 +1158,54 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
+## 69. `codexzig` reports no WARNINGS at all: our harness merges the bag, asks only whether it holds errors, and drops everything else
+
+Found 2026-08-30, answering item 5 of `safari-codex/FINDINGS.md`, which asked
+which of two causes it was and said the answer mattered more than a patch.
+**OURS**, `ast/gen_codexzig_harness.py` via `emit_harness.halt_gate`. Not fixed.
+
+**It is cause (a): produced, reachable, and discarded.** The generated harness
+merges exactly the four bags the driver merges, and then consults one predicate:
+
+    in let czg-bag = bag-merge-all [bag-from-list (toks.errors), doc.parse-bag,
+                                    rr.bag, cr.state.bag]
+    in if bag-has-errors czg-bag then print-text (czg-halted (bag-errors czg-bag))
+    else ...
+
+`bag-has-errors` is false for a clean compile, and the `else` branch prints
+nothing from the bag. Every warning and info the front end produced is sitting
+in `czg-bag` at that moment and is thrown away.
+
+**What that hid, measured by the safari port.** Compiling fifteen checks through
+`codexzig` and through the seed's own x86-64 emitter gave byte-identical program
+output and completely different diagnostics. The seed emitted 1,268 CDX4010
+(bounds proven, info), 15 CDX4030 (PIPELINE, info) and **10 CDX3006** --
+`Definition 'x' is also defined in chapter 'Y'`, a warning, and all ten were
+real: `bar-quad` in both `Tower` and `GuardRail`, `tower-beyond` and
+`tower-right` in both `Render` and `RenderCheck`. `codexzig` said none of it. The
+port had been green its whole life and was one refactor away from a mention
+resolving by file order.
+
+**The structural half, which is why this is not a one-line fix.** The harness's
+own docstring records it: the diagnostic PRINTERS live in `opening.codex`, which
+cannot be bundled beside a harness that defines `opening`, so even the error path
+prints a count and the first error rather than the driver's report. Surfacing
+warnings properly means extracting the printers or reimplementing the formatting.
+Printing `bag-warnings` unformatted is the cheap version and would still beat
+silence.
+
+**Sibling of [[finding 49]], and the pair is the shape to remember.**
+`CodexIrHarness.codex` never consults the bag at all; `CodexZigHarness.codex`
+consults it for errors only. One harness is blind, the other is colour-blind, and
+both were written from the same driver.
+
+**Confidence: HIGH.** Source read at u53, the generated harness inspected, and
+the behaviour measured independently by the port on fifteen units.
+
+**Not upstream.** `safari-codex/FINDINGS.md` routed this as a possible plug or
+compiler gap. It is neither: the front end produces the diagnostics and hands
+them over, and our harness drops them. Nothing to send.
+
 ## 68. SENT as issue 102. A `let` bound to an immediately-applied lambda chain records the LAMBDA'S type, not the application's result, so the IR contradicts itself
 
 **BOTH ARMS, so the rungs cannot see it.** Update 53, pin `u53-rebank` at
