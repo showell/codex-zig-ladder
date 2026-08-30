@@ -184,8 +184,29 @@ LIFT_PROSE = """ The lift is opening.codex:1713-1720, and it is on that path onl
 #
 # `check_harness_gates.py` still compares the generated files, because a
 # constant shared in python does not prove the emitted Codex agrees.
+# THE DRIVER BUILDS BAGS OF ITS OWN, and a harness standing in for it gets none
+# of them by calling the phases. `opening.codex:479-482` constructs
+# entry-dup-bag, shadow-bag and collide-bag directly from `scan.def-headers`,
+# because no phase returns them -- so a harness that merges only what the phases
+# hand back is missing three whole classes of diagnostic, including the one that
+# started this: CDX3006, cross-chapter name collision, is `collide-bag`.
+#
+# Measured 2026-08-30: a probe defining `is-digit` produces CDX3005 on the seed
+# and NOTHING through a harness merging the four phase bags, because the shadow
+# check is not a phase. The four were copied faithfully and were never the
+# driver's list.
+BAG_SIDE = (
+    "in let czg-bset = skip-list-text-from-list builtin-names\n"
+    "    in let czg-shadow-bag = bag-from-list (check-shadowed-builtins "
+    "(scan.def-headers) czg-bset 0 (list-length (scan.def-headers)) [])\n"
+    "    in let czg-collide-bag = bag-from-list (check-cross-chapter-collisions "
+    "(scan.def-headers) colliding assignments 0 (list-length (scan.def-headers)) [])\n"
+    "    in let czg-entry-bag = bag-from-list (check-entry-point-duplicate assignments)\n"
+    "    ")
+
 BAG_MERGE = ("bag-merge-all [bag-from-list (toks.errors), doc.parse-bag, "
-             "rr.bag, cr.state.bag]")
+             "rr.bag, cr.state.bag, czg-shadow-bag, czg-collide-bag, "
+             "czg-entry-bag]")
 
 
 def halt_gate(prefix, artifact):
@@ -199,7 +220,7 @@ def halt_gate(prefix, artifact):
     CODEGEN-HALTED is the marker the rest of the tree refuses on by name
     (ast/f4_boot.py), which is why the text is that and not a new word.
     """
-    return (f"in let {prefix}-bag = {BAG_MERGE}\n"
+    return (f"{BAG_SIDE}in let {prefix}-bag = {BAG_MERGE}\n"
             f"    in if bag-has-errors {prefix}-bag "
             f"then print-text ({prefix}-halted (bag-errors {prefix}-bag))\n"
             f"    else ")
