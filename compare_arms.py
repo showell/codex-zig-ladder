@@ -85,12 +85,31 @@ def cut(label, ref):
 
 
 def arm_env(sandbox):
-    env = dict(**__import__('os').environ)
-    for line in (sandbox / 'env').read_text().splitlines():
-        line = line.strip()
-        if line.startswith('export '):
-            k, _, v = line[len('export '):].partition('=')
-            env[k.strip()] = v.strip().strip('"').strip("'")
+    """SOURCE the sandbox's env file. Do not parse it.
+
+    It is a shell script, not a list of assignments: it sources
+    `~/.codex_ladder_env` inside a conditional, and that host file is where
+    CODEX_LADDER_VENUE lives -- which every compute entry point refuses to run
+    without. A regex over lines beginning with `export ` collected CODEX_ROOT
+    and SANDBOX, missed the venue entirely, and the refusal that followed said
+    neither "error" nor "SIZE" so `ringplug_build.sh`'s `grep | head` swallowed
+    it and printed a bare PLUG COMPILE FAILED. Twelve minutes to find, on a
+    build that works perfectly when run by hand.
+    """
+    out = subprocess.run(
+        ['bash', '-c', f'set -a; . {sandbox}/env >/dev/null 2>&1; env -0'],
+        capture_output=True)
+    env = {}
+    for item in out.stdout.decode('utf-8', 'replace').split('\0'):
+        if '=' in item:
+            k, _, v = item.partition('=')
+            env[k] = v
+    if 'CODEX_LADDER_VENUE' not in env:
+        raise SystemExit(f'{sandbox}/env yielded no CODEX_LADDER_VENUE; '
+                         'every compute entry point refuses without it')
+    if not env.get('CODEX_ROOT', '').startswith(str(sandbox)):
+        raise SystemExit(f'CODEX_ROOT is {env.get("CODEX_ROOT")!r}, not inside '
+                         f'{sandbox} -- the sandbox would be decoration')
     return env
 
 
