@@ -235,6 +235,39 @@ rebank was started.
 caused that is retired (`c5547e3`); `--keep 3` with it. Every Update is banked
 now and the arms ride in `ARMS` beside `SEED`.
 
+## THE SAFARI PORT'S FINDINGS, AND THE TWO THINGS THE ESSAY ASKED FOR
+
+**Objective: OUTBOUND, then INTEGRITY.** `safari-codex/FINDINGS.md` is the
+register; it was re-verified against u53 on 2026-08-30 and three of its six
+Cobblestone items moved, so read it there rather than trusting a summary here.
+
+Sent so far: **PR 105** (the f64 bitcasts) and **issue 106** (the wide Real
+literal, whose mechanism is stated in Cobblestone's own comment at
+`ZigEmitter.codex:3885`). In flight from this cycle: the **`real-atan` offer**,
+branch `foreword-real-atan` in `~/showell_repos/cobblestone-atan`, measured
+against zig's libm at 6.7e-16 worst error by `findings/atan/`.
+
+**Steve's call, 2026-08-30, after [what the safari port surfaced](http://143.244.172.148:9100/notes/what-the-safari-port-surfaced.md):**
+
+- **MAKE THE NUMERIC ORACLE STANDING RATHER THAN IMPROVISED.** `findings/atan/`
+  is the whole shape already -- one input list, two generated arms, a comparison
+  that refuses if they drift -- and it graded an arc tangent against zig's libm
+  to four ULP in an afternoon. The foreword's docstrings are a specification
+  nobody checks: Cordic claims 0.1% and delivers 0.45%. Generalise the rig from
+  one function to a table of them, and Cordic is its first customer.
+- **ITEM 4 IS THE ONE TO INVESTIGATE.** A one-expression function over a RECORD
+  parameter is silently not emitted. It is the only finding whose sole witness
+  is OUTSIDE the language -- invisible and harmless inside Codex, surfacing three
+  steps downstream when a zig shim calls what no longer exists. **We have no idea
+  how large it is**, and its detector so far has been "somebody happened to be
+  writing a foreign-function boundary that week."
+
+**Why this ordering.** The essay's argument is that the ladder's oracle is
+RELATIVE -- two arms must agree -- and is structurally blind to anything both
+arms get wrong. Every finding the port produced that the ladder could not have
+produced came from an ABSOLUTE standard. Both items above buy absolute oracles;
+that is the gap, not the individual defects.
+
 ## IN FLIGHT WITH DAMIAN: three PRs and one issue, all opened 2026-08-29
 
 **Nothing is prepared and unsent.** What is out:
