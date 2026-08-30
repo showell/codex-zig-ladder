@@ -1,0 +1,117 @@
+Chapter: AtanProbe
+  cites Gpu chapter DeviceMath
+
+ The arc tangent offered to the foreword, measured against zig here before
+ it goes into DeviceMath. Argument halving, then a six-term series: the
+ series alone converges hopelessly near |t| = 1, which is where the callers
+ sample it.
+
+ We say:
+
+Section: Arc Tangent
+
+  dm-atan-half-step : Real -> Real
+  dm-atan-half-step (t) = t / (1.0 + real-sqrt (1.0 + t * t))
+
+  dm-atan-halve : Real, Integer -> Real
+  dm-atan-halve (t) (n) =
+    if n <= 0 then t
+    else dm-atan-halve (dm-atan-half-step t) (n - 1)
+
+  dm-atan-series : Real -> Real
+  dm-atan-series (u) =
+    let u2 = u * u
+    in let u3 = u2 * u
+    in let u5 = u3 * u2
+    in let u7 = u5 * u2
+    in let u9 = u7 * u2
+    in let u11 = u9 * u2
+    in u - u3 / 3.0 + u5 / 5.0 - u7 / 7.0 + u9 / 9.0 - u11 / 11.0
+
+  dm-atan-core : Real -> Real
+  dm-atan-core (t) = 16.0 * dm-atan-series (dm-atan-halve t 4)
+
+  real-atan : Real -> Real
+  real-atan (t) =
+    if t > 1.0 then dm-half-pi - dm-atan-core (1.0 / t)
+    else if t < 0.0 - 1.0 then (0.0 - dm-half-pi) - dm-atan-core (1.0 / t)
+    else dm-atan-core t
+
+  real-atan2 : Real, Real -> Real
+  real-atan2 (y) (x) =
+    if x > 0.0 then real-atan (y / x)
+    else if x < 0.0 then (if y >= 0.0 then real-atan (y / x) + dm-pi else real-atan (y / x) - dm-pi)
+    else if y > 0.0 then dm-half-pi
+    else if y < 0.0 then 0.0 - dm-half-pi
+    else 0.0
+
+Section: Report
+
+  a1 : Real -> Text
+  a1 (t) = "atan " & show (real-to-bits t) & " " & show (real-to-bits (real-atan t))
+
+  a2 : Real, Real -> Text
+  a2 (y) (x) = "atan2 " & show (real-to-bits y) & " " & show (real-to-bits x) & " " & show (real-to-bits (real-atan2 y x))
+
+  opening : [Console] Nothing = act
+    print-line-uni (a1 0.0)
+    print-line-uni (a1 0.000000001)
+    print-line-uni (a1 0.0001)
+    print-line-uni (a1 0.01)
+    print-line-uni (a1 0.1)
+    print-line-uni (a1 0.25)
+    print-line-uni (a1 0.5)
+    print-line-uni (a1 0.7071067811865476)
+    print-line-uni (a1 0.9)
+    print-line-uni (a1 0.99)
+    print-line-uni (a1 0.999)
+    print-line-uni (a1 0.9999999)
+    print-line-uni (a1 1.0)
+    print-line-uni (a1 1.0000001)
+    print-line-uni (a1 1.1)
+    print-line-uni (a1 1.5)
+    print-line-uni (a1 2.0)
+    print-line-uni (a1 2.7182818284590452)
+    print-line-uni (a1 3.0)
+    print-line-uni (a1 3.1415926535897932)
+    print-line-uni (a1 10.0)
+    print-line-uni (a1 100.0)
+    print-line-uni (a1 1000000.0)
+    print-line-uni (a1 (-0.000000001))
+    print-line-uni (a1 (-0.01))
+    print-line-uni (a1 (-0.1))
+    print-line-uni (a1 (-0.25))
+    print-line-uni (a1 (-0.5))
+    print-line-uni (a1 (-0.7071067811865476))
+    print-line-uni (a1 (-0.9))
+    print-line-uni (a1 (-0.99))
+    print-line-uni (a1 (-0.999))
+    print-line-uni (a1 (-1.0))
+    print-line-uni (a1 (-1.0000001))
+    print-line-uni (a1 (-1.1))
+    print-line-uni (a1 (-1.5))
+    print-line-uni (a1 (-2.0))
+    print-line-uni (a1 (-3.0))
+    print-line-uni (a1 (-10.0))
+    print-line-uni (a1 (-100.0))
+    print-line-uni (a1 (-1000000.0))
+    print-line-uni (a2 1.0 1.0)
+    print-line-uni (a2 1.0 (-1.0))
+    print-line-uni (a2 (-1.0) 1.0)
+    print-line-uni (a2 (-1.0) (-1.0))
+    print-line-uni (a2 0.5 2.0)
+    print-line-uni (a2 2.0 0.5)
+    print-line-uni (a2 (-0.5) 2.0)
+    print-line-uni (a2 (-2.0) 0.5)
+    print-line-uni (a2 0.5 (-2.0))
+    print-line-uni (a2 2.0 (-0.5))
+    print-line-uni (a2 (-0.5) (-2.0))
+    print-line-uni (a2 (-2.0) (-0.5))
+    print-line-uni (a2 1.0 0.0)
+    print-line-uni (a2 (-1.0) 0.0)
+    print-line-uni (a2 0.0 1.0)
+    print-line-uni (a2 0.0 (-1.0))
+    print-line-uni (a2 0.0 0.0)
+    print-line-uni (a2 3.0 4.0)
+    print-line-uni (a2 (-4.0) 3.0)
+  end

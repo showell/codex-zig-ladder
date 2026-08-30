@@ -1,0 +1,11 @@
+atan_ref.zig:4:19: error: root source file struct 'std' has no member named 'io'
+    const w = std.io.getStdOut().writer();
+                  ^~
+/home/steve/zig-0.16.0/lib/std/std.zig:1:1: note: struct declared here
+pub const AutoHashMap = hash_map.AutoHashMap;
+^~~
+referenced by:
+    callMain [inlined]: /home/steve/zig-0.16.0/lib/std/start.zig:698:59
+    callMainWithArgs [inlined]: /home/steve/zig-0.16.0/lib/std/start.zig:638:20
+    posixCallMainAndExit: /home/steve/zig-0.16.0/lib/std/start.zig:590:38
+    2 reference(s) hidden; use '-freference-trace=5' to see all references
