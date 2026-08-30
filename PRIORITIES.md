@@ -256,20 +256,31 @@ against zig's libm at 6.7e-16 worst error by `findings/atan/`.
   nobody checks: Cordic claims 0.1% and delivers 0.45%. Generalise the rig from
   one function to a table of them, and Cordic is its first customer.
 
-  **THE CORPUS CANNOT SEE A FOREWORD CHANGE AT ALL, and that is by design.**
-  Learned the expensive way on 2026-08-30: a full two-arm corpus run for the arc
-  tangent came back 0 stage moves, 0 verdict moves, 582 of 582 byte-identical --
-  and the population never moved off 614, which is how we found out the run was
-  BLIND rather than reassuring. `corpus_run.py` globs `TESTS.glob('*.codex')`,
-  non-recursively, and says why in its own comment: a test that cites another
-  chapter is a driver, `codexir` resolves no cites, so "until there is a
-  resolver, the honest corpus is the self-contained programs." A foreword
-  function is reachable ONLY through a cite. **Any change under
-  `codex/foreword/` is invisible to the corpus, and so is every test under a
-  `codex/test/` subdirectory.** Twenty-eight minutes of box time to answer a
-  question the instrument cannot be asked. What DOES answer it: run the cited
-  chapter's own consumers through `bare_expected.py` -- their `.expected` files
-  were written by Damian against the base tree, so they ARE the baseline arm.
+  **THE CORPUS IS A NON-RECURSIVE GLOB, AND KNOWING WHO CITES YOUR CHAPTER IS
+  THE WHOLE QUESTION.** Two facts, learned by wasting 28 minutes of box time on
+  2026-08-30 measuring the arc tangent with an instrument that could not see it.
+
+  *The glob is `TESTS.glob('*.codex')`, non-recursive* -- the corpus is exactly
+  the 614 files sitting directly in `codex/test/`, and NOTHING under
+  `forewords/`, `ops/`, `lib/`, `apps/` or any other subdirectory is in it. A
+  new test placed in a subdirectory can never move the population, which is what
+  the presence check caught: predicted 615, got 614.
+
+  *The corpus CAN see foreword changes -- this was recorded wrongly at first and
+  Steve caught it.* 491 of the 614 top-level tests carry a `cites` line, 220 of
+  them `Foreword chapter Console` and 85 `Foreword chapter Maybe`, and cited
+  content is materialised into the emitted zig (`fn Maybe(comptime a_: type)` is
+  defined at `corpus/aesgcm256.zig:31`). A change to a WIDELY CITED foreword
+  chapter would move many files.
+
+  **So the question before any run is not "is this a foreword change" but "who
+  in the corpus cites this chapter".** For `Gpu chapter DeviceMath` the answer is
+  nobody: the only three citers in the whole tree are in subdirectories. That
+  grep was run BEFORE launching and its answer was read as "small blast radius"
+  when it actually said "the instrument is blind to this". What answers it
+  instead: the cited chapter's own consumers under `bare_expected.py`, whose
+  `.expected` files were written against the base tree and so ARE the baseline
+  arm, at a cost of two guests.
 
   **The real upgrade the atan run rehearsed is an INVERSION worth naming.** For
   a defect fix, bare metal is the only oracle there is -- it defines what Codex
