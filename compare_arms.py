@@ -31,6 +31,7 @@ sha, selection rule), so the same comparison is recognisably the same run and
 re-running says so instead of quietly making a second copy under a new name.
 """
 import argparse, hashlib, json, pathlib, shutil, subprocess, sys, datetime
+from affected import changed_paths, classify, affected
 
 HERE = pathlib.Path(__file__).resolve().parent
 RESULTS = HERE / 'results'
@@ -69,23 +70,65 @@ def cut(label, ref):
     return pathlib.Path(out.strip().splitlines()[-1])
 
 
-def sweep(sandbox, arm, artifacts):
-    """natives, then a full --run sweep. Returns the natives identity."""
-    ladder = sandbox / 'ladder'
+def arm_env(sandbox):
     env = dict(**__import__('os').environ)
     for line in (sandbox / 'env').read_text().splitlines():
         line = line.strip()
         if line.startswith('export '):
             k, _, v = line[len('export '):].partition('=')
             env[k.strip()] = v.strip().strip('"').strip("'")
+    return env
+
+
+def build_and_transpile(sandbox, arm, artifacts):
+    """Natives, then transpile the WHOLE population. The cheap half.
+
+    Native-only, no QEMU and no zig compilation, so this is minutes for the
+    entire corpus -- and it computes a `zig_sha` per program, which is the
+    number that decides what the expensive half has to touch.
+    """
+    ladder = sandbox / 'ladder'
+    env = arm_env(sandbox)
     rc, _ = sh(['./native_build.sh'], cwd=ladder, env=env,
                log=artifacts / f'{arm}-natives.log')
     if rc:
         raise SystemExit(f'{arm}: native_build.sh failed, see {arm}-natives.log')
-    rc, out = sh(['./corpus_run.py', '--run'], cwd=ladder, env=env,
+    rc, out = sh(['./corpus_run.py', '--transpile'], cwd=ladder, env=env,
+                 log=artifacts / f'{arm}-transpile.log')
+    if rc:
+        raise SystemExit(f'{arm}: --transpile failed, see {arm}-transpile.log')
+    return out
+
+
+def differing_names(base_sb, head_sb):
+    """Programs whose emitted zig is NOT byte-identical across the arms.
+
+    Plus anything present on one arm only, which has no counterpart to be
+    identical to and must therefore be run.
+    """
+    _, btr, _ = load_arm(base_sb)
+    _, ftr, _ = load_arm(head_sb)
+    names = set()
+    for n in set(btr) | set(ftr):
+        b, f = btr.get(n), ftr.get(n)
+        if b is None or f is None:
+            names.add(n); continue
+        if b.get('zig_sha') != f.get('zig_sha'):
+            names.add(n)
+    return sorted(names), len(set(btr) | set(ftr))
+
+
+def run_subset(sandbox, arm, artifacts, names):
+    """The expensive half, over the differing set only."""
+    ladder = sandbox / 'ladder'
+    sel = ladder / 'corpus' / 'to-run.txt'
+    sel.parent.mkdir(exist_ok=True)
+    sel.write_text('\n'.join(names) + ('\n' if names else ''))
+    rc, out = sh(['./corpus_run.py', '--run', '--run-only', str(sel)],
+                 cwd=ladder, env=arm_env(sandbox),
                  log=artifacts / f'{arm}-corpus.log')
     if rc:
-        raise SystemExit(f'{arm}: corpus_run.py --run failed, see {arm}-corpus.log')
+        raise SystemExit(f'{arm}: --run failed, see {arm}-corpus.log')
     return out
 
 
@@ -151,6 +194,13 @@ def render(meta, cmp_):
          f"stage moves {len(cmp_['stage_moves'])}, verdict moves "
          f"{len(cmp_['verdict_moves'])}, zig differs {len(cmp_['zig_differs'])} "
          f"of {len(cmp_['zig_differs']) + cmp_['zig_same']}", '',
+         '## What was run, and what was not', '',
+         f"Emitted zig differed for **{meta['run_selection']['differing']}** of "
+         f"{meta['run_selection']['population']} programs. Only those were built "
+         f"and executed. The other {meta['run_selection']['skipped']} emitted "
+         f"byte-identical zig on both arms, so with the same zig version they "
+         f"produce the same binary and cannot have moved -- not run, and not "
+         f"evidence of anything either.", '',
          '## Population', '',
          f"base {cmp_['population']['base']}, head {cmp_['population']['head']}"]
     for side in ('only_base', 'only_head'):
@@ -182,6 +232,8 @@ def main():
     ap.add_argument('--scope', default='all')
     ap.add_argument('--keep', action='store_true',
                     help='do not retire the sandboxes (needs a reason in the result)')
+    ap.add_argument('--plan', action='store_true',
+                    help='say what this run would do and stop. Two seconds.')
     a = ap.parse_args()
 
     base_sha, head_sha = resolve_ref(a.base_ref), resolve_ref(a.head_ref)
@@ -195,6 +247,48 @@ def main():
     print(f'run {rid}')
     print(f'  base {a.base_ref} {base_sha[:8]}')
     print(f'  head {a.head_ref} {head_sha[:8]}')
+
+    # THE CHEAPEST GUARD THERE IS. A 150-minute run that is wrong costs 300
+    # minutes, because you run it again -- so the number worth reducing is the
+    # chance of being wrong, not the duration. On 2026-08-30 a 28-minute sweep
+    # measured a chapter that nothing in the corpus cites; the question that
+    # would have caught it takes one second to ask and nobody asked it.
+    changed = changed_paths(base_sha, head_sha, CODEX_SRC)
+    scope_kind, detail = classify(changed)
+    hits = []
+    print(f'\n  {len(changed)} file(s) changed')
+    if scope_kind == 'all':
+        print('  blast radius: EVERY program -- these paths decide all emission:')
+        for q in detail:
+            print(f'      {q}')
+    else:
+        hits = affected(detail['chapters'], set(detail['tests']),
+                        head_sha, CODEX_SRC)
+        print(f"  blast radius: {len(hits)} program(s) can see this change")
+        for rel, why in hits:
+            print(f'      {rel[len("codex/test/"):]}   ({why})')
+        if not hits:
+            print('\n  REFUSING: nothing in the corpus can see this change.')
+            print('  A sweep would come back clean and mean nothing. Use '
+                  'bare_expected.py on the cited chapter\'s own consumers.')
+            return 1
+    # SCOPE AND RELEVANCE ARE DIFFERENT AXES, and conflating them is how a
+    # cheap sweep repeats an expensive sweep's mistake. Scope sets baseline
+    # BREADTH and is chosen on cost; the affected set is chosen on CORRECTNESS
+    # and goes in whatever it costs. Measured 2026-08-30: scope `core` holds
+    # every test our outbound PRs add, and still misses 3 of the 5 programs
+    # that can see the arc tangent, all in the expensive apps/ quarter. Those
+    # three cost about fifteen seconds and are 60% of that change's coverage.
+    forced = sorted(r[len('codex/test/'):] for r, _ in hits) if scope_kind != 'all' else []
+    if forced:
+        print(f'  forced into the sweep regardless of scope: {len(forced)}')
+    meta['forced'] = forced
+    if a.plan:
+        print(f'\n  would write {dest}')
+        print('  --plan: stopping before any box time is spent')
+        dest.rmdir()
+        return 0
+
     base_sb = cut(f'cmp-base-{rid[:12]}', base_sha)
     head_sb = cut(f'cmp-head-{rid[:12]}', head_sha)
     print(f'  base tree {base_sb}\n  head tree {head_sb}')
@@ -209,8 +303,18 @@ def main():
     ok = False
     try:
         for arm, sb in (('base', base_sb), ('head', head_sb)):
-            print(f'  sweeping {arm} ...', flush=True)
-            sweep(sb, arm, dest)
+            print(f'  [1/3] natives + transpile, {arm} ...', flush=True)
+            build_and_transpile(sb, arm, dest)
+
+        names, total = differing_names(base_sb, head_sb)
+        meta['run_selection'] = {'differing': len(names), 'population': total,
+                                 'skipped': total - len(names), 'names': names}
+        print(f'  [2/3] byte-diff: {len(names)} of {total} programs differ; '
+              f'{total - len(names)} cannot have moved and will not be run')
+        for arm, sb in (('base', base_sb), ('head', head_sb)):
+            print(f'  [3/3] running {len(names)} on {arm} ...', flush=True)
+            run_subset(sb, arm, dest, names)
+
         cmp_ = compare(base_sb, head_sb)
         (dest / 'result.json').write_text(json.dumps({'meta': meta, 'compare': cmp_}, indent=1))
         (dest / 'result.md').write_text(render(meta, cmp_))

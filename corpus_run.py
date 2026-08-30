@@ -175,7 +175,28 @@ def transpile(src, out_dir):
     return r
 
 
-def select_population(tests):
+# Scope tiers, by MEASURED cost. `apps/` is named here with a number beside it,
+# which is the whole difference between this and the accident it replaces: the
+# old non-recursive glob dropped `ops/` silently, for no saving, on a rationale
+# that had expired. This drops `apps/` deliberately, for a reason anyone can
+# check, and `--scope all` puts it back.
+#
+# Measured 2026-08-30 on the combined outbound branch: apps/ transpiles at about
+# 12 programs a minute against several hundred for everything else, because the
+# cost is the RESOLVED UNIT and apps cite most of the foreword -- 79.5 KB of
+# emitted zig per program against 37.0 KB for the top level. 471 programs, 28%
+# of the corpus, roughly 90% of the transpile bill. They are real application
+# programs and they exercise composition better than anything else here, which
+# is why they stay one word away rather than deleted.
+SCOPES = {
+    'core': {'exclude': {'apps'},
+             'why': 'everything but apps/, which is ~90% of the cost for 28% of the programs'},
+    'all':  {'exclude': set(),
+             'why': 'every program under codex/test/'},
+}
+
+
+def select_population(tests, scope='core'):
     """Every Codex program under `codex/test/`, recursively.
 
     THIS WAS `tests.glob('*.codex')` -- NON-RECURSIVE -- UNTIL 2026-08-30, and
@@ -205,7 +226,11 @@ def select_population(tests):
     silently pair one program's output with another's. Checked here rather than
     assumed, and loudly, because the failure is invisible.
     """
-    names = sorted(tests.rglob('*.codex'))
+    if scope not in SCOPES:
+        raise SystemExit(f'unknown scope {scope!r}; have: {", ".join(sorted(SCOPES))}')
+    drop = SCOPES[scope]['exclude']
+    names = [n for n in sorted(tests.rglob('*.codex'))
+             if not (set(n.relative_to(tests).parts[:-1]) & drop)]
     seen = {}
     dupes = []
     for n in names:
@@ -267,7 +292,19 @@ def population_provenance(tests):
 
 
 def stage_transpile(names, out_dir):
+    """Transpile, writing one line per program AS IT LANDS.
+
+    transpile.json used to be written once, after the loop. A crash or a
+    Ctrl-C at program 1,100 of 1,233 threw away 1,100 programs of work and
+    left nothing to resume from. The RUN stage learned this on 2026-08-19 --
+    "run.json at the end of the loop kept nothing when the run died at
+    program 101 of 250" -- and the transpile stage next door never did.
+
+    `transpile.jsonl` is the crash-safe record; `transpile.json` is still
+    written whole at the end for every reader that expects it.
+    """
     results, hist = [], collections.Counter()
+    jsonl = (out_dir / 'transpile.jsonl').open('w')
     for i, src in enumerate(names, 1):
         try:
             r = transpile(src, out_dir)
@@ -276,6 +313,8 @@ def stage_transpile(names, out_dir):
         except Exception as e:                      # a crash here is data too
             r = {'name': src.stem, 'stage': 'error', 'detail': repr(e)[:120]}
         results.append(r)
+        jsonl.write(json.dumps(r) + '\n')
+        jsonl.flush()
         # Count PROGRAMS, not occurrences. A builtin used 76 times in one
         # program and one used once in 76 programs are very different facts,
         # and the second is the one that says what to implement first.
@@ -284,6 +323,7 @@ def stage_transpile(names, out_dir):
         if i % 100 == 0:
             print(f'  {i}/{len(names)}', flush=True)
 
+    jsonl.close()
     by = collections.Counter(r['stage'] for r in results)
     print(f'\n{len(results)} programs: ' +
           ', '.join(f'{k} {v}' for k, v in by.most_common()))
@@ -698,6 +738,18 @@ def main():
                          'byte-identical; rerun to continue where it left off')
     ap.add_argument('--all', action='store_true', help='(kept for the runner scripts; '
                     'cites are resolved now, so every program is in scope)')
+    ap.add_argument('--scope', default='core', choices=sorted(SCOPES),
+                    help='which programs to sweep (default core: everything but '
+                         'apps/, which costs ~90% of the transpile for 28% of '
+                         'the programs -- see SCOPES)')
+    ap.add_argument('--first', metavar='FILE',
+                    help='program names to transpile FIRST, one per line, so a '
+                         'run stopped early already holds the interesting part')
+    ap.add_argument('--run-only', metavar='FILE',
+                    help='transpile the FULL population but RUN only the program '
+                         'names in FILE, one per line. Not a slice of the corpus: '
+                         'transpile.json still covers everything, so the byte-diff '
+                         'that chose the subset stays checkable.')
     a = ap.parse_args()
     if not (a.transpile or a.run or a.changed):
         a.transpile = True
@@ -707,6 +759,11 @@ def main():
         raise SystemExit('--changed and --bank are full-corpus operations; drop --only')
     if a.only and a.limit:
         raise SystemExit('--only and --limit both slice the corpus; pick one')
+    if a.run_only and (a.only or a.limit):
+        raise SystemExit('--run-only needs the FULL population transpiled; '
+                         'drop --only/--limit')
+    if a.run_only and not a.run:
+        raise SystemExit('--run-only only means something with --run')
     if a.batch and not a.run:
         raise SystemExit('--batch only means something with --run')
     if a.bank and not (a.run or a.changed):
@@ -723,7 +780,20 @@ def main():
     if a.changed and bank is None:
         raise SystemExit('--changed needs a bank; run --run once, then --bank')
     WORK.mkdir(exist_ok=True)
-    names = select_population(TESTS)
+    names = select_population(TESTS, a.scope)
+    if a.first:
+        # ORDER BY RELEVANCE, NOT BY NAME. On 2026-08-30 a scouting transpile
+        # spent its entire budget inside apps/ because 'a' sorts first, and
+        # apps/ is the most expensive and least relevant quarter of the corpus.
+        # Had it run the affected programs first, the answer would have arrived
+        # in two minutes and everything after it would have been confirmation.
+        # A run that is stopped early should already hold what it was for.
+        want = {l.strip() for l in pathlib.Path(a.first).read_text().splitlines()
+                if l.strip()}
+        head = [n for n in names if n.stem in want]
+        tail = [n for n in names if n.stem not in want]
+        print(f'order: {len(head)} relevant program(s) first, then {len(tail)} others')
+        names = head + tail
     if a.limit:
         names = names[:a.limit]
     if a.only:
@@ -737,7 +807,8 @@ def main():
         if missing:
             raise SystemExit(f'--only: no such program(s): {", ".join(missing)}')
         names = [have[w] for w in want]
-    print(f'corpus: {len(names)} programs from {TESTS}')
+    print(f'corpus: {len(names)} programs from {TESTS}  '
+          f'[scope {a.scope}: {SCOPES[a.scope]["why"]}]')
     print(population_composition(TESTS, names))
     print(population_provenance(TESTS))
 
@@ -750,6 +821,38 @@ def main():
         (WORK / 'gaps.json').write_text(json.dumps(hist.most_common(), indent=1))
     else:
         print('\n--limit run: census json left untouched')
+
+    # TRANSPILE EVERYTHING, RUN ONLY WHAT MOVED. A program whose emitted zig is
+    # byte-identical to the other arm's cannot have a different verdict: same
+    # text, same zig version, same binary, same output. Running it is not a weak
+    # test, it is a guaranteed tautology at full price. The bitcast sweep ran 326
+    # programs per arm when 3 emitted files differed -- 323 runs per arm that the
+    # transpile stage had already proven unnecessary, minutes earlier.
+    #
+    # This is the same reasoning `--changed` uses to carry a banked verdict. That
+    # one points at the tree YESTERDAY; this points at the OTHER ARM, which is
+    # the comparison anybody actually asked about.
+    run_results = results
+    if a.run_only:
+        want = {l.strip() for l in pathlib.Path(a.run_only).read_text().splitlines()
+                if l.strip()}
+        have = {r['name'] for r in results}
+        unknown = sorted(want - have)
+        if unknown:
+            raise SystemExit(f'--run-only names {len(unknown)} program(s) not in the '
+                             f'population: {", ".join(unknown[:8])}')
+        run_results = [r for r in results if r['name'] in want]
+        clean_all = sum(1 for r in results if r['stage'] == 'clean')
+        clean_sel = sum(1 for r in run_results if r['stage'] == 'clean')
+        # Saying what was NOT run is load-bearing, exactly as it is for
+        # --changed: an unrun program must never read as a green one.
+        print(f'\n--run-only: {len(want)} named, {clean_sel} of them clean and '
+              f'runnable; {clean_all - clean_sel} clean programs NOT run because '
+              f'nothing about them moved')
+        (WORK / 'run_selection.json').write_text(json.dumps(
+            {'source': a.run_only, 'named': sorted(want),
+             'clean_selected': clean_sel, 'clean_skipped': clean_all - clean_sel},
+            indent=1))
 
     carried, verdicts = {}, {}
 
@@ -787,8 +890,8 @@ def main():
         tally, detail, verdicts = stage_run(to_run, WORK, persist=persist,
                                             hw=hw)
     elif a.run:
-        prior = load_run_carry(results) if persist else {}
-        tally, detail, verdicts = stage_run(results, WORK, persist=persist,
+        prior = load_run_carry(run_results) if persist else {}
+        tally, detail, verdicts = stage_run(run_results, WORK, persist=persist,
                                             batch=a.batch, prior=prior, hw=hw)
         if persist:
             (WORK / 'run.json').write_text(json.dumps(
