@@ -175,6 +175,65 @@ def transpile(src, out_dir):
     return r
 
 
+def select_population(tests):
+    """Every Codex program under `codex/test/`, recursively.
+
+    THIS WAS `tests.glob('*.codex')` -- NON-RECURSIVE -- UNTIL 2026-08-30, and
+    the comment defending it said "codexir resolves no cites, so ... until there
+    is a resolver, the honest corpus is the self-contained programs." There has
+    been a resolver for some time: this file imports it at the top and calls it
+    in `transpile`, and the `--all` flag's own help text says "cites are
+    resolved now, so every program is in scope". The glob outlived all three
+    facts.
+
+    What it cost: 614 of 1,701 programs swept. Everything under `ops/` was
+    excluded -- which is where OUR OWN PR EVIDENCE LIVES. `real-bitcast-f64`,
+    `real-int-conversions` and `real-saturating-finite`, the tests written to
+    demonstrate PRs 100 and 105 and the control cited in every PR body as proof
+    the rig is not fooling itself, have never once been in this corpus.
+
+    NO DIRECTORY IS EXCLUDED, deliberately, including `errors/`. A two-arm
+    comparison measures MOVEMENT, not absolute pass or fail: a program that
+    refuses on both arms costs a cheap transpile and contributes nothing, while
+    a program whose refusal STOPS is a regression worth catching. Excluding a
+    directory on a guess about what it can tell us is the exact move that
+    produced the 614.
+
+    A stem must be unique across the whole tree, because every artifact this
+    corpus writes -- `transpile.json`, `run.jsonl`, `<name>.zig`, and both
+    sides of `two_arm_diff.py` -- is keyed by bare name. A collision would
+    silently pair one program's output with another's. Checked here rather than
+    assumed, and loudly, because the failure is invisible.
+    """
+    names = sorted(tests.rglob('*.codex'))
+    seen = {}
+    dupes = []
+    for n in names:
+        if n.stem in seen:
+            dupes.append((n.stem, seen[n.stem], n))
+        seen[n.stem] = n
+    if dupes:
+        lines = '\n'.join(f'  {s}: {a.relative_to(tests)} and {b.relative_to(tests)}'
+                           for s, a, b in dupes)
+        raise SystemExit('corpus: stems must be unique, every artifact is keyed '
+                         f'by bare name:\n{lines}')
+    return names
+
+
+def population_composition(tests, names):
+    """Where the programs came from, by directory. One line, always printed.
+
+    The count alone cannot say whether a directory was silently dropped; the
+    breakdown can, and it is the line that would have made the 614 obvious
+    years earlier than it became obvious.
+    """
+    by = collections.Counter(
+        str(n.parent.relative_to(tests)) if n.parent != tests else '.'
+        for n in names)
+    return '  by directory: ' + ', '.join(
+        f'{d} {c}' for d, c in sorted(by.items(), key=lambda kv: -kv[1]))
+
+
 def population_provenance(tests):
     """Which git ref, if any, describes the set of programs about to be run.
 
@@ -664,13 +723,7 @@ def main():
     if a.changed and bank is None:
         raise SystemExit('--changed needs a bank; run --run once, then --bank')
     WORK.mkdir(exist_ok=True)
-    names = sorted(TESTS.glob('*.codex'))
-    # A test that cites another chapter is a DRIVER: the function it calls lives
-    # in the cited chapter, and codexir resolves no cites, so every such call
-    # comes out as an undefined name and the plug's fallback fires. The first
-    # histogram over this corpus was 64 markers of that shape and none of them
-    # was an emitter gap. Until there is a resolver, the honest corpus is the
-    # self-contained programs.
+    names = select_population(TESTS)
     if a.limit:
         names = names[:a.limit]
     if a.only:
@@ -685,6 +738,7 @@ def main():
             raise SystemExit(f'--only: no such program(s): {", ".join(missing)}')
         names = [have[w] for w in want]
     print(f'corpus: {len(names)} programs from {TESTS}')
+    print(population_composition(TESTS, names))
     print(population_provenance(TESTS))
 
     # A limited run is a smoke test; the json files are the full-corpus census
