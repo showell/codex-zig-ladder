@@ -92,10 +92,16 @@ be deleted, not kept for completeness.
 ## During
 
 1. Detach with a log, announce the path, watch with a Monitor -- never piped
-   through `head`, and **never watch by `pgrep -f` on the job's own command
-   line.** Run from a session shell, the pattern matches the watcher's own
-   argv and the watch waits forever on itself. Watch the LOG or the artifact
-   the job writes, which is the thing you actually care about anyway.
+   through `head`, and **WAIT ON A PID, NEVER ON A PATTERN.** `kill -0 <pid>`
+   answers about one process; `pgrep -f <name>` answers about text, and the
+   text is everywhere. This rule used to read "never `pgrep -f` on the job's
+   OWN command line", which is too narrow -- it was followed on 2026-08-30 and
+   the trap still closed. `pgrep -f 'compare_arms.py'` matched FOUR processes:
+   the job, the shell that launched it, and the shell whose argv held the
+   heredoc that WROTE the waiting script, pattern and all. Two of those outlive
+   the job, so the wait would have spun forever on text -- and a probe that
+   never fires is indistinguishable from a probe still running. Watch the LOG,
+   the artifact, or a PID; never a name.
 2. Do not change HEAD, check out, or edit anything in the tree the run is
    reading. Branch surgery waits for the verdict.
 3. Nothing in the codex tree gets run by hand while a sweep is up --
