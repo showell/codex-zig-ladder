@@ -1,34 +1,82 @@
 #!/usr/bin/env python3
-"""One command for a before-and-after: cut both trees, sweep both, write ONE result.
+"""Before-and-after for a change: cut both trees, sweep both, write ONE result.
 
-    ./compare_arms.py <base-ref> <head-ref> [--scope derived|all] [--keep]
+    ./compare_arms.py <base-ref> <head-ref> [--scope core|all] [--plan] [--keep]
 
-THIS REPLACES A HAND-WRITTEN SCRIPT PAIR PER CHANGE. There were three --
-`dup.sh`/`dup_baseline.sh`, `bitcast.sh`/`bitcast_baseline.sh`, and a one-off for
-the arc tangent -- each 40 to 120 lines of bash re-deriving the same shape, each
-written under time pressure, and each buggy. On 2026-08-30 alone: a shell syntax
-error that killed a run after its useful work, an integer comparison against a
-two-line string that reported a passing check as failed, and a hard-coded
-sandbox path that was wrong the moment sandbox.sh chose a different timestamp.
-None of those were measurement defects. All three were scaffolding.
+    ./compare_arms.py 58b08c38 my-branch --plan     # blast radius, 2 seconds
+    ./compare_arms.py 58b08c38 my-branch            # the real thing
 
-WHAT A RUN PRODUCES IS A FILE, AND THE FILE IS THE DELIVERABLE. Before this, a
-finished comparison left a log inside a directory the checklist says to delete,
-and the numbers reached a PR body by being retyped -- twice on 2026-08-30, once
-wrongly. `results/<id>/result.json` and `result.md` carry both tree shas, the
-natives identity of each arm, the seed, the selection rule and its population,
-and EVERY moved verdict and differing file by name. Small enough to commit,
-which is the point: the sandboxes become genuinely disposable because the answer
-no longer lives in them.
+THIS IS THE CORPUS-TESTING METHOD. Everything below is here because it was paid
+for; the incident behind each rule is in the function that enforces it.
 
-RUNS EXPIRE, RESULTS PERSIST. A sandbox is scratch with a lifetime in hours and
-is retired here unless the run failed or --keep was passed. A result is a
-committed artifact. We had this exactly backwards: 3.3 GB of trees kept, and the
-verdicts living in prose.
+## The one economic fact
 
-IDENTITY IS CONTENT, NOT A TIMESTAMP. The run id is a hash of (base sha, head
-sha, selection rule), so the same comparison is recognisably the same run and
-re-running says so instead of quietly making a second copy under a new name.
+**A program whose emitted zig is byte-identical across the two arms cannot have
+a different verdict.** Same text, same zig version, same binary, same output.
+Running it is not a weak test, it is a guaranteed tautology at full price.
+
+So the run has three phases, and the middle one is the whole point:
+
+    [1/3]  natives, then transpile the FULL population on both arms
+           native-only, no QEMU, no zig compilation -- and it computes a
+           zig_sha per program
+    [2/3]  byte-diff those shas: the differing set is what CAN have moved
+    [3/3]  build and run only that set, on both arms
+
+Cost then scales with the BLAST RADIUS of the change, not with the corpus. A
+narrow emitter fix pays for three programs; a prelude change that reaches every
+file pays for everything, correctly, because that change really is global.
+Measured 2026-08-30 on nine commits across plug, compiler and foreword: 48 of
+1,233 programs differed, so the expensive stage ran 48 instead of 709 clean.
+
+`corpus_run.py --changed` has always used this reasoning to carry a banked
+verdict. It points at the tree YESTERDAY; this points at the OTHER ARM, which is
+the comparison anybody actually asked about.
+
+## Scope and relevance are different axes
+
+SCOPE is breadth, chosen on cost. `core` (1,233 programs) is everything under
+`codex/test/`; `all` (1,704) adds `apps/`, which transpiles at ~12 programs a
+minute against ~200 for the rest because the cost is the RESOLVED UNIT and apps
+cite most of the foreword -- 28% of the programs, ~96% of the bill. Use `all`
+for a periodic drift sweep, not for a per-change gate.
+
+RELEVANCE is correctness, and is not negotiable: whatever `affected.py` derives
+from the diff is forced into the sweep whatever the scope costs. `core` holds
+every test our outbound PRs add and still misses 3 of the 5 programs that can
+see a foreword change, all in `apps/` -- fifteen seconds of compute, 60% of that
+change's coverage.
+
+## What a run produces
+
+`results/<id>/result.md` and `result.json`: both tree shas, each arm's natives,
+the scope and population, and EVERY moved verdict and differing file BY NAME.
+Nothing is truncated -- a report that samples is how a sweep that touched
+nothing got read as a sweep that found nothing.
+
+**The result is the deliverable; the sandboxes are not.** They are retired on
+success and kept only on failure, which is the only time anyone wants them. The
+id hashes (base, head, scope), so identity is content rather than a timestamp
+and re-running the same comparison refuses instead of quietly making a copy.
+
+## What it refuses to do
+
+- run at all when nothing in the corpus can see the change (`--plan` says so in
+  two seconds, and a wrong 150-minute run costs 300 because you run it again)
+- proceed when the two arms share `zigemit` or `codexir` while the plug or
+  compiler changed -- arms built from one tree agree perfectly and mean nothing
+- trust a sandbox whose `CODEX_ROOT` points outside itself, or whose env yields
+  no `CODEX_LADDER_VENUE`
+
+## Why this is one program and not a script per change
+
+There were three hand-written pairs -- `dup`, `bitcast`, and a one-off for the
+arc tangent -- each re-deriving this shape in bash, each buggy. On 2026-08-30
+alone: a shell syntax error that killed a run after its useful work, an integer
+comparison against a two-line string that reported a passing check as failed,
+and a hard-coded sandbox path wrong the moment `sandbox.sh` chose a different
+timestamp. None were measurement defects. All three were scaffolding, and
+scaffolding written once and run twice carries defects no care removes.
 """
 import argparse, hashlib, json, pathlib, shutil, subprocess, sys, datetime
 from affected import changed_paths, classify, affected

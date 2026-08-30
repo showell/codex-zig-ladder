@@ -239,6 +239,32 @@ contracts, and so their de facto written spec; and the corpus harness
 test programs) is plug-agnostic, so a future plug in another language could
 be graded against the same banked IR and truths on day one.
 
+## Corpus testing: measuring a change against the depot's own tests
+
+**One command, and its docstring is the method:**
+
+    ./compare_arms.py <base-ref> <head-ref> --plan   # blast radius, 2 seconds
+    ./compare_arms.py <base-ref> <head-ref>          # the real thing
+
+It cuts both trees, transpiles the full population on each, byte-diffs the
+emitted zig, and builds and runs **only the programs that differ** -- because a
+program whose emitted zig is byte-identical across the arms cannot have a
+different verdict, so running it is a tautology at full price. Cost scales with
+the change's blast radius rather than with the corpus: on 2026-08-30, nine
+commits across plug, compiler and foreword moved 48 of 1,233 programs, and the
+expensive stage ran 48 instead of 709.
+
+The result is a committed artifact under `results/<id>/`, not a log in a
+sandbox: both tree shas, each arm's natives, the population, and every moved
+verdict and differing file by name. The sandboxes are retired on success and
+kept only on failure.
+
+`compare_arms.py`'s module docstring is the authority and is maintained with the
+code; `affected.py` derives which programs can see a change; `corpus_run.py`
+does one arm's sweep. **Do not write a new script pair per change** -- there
+were three, and all three were buggy in the scaffolding rather than the
+measurement.
+
 ## Anatomy of a rung
 
 ### The subject and its harness
