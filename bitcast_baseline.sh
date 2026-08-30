@@ -38,12 +38,46 @@ say "--- absence check: PR 100 head must refuse real-to-bits and bits-to-real"
 T="$FIXED/codex/codex/test/ops/real-bitcast-f64"
 ./native/codexir < "$T.codex" 2> "$S/rb.ir" > /dev/null \
   && ./native/zigemit < "$S/rb.ir" 2> "$S/rb.zig" > /dev/null
-n_to=$(grep -c "no emitter for real-to-bits" "$S/rb.zig" 2>/dev/null || echo 0)
-n_from=$(grep -c "no emitter for bits-to-real" "$S/rb.zig" 2>/dev/null || echo 0)
-if [ "$n_to" -gt 0 ] && [ "$n_from" -gt 0 ]; then
-  say "absence check GREEN -- refused: $n_to real-to-bits, $n_from bits-to-real markers"
+# `grep -c` PRINTS 0 and EXITS 1 on no match, so `|| echo 0` appends a second
+# zero and the comparison below dies on "0\n0". The count alone is correct.
+n_to=$(grep -c "no emitter for real-to-bits" "$S/rb.zig" 2>/dev/null)
+n_from=$(grep -c "no emitter for bits-to-real" "$S/rb.zig" 2>/dev/null)
+
+# ONLY THE OUTER CALL CAN SURFACE A MARKER, and demanding both was demanding
+# something impossible. Every `bits-to-real` in real-bitcast-f64 sits INSIDE a
+# `real-to-bits` call; the emitter refuses the outer expression and never
+# descends into the argument, so the test yields 12 real-to-bits markers and
+# necessarily ZERO for bits-to-real however unimplemented it is. The first cut
+# of this check read that structural zero as "the arm is not the baseline".
+if [ "$n_to" -gt 0 ]; then
+  say "absence check A GREEN -- real-to-bits refused, $n_to markers"
 else
-  say "ABSENCE CHECK FAILED -- this arm does not refuse (real-to-bits $n_to, bits-to-real $n_from); it is not the baseline"; exit 1
+  say "ABSENCE CHECK A FAILED -- real-to-bits is not refused here; this is not the baseline"; exit 1
+fi
+
+# So bits-to-real gets its own probe, where it is the OUTERMOST refusable call.
+# `real-to-int` is implemented at PR 100's head -- that is what this branch is
+# stacked on -- so the outer call emits and the inner one is left to answer for
+# itself. On the fixed arm this same probe prints `probe 0`.
+cat > "$S/probe.codex" <<'PROBE'
+Chapter: BitsToRealProbe
+
+  cites Foreword chapter Console
+
+Section: Report
+
+  opening : [Console] Nothing
+  opening = act
+    print-line-uni ("probe " & show (real-to-int (bits-to-real #0)))
+  end
+PROBE
+./native/codexir < "$S/probe.codex" 2> "$S/probe.ir" > /dev/null \
+  && ./native/zigemit < "$S/probe.ir" 2> "$S/probe.zig" > /dev/null
+n_probe=$(grep -c "no emitter for bits-to-real" "$S/probe.zig" 2>/dev/null)
+if [ "$n_probe" -gt 0 ]; then
+  say "absence check B GREEN -- bits-to-real refused in the probe, $n_probe markers"
+else
+  say "ABSENCE CHECK B FAILED -- bits-to-real is not refused here; this is not the baseline"; exit 1
 fi
 
 say "--- corpus at PR 100 head"
