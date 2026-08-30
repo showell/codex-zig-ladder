@@ -48,49 +48,25 @@ transpiled to zig at all -- its arms came back 6 of 14 and `native_build.sh`
 exited 1 -- so it was never banked, and this table said Update 51 for a week.
 Update 53 sweeps 14 of 14 with zero diffs.
 
-**Update 52 was skipped, and the rule that skipped it is retired.** Its truths
-were measured and sound (fourteen truths, every one byte-identical to the u51
-bank) but the green-arms rule of the day said not to bank over red arms. A
-truth is a bare-metal measurement and the plug's arms cannot reach one, so a
-red arm was never a reason to withhold a good measurement. The cost is visible
-below: this bank diffs against u51, across two seeds, for nothing. Every Update
-is banked now, and what the arms said rides in `ARMS` beside `SEED`. What stays
-gated on green arms is this table and the `uNN-14of14` tag -- the claim, not
-the measurement.
+**Update 52 was never banked and the rule that skipped it is retired.** Its
+truths were measured and sound, but the green-arms rule of the day said not to
+bank over red arms -- and a truth is a bare-metal measurement the plug's arms
+cannot reach, so a red arm was never a reason to withhold a good measurement.
+Every Update is banked now, and what the arms said rides in `ARMS` beside
+`SEED`. What stays gated on green arms is this table and the `uNN-14of14` tag:
+the claim, not the measurement. The cost is visible above -- this bank diffs
+against u51, across two seeds.
 
-**Three truths moved from u51 and eleven did not.** `ir_to_x86_on_fib`,
-`ir_to_x86_on_cce` and `passes_to_x86_on_mid` -- but NOT `lir_to_x86` or
-`passes_to_x86_on_arith`, so it is a subset of the x86 family rather than all
-of it. The five-second seed canary predicted this shape before the rebank was
-started: diagnostics byte-identical between the two seeds, the emitted image
-1,552 bytes larger and diverging from byte 9. Front end holds, image moves.
+**Three truths moved from u51 and eleven did not**: `ir_to_x86_on_fib`,
+`ir_to_x86_on_cce` and `passes_to_x86_on_mid`, but NOT `lir_to_x86` or
+`passes_to_x86_on_arith` -- a subset of the x86 family rather than all of it.
+The five-second seed canary predicted that shape before the rebank started:
+diagnostics byte-identical between the two seeds, the emitted image 1,552 bytes
+larger and diverging from byte 9. Front end holds, image moves.
 
-The cause is Update 52's own and it is one defect: COMPILER-30's
-`ErrorTy | NoExpectTy` arm sweep landed on three matches in
-`codex/compiler/IR/Lowering.codex` that already had a `NoExpectTy` arm, making
-an arm that can never be reached. Legal dead code in Codex;
-`error: duplicate switch value` in zig. **Update 52 cannot be transpiled to
-zig at all** -- `native_build.sh` exits 1, `codexir` does not build, and the
-tier set's zig arm and `codexzig` are blocked with it. `zigemit` survives only
-because it does not bundle `Lowering.codex`.
-
-Sent as **PR 96** (closed unabsorbed -- their change 20398 already carried the
-identical fix), tag `u52-dup-arms-unblocked`; three deletions, and with them
-`native_build.sh` returns 0. **That is closed: Update 53 arrived carrying the
-fix and is what this table is banked against.** The paragraph above is kept
-because the defect class is live -- PR 103 is the zig plug learning to drop a
-shadowed arm rather than refuse it -- not because the ladder is still waiting
-on anything.
-
-This paragraph said "the ladder's answer is honestly `C3181693`" for a week
-after that stopped being true, sitting three lines under a table that already
-said Update 53. Whatever else is wrong here, prefer `ladder_status.py`: the
-table is maintained by hand and this is what hand-maintenance does.
-
-Note for anyone reading a green result from this period: their own release
-gate did not see this, because Update 52 unblocked its DDC by teaching the C#
-plug to DROP duplicate match arms. A gate taught to ignore a defect reports
-green over it.
+**The table is maintained by hand; prefer `ladder_status.py`.** What cannot
+drift is the BANK's label, which `seed_identity.py` derives from the seed's own
+hash by finding the release note that names it.
 
 Mid-rebank, the checkout's pin branch runs one Update ahead of this table --
 `seed_identity.py` names the new Update while `truth/` still holds only the
@@ -113,11 +89,6 @@ banked answer was right and is now known to be right rather than assumed.
 The rest of what a rebank buys is unaffected by the truths not moving: the
 diagnostics census only exists in a tree that measured bare metal AND swept,
 and the timings below are only honest if they were measured under this seed.
-
-The table above is maintained by hand; what cannot drift is the BANK's label,
-because `seed_identity.py` derives it from the seed's own hash by finding the
-release note that names it. Run it to see what a checkout is actually holding,
-and correct the table against it.
 
 ## What this is
 
@@ -713,20 +684,21 @@ the plug had to transpile, not how deeply that phase was verified.
 
 ## What each Update moved
 
-**u45 -> u46 was byte-identical on every rung; u46 -> u47 was the first
-Update that moved the measurement.** Nine of fourteen rungs identical, five
-moved with their upstream causes: `parse` (44 new lexer tokens),
-`passes_to_x86_on_arith` (6 new IR defs), and the other three `_on_` rungs
-(the issue-70 ATA guards and a burst helper, ~360 bytes each). u47 -> u48
-moved four (`lex`, `parse`, `desugar`, `passes_to_x86_on_arith`); u48 ->
-u49 moved four more (`lex` and the three image-carrying rungs). Both kinds
-of answer are the point -- an Update that changes nothing we measure and an
-Update whose diff itemises exactly what it changed are each something a
-single sweep cannot say. The same bank-to-bank diff is what proves a bundle
-edit image-preserving before it is trusted; the ones already proven are
-recorded in `JUSTIFICATIONS.md`. The merge of the composite units was
-proven the same way (2026-08-18, and again after the arena landed):
-fourteen truths byte-identical under twelve compiles.
+**The bank-to-bank diff is the only artifact that can say what an Update
+changed in the emitted image**, and both answers it gives are the point: an
+Update that moves nothing we measure and an Update whose diff itemises exactly
+what it changed are each something a single sweep cannot tell you. `bank_diff.sh`
+produces it; `U<NN>.log` records what each one said. Per-Update detail lives
+there rather than here, so this section cannot go stale.
+
+The shape so far: u45 to u46 was byte-identical on all fourteen rungs, and every
+Update since has moved between three and five -- almost always `lex`, `parse`
+and the image-carrying `_on_` rungs, almost never `lir_to_x86`.
+
+The same diff is what proves a bundle edit image-preserving before it is
+trusted; the ones already proven are in `JUSTIFICATIONS.md`. The merge of the
+composite units was proven that way: fourteen truths byte-identical under twelve
+compiles.
 
 ## The two transports
 
@@ -868,8 +840,7 @@ NOT need a rebank for them. `ast/allcycles.sh` restores what it can and
 rebuilds the rest: `restore_truths.py` copies each banked truth into place
 rather than re-measuring it, and `ast/ensure_ir.sh` regenerates any missing
 or unstamped `.ir`. Before those existed the only way to get those files was
-a full rebank -- about 27 minutes spent producing INPUTS -- and this
-paragraph used to say so.
+a full rebank -- about 27 minutes spent producing INPUTS.
 
 **From the host:** `qemu-system-x86_64` (8.2.2), `python3` (3.12.3),
 PowerShell 7 installed at `~/.local/pwsh/pwsh` (the bundling scripts invoke
@@ -1069,10 +1040,10 @@ per-unit timestamps in `logs/rebank-20260829-170007.log`):
   passes_to_x86 193s.
 - **The rest of a cycle, same box and seed.** `native_build.sh` 341 s;
   `tiers_run.py` as a set 26 s once the natives exist (the bare columns
-  come from `findings/gold/uNN/` and cost nothing); `corpus_run.py --run`
-  over 614 programs 463 s; `codexzig`'s eight stages 449 s, three of them
-  guests. A natives-plus-tiers-plus-corpus chain is therefore about
-  14 minutes, which is what makes it cheap enough to run on every Update.
+  come from `findings/gold/uNN/` and cost nothing); a `core` corpus transpile
+  of 1,233 programs 357 s; `codexzig`'s eight stages 449 s, three of them
+  guests. See "Corpus testing" for what a two-arm comparison costs, which is
+  not this number -- it depends on the change.
   `sweep_canary.sh` (lex+parse+desugar) is a REMOTE driver -- it sources
   `sweep_lib.sh`, calls `run_unit_remote`, and assumes `sweep_prep.sh` has
   run -- and its own header budgets 2-3 minutes including the straw. Adding
@@ -1092,20 +1063,16 @@ per-unit timestamps in `logs/rebank-20260829-170007.log`):
   mechanism; nobody has ablated it, so read it as the likely cause rather
   than a measured one.
 - **The census re-pin** (`native_build.sh`, then `corpus_run.py --changed
-  --bank`): the natives are 11 minutes, and the census itself is about 8-10
-  minutes for the whole corpus -- transpile of 614 programs plus
-  build-and-run of the 326 clean ones, no QEMU anywhere. Every Update re-pin
-  reruns all of it, because the natives are rebuilt and every emitted zig has
-  to be re-derived before it can be compared.
+  --bank`): the natives are 11 minutes, the census a few more. Every Update
+  re-pin reruns all of it, because the natives are rebuilt and every emitted
+  zig has to be re-derived before it can be compared.
 
-  **It does not follow that the emitted zig MOVES, and this line used to say
-  it did.** That is the binary-sha fallacy in prose: the natives change on
-  every build -- their shas move for reasons as trivial as the directory they
-  were built in -- while the zig they emit usually does not. Measured
-  2026-08-29 across a real plug change: 581 of 582 emitted files
-  byte-identical. Across Update 52 to 53: 69 of 69. Re-derive everything;
-  expect almost all of it to come back the same, and treat the handful that
-  moved as the result.
+  **Re-deriving everything does not mean the emitted zig MOVES.** The natives
+  change on every build -- their shas move for reasons as trivial as the
+  directory they were built in -- while the zig they emit usually does not.
+  Expect almost all of it to come back the same, and treat the handful that
+  moved as the result. That asymmetry is the whole basis of the corpus method
+  above.
 
 Run long jobs detached and watch for the markers above.
 
@@ -1222,31 +1189,16 @@ forbidden.
 
 ### Where the newest `codexzig` lives
 
-`codexzig` is not one binary in a known place. `codexzig_build.sh` builds it
-per sandbox (~10 minutes), `native/` is gitignored, and a fresh sandbox
-carries none -- so "the current one" is a question about `~/runs`, never
-about the checkout. As of 2026-08-27 the newest is
-
-    ~/runs/20260826T235600Z-f49-gate2/ladder/native/codexzig   (24 MB, 08-27 00:10)
-
-and **it is an Update 50 tree.** Its codex commit is `cab52a35`, whose
-merge-base with the `012a9d2e` pin is `8cc80685` -- Update 50. Its
-`ZigEmitter.codex` IS byte-identical to the pin's, which is the half that
-usually stales first and the half that did not; the compiler half is a whole
-Update behind. **Nothing on this box has ever built a `codexzig` from the
-u51 pin.**
+`codexzig` is not one binary in a known place. `codexzig_build.sh` builds it per
+sandbox (~10 minutes), `native/` is gitignored, and a fresh sandbox carries
+none -- so "the current one" is always a question about `~/runs`, never about the
+checkout, and any answer written here goes stale within days.
 
 What stales one, roughly in the order it happens: the emitter
-(`codex/plugs/zig/ZigEmitter.codex`), the ladder's harness chapters and the
-roots list they share, the compiler chapters `codexir` bundles, and the seed
--- because the build runs through the seed and the ring plug before it
-reaches its own fixed point.
-
-One thing that did NOT stale, and it matters for anything read off an IR text
-that an older `codexzig` produced: `ir-emit-type`, the function that spells a
-`CodexType` on the wire, is **byte-identical between Update 50 and the pin**,
-verified arm by arm. The 100-line change to `IRTextEmitter.codex` between
-those trees is elsewhere in the file.
+(`codex/plugs/zig/ZigEmitter.codex`), the ladder's harness chapters and the roots
+list they share, the compiler chapters `codexir` bundles, and the seed -- because
+the build runs through the seed and the ring plug before it reaches its own fixed
+point.
 
 ## One sandbox per experiment
 
@@ -1268,29 +1220,18 @@ gitignored -- `ast/*.truth`, `*.truth.prov`, `*.ir`, `*.zig`, `*-subject.codex`,
 complete set of plausible, real, stale files under exactly the names the next
 run looks for.
 
-**`ast/zigemit-source.codex` was the one exception until 2026-08-29**, tracked
-as a "committed provenance snapshot" on the theory that diffing it says which
-tree a build came from; it was once the evidence that settled which of two
-trees a closure measurement belonged to. Untracked now, because the theory
-did not survive being measured. The committed copy was 279,579 bytes against
-the 366,757 a real Update 53 bundle produces -- three days and six ZigEmitter
-commits stale, 2,380 lines out, a quarter smaller than reality. Diffing
-against it did not say which tree a build came from; it said which tree, plus
-everything that had happened since, with no way to tell those apart. The
-stale-bank problem in miniature.
+**A generated file in source control goes stale and misleads rather than
+documenting anything.** `ast/zigemit-source.codex` was tracked until 2026-08-29
+as a "provenance snapshot" -- until it was measured: 279,579 bytes against the
+366,757 a real Update 53 bundle produces, six ZigEmitter commits and 2,380 lines
+stale. Diffing against it did not say which tree a build came from; it said
+which tree plus everything since, with no way to tell those apart. Nothing was
+lost by untracking it, because git history holds every snapshot ever committed.
 
-It could not have stayed current either. `build_one` deletes the subject and
-re-bundles before every build, so the tracked file was never a deliberate
-snapshot -- it was whichever bundle somebody last happened to commit, and the
-last one arrived as a side effect of a findings commit (`f4878d0`). **Nothing
-was lost by untracking it: git history holds every snapshot ever committed,
-so `git show <sha>:ast/zigemit-source.codex` still recovers the one that
-settled the closure finding.** Tracking the live file only ever added the
-chance to read a stale one.
-Two instances in one afternoon on 2026-08-21: a debug-instrumented
+Two other instances in one afternoon on 2026-08-21: a debug-instrumented
 `native/codexir` and a clobbered `ast/codexir.zig` left where a later census
-would have used them without complaint, and blobs written to fixed `/tmp`
-paths that a second experiment would have overwritten.
+would have used them without complaint, and blobs written to fixed `/tmp` paths
+a second experiment would have overwritten.
 
 A fresh worktree carries none of those, which is the whole point: a run that
 needs natives must build them or be handed them deliberately, and cannot
@@ -1364,21 +1305,13 @@ never seen, and its negative control (cut at a different ref, expect
    its own (about a minute) before spending a full cycle -- a quarter-hour to
    bank plus the same through the plug, for the expensive rungs -- discovering
    it does not compile.
-4. **One QEMU guest at a time is the invariant**; "one compute job per
-   host" is how it is enforced today, and it is broader than the
-   invariant needs -- see "Machine capacity" above for the arithmetic
-   and for which runners take the lock without ever starting a guest.
-   QEMU, a sweep, a census run, a native
-   build: one at a time. The lock is taken by `codex_vm.launch` --
-   the one line in this tree that runs qemu -- so an entry point cannot
-   start a guest without asking, and none of them has to remember to.
-   It also refuses beside a FOREIGN guest, one started by something that
-   never asks (the Codex tree's own `build/compile.ps1` does): a guest
-   is a process whose argv[0] is `qemu-system-*`, and that is the whole
-   identification rule. `corpus_run.py` takes it directly, being an
-   hours-class job that runs no guest at all. Two guests stacked do not fail -- they
-   thrash, which reads as mysterious slowness rather than as the refused
-   launch it should have been.
+4. **One QEMU guest at a time is the invariant**; "one compute job per host"
+   is how it is enforced today. `codex_vm.launch` takes the lock -- the one
+   line in this tree that runs qemu -- so no entry point has to remember to,
+   and it refuses beside a FOREIGN guest too (the Codex tree's own
+   `build/compile.ps1` starts one and asks nobody). "Machine capacity" above
+   has the arithmetic and names the runners that take the lock without ever
+   starting a guest.
 5. **Every emitted-binary run is bounded** (`bounded_run`: cgroup
    MemoryMax). A runaway dies oom-killed and is recorded as such; the
    bound is never lifted to make a rung pass. Measurements:
@@ -1418,15 +1351,11 @@ The distinction is not pedantry. The two answers differ by exactly the work
 we have sent and they have not taken, which is the quantity a reviewer most
 needs held still.
 
-**The stack's contents were uncommitted working-tree edits until
-2026-08-26**, and this paragraph used to say they were uncommitted on
-purpose. They were not: they
-were applied to test something and never committed, and the justification
-was written afterwards. A patch is not a commit -- a `git checkout`, a pin
-move, or a stash nobody pops drops it silently, and the next measurement is
-then against a different compiler than the last one named, with nothing
-recording the difference. Committing costs nothing and removes the whole
-class.
+**A stack is committed, never working-tree edits.** A patch is not a commit --
+a `git checkout`, a pin move, or a stash nobody pops drops it silently, and the
+next measurement is then against a different compiler than the last one named,
+with nothing recording the difference. Committing costs nothing and removes the
+whole class.
 
 **Two remotes, with different jobs.** `upstream` is `damiant3/Cobblestone`
 -- renamed from `NewRepository` on 2026-08-25, with the interim push that
@@ -1455,16 +1384,11 @@ without, and each must already be landed or filed upstream -- the pin is a
 delivery vehicle for nothing. `git log <release-commit>..HEAD` is the
 whole statement of what we changed, and the ideal length is zero.
 
-Update 47's actual length is SEVEN, and honesty about that beats the
-tidy story an earlier draft told here: the arena (PR 71, landed at
-`a061c173`), then the PR 75 chain (CCE tiers, char-to-text, the
-finding-16 fix -- absorbed in Update 48), then the PR 76 chain (wrap
-arithmetic, builtin yield, char-CCE -- filed). Every one is landed or
-filed, but the later six include correctness fixes, so the u47 zig arms
-measured the pin, not the verbatim release -- exactly the deviation
-step 4's working rule exists to prevent. The u48 pin starts at zero and
-stays there (agreed, Steve + Claude, 2026-08-20: the census re-pins
-verbatim too -- the noisy bank is the honest bank).
+Update 47's pin ran to SEVEN cherry-picks, six of them correctness fixes, so
+its zig arms measured the pin rather than the verbatim release -- exactly the
+deviation step 4's working rule exists to prevent. Every pin since starts at
+zero and stays there, and the census re-pins verbatim too: the noisy bank is
+the honest bank (agreed, Steve + Claude, 2026-08-20).
 
 **The working tree parks on the pin for the entire banking cycle.**
 `CODEX_ROOT` names a working tree, not a commit: a `git checkout` there
