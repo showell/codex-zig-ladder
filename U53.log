@@ -309,3 +309,53 @@ counts are now in PRs 100, 105 and 101.
   is byte-identical across the arms cannot have moved, so 1,185 of 1,233 were
   skipped on a proof. The bitcast run in the morning ran 326 programs per arm
   when 3 files differed.
+
+## 2026-08-30 night -- finding 69 fixed: codexzig reports its diagnostics
+
+`codexzig` discarded every diagnostic that was not an error. It now writes them
+to STDOUT, where `CX-DECK` already goes and where the plug's own comment says a
+measurement belongs -- stderr carries the emitted zig, so printing a warning the
+ordinary way would corrupt the artifact.
+
+**No compiler change was needed.** `write-binary` is the only Codex route to
+fd 1 and takes raw bytes; `Foreword chapter CCE` already carries
+`text-to-utf8-bytes`, the symmetric partner of `utf8-bytes-to-text`, already in
+the bundle. Finding 69 had recorded three ways to do this and all three were
+wrong about the cost.
+
+**Three builds, and the second and third are the interesting ones.**
+
+1. CDX0007, unterminated text literal. `czg-halted` ends a line inside a literal
+   and closes it with a bare `"` on the next; the same shape with `")` is
+   rejected. The line terminator is now the byte 10, appended after conversion,
+   which also keeps the accumulator a byte list rather than rebuilding a Text
+   per diagnostic (finding 22). **The error gate caught my own broken Codex**,
+   which is what it is for.
+2. Built green, fixed point held, and it reported NOTHING for a probe the seed
+   warns about. The harness merged four bags copied faithfully from the driver
+   and **those four were never the driver's list**: `opening.codex:479-482`
+   builds `entry-dup-bag`, `shadow-bag` and `collide-bag` itself from
+   `scan.def-headers`. **`collide-bag` is CDX3006** -- the diagnostic whose ten
+   instances in the safari port started the finding. No reporter could have
+   found them.
+3. Green, and verified.
+
+**The existing error gate has been incomplete since the day it was added.**
+`cdx-duplicate-cite` is `sev-error` and rides in a bag the harness never merged,
+so a program with duplicate cites passed the gate and emitted zig.
+
+**Verified** (`findings/f69/verify.sh`): one CDX3005 on stdout for the warning
+probe with a program still emitted; nothing for the clean probe; no diagnostic
+text in the emitted zig; and the emitted zig for a clean program BYTE-IDENTICAL
+to the pre-change binary's, which is what protects safari-web.
+
+**Both harness copies carry it.** `codex-zig-transpiler`'s
+`source/CodexZigHarness.codex` is hand-maintained, was committed once at that
+repo's skeleton commit, and is what safari runs; it had silently forked. Landed
+on branch `harness-notices` (pushed, NOT yet built), and `check_harness_twin.py`
+now compares the two copies' definition lines -- prose may differ, code may not.
+
+Also: `ringplug_build.sh` no longer pipes the compiler through
+`grep | head`, which had been discarding every failure reason that says neither
+"error" nor "SIZE" -- including `compute_lock` refusing beside another session's
+guest. Three wrong diagnoses on this day alone.
