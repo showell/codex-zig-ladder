@@ -1186,13 +1186,40 @@ real: `bar-quad` in both `Tower` and `GuardRail`, `tower-beyond` and
 port had been green its whole life and was one refactor away from a mention
 resolving by file order.
 
-**The structural half, which is why this is not a one-line fix.** The harness's
-own docstring records it: the diagnostic PRINTERS live in `opening.codex`, which
-cannot be bundled beside a harness that defines `opening`, so even the error path
-prints a count and the first error rather than the driver's report. Surfacing
-warnings properly means extracting the printers or reimplementing the formatting.
-Printing `bag-warnings` unformatted is the cheap version and would still beat
-silence.
+**THE HARDER HALF, found 2026-08-30 while scoping the fix: THERE IS NOWHERE TO
+PRINT THEM.** This is the real reason the pass was never made, and it is not the
+one the harness docstring gives.
+
+`print-text` is `cx_print` is `std.debug.print` -- **stderr** -- and stderr is
+where the emitted zig goes. `codexzig < prog.codex 2> prog.zig` is the documented
+invocation. So a harness that prints a warning injects it into the artifact and
+breaks every consumer.
+
+The plug already knows this and says so, at `zig-p-cx-deck-report`:
+
+    // STDOUT, never stderr. stderr carries the program's output and every
+    // comparison in the ladder diffs it, so a measurement written there would
+    // corrupt the thing being measured.
+
+That is the right channel and it is reachable -- `cx_deck_report`,
+`cx_write_all`, `cx_write_binary` and `cx_write_binary_buf` all write fd 1 -- but
+only `write-binary : List Integer -> Nothing` is exposed to Codex, and it writes
+RAW BYTES. There is `raw-bytes-to-text`; **there is no `text-to-raw-bytes`**. So a
+diagnostic formatted as `Text` has no path to stdout today.
+
+Three ways out, and none is a one-liner:
+
+- **comments in the emitted zig** (`// CDX3006 warning: ...`). Needs no new
+  builtin and works today, at the cost of making a diagnostic part of the
+  artifact that gets byte-compared.
+- **a `text-to-raw-bytes` builtin**, which is the correct fix and upstream's to
+  make; then the harness writes stdout beside `CX-DECK` and nothing else moves.
+- **CCE-to-UTF-8 by hand in the harness**, about forty lines, duplicating what
+  `cx_cce_to_utf8` already does in the prelude.
+
+The printers-in-`opening.codex` problem is real too and is why even the error
+path prints a count rather than a report -- but it is the second obstacle, not
+the first.
 
 **Sibling of [[finding 49]], and the pair is the shape to remember.**
 `CodexIrHarness.codex` never consults the bag at all; `CodexZigHarness.codex`
