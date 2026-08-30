@@ -255,6 +255,24 @@ against zig's libm at 6.7e-16 worst error by `findings/atan/`.
   to four ULP in an afternoon. The foreword's docstrings are a specification
   nobody checks: Cordic claims 0.1% and delivers 0.45%. Generalise the rig from
   one function to a table of them, and Cordic is its first customer.
+
+  **The real upgrade the atan run rehearsed is an INVERSION worth naming.** For
+  a defect fix, bare metal is the only oracle there is -- it defines what Codex
+  does. For a library function there is an EXTERNAL standard, so the truth came
+  from zig FIRST and bare metal CONFIRMED it. Bare metal stops being the
+  authority and becomes the second witness. That is the essay's argument as a
+  procedure rather than a claim, and it is the part to keep.
+
+  **BUILD THE DISAGREEMENT PATH DELIBERATELY (Steve, 2026-08-30).** Every row of
+  the atan run said `ok`, so the rig has never once been exercised on a
+  reference that disagrees with its subject -- and `gpu-devicemath-atan.codex`'s
+  own `MISMATCH` branch has never executed. Cordic is where it fires for real,
+  and three things have to be right before that is useful: the report must
+  distinguish *subject wrong* from *reference wrong* from *the two lists
+  drifted*; the depot test's failure branch must be shown to work rather than
+  assumed; and Cordic has TWO references, the docstring's 0.1% claim and actual
+  mathematical truth, which must be graded separately or the row cannot say
+  whether the code or the documentation is the defect.
 - **ITEM 4 IS THE ONE TO INVESTIGATE.** A one-expression function over a RECORD
   parameter is silently not emitted. It is the only finding whose sole witness
   is OUTSIDE the language -- invisible and harmless inside Codex, surfacing three
