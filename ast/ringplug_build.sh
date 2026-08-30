@@ -33,9 +33,24 @@ rm -f ast/ringplug.cdx
 if [ "${CODEX_NATIVE_VENUE:-local}" = droplet ]; then
     "$T/droplet_compile.sh" ast/ringplug-cdx.blob ast/ringplug.cdx
 else
-    python3 -u ring_compile.py ast/ringplug-cdx.blob ast/ringplug.cdx 2>&1 | grep -E "error|SIZE" | head -10
+    # KEEP THE WHOLE OUTPUT. This was piped straight through
+    # `grep -E "error|SIZE" | head -10`, which shows the summary on success and
+    # DISCARDS EVERY OTHER REASON THE COMPILE COULD FAIL. Both refusals that
+    # actually happen say neither word: a host with no CODEX_LADDER_VENUE, and
+    # `compute_lock` refusing beside a foreign guest ("A GUEST IS ALREADY
+    # RUNNING, and it did not take the lock"). Each then reads as a bare
+    # PLUG COMPILE FAILED on a plug that compiles perfectly by hand -- three
+    # wrong diagnoses on 2026-08-30 alone, one of them twelve minutes long.
+    python3 -u ring_compile.py ast/ringplug-cdx.blob ast/ringplug.cdx \
+        > ast/ringplug-compile.log 2>&1
+    rc=$?
+    grep -E "error|SIZE" ast/ringplug-compile.log | head -10
 fi
-[ -s ast/ringplug.cdx ] || { echo "PLUG COMPILE FAILED"; exit 1; }
+[ -s ast/ringplug.cdx ] || {
+    echo "PLUG COMPILE FAILED (ring_compile rc=${rc:-?}); last lines of ast/ringplug-compile.log:"
+    tail -15 ast/ringplug-compile.log 2>/dev/null | sed 's/^/    /'
+    exit 1
+}
 # The fingerprint plug_run_ring.py refuses to boot without: the sha of the
 # bundle this cdx was compiled from. The bundle is deterministic, so a
 # re-bundle that hashes differently means the checkout's plug sources moved

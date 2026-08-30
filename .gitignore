@@ -105,3 +105,4 @@ ast/.stack-probe/
 /corpus/gaps.json
 /corpus/run.json
 /corpus/run.jsonl
+ast/ringplug-compile.log
