@@ -117,7 +117,21 @@ class Gdb:
             pass
         self.s.close()
 
-def compile_ring(blob_path, out_path, mem_mb=MEM_MB, timeout=1800, seed=None):
+def compile_ring(blob_path, out_path, mem_mb=MEM_MB, timeout=1800, seed=None,
+                 sentinel=None):
+    """Feed a blob through the ring and capture what the guest prints.
+
+    `sentinel` is for a guest that STREAMS rather than frames. The compiler and
+    the zig plug both know their output's length before they emit a byte, so
+    they announce `SIZE:<n>` and the capture below reads exactly that many
+    bytes. A streaming emitter cannot: the wasm plug prints its module as it
+    walks the IR precisely because holding the whole text would cost a
+    quadratic number of allocations against a bump allocator that never
+    reclaims. Given a sentinel, the capture instead ends at that byte string and
+    writes everything before it -- so the two guests differ in their framing
+    and in nothing else, and the ring, the preload and the refill loop stay one
+    implementation rather than two.
+    """
     blob = open(blob_path, "rb").read()
     # Both ring positions are unbounded counters masked at access on both
     # the ISR write side and the __bare_metal_read_serial read side, so
@@ -267,6 +281,10 @@ def compile_ring(blob_path, out_path, mem_mb=MEM_MB, timeout=1800, seed=None):
             if not chunk:
                 break
             out += chunk
+            if needed is None and sentinel is not None:
+                idx0 = out.find(sentinel)
+                if idx0 >= 0:
+                    needed = idx0 + len(sentinel)
             if needed is None:
                 idx0 = out.find(b"SIZE:")
                 if idx0 >= 0 and b"\n" in out[idx0:]:
@@ -277,6 +295,21 @@ def compile_ring(blob_path, out_path, mem_mb=MEM_MB, timeout=1800, seed=None):
             if needed is not None and len(out) >= needed:
                 data.settimeout(2)
         print(f"stream: {len(out)} bytes in {time.time()-t1:.0f}s", flush=True)
+        if sentinel is not None:
+            # A streaming guest has no header to separate: everything before the
+            # sentinel IS the payload, diagnostics included, and the caller owns
+            # sorting them out. Refusing loudly here beats writing a file whose
+            # first line is a compiler complaint.
+            idx = out.find(sentinel)
+            if idx < 0:
+                print(f"NO SENTINEL {sentinel!r} - the guest did not finish",
+                      flush=True)
+                print(out[-800:].decode(errors="replace"), flush=True)
+                return False
+            open(out_path, "wb").write(out[:idx])
+            print(f"wrote {out_path} ({idx} bytes before {sentinel.decode()})",
+                  flush=True)
+            return True
         idx = out.find(b"SIZE:")
         header = out[:idx if idx >= 0 else len(out)].decode(errors="replace")
         # Every diagnostic goes to a file; the console gets a census and a
