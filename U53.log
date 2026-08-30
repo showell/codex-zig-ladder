@@ -262,3 +262,50 @@ JUSTIFICATIONS.md. This file is the thread, not the record.
   natives reproducible by keeping the path out of them. Both are infra
   changes; STEVE'S CALL before either is built. Note `meta.base` is worth
   keeping regardless: it records the refs, which is the half that works.
+
+## 2026-08-30 evening -- the first compare_arms artifact, and the corpus rebuilt under it
+
+**`results/8f26755f-vs-58b08c38-core-a456e0cc9414/`** is the run: all five open
+PRs plus the arc tangent (branch `all-outbound-u53`, 9 commits) against plain
+Update 53, core scope, base `58b08c38` head `8f26755f`, ladder `e9ef9250`.
+
+    stage moves 13, verdict moves 0, zig differs 44 of 1007
+    clean 709 -> 726, markers 298 -> 285, population 1229 -> 1233
+
+**Thirteen of the depot's own tests go from `markers` to `clean`** -- emitted
+zig carrying `@compileError` never builds, so those thirteen have never run
+through this plug. Verdicts moved 0 because only one program in the differing
+set was clean-and-runnable on base; the emitted-text comparison is the signal
+here, not the verdict.
+
+Per-marker, base -> head: `real-to-int` 17 -> 0, `real-from-int` 15 -> 0,
+`real-to-bits` 12 -> 0, `bits-to-real` 5 -> 0, `T27 is not declared` 3 -> 0.
+Untouched gaps hold exactly: `poke-32` 140 both sides, `peek-32` 136. Those
+counts are now in PRs 100, 105 and 101.
+
+**Four things about the instrument changed today, and each was paid for:**
+
+- **The corpus was 614 programs of 1,704.** `corpus_run.py` globbed
+  `codex/test/*.codex` non-recursively behind a comment that had expired --
+  the file imports a cite resolver and its own `--all` help says "cites are
+  resolved now". Everything under `ops/` was excluded, which is where OUR PR
+  EVIDENCE LIVES: `real-bitcast-f64`, `real-int-conversions` and
+  `real-saturating-finite`, the control cited in every PR body, had never once
+  been swept. Scope is now `core` (1,233) and `all` (1,704), split on measured
+  cost -- `apps/` is 28% of the programs and ~96% of the transpile bill.
+- **The quire lookup was case-sensitive and PowerShell's is not.** A faithful
+  port of `$QuireDirs` into a Python dict silently changed the semantics. The
+  depot spells the quire `UI` 493 times and `Ui` 14, two of them inside
+  `foreword/ui/`, so the failure reached everything citing those chapters
+  transitively. 59 of 1,704 programs unresolved before, 8 after: **51
+  recovered, 13 of them in the top-level 614** that every sweep has always
+  claimed to cover.
+- **`compare_arms.py` replaces the script pair per change.** Three pairs
+  existed and all three were buggy in the scaffolding, never in the
+  measurement. It refuses when nothing in the corpus can see the change,
+  when the two arms share natives while the plug or compiler moved, and when
+  a sandbox's `CODEX_ROOT` points outside itself.
+- **Transpile everything, run only what differs.** A program whose emitted zig
+  is byte-identical across the arms cannot have moved, so 1,185 of 1,233 were
+  skipped on a proof. The bitcast run in the morning ran 326 programs per arm
+  when 3 files differed.
