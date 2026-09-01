@@ -82,7 +82,23 @@ be deleted, not kept for completeness.
    `codex/test/forewords/gpu-devicemath-atan` was written, run, and read as
    proof with 34 rows of `ok` before anyone noticed its `MISMATCH` arm had never
    executed.
-12. `python3 check_paths.py` and `python3 check_harness_gates.py` (5 s each), `compute_lock.py --probe` if detaching,
+12. **IF THIS IS KILLED HALFWAY, IS THE FINISHED WORK STILL USABLE -- BY THE
+   NEXT STAGE?** Long jobs get stopped: the box is wanted for something else,
+   the estimate was wrong, the scope turns out to be wrong. So this is not a
+   question about crashes, it is a question about a normal ending. There are
+   TWO parts and the second is the one that gets assumed. First, does the job
+   record each item AS IT FINISHES, or only summarise after the loop? Second,
+   can the stage that CONSUMES the result read that per-item record, or only
+   the summary? **A chain is only as resumable as its narrowest consumer**, and
+   a producer that writes a perfect incremental log buys nothing if the next
+   step opens the end-of-run file. Measured 2026-09-01: a corpus transpile
+   killed at 110 of 1,705 left a complete `transpile.jsonl` and 88 usable
+   `.ir` files, and `bank_golds.py` -- which read `transpile.json`, written
+   once after the loop -- banked none of them, underneath a chain script whose
+   own status line promised to "bank what it produced anyway". The promise was
+   in the wrapper and the capability was never in the tool. Name what a kill
+   would leave, then check the CONSUMER against it rather than the producer.
+13. `python3 check_paths.py` and `python3 check_harness_gates.py` (5 s each), `compute_lock.py --probe` if detaching,
    and say the expected cost out loud before launching anything over 20 s.
    A job that takes no lock of its own -- the transpiler is one -- makes this
    check the only guard there is. `check_harness_gates.py` is the mechanical

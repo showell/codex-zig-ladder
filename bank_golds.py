@@ -104,11 +104,30 @@ def main():
     ap.add_argument('--force', action='store_true', help='overwrite an existing bank')
     a = ap.parse_args()
 
+    # `transpile.json` is written once, after the loop; `transpile.jsonl` is
+    # appended per program and is corpus_run's own crash-safe record. Reading
+    # only the first meant an interrupted run banked NOTHING, however many
+    # programs it had finished -- and a chain script that promised to "bank
+    # what it produced anyway" could not keep that promise. Measured
+    # 2026-09-01: a transpile killed at 110 of 1,705 left a complete .jsonl
+    # beside 88 usable .ir files and banked none of them.
     tj = WORK / 'transpile.json'
-    if not tj.is_file():
-        raise SystemExit(f'no {tj}; run corpus_run.py --transpile first')
-    verdicts = json.loads(tj.read_text())
-    rows = verdicts['results'] if isinstance(verdicts, dict) else verdicts
+    tjl = WORK / 'transpile.jsonl'
+    if tj.is_file():
+        verdicts = json.loads(tj.read_text())
+        rows = verdicts['results'] if isinstance(verdicts, dict) else verdicts
+        partial = False
+    elif tjl.is_file():
+        rows = [json.loads(l) for l in tjl.read_text().splitlines() if l.strip()]
+        partial = True
+    else:
+        raise SystemExit(f'no {tj} and no {tjl}; run corpus_run.py --transpile first')
+    # Say it, and say it in the bank. A partial gold set is useful; a partial
+    # gold set that reads as a whole one is the thing to prevent.
+    if partial:
+        print(f'PARTIAL: {tj.name} is absent, so this bank comes from '
+              f'{tjl.name} -- {len(rows)} program(s) recorded by an '
+              f'interrupted run, not a completed corpus.')
 
     codex_sha = git(CODEX, 'rev-parse', 'HEAD')
     dest = pathlib.Path(a.dest) if a.dest else DEFAULT_ROOT / codex_sha[:12]
@@ -163,6 +182,7 @@ def main():
         f'  ladder desc    {git(LADDER, "log", "-1", "--format=%h %s")}\n'
         f'  seed sha256    {seed_sha()}\n'
         f'  natives stamp  {natives_stamp()}\n'
+        f'  completeness   {"PARTIAL -- from transpile.jsonl, the run did not finish" if partial else "whole corpus"}\n'
         f'  arm            native/codexir (bare metal via the seed, no VM at gold time)\n'
         f'  sandbox        {os.environ.get("SANDBOX", "(none)")}\n\n'
         f'  programs with IR   {len(kept)}\n'

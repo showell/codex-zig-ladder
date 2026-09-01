@@ -105,7 +105,7 @@ def as_rust(table):
     rows = [None] * 128
     for ch, v in table.items():
         rows[ord(ch)] = v
-    body = ',\n'.join(
+    body = '\n'.join(
         f'    {rows[i] if rows[i] is not None else 0}, // {i:3} '
         + (repr(chr(i)) if rows[i] is not None else '(not in the alphabet)')
         for i in range(128))

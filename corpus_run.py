@@ -175,28 +175,29 @@ def transpile(src, out_dir):
     return r
 
 
-# Scope tiers, by MEASURED cost. `apps/` is named here with a number beside it,
-# which is the whole difference between this and the accident it replaces: the
-# old non-recursive glob dropped `ops/` silently, for no saving, on a rationale
-# that had expired. This drops `apps/` deliberately, for a reason anyone can
-# check, and `--scope all` puts it back.
+# apps/ IS NOT IN THE CORPUS. Steve's ruling, 2026-09-01: it is not worth the
+# trouble, and the number that settles it was already measured here.
 #
 # Measured 2026-08-30 on the combined outbound branch: apps/ transpiles at about
 # 12 programs a minute against several hundred for everything else, because the
 # cost is the RESOLVED UNIT and apps cite most of the foreword -- 79.5 KB of
 # emitted zig per program against 37.0 KB for the top level. 471 programs, 28%
-# of the corpus, roughly 90% of the transpile bill. They are real application
-# programs and they exercise composition better than anything else here, which
-# is why they stay one word away rather than deleted.
-SCOPES = {
-    'core': {'exclude': {'apps'},
-             'why': 'everything but apps/, which is ~90% of the cost for 28% of the programs'},
-    'all':  {'exclude': set(),
-             'why': 'every program under codex/test/'},
-}
+# of the corpus, roughly 90% of the transpile bill.
+#
+# THIS USED TO BE A FLAG (`--scope core|all`) with core as the default, and the
+# flag is gone rather than re-defaulted. A default is a suggestion: the run of
+# 2026-09-01 passed `--scope all`, spent 55 minutes to reach 100 of 1,705
+# programs and was killed. Nothing now can put apps/ back without editing this
+# line, which is the point -- an exclusion nobody can re-enable by accident is
+# the only kind that survives.
+#
+# They remain real application programs and they exercise composition better
+# than anything else under codex/test/. If they are ever wanted again, they want
+# their OWN measurement, not a share of this one.
+EXCLUDED_DIRS = {'apps'}
 
 
-def select_population(tests, scope='core'):
+def select_population(tests):
     """Every Codex program under `codex/test/`, recursively.
 
     THIS WAS `tests.glob('*.codex')` -- NON-RECURSIVE -- UNTIL 2026-08-30, and
@@ -226,11 +227,8 @@ def select_population(tests, scope='core'):
     silently pair one program's output with another's. Checked here rather than
     assumed, and loudly, because the failure is invisible.
     """
-    if scope not in SCOPES:
-        raise SystemExit(f'unknown scope {scope!r}; have: {", ".join(sorted(SCOPES))}')
-    drop = SCOPES[scope]['exclude']
     names = [n for n in sorted(tests.rglob('*.codex'))
-             if not (set(n.relative_to(tests).parts[:-1]) & drop)]
+             if not (set(n.relative_to(tests).parts[:-1]) & EXCLUDED_DIRS)]
     seen = {}
     dupes = []
     for n in names:
@@ -738,10 +736,6 @@ def main():
                          'byte-identical; rerun to continue where it left off')
     ap.add_argument('--all', action='store_true', help='(kept for the runner scripts; '
                     'cites are resolved now, so every program is in scope)')
-    ap.add_argument('--scope', default='core', choices=sorted(SCOPES),
-                    help='which programs to sweep (default core: everything but '
-                         'apps/, which costs ~90% of the transpile for 28% of '
-                         'the programs -- see SCOPES)')
     ap.add_argument('--first', metavar='FILE',
                     help='program names to transpile FIRST, one per line, so a '
                          'run stopped early already holds the interesting part')
@@ -786,7 +780,7 @@ def main():
     if a.changed and bank is None:
         raise SystemExit('--changed needs a bank; run --run once, then --bank')
     WORK.mkdir(exist_ok=True)
-    names = select_population(TESTS, a.scope)
+    names = select_population(TESTS)
     if a.first:
         # ORDER BY RELEVANCE, NOT BY NAME. On 2026-08-30 a scouting transpile
         # spent its entire budget inside apps/ because 'a' sorts first, and
@@ -814,7 +808,7 @@ def main():
             raise SystemExit(f'--only: no such program(s): {", ".join(missing)}')
         names = [have[w] for w in want]
     print(f'corpus: {len(names)} programs from {TESTS}  '
-          f'[scope {a.scope}: {SCOPES[a.scope]["why"]}]')
+          f'[{"/".join(sorted(EXCLUDED_DIRS))}/ excluded -- see EXCLUDED_DIRS]')
     print(population_composition(TESTS, names))
     print(population_provenance(TESTS))
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Before-and-after for a change: cut both trees, sweep both, write ONE result.
 
-    ./compare_arms.py <base-ref> <head-ref> [--scope core|all] [--plan] [--keep]
+    ./compare_arms.py <base-ref> <head-ref> [--plan] [--keep]
 
     ./compare_arms.py 58b08c38 my-branch --plan     # blast radius, 2 seconds
     ./compare_arms.py 58b08c38 my-branch            # the real thing
@@ -33,13 +33,11 @@ Measured 2026-08-30 on nine commits across plug, compiler and foreword: 48 of
 verdict. It points at the tree YESTERDAY; this points at the OTHER ARM, which is
 the comparison anybody actually asked about.
 
-## Scope and relevance are different axes
+## Relevance is correctness
 
-SCOPE is breadth, chosen on cost. `core` (1,233 programs) is everything under
-`codex/test/`; `all` (1,704) adds `apps/`, which transpiles at ~12 programs a
-minute against ~200 for the rest because the cost is the RESOLVED UNIT and apps
-cite most of the foreword -- 28% of the programs, ~96% of the bill. Use `all`
-for a periodic drift sweep, not for a per-change gate.
+There used to be a SCOPE axis here, `core` against `all`, and it is gone:
+`apps/` is excluded from the corpus outright (see `corpus_run.EXCLUDED_DIRS`),
+so breadth is no longer a choice this script makes.
 
 RELEVANCE is correctness, and is not negotiable: whatever `affected.py` derives
 from the diff is forced into the sweep whatever the scope costs. `core` holds
@@ -83,7 +81,7 @@ from affected import changed_paths, classify, affected
 
 HERE = pathlib.Path(__file__).resolve().parent
 RESULTS = HERE / 'results'
-SCOPE = ['core']            # set from --scope; a list so sweep() can read it
+
 CODEX_SRC = pathlib.Path.home() / 'showell_repos' / 'NewRepository'
 
 
@@ -107,9 +105,9 @@ def resolve_ref(ref):
     return git(['rev-parse', ref], cwd=CODEX_SRC)
 
 
-def run_id(base_sha, head_sha, scope):
-    h = hashlib.sha256(f'{base_sha}\n{head_sha}\n{scope}'.encode()).hexdigest()[:12]
-    return f'{head_sha[:8]}-vs-{base_sha[:8]}-{scope}-{h}'
+def run_id(base_sha, head_sha):
+    h = hashlib.sha256(f'{base_sha}\n{head_sha}'.encode()).hexdigest()[:12]
+    return f'{head_sha[:8]}-vs-{base_sha[:8]}-{h}'
 
 
 def cut(label, ref):
@@ -177,7 +175,7 @@ def build_and_transpile(sandbox, arm, artifacts, resume=False):
                log=artifacts / f'{arm}-natives.log')
     if rc:
         raise SystemExit(f'{arm}: native_build.sh failed, see {arm}-natives.log')
-    rc, out = sh(['./corpus_run.py', '--transpile', '--scope', SCOPE[0]],
+    rc, out = sh(['./corpus_run.py', '--transpile'],
                  cwd=ladder, env=env, log=artifacts / f'{arm}-transpile.log')
     if rc:
         raise SystemExit(f'{arm}: --transpile failed, see {arm}-transpile.log')
@@ -220,7 +218,7 @@ def run_subset(sandbox, arm, artifacts, names):
     sel.parent.mkdir(exist_ok=True)
     sel.write_text('\n'.join(names) + ('\n' if names else ''))
     rc, out = sh(['./corpus_run.py', '--run', '--reuse-transpile',
-                  '--scope', SCOPE[0], '--run-only', str(sel)],
+                  '--run-only', str(sel)],
                  cwd=ladder, env=arm_env(sandbox),
                  log=artifacts / f'{arm}-corpus.log')
     if rc:
@@ -330,7 +328,6 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('base_ref')
     ap.add_argument('head_ref')
-    ap.add_argument('--scope', default='all')
     ap.add_argument('--keep', action='store_true',
                     help='do not retire the sandboxes (needs a reason in the result)')
     ap.add_argument('--plan', action='store_true',
@@ -339,10 +336,9 @@ def main():
                     help='reuse the sandboxes a failed run left, and skip any '
                          'arm whose transpile.json is already on disk')
     a = ap.parse_args()
-    SCOPE[0] = a.scope if a.scope in ('core', 'all') else 'core'
 
     base_sha, head_sha = resolve_ref(a.base_ref), resolve_ref(a.head_ref)
-    rid = run_id(base_sha, head_sha, a.scope)
+    rid = run_id(base_sha, head_sha)
     dest = RESULTS / rid
     trees = dest / 'trees.json'
     if dest.exists() and not a.resume:
@@ -379,10 +375,10 @@ def main():
             print('  A sweep would come back clean and mean nothing. Use '
                   'bare_expected.py on the cited chapter\'s own consumers.')
             return 1
-    # SCOPE AND RELEVANCE ARE DIFFERENT AXES, and conflating them is how a
-    # cheap sweep repeats an expensive sweep's mistake. Scope sets baseline
-    # BREADTH and is chosen on cost; the affected set is chosen on CORRECTNESS
-    # and goes in whatever it costs. Measured 2026-08-30: scope `core` holds
+    # BREADTH AND RELEVANCE ARE DIFFERENT AXES, and conflating them is how a
+    # cheap sweep repeats an expensive sweep's mistake. The corpus sets
+    # baseline breadth and was chosen on cost; the affected set is chosen on
+    # CORRECTNESS and goes in whatever it costs. Measured 2026-08-30: it holds
     # every test our outbound PRs add, and still misses 3 of the 5 programs
     # that can see the arc tangent, all in the expensive apps/ quarter. Those
     # three cost about fifteen seconds and are 60% of that change's coverage.
@@ -408,7 +404,7 @@ def main():
     print(f'  base tree {base_sb}\n  head tree {head_sb}')
 
     meta = {'id': rid, 'base_ref': a.base_ref, 'head_ref': a.head_ref,
-            'base_sha': base_sha, 'head_sha': head_sha, 'scope': a.scope,
+            'base_sha': base_sha, 'head_sha': head_sha,
             'ladder_sha': git(['rev-parse', 'HEAD'], cwd=HERE),
             'when': datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds'),
             'host': __import__('socket').gethostname(),
