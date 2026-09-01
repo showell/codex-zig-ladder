@@ -352,3 +352,40 @@ stranger can orient; pass two gets the register, the scripts and the
 queue, and asks whether the README describes the system that actually
 exists. Different failures: the first finds what is missing for someone
 new, the second finds where the document has drifted from the code.
+
+## A truth bank is named for the SEED, and the seed does not identify the tree
+
+**Objective: INTEGRITY.** Found 2026-09-01 while setting up the Rust front
+end's golds, before it cost anything.
+
+`bank_truth.py` writes to `truth_dir(s['slug'])`, and the slug comes from
+`seed_identity.update_label(seed_sha256())` -- so a run on this box today banks
+to `truth/u53/`. **Our ten open PRs do not move the seed** (`seed/Codex.cdx` is
+tracked upstream and a PR against the compiler source does not rebuild it), so
+running `bank_truth.py` on `master-plus-outbound` would write our unlanded
+branches over the RELEASE bank under the name `u53`, and every later comparison
+would silently measure against our own stack.
+
+Nothing refuses it. `truth_prov` checks the seed and the harness content, and
+both match -- the harness did not move, only the compiler under it. The banked
+set records `SEED` and `ARMS` and **no codex commit at all**, so a bank cannot
+say which tree it describes beyond naming a seed that several trees share.
+
+The measurement that shows it is real: rebanked on `master-plus-outbound`,
+`lex.truth` goes 5,339 -> 5,335 tokens with its first difference at
+`L262C11 |entry|` -- PR 114's added line in `scan-string-body`. `parse.truth`
+is byte-identical to `truth/u53/`. Same seed, two different trees, and only one
+of them is Update 53.
+
+`rebank.sh` already states the rule for the CORPUS census -- *"BANK AT THE
+RELEASE, NOT AT OUR STACK ... a bank taken on our stack would silently fold our
+own branches into every future comparison"* -- and `bank_truth.py` is the same
+argument with no guard behind it.
+
+**The fix, when someone picks this up:** record the codex HEAD in `SEED` (or a
+sibling) at bank time, and refuse when it is not an ancestor of the release the
+seed belongs to, `--force` to override with the reason. Cheap, and it turns a
+silent overwrite into a named refusal.
+
+Meanwhile the Rust golds route around it: `bank_golds.py` banks rung truths
+beside the IR, keyed by the pin, and the release banks stay what they say.
