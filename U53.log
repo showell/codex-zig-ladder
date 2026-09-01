@@ -423,3 +423,51 @@ installed to `~/.cargo`; this box had no `cc`, so `apt-get install gcc` too.
 
 Corpus population at `--scope all` is **1,705** -- 1,700 plus the five test
 programs our own PRs added.
+
+## 2026-09-01 -- two owed items closed while the gold chain ran
+
+Both non-compute, taken while the `rust-golds-mpo` chain held the one compute
+slot.
+
+**Finding 66's zig half went back to Damian.** Issue 97 closed with *"Closing
+the zig side of the recursive helper is ours to do, and we expect to."*
+Priorities moved and it is not queued behind anything, so a comment on 97
+retracts that sentence -- a promise nobody intends to keep parks the defect
+under our name rather than theirs. The fix-location argument is untouched and
+was always the half worth more: the recursive-sum helper is synthesised in
+`Emit/X86_64.codex`, below the wire, so arm64 answers `ne`, riscv is unmeasured
+and the zig plug compares pointers; hoisting it into lowering beside
+`deriving Eq` fixes all three at once. The comment carries one witness we did
+not have when we filed -- over 326 corpus programs compiled AND run,
+`recursive-eq` is the run's single `differ`. `findings/README.md` and
+`TYPEDEF-PRUNE.md` both claimed we owed this; both corrected.
+
+**`bank_truth.py` now checks the tree, not just the seed.** The ERGONOMICS item
+from this morning is closed. A bank's name comes from the seed and the seed
+does not identify a checkout: `seed/Codex.cdx` is tracked upstream and a PR
+against the compiler source does not rebuild it, so `master-plus-outbound`
+carries u53's seed byte for byte and would have banked as `u53`, over the
+release bank, with nothing refusing it.
+
+`seed_identity.tree_stamp()` supplies the missing half, and **the release
+commit is derived rather than tabulated**: the seed only changes when a release
+rebuilds it, so the newest commit reachable from HEAD that touched
+`seed/Codex.cdx` IS the release this tree descends from, and HEAD must be it.
+That needs no teaching by a new release form, which is `update_label`'s
+recurring failure -- twice now. The gate fires only where a name can collide;
+an unreleased seed already banks as `seed-<hash>`. `--force` still gets
+through and must TYPE a reason, which lands in the new `TREE` file beside
+`SEED` (head, branch, release commit, verdict); a `--force` with no reason is
+the silent overwrite wearing a flag, and is refused.
+
+**Both arms shown to fire**, `tree_stamp` taking a rev so the refusal can be
+exercised without checking anything out:
+
+    u53-rebank (HEAD)          release 58b08c38  HEAD is it     -> proceeds
+    master-plus-outbound       release 58b08c38  HEAD IS NOT IT -> refuses
+    same, --force, no reason                                    -> refuses
+
+The middle row is the run that would have overwritten `truth/u53` this morning.
+`truth/u53` byte-identical after all three probes. `codex_branch()` moved from
+`bank_golds.py` into `seed_identity.py` on the way, `bank_truth` being its
+second caller.
