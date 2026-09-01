@@ -1395,8 +1395,12 @@ claimed. The zig plug has four sum representations
 `3942e362` (PR 93's absorb); `git diff 3942e362 968d4600 -- codex/compiler/Emit/`
 is two lines. Update 52 is where we happened to look.
 
-**Not filed as a defect against them** -- closing the zig side is ours. The
-fix-location argument goes to them, because it is worth more than our half.
+**The fix-location argument went to them and the zig side is NOT ours after
+all.** Issue 97 said closing it was ours and that we expected to; a comment on
+that issue retracts the sentence, because priorities moved and a promise we do
+not intend to keep just parks the defect. The ask stands unchanged: hoist the
+recursive synthesis into lowering and arm64, riscv and zig are fixed together.
+`outbound/SENT-issue97-comment-zig-side-not-ours.md`.
 
 Related: finding 10 (records are pointers), finding 42 (the other silent wrong
 answer), [[reference_csharp_plug_is_gold_standard]].

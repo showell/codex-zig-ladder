@@ -84,8 +84,9 @@ at `c8e1cda7`:
     got   ne ne ne ne ne ...
 
 That is the recursive structural-equality helper answering `ne` to everything
--- the silent wrong answer already filed as finding 66 and owed to the U52
-issue. It is a plug defect on a path this prune does not touch.
+-- finding 66, filed as issue 97. It is a plug defect on a path this prune does
+not touch, and it is no longer owed anywhere on our side: the comment of
+2026-09-01 hands the zig half back.
 
 **The one `crashed` is `tcp-reliability`**: `panic: index out of bounds: index
 0, len 0`. NOT ATTRIBUTED. It may predate this change; nothing here shows
