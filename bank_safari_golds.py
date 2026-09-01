@@ -20,6 +20,14 @@ The bank goes to `$CODEX_GOLDS_ROOT/safari-<safari>-cx-<codex>`, the way
 reaches it through $CODEX_GOLDS: named, never guessed. rust-codex-compiler is
 clean by construction, so nothing here is ever vendored into it.
 
+WHAT PROVENANCE HAS TO ANSWER. Not "which repo was this near" -- which is all
+a pin gives you -- but "could I make these bytes again, and would I know if I
+could not". So the file records the producing BINARY by hash and not just the
+tree it came from, the SCRIPT by hash because the ladder tree it sits in may
+be dirty, the seed the compiler was bootstrapped from, the host and venue, the
+wall-clock moment, and a DETERMINISM CHECK that recompiles one unit and
+compares. A pin is a hint; a hash is a fact.
+
 THE COMPILER IS THE NATIVES, NOT THE CHECKOUT. `native/codexir` is a binary
 built at some past moment from some past pin; the checkout's HEAD moves
 independently and does not describe it. Keying a bank on HEAD produces a path
@@ -48,11 +56,14 @@ compute lock -- native/codexir is a host binary, and the largest unit here is
 """
 
 import argparse
+import datetime
 import hashlib
 import os
 import pathlib
+import platform
 import subprocess
 import sys
+import time
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # ladder-root-bootstrap
 from ladder_root import CODEX, LADDER
@@ -73,6 +84,10 @@ def git(repo, *args):
 
 def sha256(data):
     return hashlib.sha256(data).hexdigest()
+
+
+def utc_now():
+    return datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%SZ')
 
 
 def natives_origin():
@@ -101,6 +116,40 @@ def natives_stamp():
             return '(absent)'
         h.update(p.read_bytes())
     return h.hexdigest()[:12]
+
+
+def seed_sha():
+    """The seed the natives were bootstrapped from -- the arm's real root."""
+    try:
+        import seed_identity
+        return seed_identity.seed_sha256()
+    except Exception:
+        return '(unknown)'
+
+
+def file_facts(p):
+    """Hash, size and mtime of a file that has no other identity."""
+    if not p.is_file():
+        return '(absent)'
+    st = p.stat()
+    when = datetime.datetime.utcfromtimestamp(st.st_mtime).strftime('%Y-%m-%d %H:%M:%SZ')
+    return f'{sha256(p.read_bytes())} {st.st_size} bytes, mtime {when}'
+
+
+def determinism_check(unit, banked):
+    """Compile one unit a second time and compare.
+
+    Nothing else here would notice a compiler that answers differently run to
+    run, and every gold in the bank is worthless if one does. It costs one
+    program and it is the difference between believing the arm is
+    deterministic and having checked it on the day.
+    """
+    again, refusal = compile_one(unit)
+    if refusal:
+        return f'FAILED -- {unit.stem} refused on the second run ({refusal[0]})'
+    if again != banked:
+        return f'FAILED -- {unit.stem} compiled to different bytes on a second run'
+    return f'PASS -- {unit.stem} recompiled byte-identical'
 
 
 def compile_one(unit):
@@ -135,13 +184,21 @@ def main():
 
     safari_sha = git(SAFARI, 'rev-parse', 'HEAD')
     dirty = bool(git(SAFARI, 'status', '--porcelain'))
+    # A dirty LADDER does not change the IR -- it only means the pin below is
+    # not the script that ran, which the script's own hash settles. So it is
+    # recorded and does not go in the directory name, where only things that
+    # change the BYTES belong.
+    ladder_dirty = bool(git(LADDER, 'status', '--porcelain'))
     stamp = natives_stamp()
     dest = GOLDS_ROOT / f'safari-{safari_sha[:12]}-cx-{stamp}{"-dirty" if dirty else ""}'
     if dest.exists() and not a.force:
         raise SystemExit(f'{dest} already exists; --force to overwrite')
     (dest / 'ir').mkdir(parents=True, exist_ok=True)
 
+    started, t0 = utc_now(), time.monotonic()
     kept, refused, ir_bytes, finished = [], [], 0, False
+    determinism = '(not reached)'
+    first_ir = None
     try:
         for unit in units:
             ir, refusal = compile_one(unit)
@@ -153,6 +210,10 @@ def main():
             out.write_bytes(ir)
             ir_bytes += len(ir)
             kept.append((unit.stem, unit.stat().st_size, src_sha, len(ir), sha256(ir)[:16]))
+            if first_ir is None:
+                first_ir = (unit, ir)
+        if first_ir:
+            determinism = determinism_check(*first_ir)
         finished = True
     finally:
         # Written whatever happened, so a run that dies part way leaves a bank
@@ -176,11 +237,26 @@ def main():
             f'  natives built  {natives_origin()}\n'
             f'  checkout HEAD  {git(CODEX, "rev-parse", "HEAD")}   (the tree at gold time; it did NOT build the natives)\n'
             f'  ladder pin     {git(LADDER, "rev-parse", "HEAD")}\n'
+            f'  codexir        {file_facts(CODEXIR)}\n'
+            f'  seed sha256    {seed_sha()}\n'
             f'  arm            native/codexir on stdin (host binary; no VM, no compute lock)\n'
+            f'  determinism    {determinism}\n\n'
+            f'  cut started    {started}\n'
+            f'  cut took       {time.monotonic() - t0:.1f}s\n'
+            f'  host           {platform.node()} {platform.system()} {platform.release()}\n'
+            f'  venue          {os.environ.get("CODEX_LADDER_VENUE", "(unset)")}\n'
+            f'  python         {platform.python_version()}\n'
+            f'  script         {file_facts(pathlib.Path(__file__).resolve())}\n'
+            f'  ladder tree    {"DIRTY -- the ladder pin does not describe the script above" if ladder_dirty else "clean"}\n'
             f'  completeness   {"whole subject set" if finished else "PARTIAL -- the run did not finish"}\n\n'
             f'  units with IR  {len(kept)} of {len(units)}\n'
             f'  units refused  {len(refused)}   (see refused.tsv -- the diagnostic gold set)\n'
-            f'  IR bytes       {ir_bytes}\n')
+            f'  IR bytes       {ir_bytes}\n\n'
+            f'To reproduce:\n'
+            f'  SAFARI_ROOT={SAFARI} CODEX_GOLDS_ROOT={GOLDS_ROOT} \\\n'
+            f'    {LADDER}/bank_safari_golds.py --force\n'
+            f'with native/ holding the binaries hashed above; native_build.sh\n'
+            f'rebuilds them and needs QEMU once.\n')
 
     print(f'banked {len(kept)} IR golds ({ir_bytes/1e6:.1f} MB) '
           f'and {len(refused)} refusals to {dest}')
