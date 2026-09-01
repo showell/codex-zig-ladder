@@ -238,7 +238,14 @@ def halt_formatter(prefix, artifact):
         + "   let n = list-length es" + nl
         + "   in let e0 = list-at es 0" + nl
         + '   in "CODEGEN-HALTED: " & show n & " error(s); no ' + artifact
-        + ' emitted; first CDX" & show (e0.code) & " " & (e0.message) & "' + nl + '"'
+        # `\n`, NOT a real newline. A Text literal whose opening quote is the
+        # last thing on its line is accepted in silence and comes out EMPTY, so
+        # the trailing newline this line appears to add has never been emitted
+        # by any harness this function generated. `codex_literal` above has done
+        # `.replace(chr(10), '\\n')` all along; this literal is built by hand and
+        # did not use it. Cobblestone PR 114 makes the compiler refuse it instead
+        # of accepting it, which is what turned a cosmetic bug into a build one.
+        + ' emitted; first CDX" & show (e0.code) & " " & (e0.message) & "\\n"'
     )
 
 
@@ -259,12 +266,19 @@ def notices_reporter(prefix):
     partner of `utf8-bytes-to-text`, so no builtin and no compiler change is
     needed.
 
-    NO EMBEDDED NEWLINE IN A LITERAL. `czg-halted` ends a line inside a text
-    literal and closes it with a bare `"` on the next, which compiles. The same
-    shape with anything AFTER the closing quote -- `")` -- does not: CDX0007,
-    unterminated text literal, reported at the character following it. Rather
-    than depend on which of those the lexer accepts, the line terminator here is
-    appended as the BYTE it becomes, 10, after the Text is converted. That also
+    NO EMBEDDED NEWLINE IN A LITERAL, and the reason is stronger than it was.
+    This paragraph used to say `czg-halted` ends a line inside a text literal,
+    closes it with a bare `"` on the next, and COMPILES -- while the same shape
+    with anything after the closing quote raises CDX0007. That asymmetry was
+    read as a lexer quirk to route around. It was a DEFECT: the literal was
+    silently EMPTY, so every `<prefix>-halted` this file generated has been
+    dropping the trailing newline it appears to add. Cobblestone PR 114 makes
+    the compiler refuse it, `halt_formatter` now emits `\n`, and "which
+    compiles" is no longer true of any tree carrying that fix.
+
+    The decision here is unchanged and now rests on the right reason: the line
+    terminator is appended as the BYTE it becomes, 10, after the Text is
+    converted, rather than depending on what the lexer accepts. That also
     keeps the accumulator a byte list rather than a Text, so this does not
     rebuild a growing string per diagnostic (finding 22).
 
