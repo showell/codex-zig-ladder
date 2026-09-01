@@ -471,3 +471,61 @@ The middle row is the run that would have overwritten `truth/u53` this morning.
 `truth/u53` byte-identical after all three probes. `codex_branch()` moved from
 `bank_golds.py` into `seed_identity.py` on the way, `bank_truth` being its
 second caller.
+
+## 2026-09-01 afternoon -- the Rust front end starts, and apps/ leaves the corpus
+
+**`rust-codex-compiler` exists**, at `~/showell_repos/rust-codex-compiler`,
+pushed to `github.com/showell/rust-codex-compiler` over the DEFAULT ssh key --
+the `github-ladder` and `github-nr` aliases are deploy keys scoped to their own
+repos and are refused there.
+
+**A day-zero find that would have cost weeks: `char-code` is not ASCII.** It is
+a private frequency-ordered alphabet -- 1 newline, 2 space, 3..12 the digits,
+13..38 lowercase as `etaoinshrdlcumwfgypbvkjxqz`, 39..64 uppercase at
+lowercase+26, 65..96 punctuation. So `cc-first-upper : Integer = char-code 'E'`
+is CORRECT: 'E' is the lowest-coded uppercase letter and 'Z' the highest, and
+the test is a range. `ChapterScoper`'s `c - 26` lowercasing is right too. The
+reason it matters is that `char-code 'A'` is CONSTANT-FOLDED into the IR as
+`(int-lit 41)`, so a front end folding it to 65 differs from the golds on every
+program containing a character literal, with the diff far from its cause. New
+`charcode_probe.py` derives the table from `native/codexir` in ~0.05s and
+checks it structurally.
+
+**Lexer: byte-identical to `lex.truth` on the first run**, 5,335 tokens. It is
+LOSSLESS -- trivia is emitted -- which buys a gate needing no gold at all:
+`concat(tokens) == source` over 2,695 files, 16.3 MB, in 0.147s.
+
+**Parser: document layer, expressions and type expressions.** `parse.truth`
+byte-identical. The compiler's own 64 chapters: 0 parse errors, 0 unread
+bodies, 0 unread types, 4,858 definitions. Still flat and still owed before
+desugar: 4,530 patterns, 286 type definitions, 49 act/trying/with blocks.
+
+**Two gate lessons, both measured rather than reasoned.** A pure token-coverage
+check is far too weak: a parser broken to stop consuming bodies passed it
+untouched, the orphans reappearing as loose lines counted once each. The gate
+is now coverage AND homelessness -- 367 loose tokens healthy, 357,339 broken.
+And the scale gate is BLIND TO SHAPE: giving `+` and `*` equal precedence
+leaves it entirely green while the shape tests fail. Neither `parse.truth` nor
+`desugar.truth` inspects an expression, so shape rests on unit tests until the
+IR golds.
+
+**apps/ is out of the corpus for good, and the FLAG is gone rather than
+re-defaulted.** `core` was already the default and bought nothing: today's run
+passed `--scope all` explicitly, spent 55 minutes to reach 100 of 1,705 and was
+killed. The corpus is 1,229 programs and `EXCLUDED_DIRS` is the only lever.
+`compare_arms` loses `--scope` too, and the scope component of its run ids.
+
+**The kill exposed a defect and a false promise.** `bank_golds.py` read
+`transpile.json`, written once after the loop, while `transpile.jsonl` is
+corpus_run's own crash-safe per-program record -- so an interrupted run banked
+NOTHING, under a chain script whose status line promised to "bank what it
+produced anyway". The promise was in the wrapper; the capability was never in
+the tool. It now falls back to the `.jsonl` and marks the bank PARTIAL on
+stdout and in its PROVENANCE. Running that new path rather than reading it --
+BOX.md item 11 -- immediately caught a PROVENANCE line naming the flag that had
+just been deleted.
+
+`BOX.md` gains the general form as a Before item: **if this is killed halfway,
+is the finished work still usable BY THE NEXT STAGE?** A chain is only as
+resumable as its narrowest consumer, and a producer writing a perfect
+incremental log buys nothing if the next step opens the end-of-run file.
