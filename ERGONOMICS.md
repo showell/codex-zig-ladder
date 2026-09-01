@@ -353,7 +353,7 @@ queue, and asks whether the README describes the system that actually
 exists. Different failures: the first finds what is missing for someone
 new, the second finds where the document has drifted from the code.
 
-## A truth bank is named for the SEED, and the seed does not identify the tree
+## DONE 2026-09-01: a truth bank is named for the SEED, and the seed does not identify the tree
 
 **Objective: INTEGRITY.** Found 2026-09-01 while setting up the Rust front
 end's golds, before it cost anything.
@@ -382,10 +382,31 @@ RELEASE, NOT AT OUR STACK ... a bank taken on our stack would silently fold our
 own branches into every future comparison"* -- and `bank_truth.py` is the same
 argument with no guard behind it.
 
-**The fix, when someone picks this up:** record the codex HEAD in `SEED` (or a
-sibling) at bank time, and refuse when it is not an ancestor of the release the
-seed belongs to, `--force` to override with the reason. Cheap, and it turns a
-silent overwrite into a named refusal.
+**Fixed.** `seed_identity.tree_stamp()` answers the question SEED could not,
+and `bank_truth.py` refuses on it. The release commit needs no lookup table:
+the seed changes only when a release rebuilds it, so THE NEWEST COMMIT
+REACHABLE FROM HEAD THAT TOUCHED `seed/Codex.cdx` is the release this checkout
+descends from, and HEAD must BE it. Deriving it rather than tabulating it is
+what keeps it honest across Updates nobody has taught it about -- the failure
+`update_label` has now had twice.
 
-Meanwhile the Rust golds route around it: `bank_golds.py` banks rung truths
-beside the IR, keyed by the pin, and the release banks stay what they say.
+The gate applies only where a name can collide: an unreleased seed already
+banks as `seed-<hash>`, so only a bank named `uNN` can overwrite a release.
+`--force` still gets through and must TYPE a reason, which lands in the bank;
+a `--force` with no reason is the silent overwrite wearing a flag, and is
+refused. Every bank now carries `TREE` beside `SEED` -- head, branch, release
+commit, verdict.
+
+**Both arms shown to fire**, because a gate nobody has watched work is a gate
+nobody knows works. `tree_stamp` takes a rev so the refusal can be exercised
+without checking anything out. At `u53-rebank`: `HEAD is it`, and banking
+proceeds to the ordinary rung checks. Pointed at the sandbox's
+`master-plus-outbound` checkout -- **the exact run that would have overwritten
+`truth/u53` this morning** -- it refuses before touching a file and names the
+branch. `truth/u53` byte-identical after all three probes.
+
+`codex_branch()` moved here from `bank_golds.py` on the way, that being its
+second caller.
+
+The Rust golds never needed the gate: `bank_golds.py` keys on the pin and banks
+outside every repo, so the release banks stay what they say.

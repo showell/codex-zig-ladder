@@ -30,6 +30,17 @@ The Update prefix is in the name as well as the directory on purpose: a file
 pulled out of its directory to be mailed, pasted or diffed still says what it
 is. A bare `lower.truth` in a bug report names nothing.
 
+A bank's NAME comes from the seed, and the seed does not identify the tree.
+`seed/Codex.cdx` is tracked upstream and a PR against the compiler source does
+not rebuild it, so a branch carrying unlanded compiler work has the release's
+seed byte for byte and banks as `u53` -- over the release bank, under the
+release's name. That is not hypothetical: `master-plus-outbound` rebanked with
+`lex.truth` 5,339 -> 5,335 tokens, the first difference at PR 114's own added
+line, while `parse.truth` came back byte-identical. Same seed, two trees, one
+of them Update 53. So the tree is checked too, and a bank records it in TREE
+beside SEED: the release commit is the newest commit reachable from HEAD that
+touched the seed, and HEAD must BE it.
+
 A bank is a SET, and taking one from a mixed working tree is the one way to
 make it lie. If some rungs ran under a different seed or older harness content
 than others, the directory looks like fourteen measurements of one compiler
@@ -48,7 +59,7 @@ import sys
 
 import truth_prov
 from ladder_root import LADDER
-from seed_identity import stamp, truth_dir
+from seed_identity import stamp, tree_stamp, truth_dir
 
 # What a bank must contain. Taken from oracle_lib.sh so the two cannot drift
 # about what the ladder is: a rung missing from the bank is a rung whose truth
@@ -91,7 +102,8 @@ def arm_verdict(rungs):
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--force', action='store_true',
-                    help='bank even if a truth is older than the harness that would produce it')
+                    help='bank an incomplete set, or a tree that is not the release '
+                         'the seed names; each refusal confirms separately')
     args = ap.parse_args()
 
     s = stamp()
@@ -101,7 +113,40 @@ def main():
     named = f"Update {s['update']}" if s['update'] is not None else 'no release note names it'
     print(f"seed   {s['sha256'][:16]}  ({s['bytes']:,} bytes)")
     print(f"update {named}")
-    print(f"bank   {dest}\n")
+    print(f"bank   {dest}")
+
+    # WHICH TREE. The seed says which release; it cannot say which checkout,
+    # and the two come apart exactly when it matters -- on a branch carrying
+    # compiler work that has not landed. Only a bank NAMED for a release can
+    # overwrite one, so an unreleased seed (slug `seed-<hash>`) needs no gate
+    # here: its name collides with nothing.
+    t = tree_stamp()
+    at_release = t['is_release'] and t['release_seed'] == s['sha256']
+    print(f"tree   {t['head'][:12]}  {t['branch']}")
+    print(f"       release {t['release'][:12]}"
+          + ('  -- HEAD is it' if at_release else '  -- HEAD IS NOT IT'))
+    off_release = None
+    if s['update'] is not None and not at_release:
+        why = ('the seed on disk is not the one that commit carries'
+               if t['is_release'] else
+               'HEAD carries work that release does not contain')
+        print(f'\nNOT THE RELEASE: this bank would be named {dest.name}, and '
+              f'{why}.')
+        print(f'A bank taken here folds this tree into every later comparison '
+              f'under the release\'s name.')
+        if not args.force:
+            print('Bank at the release, or pass --force and say why.')
+            return 1
+        try:
+            off_release = input('--force: one line saying why this tree is '
+                                'banked as the release: ').strip()
+        except EOFError:
+            off_release = ''
+        if not off_release:
+            # A --force with no reason is the silent overwrite wearing a flag.
+            print('no reason given; nothing banked')
+            return 1
+    print()
 
     # A truth is bankable when its recorded provenance -- the seed it ran
     # under and the harness content its subject was built from, stamped by
@@ -186,6 +231,16 @@ def main():
             shutil.copy2(prov, tmp / f"{s['slug']}-{m}.truth.prov")
             banked_prov += 1
     (tmp / 'SEED').write_text(f"{s['sha256']}\n{s['bytes']}\n{s['update']}\n")
+    # TREE is the answer SEED could never give. A reader holding two banks and
+    # asking what changed between them needs to know they describe two
+    # releases and not two branches; before this file, nothing in a bank said.
+    (tmp / 'TREE').write_text(
+        f"head     {t['head']}\n"
+        f"branch   {t['branch']}\n"
+        f"release  {t['release']}\n"
+        + ('verdict  HEAD is the release commit this seed belongs to\n'
+           if at_release else
+           f'verdict  NOT THE RELEASE, banked with --force: {off_release}\n'))
     agreed, differed, no_result = arm_verdict(rungs)
     arms = [f'agreed {len(agreed)} of {len(rungs)}']
     if differed:

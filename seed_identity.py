@@ -21,6 +21,7 @@ fine; pretending it was a release is not.
 import hashlib
 import pathlib
 import re
+import subprocess
 
 from ladder_root import CODEX, LADDER
 
@@ -126,6 +127,83 @@ def stamp():
     }
 
 
+def _git(*args):
+    """git in the codex checkout, and a failure here is fatal by design.
+
+    Everything below answers "which tree", and a "(unknown)" for that is worse
+    than no answer: it is the silent shrug that let a bank claim a seed and say
+    nothing about the branch. A checkout that cannot answer refuses instead.
+    """
+    r = subprocess.run(['git', '-C', str(CODEX), *args],
+                       capture_output=True, text=True)
+    if r.returncode != 0:
+        raise SystemExit(f'{CODEX}: git {" ".join(args)} failed -- a bank cannot '
+                         f'say which tree it describes\n{r.stderr.strip()}')
+    return r.stdout.strip()
+
+
+def codex_branch(rev='HEAD'):
+    """Which branch this rev is, or which branches contain it.
+
+    A sandbox checkout is a DETACHED worktree, so `--abbrev-ref HEAD` answers
+    the literal word `HEAD` -- true, and no help to the next reader. The commit
+    is the authority; this is for placing it by eye, so a detached head names
+    the branches that contain it rather than a word describing every detached
+    tree ever made.
+    """
+    ref = _git('rev-parse', '--abbrev-ref', rev)
+    if ref != 'HEAD':
+        return ref
+    names = [l.strip() for l in
+             _git('branch', '--all', '--contains', rev,
+                  '--format=%(refname:short)').splitlines()
+             if l.strip() and not l.strip().startswith('(')]
+    return f'(detached) contained by: {", ".join(names)}' if names else \
+        '(detached, no branch contains it)'
+
+
+def tree_stamp(rev='HEAD'):
+    """WHICH TREE -- the half of a bank's identity the seed cannot supply.
+
+    A seed identifies a RELEASE. It does not identify a CHECKOUT.
+    `seed/Codex.cdx` is tracked upstream and a PR against the compiler source
+    does not rebuild it, so a branch carrying unlanded compiler work has the
+    release's seed byte for byte. `stamp()` alone therefore labels our own
+    stack `u53`, and a bank taken there overwrites the release bank under the
+    release's name with nothing refusing it. Measured 2026-09-01 on
+    `master-plus-outbound`: same seed, `lex.truth` 5,339 -> 5,335 tokens.
+
+    The release commit needs no table to look it up in. The seed changes only
+    when a release rebuilds it, so THE NEWEST COMMIT REACHABLE FROM HEAD THAT
+    TOUCHED `seed/Codex.cdx` IS the release this checkout descends from, and
+    everything after it is work that release does not contain. Deriving it
+    keeps this honest across Updates nobody has taught it about, which is the
+    failure `update_label` has now had twice.
+
+    `is_release` is the whole verdict: the rev is that commit, or it is not.
+    `rev` is a parameter so the refusal can be exercised against a branch that
+    should trip it WITHOUT checking that branch out -- a gate nobody has seen
+    fire is a gate nobody knows works.
+    """
+    head = _git('rev-parse', rev)
+    release = _git('log', '-1', '--format=%H', rev, '--', 'seed/Codex.cdx')
+    if not release:
+        raise SystemExit(f'no commit reachable from {rev} touches seed/Codex.cdx; '
+                         'this checkout cannot say which release it descends from')
+    blob = subprocess.run(['git', '-C', str(CODEX), 'show',
+                           f'{release}:seed/Codex.cdx'], capture_output=True)
+    return {
+        'head': head,
+        'branch': codex_branch(rev),
+        'release': release,
+        # The seed that commit CARRIES, against the seed on disk. They differ
+        # when the working seed was rebuilt locally, and then the bank's name
+        # comes from a seed no commit in this history ever introduced.
+        'release_seed': hashlib.sha256(blob.stdout).hexdigest(),
+        'is_release': head == release,
+    }
+
+
 def truth_dir(slug=None):
     """Where truths for a given seed live. Banked truths are the one durable
     artifact per rung; everything else the ladder writes is regenerable and
@@ -150,3 +228,8 @@ if __name__ == '__main__':
     print(f"bytes   {s['bytes']:,}")
     print(f"update  {named}")
     print(f"truth   {truth_dir(s['slug'])}")
+    t = tree_stamp()
+    print(f"head    {t['head'][:12]}  {t['branch']}")
+    print(f"release {t['release'][:12]}  "
+          + ('HEAD IS the release commit' if t['is_release']
+             else 'HEAD carries work the release does not'))

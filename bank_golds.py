@@ -52,6 +52,10 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # ladder-root-bootstrap
 from ladder_root import CODEX, LADDER
+# `which branch` is one question with one answer. bank_truth.py became the
+# second caller when it started recording the tree beside the seed, so the
+# definition moved to seed_identity rather than being written twice.
+from seed_identity import codex_branch
 
 WORK = LADDER / 'corpus'
 DEFAULT_ROOT = pathlib.Path(os.environ.get('CODEX_GOLDS_ROOT', pathlib.Path.home() / 'golds'))
@@ -91,24 +95,6 @@ def natives_stamp():
             return '(absent)'
         h.update(p.read_bytes())
     return h.hexdigest()[:12]
-
-
-def codex_branch():
-    """Which branch this pin is, or which branches contain it.
-
-    A sandbox checkout is a DETACHED worktree, so `--abbrev-ref HEAD` answers
-    the literal word `HEAD` -- true, and no help to the next reader. The pin
-    above is the authority; this line is for placing it by eye, so when the
-    head is detached it names the branches that contain the commit instead of
-    a word that describes every detached tree ever made.
-    """
-    ref = git(CODEX, 'rev-parse', '--abbrev-ref', 'HEAD')
-    if ref != 'HEAD':
-        return ref
-    out = git(CODEX, 'branch', '--all', '--contains', 'HEAD', '--format=%(refname:short)')
-    names = [l.strip() for l in out.splitlines()
-             if l.strip() and not l.strip().startswith('(')]
-    return f'(detached) contained by: {", ".join(names)}' if names else '(detached, no branch contains it)'
 
 
 def main():
