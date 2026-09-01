@@ -1,0 +1,148 @@
+#!/usr/bin/env python3
+"""Bank a corpus transpile as an IR GOLD SET, outside every repo.
+
+    ./bank_golds.py                       bank corpus/ under $CODEX_GOLDS_ROOT
+    ./bank_golds.py --dest <dir>          somewhere else
+    ./bank_golds.py --force               overwrite a bank that already exists
+
+`corpus_run.py --transpile` writes `corpus/<name>.ir` and a `transpile.json`
+saying what happened to every program. Those are STAGE OUTPUTS: the next run
+rewrites them, and the corpus README's own rule is that a stage output is
+regenerated and a bank is taken deliberately. This takes the bank.
+
+WHY OUTSIDE BOTH REPOS. The consumer is `rust-codex-compiler`, which is to be
+clean by construction -- no generated files, no binaries, no measurements
+committed. So the golds are not vendored into it and not committed here
+either. They live in a directory named for the CODEX PIN that produced them,
+and a consumer reaches them through $CODEX_GOLDS the way every ladder script
+reaches the checkout through $CODEX_ROOT: named, never guessed.
+
+WHAT A GOLD IS WORTH IS ITS PROVENANCE. An `.ir` file is a claim some earlier
+run made about a compiler that has since moved. The PROVENANCE file here
+records the pin, the seed, and the natives stamp, so a comparison that is not
+clean can be recognised as not clean BEFORE anybody reads the rows. Golds cut
+against a different base measure the base change, not yours.
+
+THE REFUSALS ARE THE SECOND GOLD SET, not an error log. A program the compiler
+declines is a diagnostic the Rust front end must also produce, and `refused.tsv`
+is where the linting work starts. It is written with the same care as the IR.
+"""
+
+import argparse
+import hashlib
+import json
+import os
+import pathlib
+import subprocess
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # ladder-root-bootstrap
+from ladder_root import CODEX, LADDER
+
+WORK = LADDER / 'corpus'
+DEFAULT_ROOT = pathlib.Path(os.environ.get('CODEX_GOLDS_ROOT', pathlib.Path.home() / 'golds'))
+
+
+def sha256_file(p):
+    h = hashlib.sha256()
+    with p.open('rb') as f:
+        for chunk in iter(lambda: f.read(1 << 20), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def git(repo, *args):
+    try:
+        return subprocess.run(['git', '-C', str(repo), *args],
+                              capture_output=True, text=True, check=True).stdout.strip()
+    except Exception:
+        return '(unknown)'
+
+
+def seed_sha():
+    """The seed the natives were bootstrapped from -- the arm's real identity."""
+    try:
+        import seed_identity
+        return seed_identity.seed_sha256()
+    except Exception:
+        return '(unknown)'
+
+
+def natives_stamp():
+    """sha256 of codexir+zigemit, the same stamp tiers_run.py prints."""
+    h = hashlib.sha256()
+    for name in ('codexir', 'zigemit'):
+        p = LADDER / 'native' / name
+        if not p.is_file():
+            return '(absent)'
+        h.update(p.read_bytes())
+    return h.hexdigest()[:12]
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument('--dest', help='bank directory (default $CODEX_GOLDS_ROOT/<codex-sha>)')
+    ap.add_argument('--force', action='store_true', help='overwrite an existing bank')
+    a = ap.parse_args()
+
+    tj = WORK / 'transpile.json'
+    if not tj.is_file():
+        raise SystemExit(f'no {tj}; run corpus_run.py --transpile first')
+    verdicts = json.loads(tj.read_text())
+    rows = verdicts['results'] if isinstance(verdicts, dict) else verdicts
+
+    codex_sha = git(CODEX, 'rev-parse', 'HEAD')
+    dest = pathlib.Path(a.dest) if a.dest else DEFAULT_ROOT / codex_sha[:12]
+    if dest.exists() and not a.force:
+        raise SystemExit(f'{dest} already exists; --force to overwrite')
+    (dest / 'ir').mkdir(parents=True, exist_ok=True)
+
+    kept, refused, ir_bytes = [], [], 0
+    for r in rows:
+        name = r['name']
+        src = WORK / f'{name}.ir'
+        if r.get('stage') in {'clean', 'markers'} or src.is_file():
+            if not src.is_file():
+                refused.append((name, r.get('stage', '?'), r.get('detail', '')))
+                continue
+            out = dest / 'ir' / f'{name}.ir'
+            out.write_bytes(src.read_bytes())
+            n = out.stat().st_size
+            ir_bytes += n
+            kept.append((name, n, sha256_file(out)[:16], r.get('stage', '?')))
+        else:
+            refused.append((name, r.get('stage', '?'), r.get('detail', '')))
+
+    with (dest / 'MANIFEST.tsv').open('w') as f:
+        f.write('name\tir_bytes\tir_sha256_16\tstage\n')
+        for row in sorted(kept):
+            f.write('\t'.join(str(x) for x in row) + '\n')
+    with (dest / 'refused.tsv').open('w') as f:
+        f.write('name\tstage\tdetail\n')
+        for row in sorted(refused):
+            f.write('\t'.join(str(x).replace('\t', ' ') for x in row) + '\n')
+
+    (dest / 'PROVENANCE').write_text(
+        'IR gold set. Generated, never hand-edited; regenerate with\n'
+        '  corpus_run.py --transpile --scope all && bank_golds.py\n\n'
+        f'  codex pin      {codex_sha}\n'
+        f'  codex branch   {git(CODEX, "rev-parse", "--abbrev-ref", "HEAD")}\n'
+        f'  codex desc     {git(CODEX, "log", "-1", "--format=%h %s")}\n'
+        f'  ladder pin     {git(LADDER, "rev-parse", "HEAD")}\n'
+        f'  ladder desc    {git(LADDER, "log", "-1", "--format=%h %s")}\n'
+        f'  seed sha256    {seed_sha()}\n'
+        f'  natives stamp  {natives_stamp()}\n'
+        f'  arm            native/codexir (bare metal via the seed, no VM at gold time)\n'
+        f'  sandbox        {os.environ.get("SANDBOX", "(none)")}\n\n'
+        f'  programs with IR   {len(kept)}\n'
+        f'  programs refused   {len(refused)}   (see refused.tsv -- the diagnostic gold set)\n'
+        f'  IR bytes           {ir_bytes}\n')
+
+    print(f'banked {len(kept)} IR golds ({ir_bytes/1e6:.1f} MB) '
+          f'and {len(refused)} refusals to {dest}')
+    print((dest / 'PROVENANCE').read_text())
+
+
+if __name__ == '__main__':
+    sys.exit(main())
