@@ -359,3 +359,67 @@ Also: `ringplug_build.sh` no longer pipes the compiler through
 `grep | head`, which had been discarding every failure reason that says neither
 "error" nor "SIZE" -- including `compute_lock` refusing beside another session's
 guest. Three wrong diagnoses on this day alone.
+
+## 2026-09-01 -- master-plus-outbound, and the first golds for a Rust front end
+
+**A new project opened: `rust-codex-compiler`**, a native Rust front end
+(.codex -> IR), layered like the real compiler and aimed at compile speed,
+with linting to follow. Steve's four rulings are in
+`memory/project_rust_codex_compiler.md`; the one that shapes everything is
+**canonical equality as the gate, byte-identity as a ratchet** -- the IR text
+carries unification-variable numbers (18,228 row tail-ids, 8,841 `(tvar N)`),
+so byte-identical IR would mean reproducing the checker's allocation ORDER and
+would foreclose a better inference algorithm.
+
+**`master-plus-outbound` = `58b08c38` + all ten open PRs**, pushed as
+`showell/NewRepository@53b3b213`. Four merges, not ten: PR 112's branch already
+contains 111, and `all-outbound-u53` had seven of them but was missing 108,
+111, 112 and 114. All three merges clean. Golds must come from this tree and
+not from master, because PR 114 is a LEXER fix and PR 101 changes list-literal
+types -- golds cut against plain master would encode bugs we reported.
+
+**Sandbox `20260901T132729Z-rust-golds-mpo`**, two detached worktrees, so the
+shared `NewRepository` checkout's HEAD never moved. Natives built in ~6 min.
+
+**A presence check that was shown to fire** (`probes/presence.sh <codexir>`).
+Four assertions, each lifted from the PR body that fixed the defect; the
+pre-PR binary fails all of them and the new one passes. PR 114's probe is the
+decisive one: a text literal opened at end of line is now refused, where the
+old binary emitted `(text-lit "")` and exited 0.
+
+**One assertion was mine and wrong, not the compiler's.** I gated on
+`roc-iter-map` carrying no `(tvar 16)` at all. PR 101 measured the MONOMORPHIC
+branch join, and that is fixed -- 10 tvar-16 sites become 5 while concrete ones
+go 12 -> 17, exactly the five that moved. The survivors sit in `iter-map` and
+`__lam_0`, polymorphic definitions carrying their own tvars 44 and 45, which
+the PR never claimed to reach. Whether those are legitimate is NOT settled: the
+IR text cannot say whether tvar 16 is solved. It is a census row now, not a
+gate.
+
+**The rebank was necessary and proved it immediately.** The pin moved, so the
+`truth/u53` bank is about another tree: `lex.truth` goes 5,339 -> 5,335 tokens
+with its first difference at `L262C11 |entry|`, which is PR 114's own added
+line in `scan-string-body`. **`parse.truth` is byte-identical to the bank** --
+the compiler changes did not perturb an unrelated rung. Diffing against the old
+bank would have shown lex red for our own fix.
+
+**`bank_truth.py` WAS NOT RUN, deliberately.** Its bank is named from the SEED,
+our PRs do not move the seed, and it would have written master-plus-outbound
+over `truth/u53/` -- the release bank -- with nothing refusing it. Written up
+in ERGONOMICS.md with the fix. The rung truths go into the gold bank instead,
+keyed by the pin.
+
+**New: `bank_golds.py`.** Takes a corpus transpile as a gold set OUTSIDE every
+repo, at `$CODEX_GOLDS_ROOT/<codex-pin>/`, because `rust-codex-compiler` is to
+be clean by construction (Steve: no code generation, no executables, no
+measurements in the repo). Carries `ir/`, `rungs/` with prov sidecars,
+`MANIFEST.tsv`, `refused.tsv` -- **the refusals are the second gold set, not an
+error log** -- and a PROVENANCE naming pin, seed and natives stamp. Smoke-tested
+before the long run rather than after it.
+
+Also: `check_paths.py` is green again (`24a0b03`), the last unconverted root
+derivation having arrived with yesterday's numeric catalog. Rust 1.98.0 stable
+installed to `~/.cargo`; this box had no `cc`, so `apt-get install gcc` too.
+
+Corpus population at `--scope all` is **1,705** -- 1,700 plus the five test
+programs our own PRs added.
