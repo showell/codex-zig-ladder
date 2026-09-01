@@ -26,6 +26,20 @@ against a different base measure the base change, not yours.
 THE REFUSALS ARE THE SECOND GOLD SET, not an error log. A program the compiler
 declines is a diagnostic the Rust front end must also produce, and `refused.tsv`
 is where the linting work starts. It is written with the same care as the IR.
+
+THE RUNG TRUTHS COME HERE TOO, AND NOT TO `bank_truth.py`. A truth bank is
+named for the SEED (`seed_identity.update_label` -> `truth/u53/`), and a stack
+of unlanded PRs does not move the seed: `bank_truth.py` run on
+master-plus-outbound would write our own branches over the release bank under
+the name `u53`, and nothing in it compares the checkout's HEAD to the release
+that seed belongs to. So the per-rung truths measured on a non-release tree are
+banked HERE, beside the IR, keyed by the pin that produced them. The release
+banks stay what they say they are.
+
+They are also the first two Rust layers' golds: `lex.truth` is a token dump
+with offset, length, line and column, and `parse.truth` a def-level dump. One
+subject each -- enough to start a lexer, not enough to finish one, which is
+what the corpus is for.
 """
 
 import argparse
@@ -114,6 +128,18 @@ def main():
         else:
             refused.append((name, r.get('stage', '?'), r.get('detail', '')))
 
+    # The rung truths, if this sandbox measured them. Copied with their
+    # provenance sidecars: a truth without one is a measurement nobody can
+    # place afterwards, which is bank_truth.py's rule and holds here too.
+    truths = sorted((LADDER / 'ast').glob('*.truth'))
+    if truths:
+        (dest / 'rungs').mkdir(exist_ok=True)
+        for t in truths:
+            (dest / 'rungs' / t.name).write_bytes(t.read_bytes())
+            sc = t.with_suffix('.truth.prov')
+            if sc.is_file():
+                (dest / 'rungs' / sc.name).write_bytes(sc.read_bytes())
+
     with (dest / 'MANIFEST.tsv').open('w') as f:
         f.write('name\tir_bytes\tir_sha256_16\tstage\n')
         for row in sorted(kept):
@@ -137,7 +163,8 @@ def main():
         f'  sandbox        {os.environ.get("SANDBOX", "(none)")}\n\n'
         f'  programs with IR   {len(kept)}\n'
         f'  programs refused   {len(refused)}   (see refused.tsv -- the diagnostic gold set)\n'
-        f'  IR bytes           {ir_bytes}\n')
+        f'  IR bytes           {ir_bytes}\n'
+        f'  rung truths        {len(truths)}   (lex/parse/... -- the per-layer golds)\n')
 
     print(f'banked {len(kept)} IR golds ({ir_bytes/1e6:.1f} MB) '
           f'and {len(refused)} refusals to {dest}')
