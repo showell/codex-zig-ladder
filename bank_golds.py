@@ -93,6 +93,24 @@ def natives_stamp():
     return h.hexdigest()[:12]
 
 
+def codex_branch():
+    """Which branch this pin is, or which branches contain it.
+
+    A sandbox checkout is a DETACHED worktree, so `--abbrev-ref HEAD` answers
+    the literal word `HEAD` -- true, and no help to the next reader. The pin
+    above is the authority; this line is for placing it by eye, so when the
+    head is detached it names the branches that contain the commit instead of
+    a word that describes every detached tree ever made.
+    """
+    ref = git(CODEX, 'rev-parse', '--abbrev-ref', 'HEAD')
+    if ref != 'HEAD':
+        return ref
+    out = git(CODEX, 'branch', '--all', '--contains', 'HEAD', '--format=%(refname:short)')
+    names = [l.strip() for l in out.splitlines()
+             if l.strip() and not l.strip().startswith('(')]
+    return f'(detached) contained by: {", ".join(names)}' if names else '(detached, no branch contains it)'
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -153,7 +171,7 @@ def main():
         'IR gold set. Generated, never hand-edited; regenerate with\n'
         '  corpus_run.py --transpile --scope all && bank_golds.py\n\n'
         f'  codex pin      {codex_sha}\n'
-        f'  codex branch   {git(CODEX, "rev-parse", "--abbrev-ref", "HEAD")}\n'
+        f'  codex branch   {codex_branch()}\n'
         f'  codex desc     {git(CODEX, "log", "-1", "--format=%h %s")}\n'
         f'  ladder pin     {git(LADDER, "rev-parse", "HEAD")}\n'
         f'  ladder desc    {git(LADDER, "log", "-1", "--format=%h %s")}\n'
