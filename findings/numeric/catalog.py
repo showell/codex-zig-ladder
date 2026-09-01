@@ -16,8 +16,10 @@ bare-metal rig like findings/atan/ instead, and is listed here as absent rather
 than silently skipped.
 """
 import math, pathlib, sys
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / 'cordic'))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))  # ladder-root-bootstrap
+from ladder_root import LADDER
+sys.path.insert(0, str(LADDER / 'findings' / 'numeric'))
+sys.path.insert(0, str(LADDER / 'findings' / 'cordic'))
 from oracle import grade, Claim
 
 ENTRIES = {}
