@@ -174,7 +174,7 @@ def main():
 
     (dest / 'PROVENANCE').write_text(
         'IR gold set. Generated, never hand-edited; regenerate with\n'
-        '  corpus_run.py --transpile --scope all && bank_golds.py\n\n'
+        '  corpus_run.py --transpile && bank_golds.py\n\n'
         f'  codex pin      {codex_sha}\n'
         f'  codex branch   {codex_branch()}\n'
         f'  codex desc     {git(CODEX, "log", "-1", "--format=%h %s")}\n'
