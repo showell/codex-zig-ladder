@@ -1,0 +1,85 @@
+# Update 54 ceremony log
+
+Upstream `c689cafb` + correction `14ec571b`, seed `FCBABF07479516DE`
+(3,116,369 bytes). Pin branch `u54-rebank`.
+
+What was changed and what was run, in order, one line each. Detail lives in
+the commit it points to; findings go to the register, measurements to
+JUSTIFICATIONS.md. This file is the thread, not the record.
+
+## Steps
+
+- **Read before running anything.** Fetched U54. 250 files, +31,593/-8,357
+  over U53. `seed_identity` derived Update 54 with no matcher change -- the
+  release note's seed line matched the fourth form taught at U53.
+
+- **NINE of our TEN PRs landed; PR 100 did NOT.** Verified by content, not by
+  their word. The nine: 99, 101, 103, 105, 107, 108, 111, 112, 114.
+  - PR 114 landed VERBATIM -- `entry`, `stop > entry`, the early return gone;
+    the only difference is `__linked-list-push` -> `lex-errors-push`, their
+    own memory-campaign rename.
+  - PR 101's code landed but NOT as sent: the witness is computed only when
+    the context's element type carries type variables, so a fully typed list
+    literal lowers exactly as before. Ours lowered element 0 on every
+    non-empty literal -- roughly 2,900 extra lowerings per self-compile, and
+    no GC to reclaim them. Their change, their measurement.
+  - PR 105 landed UN-STACKED from PR 100. Our `zig-plug-real-bitcast` carries
+    PR 100 as an ancestor; theirs does not. u54's `ZigEmitter` has
+    `cx_real_to_bits` / `cx_bits_to_real` and neither `cx_real_to_int` nor
+    `cx_real_from_int`.
+  - **PR 100's blocker is the FIXTURE, not the emitter.** Upstream checked the
+    guards against the code and found no input where the zig arm disagrees
+    with x86. `codex/test/ops` is cross-graded on arm64 and riscv64, and both
+    saturate where x86 answers the integer indefinite. Row moved to plugs
+    2.19 (2.06-2.18 are taken upstream, several twice).
+  - **The PR paid for itself unlanded**: reviewing it found `rv-fcvt-l-d`
+    passing `rs2 = 0`, selecting the 32-bit FCVT.W.D, so riscv `real-to-int`
+    and `show` on a Real were silently wrong for EVERY value above 2^31.
+    Fixed upstream as plugs row 1.100.
+
+- **The pin moved to `u54-rebank`, stack `u54-plus-pr100`.** The stack is PR
+  100 rebased onto the release plus one commit answering its review: `run.ps1`
+  now passes `-Kernel` on both arms (the test was absolute, `compile.ps1`'s
+  default is relative, so from any cwd but the repo root the check passed and
+  the compile failed one line later), and the backlog row is renumbered and
+  its status corrected. NOT executed -- this box has no pwsh.
+
+- **The stale zig plug was moved OUT of the shared checkout** to
+  `~/runs/stale-zig-plug-2026-08-26-a961dcb6/`. It is gitignored, so no branch
+  switch touches it, and four ladder scripts resolve it by path; left in place
+  the pin move would have put a u49-era plug binary under a u54 tree with
+  nothing announcing it. `check_paths.py` now fails loudly on the missing file
+  and names its own remedy, which is the correct state.
+
+- **After the pin move:** `check_harness_gates.py` green (6 emit roots, 7 bags
+  merged, both harnesses gated). `check_paths.py` 6/6 tracked, 6/6 ladder, 0
+  unconverted derivations, 0/2 built -- run `cycle.sh` once. The banked-against
+  table stays at Update 53 until the new bank lands; the WARN says so itself.
+
+## What the bank costs at this Update
+
+- `~/golds/53b3b2137644/` is DEAD as a comparand: cut at master-plus-outbound
+  with seed `B066CEB5`, and every stage the Rust front end has an oracle for
+  moved -- Lexer +122, Parser +97, Desugarer +42, TypeChecker +324, Unifier
+  +94, Lowering +260. Real literals and the Real printer are the reason.
+- The 14 rung truths under `u53-14of14` need re-cutting; the seed moved.
+
+## Owed to Damian from the comment thread
+
+- **Issue 97, and they asked directly.** COMPILER-34 closed at their 20888 by
+  a route other than the hoist: the desugarer now derives `Eq` for any
+  self-recursive sum, so no `IrEq` on such a type reaches any backend. They ask
+  us to confirm on our ladder that `recursive-eq` moves `differ` -> `match`
+  with no change on our side -- "the independent arm we do not have, and worth
+  more than our three." `recursive-eq.no-cross` is deleted in u54. This falls
+  out of the corpus run for free.
+- **PR 103 left plugs row 2.02 OPEN**, and the open half is ours to know
+  about: our claim that a payload-carrying constructor is never a duplicate is
+  wrong. `emit-zig-match-arm` emits a BARE prong when the binders are all
+  unused (`:2155` one sub, `:2158` several), so two such arms still collide and
+  still refuse at zig. `zig-pat-switch-value` only answers for
+  `list-length subs == 0`.
+- **PR 101's house rule, for every PR after this one:** column-2 prose is
+  reserved for external formats, magic numbers and performance
+  characteristics. Roughly half our added lines were prose explaining their own
+  code, and they dropped it.

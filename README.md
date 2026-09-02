@@ -1324,9 +1324,21 @@ head for a while and the head it lived in got confused, so, written down:
 
 **The pin is a branch named for the Update.** `uNN-rebank` points at the
 release and nothing else; `ladder_status.py` prints whether it still equals
-`upstream/master`, and today it says `u53-rebank = upstream/master exactly`.
-**At Update 53 the stack has length ZERO** -- the outbound queue emptied into
-the release, so there is currently no `u53-stack` branch and nothing to carry.
+`upstream/master`, and today it says `u54-rebank = upstream/master exactly`.
+
+**At Update 54 the stack is ONE PR, and it is named for its contents rather
+than by the `uNN-stack` template: `u54-plus-pr100`.** Nine of the ten PRs
+outstanding at Update 53 landed in the release; the tenth, PR 100 (the zig
+plug's `real-to-int` / `real-from-int`), did not, and its emitter is not in
+the tree. It is not a defect on their side -- the emitter was verified correct
+upstream and the blocker is that its `.expected` encodes x86's answers for NaN
+and overflow into `codex/test/ops`, which `build/test-cross-batch.ps1` grades
+on arm64 and riscv64 too, where both saturate.
+
+**That branch exists for safari-codex, which cannot build without it** -- 50
+of its chapters call the pair -- and it is a stack in the README's sense above,
+so a claim measured with those builtins present names `u54-plus-pr100` and a
+baseline is banked on bare `u54-rebank`.
 
 **When there IS a stack, it is a BRANCH, not working-tree edits**, named
 `uNN-stack`, and `git diff uNN-rebank..uNN-stack` is exactly what we are
