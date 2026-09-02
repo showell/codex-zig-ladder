@@ -561,3 +561,45 @@ distinct-count is a rename away from moving on its own.
 Measured with the banked `corpus/gaps.json` by prefix, no re-run needed.
 The cheap improvement, if anyone wants it: bucket the tvar markers under
 one key and keep the function names as detail.
+
+## A seed compile costs ~15 KB of SOURCE per second, and nothing else (2026-09-02)
+
+Four seed compiles, two of them minutes apart in one native build, one of
+them from the entry above:
+
+    subject      source       output       wall    source rate
+    ringplug     380,646     521,681      25 s     15.2 KB/s
+    zigemit      380,323   1,201,081      25 s     15.2 KB/s
+    codexir    2,737,563   9,369,123     178 s     15.4 KB/s
+    ir_to_x86  2,503,563   2,150,397     150 s     16.6 KB/s
+
+**`ringplug` and `zigemit` are the pair that settles it.** Same source size
+to within 300 bytes, 2.3x the output, identical wall clock. The cost is what
+the seed READS, not what it writes and not what it computes.
+
+Input is free and stopped being interesting when the refill went NODELAY:
+`codexir`'s 9,369,133-byte IR crossed into the guest in 2.4 s, 3.9 MB/s.
+
+**This corrects how the gdbstub entry above reads.** `stream: N bytes in Ns`
+starts its clock at `t1`, which `ring_compile.py` sets immediately after
+`gdb.detach()` -- before the guest has compiled anything. The guest prints as
+it goes, so that line is elapsed-to-last-byte over the whole compile, not a
+transport measurement. `fill 0.6s, stream 148s` is not 148 seconds of
+serial; it is a 2.5 MB compile that took 150 s, which is this rate. The
+Nagle finding itself stands -- it was measured on the gdbstub WRITE path and
+the 58.3 s it removed was real -- but nothing in this tree has ever shown
+output transport to be the bound.
+
+**The lever this leaves is bundle size, and only bundle size.** A rung costs
+what its bundle weighs: the U54 truths run lex 15s, parse 46s, desugar 57s,
+scope 70s, check 118s, lower 152s for no reason except that each one carries
+more of the compiler than the last. The ring plug rebuilds in 25 s because
+it is a 7,342-line slice -- the emitter plus the ring transport -- against
+`codexir`'s 57,980 lines. Estimating before you launch is division.
+
+A plug run is NOT this rate and must not be estimated with it: the same
+build's `zigemit` transpile pushed 1,201,091 bytes in and got 539,566 out in
+9 s. That is a different program on the guest, and it has its own curve.
+
+Measured in sandbox `20260902T195222Z-u54-plug6` from artifact mtimes and
+the transport logs; the `ir_to_x86` row is the 2026-08-24 entry's own.
