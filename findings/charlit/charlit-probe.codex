@@ -1,0 +1,38 @@
+Chapter: CharLitProbe
+
+  cites Foreword chapter Console
+
+ The five inputs from findings/charlit/README.md, one per line, each a
+ character literal that is NOT correctly terminated. Every one of them should
+ raise a lexical diagnostic and today only the first two do.
+
+ EACH LINE IS ITS OWN CASE and they are deliberately not combined, because the
+ failure mode swallows the rest of the line: `'ab'` emits a CharLiteral over
+ `'a`, leaves `b`, and then the trailing quote OPENS A NEW LITERAL that eats
+ whatever comes next. Two cases on one line would measure the first one's
+ damage rather than the second one's behaviour.
+
+ THIS FILE IS NOT EXPECTED TO COMPILE. It is a lexer input; the point is which
+ diagnostics come back, not whether a program runs. Read the diagnostics, not
+ the exit code.
+
+Section: Cases
+
+ Case 1 -- quote at end of input. Caught today: ErrorToken.
+ Case 2 -- backslash then end of input. Caught today: ErrorToken.
+
+ Case 3 -- a character then end of LINE, no closing quote. SILENT today:
+ CharLiteral of length 2.
+  case-3 : Integer
+  case-3 = 'a
+
+ Case 4 -- a quote then end of line. SILENT today, and the NEWLINE becomes the
+ character.
+  case-4 : Integer
+  case-4 = '
+
+ Case 5 -- two characters in one literal. SILENT today, and the worst of them:
+ a CharLiteral over `'a`, then `b` as an identifier, then a stray `'` that
+ opens a fresh literal running to the next quote or the end of the line.
+  case-5 : Integer
+  case-5 = 'ab'
