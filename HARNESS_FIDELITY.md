@@ -28,7 +28,9 @@ phases" is not.
 
 ## What this cost on 2026-09-02
 
-Five deviations, found one at a time, each after a failure:
+Six deviations. The first five were found one at a time, each after a
+failure; the sixth was found by reading the driver, which is what this
+file was opened to make the cheaper habit:
 
 | deviation | how it surfaced | cost |
 |---|---|---|
