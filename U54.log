@@ -42,7 +42,15 @@ JUSTIFICATIONS.md. This file is the thread, not the record.
   now passes `-Kernel` on both arms (the test was absolute, `compile.ps1`'s
   default is relative, so from any cwd but the repo root the check passed and
   the compile failed one line later), and the backlog row is renumbered and
-  its status corrected. NOT executed -- this box has no pwsh.
+  its status corrected.
+  - **"This box has no pwsh" was wrong, and it was wrong about a tool this
+    repository calls every run.** pwsh 7.5.4 is at `~/.local/pwsh/pwsh`, off
+    `PATH`, which is exactly the spelling `ast/oracle_lib.sh:159` uses to run
+    every bundler. `run.ps1` parses clean and the selection was then driven
+    from a cwd OUTSIDE the repository -- the defect's own case -- with the
+    self-hosted kernel present and absent in turn; both arms answer an
+    absolute path and both pass `-Kernel`. Corrected on the branch in
+    `a2556393`. Still not run: the plug end to end, which needs a guest.
 
 - **The stale zig plug was moved OUT of the shared checkout** to
   `~/runs/stale-zig-plug-2026-08-26-a961dcb6/`. It is gitignored, so no branch
