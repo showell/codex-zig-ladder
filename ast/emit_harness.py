@@ -190,9 +190,14 @@ LOWER_SETUP = """let lower-height = demand-lower-floor
     in """
 
 
-def lower_call(ch='ch', bound='bound', cst='cst'):
+# `rename=False` is a BISECTION KNOB and is wrong on purpose, exactly like
+# `scan=False` above it: the two driver paths these harnesses model both pass
+# True, so nothing may ship with it. It exists because the COMPILER-38 rename
+# pass is the one thing lowering gained at Update 54, and one guest with one
+# variable is what tells a candidate from a cause.
+def lower_call(ch='ch', bound='bound', cst='cst', rename=True):
     return (f"lower-chapter {ch} {bound} {cst} (rr.ctor-names) [] "
-            "skip-list-text-empty [] lower-ceiling True")
+            f"skip-list-text-empty [] lower-ceiling {rename}")
 
 
 # The call itself, so the five harnesses that make it cannot drift apart the
