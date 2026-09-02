@@ -110,26 +110,66 @@ do it: bare metal calls `emit-pattern-lit-test` on an `IrLitPat` sub
 (`X86_64Compound.codex:2208`), and the C# plug emits `cs-bool-lit-text`
 (`CSharpEmitterExpressions.codex:1319`). Only zig drops it.
 
-## AND THE ORACLE ITSELF IS PARTIAL, which is a separate finding
+## AND THE ORACLE ITSELF IS PARTIAL -- but LATENT. Traced to the end 2026-09-02.
 
 `bind-ctor-fields` on bare metal handles `IrVarPat` and `IrLitPat` and ends
 
     is otherwise -> bind-ctor-fields st scrut-loc sub-pats tys (i + 1) patches
 
-so a NESTED CONSTRUCTOR sub-pattern is skipped: not tested, not bound. The C#
-plug recurses (`emit-sub-pattern` calls `emit-pattern` on an `IrCtorPat`) and
-gets it right. So for a program matching `Some (Just x)`, C# and bare metal
-DISAGREE, and C# is the one that is correct.
+so a NESTED CONSTRUCTOR sub-pattern is skipped: its tag is never tested and its
+variables are never bound. The C# plug recurses (`emit-sub-pattern` calls
+`emit-pattern` on an `IrCtorPat`) and gets it right. So C# and bare metal
+disagree on `Some (Just x)`, and C# is correct.
 
-THE LADDER CANNOT SEE THAT. Both of its arms ignore nested constructor subs --
-bare metal skips them, zig calls them `"_"` -- so they agree, wrongly, which is
-exactly the relative-oracle blind spot PRIORITIES describes. The C# plug is the
-only witness in the tree, and it is a crib rather than an oracle.
+**The checker is not the thing stopping it.** `pat-vars` recurses through
+`pat-vars-list` into arbitrarily nested subs, so the inner variables are
+legitimate bindings the checker knows about and codegen never creates.
 
-REACHABILITY IS NOT ESTABLISHED. A source grep finds nested constructor
-patterns in no test and in one compiler file; `literal-subpattern` covers the
-literal case only. So the nested-constructor half may be latent. Whether the
-CHECKER accepts the shape at all is the next question and has not been asked.
+**What happens then splits by shape, and only one half is silent:**
+
+| pattern | nested tag tested | inner vars | outcome |
+|---|---|---|---|
+| `Some (Just x)`, `x` used | no | `x` unbound | **CDX diagnostic**, loud |
+| `Some (Just _)` | no | none | **silent over-broad match** |
+| `Some (Nothing)` | no | none | **silent over-broad match** |
+
+The loud row is loud by luck rather than design, and the luck is good: an
+unbound name falls through `emit-name` to `emit-name-as-call`, the call patch
+finds no target, and `check-call-patch-targets` raises
+`cdx-unresolved-func-offset` -- "Unresolved call to 'x' (redirected to
+__unresolved_trap)". A compile-time refusal, not a runtime trap.
+
+The silent rows are a nested pattern carrying NO variables. There the arm
+simply matches every value of the outer constructor, quietly.
+
+**NOTHING IN THE TREE REACHES IT.** A search for a nested constructor
+sub-pattern over `codex/` returns prose and nothing else: the two apparent hits
+in `X86_64Boot.codex` and `PeWriter.codex` are sentences, and
+`literal-subpattern.codex`'s `BFlag (True)` is an `IrLitPat` sub, not a nested
+constructor. So this is LATENT -- representable, accepted by the checker,
+preserved by lowering, handled by C#, dropped by bare metal, and exercised by
+no program. Worth reporting as a divergence between the DDC witness and the
+oracle; NOT worth claiming as a live defect, and the fixture to prove it does
+not exist yet.
+
+**AND THE LADDER STRUCTURALLY CANNOT SEE IT.** Both arms ignore the shape --
+bare metal skips it, zig calls it `"_"` -- so they agree, wrongly. That is the
+relative-oracle blind spot PRIORITIES describes, and the only witness in the
+tree is the C# plug, which is a crib rather than an oracle.
+
+## The live half, which IS 2.02
+
+The literal sub-pattern case is live, tested and loud:
+
+    bare metal   emit-pattern-lit-test      tests it        (X86_64Compound:2208)
+    C# plug      cs-bool-lit-text           tests it        (CSharpEmitterExpressions:1319)
+    zig plug     zig-pat-binder -> "_"      DROPS it
+
+`codex/test/literal-subpattern.codex` exercises it and the corpus census
+records the consequence: `stage clean, verdict refused`. The zig plug emits
+both arms as bare `.BInt` prongs, zig rejects the duplicate, and the program
+refuses. That refusal IS plugs 2.02, and the fix is to emit the test rather
+than to widen the shadow check.
 
 ## Cost note, recorded by upstream and not addressed here
 
