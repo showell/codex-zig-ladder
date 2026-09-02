@@ -149,6 +149,42 @@ once U54's rungs are green, which is the run in flight now.
     Nothing is wrong on their side; our account of it is just thin.
 
 
+14. NEEDS_INVESTIGATION  Syntax/Lexer.codex depends on the deck intrinsic and
+    declares nothing. It has NO CITES AT ALL, at U53 or U54. U54's
+    `tokenize-collect` rewinds the bivy after every token via `lex-state-below`
+    and is correct only if `deck-record` really moves `make-token`'s record --
+    which happens only when `deck-record-intrinsic` is on, which the emitter
+    gates on `init-phase-allocator` being present among the IR DEFS
+    (`X86_64Chapter.codex:1264`). Seven chapters cite `Codex chapter Phase
+    Allocator`; the lexer, the one that now needs it, is not among them.
+    WHY IT IS SHARP: the gate is defeated by DEAD-CODE ELIMINATION, not just by
+    a missing chapter. `opening.codex:1359` runs `ir-prune-unreachable-roots`
+    on every CDX compile, so a unit that carries the Phase Allocator chapter
+    but never CALLS `init-phase-allocator` loses the def and silently gets the
+    identity. A bundle can satisfy every cite, carry the right chapter, and
+    still be compiled without the mechanism.
+    MEASURED HERE: our desugar rung carried the chapter and page-faulted at
+    `tokenize-collect+546` exactly as lex did; adding the driver's prologue
+    fixed it and put `init-phase-allocator` back in the symbol map.
+    WHY THEY CANNOT SEE IT: their deck-less bundles are plugs, and plugs consume
+    IR rather than lexing. Nothing on their side lexes without a deck.
+    THIS IS PARTLY OURS -- our harnesses never did the driver's setup -- and the
+    half worth sending is that a silent default on a gate whose input can be
+    pruned is a miscompile with no diagnostic. A cite on Lexer.codex is the
+    cheap half; a loud failure when the lexer's deck requirement is unmet is
+    the real one.
+
+15. WE_OWE_THEM  the copy-sx-diag/SyntaxNodes and map-list/ListUtils pair
+    Two more chapters that do not declare what they need, both found the same
+    morning. `Syntax/Lexer.codex` calls `copy-sx-diag` from SyntaxNodes without
+    citing it; `Syntax/SyntaxNodes.codex` uses `for..in..->` comprehensions
+    (which desugar to `map-list`) and cites only `Foreword chapter Maybe`.
+    Both fail LOUDLY at compile, so they are cheap -- unlike 14. Worth one
+    issue together with 14, since the shape is identical and the contrast
+    between "fails loudly" and "page-faults at run time" is the argument.
+    `build/check-subset-cites.ps1` exists and all three got past it.
+
+
 -- STANDING: applies to every PR after this one ----------------------------
 
 9.  Column-2 prose is reserved for external formats, magic numbers and

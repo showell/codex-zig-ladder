@@ -44,7 +44,14 @@ foreach ($ch in @('codex/foreword/core/ListUtils.codex',
 # so the unit has to answer for one. BootPaintStubs.codex says why it is a
 # stub: the real chapter puts a WALL CLOCK in the truth arm.
 Add-PlugChapter -Lines $lines -Path (Join-Path $here 'BootPaintStubs.codex') -Quire 'Parsmi'
-Add-PlugChapter -Lines $lines -Path (Join-Path $here 'LexStubs.codex') -Quire 'Parsmi'
+# LexStubs is NOT carried here, and after Update 54 it is down to one
+# definition: copy-sx-diag. This bundle has Syntax/SyntaxNodes.codex, which
+# is where the REAL one lives, and Core/PhaseAllocator.codex for the two the
+# stub chapter used to hold. Carrying it anyway defines copy-sx-diag twice --
+# CDX3006, which check_diags.py refuses, and correctly: two definitions of a
+# name where each chapter sees its own is how a subject silently measures a
+# different function than the one it names. lex is the only rung that cannot
+# reach SyntaxNodes, so it is the only rung that still needs the stub.
 Add-PlugChapter -Lines $lines -Path (Join-Path $here $Harness) -Quire 'Parsmi'
 
 $preLines = Resolve-PlugForewords $lines
