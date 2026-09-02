@@ -131,16 +131,77 @@ def guest_fault(path):
     end, and that dump is at the bottom under real output. The line is returned
     rather than a boolean so a refusal can quote the exception and the faulting
     address instead of asserting that something went wrong.
+
+    THE PATH IS USED AS GIVEN, and it did not used to be. This resolved a
+    relative argument against AST, which is what the one INTERNAL caller means
+    by `lower.truth` -- and the CLI caller passes `ast/lower.raw` from the
+    ladder root, so the same line built `<ladder>/ast/ast/lower.raw`, missed,
+    and the `except OSError` below turned the miss into "no fault". Two
+    conventions, one heuristic, and it silently picked the wrong one for the
+    caller whose whole job is to stop a fault dump becoming a truth.
+
+    Measured 2026-09-02: this gate had never fired. Both U54 faults were caught
+    one step later by `stamp_unit`, which is why `lower.truth` existed at all --
+    65 lines with a register dump in it -- before anything objected. Callers
+    now build the path they mean and this joins nothing to it.
     """
-    p = AST / path if not str(path).startswith('/') else path
     try:
-        text = open(p, errors='replace').read()
-    except OSError:
-        return None
+        text = open(path, errors='replace').read()
+    except OSError as e:
+        # A FILE THIS CANNOT READ IS A REFUSAL, not a clean bill of health.
+        # Returning None here is what made the bug above survivable: the gate
+        # answered "no fault" for a path it never opened, which is the exact
+        # shape of a check that passes because it never ran.
+        raise SystemExit(f'cannot read {path} to check it for a guest fault: {e}')
     for line in text.splitlines():
         if GUEST_FAULT in line:
             return line.strip()
     return None
+
+
+def _fault_gate_selftest():
+    """Show the fault gate firing, in every direction, against real files.
+
+    BOX Before-11 and the rule Steve states as pairing a soundness gate with a
+    baseline-free presence check: a gate whose every call says "clean" may be
+    working or may be dead, and from the outside those look identical. This one
+    WAS dead -- it resolved the caller's relative path against the wrong root
+    and turned the resulting miss into "no fault" -- for as long as it had
+    existed, and the only thing that caught either U54 fault was the certifier
+    one step later.
+
+    The MISSING-FILE row is the one that would have caught it. Everything else
+    passes just as happily against a gate that cannot open anything.
+    """
+    import pathlib
+    import tempfile
+    cases = [
+        ('a real dump', 'lex-tokens 5\n!EXC=0d RIP=0000000000100191 R10=f106\n', True),
+        ('a dump under real output', 'x\n' * 500 + '!EXC=06 RIP=1708b9\n', True),
+        ('a clean truth', 'lex-tokens 5727\nlex-errors 0\n---\n', False),
+        ('empty output', '', False),
+    ]
+    bad = 0
+    with tempfile.TemporaryDirectory() as d:
+        for why, body, want in cases:
+            f = pathlib.Path(d) / 'x.raw'
+            f.write_text(body)
+            got = guest_fault(f) is not None
+            bad += got != want
+            print(f"{'ok ' if got == want else 'RED'} fault={str(got):5} "
+                  f"want={str(want):5} {why}")
+        # Not a fifth row in the table: this one must RAISE, and a row that
+        # returns a verdict cannot express that.
+        try:
+            guest_fault(pathlib.Path(d) / 'does-not-exist.raw')
+            bad += 1
+            print('RED an unreadable file answered instead of refusing '
+                  '-- THIS IS THE BUG THAT SHIPPED')
+        except SystemExit:
+            print('ok  an unreadable file refuses rather than reporting clean')
+    print('\nthe fault gate fires in every direction' if not bad
+          else f'\n{bad} ROW(S) RED -- the gate does not do what it says')
+    return 1 if bad else 0
 
 
 def sidecar(rung):
@@ -157,7 +218,7 @@ def stamp_unit(unit):
         # NON-EMPTY IS NOT THE SAME AS MEASURED. This is the certifier, so it
         # is the last place a fault dump can be stopped before it becomes an
         # oracle. See the note above guest_fault.
-        fault = guest_fault(f'{r}.truth')
+        fault = guest_fault(truth)
         if fault:
             raise SystemExit(
                 f'cannot stamp {r}: this is a GUEST FAULT DUMP, not a truth\n'
@@ -332,6 +393,8 @@ if __name__ == '__main__':
         check_ir(sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else '')
     elif len(sys.argv) == 4 and sys.argv[1] == 'stamp-diff':
         stamp_diff(sys.argv[2], sys.argv[3])
+    elif len(sys.argv) == 2 and sys.argv[1] == '--gate':
+        raise SystemExit(_fault_gate_selftest())
     elif len(sys.argv) == 3 and sys.argv[1] == 'fault':
         f = guest_fault(sys.argv[2])
         if f:
@@ -341,4 +404,5 @@ if __name__ == '__main__':
         raise SystemExit('usage: truth_prov.py stamp|check <unit|rung>\n'
                          '       truth_prov.py stamp-ir|check-ir <unit> [flags]\n'
                          '       truth_prov.py stamp-diff <rung> <unit>\n'
-                         '       truth_prov.py fault <file>')
+                         '       truth_prov.py fault <file>\n'
+                         '       truth_prov.py --gate   (prove the fault gate fires)')

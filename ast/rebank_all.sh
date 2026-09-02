@@ -56,6 +56,26 @@ started=$SECONDS
 summary_done=""
 trap '[ -z "$summary_done" ] && echo "### REBANK INTERRUPTED: $recorded/$(echo $LADDER_UNITS | wc -w) units recorded, $((SECONDS - started))s in"' EXIT
 
+# THE GATES ARE PROVEN BEFORE THE HOUR IS SPENT, not after.
+#
+# Both modules grew a `--gate` self-test and nothing ran either one, which is
+# the same failure the tests exist to catch, one level up. It cost exactly what
+# it was going to cost: `truth_prov.py fault` resolved its caller's relative
+# path against the wrong root and answered "no fault" for a file it never
+# opened, so the gate that stops a fault dump becoming a banked oracle had
+# never fired -- both U54 faults were caught one step later by the certifier,
+# after a 65-line register dump had already been written to `lower.truth`.
+#
+# Milliseconds, and this is the right place for them: a run that is about to
+# spend an hour producing truths should first show that the thing certifying
+# them works.
+for _g in truth_prov seed_identity; do
+    python3 "$T/$_g.py" --gate > "$T/logs/gate-$_g.log" 2>&1 \
+        || { echo "GATE SELF-TEST RED: $_g -- see logs/gate-$_g.log"; \
+             sed 's/^/    /' "$T/logs/gate-$_g.log"; exit 1; }
+done
+echo "gates proven: truth_prov, seed_identity"
+
 for m in $LADDER_UNITS; do
     rung_stamp "$m"
     truth_arm "$m"
