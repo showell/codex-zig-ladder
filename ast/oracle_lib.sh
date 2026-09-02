@@ -363,7 +363,7 @@ ring_provenance() {
         || { echo "RING PLUG PROVENANCE REFUSED -- run ast/ringplug_build.sh"; return 1; }
 }
 
-# A RESIDENT bound on everything the zig arm runs. The 1.5 GiB arena the
+# A RESIDENT bound on everything the zig arm runs. The 4 GiB arena the
 # heap-unification emitter reserves is lazily faulted, so RLIMIT_AS (the
 # old `ulimit -v`) counted the reservation and refused the program before
 # it had touched a page; cgroup MemoryMax counts resident pages, which is
@@ -371,6 +371,14 @@ ring_provenance() {
 # 2026-08-23). `systemd-run --user --scope` needs no root and the kernel's
 # kill is exit 137, which every verdict already reads as a red. There is
 # no fallback branch: the laptop is not a venue (require_compute_venue).
+#
+# 1.5 GiB here was the number BEFORE finding 24 raised it: fibx measured
+# 381 MB of deck plus ~1.2 GB of main, which 1.5 could not hold, and
+# `cx_heap_reserve` has been 4 GiB since. The stale figure is not harmless
+# prose -- it was read on 2026-09-02 to size whether the hosted harnesses
+# could afford the driver's deck floors, and it made a 2.9 GB need look
+# like an overrun. The generated zig carries the live constant and its
+# reasoning; this line is orientation and defers to it.
 ZIG_ARM_MEMORY_MAX=${ZIG_ARM_MEMORY_MAX:-6G}
 bounded_run() {   # <MemoryMax> <command...>
     local max=$1; shift
