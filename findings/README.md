@@ -1158,10 +1158,11 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
-## 70. Update 54's check compact validates a type box by READING ITS TAG WORD out of raw memory, which no plug can answer -- and it answers `ErrorTy` silently
+## 70. Update 54's check compact validates a type box by READING ITS TAG WORD out of raw memory, which no plug can answer -- and it answers `ErrorTy` silently. FIX FOUND AND MEASURED: `hosted-kind` at the top of `check-batch-close`, 14/14
 
 Found 2026-09-02 on the ZIG arm, against U54 seed `fcbabf074795`. It is
-UPSTREAM's, not ours, and it is NOT fixed. It is the whole of the zig arm's
+UPSTREAM's, not ours. It is not fixed in the tree, but the fix is
+identified and every rung is measured green under it -- see the last section. It is the whole of the zig arm's
 current failure: nine of fourteen rungs are red, and the nine are exactly the
 nine harnesses that call `check-chapter`.
 
@@ -1267,6 +1268,62 @@ for it in the one way that cannot be ported. A plug-implementable primitive
 the existing peek on bare metal) would let the guard keep its meaning
 everywhere. That is upstream's call and it touches every plug, so it goes out
 as a finding, not as a PR.
+
+### The fix, measured: one guard, and the ladder goes 14/14
+
+**Not `mcopy-type`.** Guarding the copier alone was tried first and REFUTED by
+running it: `check` went byte-identical, and `lower`, `ir_to_codex`,
+`ir_to_codex_roundtrip` and `ir_to_wire` all died `panic: switch on corrupt
+value` in `ty-has-typevars` under `deep-resolve`. Handing back real `FunTy`
+boxes only exposed the next bare-metal assumption behind them.
+
+The whole of `check-batch-close` is bare-metal memory management, and reading
+it in one piece says so:
+
+    let set-keep  = __deck-set (cb.cb-keep)
+    in let copied = deck-record (check-batch-copy cb st acc)
+    ...
+    in let p1 = check-batch-poison (cb.cb-deck-mark) (cb.cb-poison) ...
+    in let p2 = check-batch-poison (cb.cb-bivy-mark) (cb.cb-poison) ...
+    in let set-deck = __deck-set (cb.cb-deck-mark)
+    in let restored = __heap-restore (cb.cb-bivy-mark)
+
+Deck cursor, `__memset` poison over two ranges, deck cursor, heap restore.
+Every one of those addresses the plug's flat region; none of them addresses
+where the plug's objects live. The copier is not the bare-metal assumption,
+it is one of six.
+
+So the guard belongs at the top, and the compiler already has the predicate.
+`hosted-kind` is a builtin every plug implements -- zig emits `@as(i64, 1)`,
+csharp `1L`, bare metal 0 -- and `PhaseAllocator.codex:38` and `:86` ALREADY
+use it to skip raw-memory work on a hosted target, for word-for-word this
+reason. U54's new code simply did not reach for it.
+
+    check-batch-close (cb) (st) (acc) =
+     if hosted-kind /= 0 then 0
+     else <the existing body>
+
+**Measured 2026-09-02 by patching that guard into all seven emitted `.zig`
+files and running them natively. Every one of the fourteen rungs is
+byte-identical to its bare-metal truth.**
+
+    check  lower  ir_to_codex  ir_to_codex_roundtrip  ir_to_wire
+    ir_to_x86_on_fib  ir_to_x86_on_cce
+    passes_to_x86_on_mid  passes_to_x86_on_arith        all BYTE-IDENTICAL
+
+The claim is exactly this much and no more: the guard is simulated in the
+EMITTED zig, not yet made in `TypeChecker.codex` and re-emitted through the
+plug. Making it upstream changes the subject text, so both arms must be
+re-measured. Bare metal is expected to be unmoved and the expectation is
+checkable rather than hopeful -- `hosted-kind` is 0 there, so the guard is
+provably inert on the truth arm.
+
+One consequence to state in the PR rather than discover later: a skipped
+close leaves `cb-keep`, `cb-batches` and `cb-overflow` unadvanced, so
+`check-batch-note` reports zeros on a hosted arm and CDX9002 cannot fire
+there. Both are correct -- a hosted arm has no keep to fill and no
+reservation to overflow -- but the note is printed by the driver, and no
+ladder harness prints it, so nothing here measured that.
 
 ### Reproducing it
 
