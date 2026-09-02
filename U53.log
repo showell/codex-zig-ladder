@@ -543,3 +543,18 @@ it; 130 RAN and printed the wrong thing, which is the real list; the rest is a
 short tail of genuine defects. Interpreter speed the same day: 9,142,789 ->
 17,613,083 steps/sec, no quadratic anywhere -- `render` is 605,930,430 steps
 at the same rate as `pond`'s 3,824.
+
+**The arity guess, and an error that named the wrong builtin (2026-09-02).**
+`keys-collision` failed as ``builtin `bit-and` is not interpreted yet (given a
+function, an integer)`` with `bit-and` fully implemented. Cause:
+`uefi-read-key-ex : Integer` is NULLARY, `builtins_probe.py` could not read a
+bare type name (its search demanded a `(` after `Just`), so it and 22 others
+fell down the undeclared path and took an arity of 0 by default -- which the
+interpreter then read as "declares no type" and guessed 1 for, binding a
+function where an Integer belonged. `ForAllEff` was not transparent either, so
+`process-spawn` and three siblings read as taking no arguments. The probe now
+refuses a type head it does not know rather than counting it 0 -- it fired on
+its first run, on `s-new`'s `deck-record` -- and the table carries
+`Option<usize>`, because `Some(0)` and `None` are different facts. Sweep 551 of
+979 before and after, with the `ok` SET identical; ~34 programs moved their
+error from a downstream victim to its cause. Ladder `1286102`, rust `d5cef6e`.
