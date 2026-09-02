@@ -189,6 +189,27 @@ CHECK_SETUP = """let keep-height = demand-check-keep-floor
 # (opening.codex:1722) is the last `build` before x86-64-emit-cdx runs, so it
 # is what emission's deck-record extents allocate inside. Without it they
 # allocate inside whatever the previous phase left.
+# THE PROBE'S LIFT FLOOR, and it is the whole of the next experiment.
+#
+# At `demand-lift-floor` (104 MB) emission faults 1,224 bytes past
+# lift-ceiling. That overshoot says NOTHING -- a bump allocator crossing a
+# ceiling always crosses by about one allocation, so the number measures the
+# allocation that tripped, not the distance the cursor travelled. Two
+# hypotheses predict it equally:
+#
+#   DECK EXHAUSTION   emission really does use the whole 104 MB deck, and the
+#                     guard is right.
+#   BIVY vs CEILING   the ceiling is armed while R10 is the BIVY, which sits
+#                     immediately above the reservation by construction -- the
+#                     2026-08-27 defect PhaseAllocator says arm-at-enter fixed.
+#
+# They are indistinguishable at ONE ceiling and trivially distinguishable at
+# two. Raise the floor and the bivy rises with it, so BIVY vs CEILING faults
+# again at the new ceiling + about a kilobyte; DECK EXHAUSTION gets 3x the room
+# and either survives or dies far in. One run, one variable, no ambiguous
+# outcome.
+PROBE_LIFT_FLOOR = 335544320          # 320 MB, against demand-lift-floor's 104
+
 LIFT_SETUP = """let lift-height = demand-lift-floor
     in let lift-base = build lift-height
     in let lift-ceiling = lift-base + lift-height
@@ -683,8 +704,9 @@ def harness_source(chapter, prefix, subjects, passes=False, scan=True, probe=Fal
         # LIFT_SETUP ends with a dangling `in `, so the chain is closed with a
         # binding of its own -- otherwise the template's following `in act`
         # reads as `in in act`.
+        probe_lift = LIFT_SETUP.replace('demand-lift-floor', str(PROBE_LIFT_FLOOR))
         probe_src = (frontend_source("src", passes, scan)
-                     + f"\n    in {LIFT_SETUP}let deck-probe = 0")
+                     + f"\n    in {probe_lift}let deck-probe = 0")
         probe_line = ('\n      print-line-uni ("DECK-PROBE lift-base " & show lift-base'
                       ' & " lift-ceiling " & show lift-ceiling'
                       ' & " deck-pos " & show __deck-pos'
