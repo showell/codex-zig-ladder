@@ -200,11 +200,33 @@ def lower_call(ch='ch', bound='bound', cst='cst', rename=True):
             f"skip-list-text-empty [] lower-ceiling {rename}")
 
 
-# The call itself, so the five harnesses that make it cannot drift apart the
-# way `ir-emit-roots` did. `<CH>` is the scoped chapter each harness binds.
+# CHECK IS THE ONE PHASE THAT CANNOT BE CALLED BARE, and it says so itself.
+#
+# `check-chapter` issues a `__deck-exit` immediately before the per-definition
+# walk and a `__deck-enter` after it (`Types/TypeChecker.codex:2388,2393`), so
+# that walk runs OUTSIDE the phase extent and `deck-short-of` reads a live
+# cell. `BuildSettings.codex:154` states the requirement in as many words:
+# "CHECK is the exception ... so that walk runs OUTSIDE the extent and the
+# cell is live." It is the only function in the compiler outside the emitter
+# that issues either builtin by hand.
+#
+# The extent it exits is the CALLER'S, and the caller is the driver:
+# `opening.codex:631` writes `deck-record (check-chapter ...)`. Called bare the
+# nesting counter goes to -1 instead of 0, and at -1 every `deck-record` inside
+# the walk is a no-op -- `emit-deck-enter-builtin` swaps R10 only on the zero
+# crossing -- so the per-definition results land on the BIVY while the batch
+# machinery reclaims to `cb-bivy-mark` as though they had not.
+#
+# What that costs is not the phase; it is whoever reads the phase's result
+# LATER. `check` prints `cr.types` immediately and is green. `lower` allocates
+# the resolved tables, a 328 MB reservation and the whole of lowering first,
+# and then reads a Text whose length word is someone else's data -- measured
+# 2026-09-02 as !EXC=0d in `__str_concat` with R10 non-canonical, bumped by a
+# garbage length. See HARNESS_FIDELITY.md.
 def check_call(ch='ch'):
-    return (f"check-chapter {ch} [] skip-list-text-empty [] check-ceiling "
-            "check-base keep-base (keep-base + keep-height - 4194304) 0")
+    return (f"deck-record (check-chapter {ch} [] skip-list-text-empty [] "
+            "check-ceiling check-base keep-base "
+            "(keep-base + keep-height - 4194304) 0)")
 
 # The checker records a type for every expression, not only for bindings, and
 # the driver resolves that table too: opening.codex:635 runs
