@@ -125,6 +125,22 @@ Before running a rung after a new release:
    `derive-deck-scale`, NOT 100.
 5. **Ask what the harness does that the driver does not**, which is the same
    question backwards and has never yet been asked here.
+6. **A page-SUBSET bundle can be broken by a name moving, not just by an API
+   moving.** This one is a different axis from the five above -- it is about
+   the unit rather than the driver -- but it belongs to the same "before
+   running a rung after a release" question. Six of the twelve bundles take a
+   SUBSET of the fourteen-page X86-64 chapter, and an Update that gives a
+   carried page a new reference to an uncarried one breaks the bundle with
+   CDX3002 at codegen. U54 did exactly that: `X86_64State` gained a
+   Windows-hosted target selection reaching four new constants in
+   `X86_64Boot` and one in `X86_64Chapter`.
+
+   **And check the CLOSURE before reaching for the pages.** Measured
+   2026-09-02 on `lir_to_x86`: adding the two pages left three names open,
+   adding their page left SIXTEEN across four more. The closure was
+   `ir_to_x86`'s entire bundle, 2.4 MB against the rung's 489 KB -- so the
+   faithful-looking fix deletes the reason the small rung exists. Five stubbed
+   Integers was the right answer and only measurement could say so.
 
 ## The open question this file exists for
 
