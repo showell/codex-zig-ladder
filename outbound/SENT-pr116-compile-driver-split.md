@@ -1,6 +1,13 @@
 # Split `Chapter: Opening` into a Compile Driver chapter and the entry point
 
-*Sent 2026-09-02 as https://github.com/damiant3/Cobblestone/pull/116
+*CLOSED in favour of upstream's smaller cut of the same seam -- they rename the
+driver body in place, `opening` becomes `codex-opening`, and a near-empty entry
+chapter holds the one-line `opening`. Two files, +74 bytes, one-pass fixed point,
+nothing moves. Better than this, and it lands on their main now.
+They also caught that 18 of our 891 moved lines carried pre-tuple `lower-chapter`
+text, so applying this would have REVERTED landed work and gated green -- the
+same degrade-to-plausible shape we spent the day filing, aimed back at us.
+Sent 2026-09-02 as https://github.com/damiant3/Cobblestone/pull/116
 from branch `cobblestone-driver-split` (`7d854a55`).
 Written by Claude, on Steve Howell's account and at his direction.*
 
