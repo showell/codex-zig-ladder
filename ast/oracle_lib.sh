@@ -239,6 +239,20 @@ PY
     fi
     [ -s ast/${m}.raw ] || { echo "RUN FAILED: no ast/${m}.raw"; return 1; }
 
+    # A FAULTED GUEST STILL PRODUCED OUTPUT, and run_cdx returns it rather
+    # than raising -- it raises only when the guest never finished at all. So
+    # the checks above pass on a #PF dump: it is output, it is non-empty, and
+    # split_truth cuts it into per-rung files that look like truths. Asked
+    # HERE, before the split, so a fault leaves ast/<m>.raw for reading and no
+    # truth at all -- which is the rule the removals above already follow.
+    # truth_prov.stamp_unit asks again at the certifier, because this arm is
+    # not the only caller.
+    if ! python3 "$T/truth_prov.py" fault "ast/${m}.raw"; then
+        echo "RUN FAULTED for $m -- the guest raised an exception; the dump is"
+        echo "  in ast/${m}.raw and no truth was written"
+        return 1
+    fi
+
     # One run, one truth file per subject in it. A unit carrying one subject
     # prints no marks and passes through, so this is the same operation for
     # every rung on the ladder rather than a special case for the big two.

@@ -97,6 +97,52 @@ def set_hash(unit):
     return h.hexdigest()
 
 
+# ---------------------------------------------------------------------------
+# A GUEST THAT FAULTED STILL PRODUCED OUTPUT, and that output is not a truth.
+#
+# `codex_vm.run_cdx` returns whatever came back over serial and raises only
+# when the guest never finished. A #PF dump IS output, so it returns normally,
+# `<unit>.raw` is non-empty, `split_truth.py` splits it happily, and
+# `stamp_unit` -- which asked only "does the file exist and is it non-empty" --
+# certified it. Measured 2026-09-02 on the U54 lex rung: 923 bytes of register
+# and stack state, zero tokens, stamped with the correct seed and the correct
+# harness hash, and `bank_truth.py` would have accepted it as the bare-metal
+# oracle for that rung. Nothing in the ladder looked at `!EXC=` at all.
+#
+# That is worse than banking nothing. A truth is what every future zig arm is
+# diffed against, so a banked fault dump reports the ARM as differing for as
+# long as the bank stands, and reads as a plug defect rather than as a truth
+# that was never a measurement. The only thing that caught it was a human
+# noticing 923 bytes where 172 KB belongs.
+#
+# `!EXC=NN` is the GUEST'S OWN marker, not one invented here: the exception
+# handler writes it to the serial stream, `tools/codex-vm.c` watches for
+# `!EXC=03` to hand control to the debugger, and `Emit/X86_64Helpers.codex`
+# and `X86_64Boot.codex` both describe failures as dying `!EXC=06`. An external
+# format, which is why it is spelled out here rather than derived.
+
+GUEST_FAULT = '!EXC='
+
+
+def guest_fault(path):
+    """The guest's fault line if this output is a fault dump, else None.
+
+    Whole file, not the head: a subject can print for an hour and fault at the
+    end, and that dump is at the bottom under real output. The line is returned
+    rather than a boolean so a refusal can quote the exception and the faulting
+    address instead of asserting that something went wrong.
+    """
+    p = AST / path if not str(path).startswith('/') else path
+    try:
+        text = open(p, errors='replace').read()
+    except OSError:
+        return None
+    for line in text.splitlines():
+        if GUEST_FAULT in line:
+            return line.strip()
+    return None
+
+
 def sidecar(rung):
     return AST / f'{rung}.truth.prov'
 
@@ -108,6 +154,17 @@ def stamp_unit(unit):
         truth = AST / f'{r}.truth'
         if not truth.is_file() or truth.stat().st_size == 0:
             raise SystemExit(f'cannot stamp {r}: no truth beside it')
+        # NON-EMPTY IS NOT THE SAME AS MEASURED. This is the certifier, so it
+        # is the last place a fault dump can be stopped before it becomes an
+        # oracle. See the note above guest_fault.
+        fault = guest_fault(f'{r}.truth')
+        if fault:
+            raise SystemExit(
+                f'cannot stamp {r}: this is a GUEST FAULT DUMP, not a truth\n'
+                f'  {fault}\n'
+                f'  {truth} is {truth.stat().st_size:,} bytes and the run did '
+                'not finish; the dump is kept for reading, the truth is not '
+                'certified')
         sidecar(r).write_text(f'{seed}\n{content}\n')
     return seed, content
 
@@ -275,7 +332,13 @@ if __name__ == '__main__':
         check_ir(sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else '')
     elif len(sys.argv) == 4 and sys.argv[1] == 'stamp-diff':
         stamp_diff(sys.argv[2], sys.argv[3])
+    elif len(sys.argv) == 3 and sys.argv[1] == 'fault':
+        f = guest_fault(sys.argv[2])
+        if f:
+            print(f'GUEST FAULT in {sys.argv[2]}:\n  {f}')
+            raise SystemExit(1)
     else:
         raise SystemExit('usage: truth_prov.py stamp|check <unit|rung>\n'
                          '       truth_prov.py stamp-ir|check-ir <unit> [flags]\n'
-                         '       truth_prov.py stamp-diff <rung> <unit>')
+                         '       truth_prov.py stamp-diff <rung> <unit>\n'
+                         '       truth_prov.py fault <file>')
