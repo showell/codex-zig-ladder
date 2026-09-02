@@ -144,6 +144,28 @@ CHECK_SETUP = """let keep-height = demand-check-keep-floor
     in let check-ceiling = check-base + check-height
     in """
 
+# `lower-chapter` took eight parameters through Update 53 and takes NINE at
+# Update 54. The ninth is `rename : Boolean`, and it is COMPILER-38 -- the fix
+# for our own issue 113, where lowering now renames only the colliding binders
+# inside a definition (`v`, `v_1`, ...) so two live bindings never share an IR
+# name. Under-applying it fails exactly as check-chapter did: a function where
+# an IRChapter was expected, and CDX2000 on `.defs` / `.effect-op-names` at
+# codegen rather than an arity complaint.
+#
+# TRUE, because that is what both driver paths these harnesses model pass.
+# `compile-frontend-cdx` (opening.codex:842) passes True unconditionally, and
+# `compile-frontend-ir` (:768) -- the wire path the plug consumes -- calls
+# `compile-frontend-passes ... True`. The only False caller is plain
+# `compile-frontend` (:764), which is the no-passes path and not what any rung
+# is standing in for.
+#
+# It is also the flag that makes these rungs EXERCISE COMPILER-38 rather than
+# route around it, which is one of the things upstream asked us to confirm.
+def lower_call(ch='ch', bound='bound', cst='cst'):
+    return (f"lower-chapter {ch} {bound} {cst} (rr.ctor-names) [] "
+            "skip-list-text-empty [] 0 True")
+
+
 # The call itself, so the five harnesses that make it cannot drift apart the
 # way `ir-emit-roots` did. `<CH>` is the scoped chapter each harness binds.
 def check_call(ch='ch'):

@@ -13,9 +13,10 @@ import pathlib
 import subprocess
 import sys
 
-from emit_harness import CHECK_SETUP, DECK_PROLOGUE, RESOLVED_TABLES, check_call
+from emit_harness import CHECK_SETUP, DECK_PROLOGUE, RESOLVED_TABLES, check_call, lower_call
 
 CHECK_CALL = check_call()
+LOWER_CALL = lower_call()
 HERE = pathlib.Path(__file__).parent
 subprocess.run([sys.executable, str(HERE / 'gen_lower_harness.py')], check=True)
 
@@ -92,7 +93,7 @@ Section: Driver
     in let rr = resolve-chapter ch skip-list-text-empty [] 0
     in {CHECK_SETUP}let cr = {CHECK_CALL}
     {RESOLVED_TABLES}
-    in let ir = lower-chapter ch bound cst (rr.ctor-names) [] skip-list-text-empty [] 0
+    in let ir = {LOWER_CALL}
     in act
       print-line-uni ("lex-tokens " & show (list-length (toks.tokens)))
       print-line-uni ("lex-errors " & show (list-length (toks.errors)))
