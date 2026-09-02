@@ -1,0 +1,140 @@
+U54 FOLLOW-UP QUEUE
+===================
+
+Everything owed, offered, or worth chasing out of the Update 54 PR and issue
+comment thread (#94-#114), plus what our own comparison turned up. Ordered
+CHEAPEST FIRST, so the top of the list can be cleared without booting a guest.
+
+Read the agent commentary as INTENTIONS, not facts. Every claim below that
+came from upstream is theirs until we measure it. Where we have measured it
+ourselves the line says so.
+
+TAGS
+  VERIFY_THEIR_FIX    they changed something and a run of ours confirms it
+  WE_OWE_THEM         they asked us for something, or we said we would
+  NEEDS_INVESTIGATION open on our side; nobody has looked yet
+  OUR_BUG             a defect in something we shipped
+  THEIR_QUESTION      addressed to us, answerable at the keyboard
+
+BATCHING NOTE. The three VERIFY_THEIR_FIX items all fall out of runs the
+rebank ceremony makes anyway -- item 2 from the sweep, items 3 and 4 from a
+corpus pass. None of them justifies a guest of its own. Stage them together
+once U54's rungs are green, which is the run in flight now.
+
+
+-- FREE: falls out of work already scheduled -------------------------------
+
+1.  VERIFY_THEIR_FIX  recursive-eq should move differ -> match
+    Issue 97. COMPILER-34 closed at their main 20888, and NOT by the hoist we
+    argued for: the desugarer now derives Eq for any self-recursive sum, so no
+    IrEq on such a type reaches any backend at all. `codex/test/recursive-eq`
+    lost its `.no-cross` sidecar in U54, which is them saying it should pass
+    everywhere now.
+    THEY ASKED US DIRECTLY: "If you can confirm that on your ladder it is the
+    independent arm we do not have, and worth more than our three."
+    COST: zero extra. It is one program in the corpus pass. On U53 it was the
+    single `differ` in 326 programs, so the before-number is already ours.
+
+2.  VERIFY_THEIR_FIX  the four scoping programs, with no plug change
+    Issue 113 / COMPILER-38. Lowering now renames only colliding binders
+    (v, v_1, ...) so two live bindings never share an IR name; they claim the
+    wasm plug agrees with x86-64 on all four with NO emitter change, and that
+    the plugs' private repairs are now dead code.
+    OURS TO CHECK: act-let-scope, let-shadow-scope, scope-let-arm-global,
+    param-shadow-rt through the ZIG arm. Our dual-name proposal was weighed and
+    the single-name form chosen; that is settled, we are only checking the fix.
+    COST: batch with item 1.
+
+3.  VERIFY_THEIR_FIX  PR 101 did NOT land as we sent it
+    They moved the witness inside the `ty-has-typevars` test, so a fully typed
+    list literal lowers exactly as before. Ours lowered element 0 on EVERY
+    non-empty literal -- their count, ~2,900 extra lowerings per self-compile,
+    no GC to reclaim them. Their change is better and we should say so.
+    WHY IT MATTERS HERE: u54's `lower-nonempty-list` is not our branch's, so
+    any IR gold we re-cut is against their shape, not the one we measured.
+    COST: batch with item 1.
+
+
+-- CHEAP: keyboard work, no guest ------------------------------------------
+
+4.  THEIR_QUESTION  real-atan2 and the negative zero
+    PR 107. `real-atan2` branches on `y >= 0.0`, and `-0.0 >= 0.0` is true in
+    IEEE, so it answers +pi where zig answers -pi, and +0.0 where zig answers
+    -0.0. Our table covers only positive zeroes, so nothing tests it either
+    way. They recorded it in the chapter as a semantic choice rather than
+    fixing it, and asked: "If you have a view on whether we should match zig
+    there, we would take it."
+    A view is owed. This is a language question, not a plug question.
+
+5.  OUR_BUG  plugs row 2.02 is open, and the open half is our wrong claim
+    PR 103. We wrote that a payload-carrying constructor is never a duplicate.
+    It is: `emit-zig-match-arm` emits a BARE prong when the binders are all
+    unused (ZigEmitter :2155 one sub, :2158 several), so two such arms on the
+    same constructor still collide and still refuse at zig.
+    `zig-pat-switch-value` only answers for `list-length subs == 0`, so that
+    shape is under-dropped. Their words: "the direction is safe, nothing is
+    miscompiled, and the fix is to mirror those two conditions."
+    A NEXT PR THAT WRITES ITSELF -- narrow, with a test shape we already know.
+    Also recorded, not changed: `zig-arm-shadowed` scans backward per arm and
+    allocates a Text per comparison, so emission is O(n^2) in arm count.
+
+6.  NEEDS_INVESTIGATION  scan-char-literal has no unterminated diagnostic
+    PR 114, and they found it while verifying ours. A quote followed by a
+    newline consumes the newline AS the character, finds no closing quote, and
+    emits a CharLiteral without complaint. Same family as COMPILER-35,
+    different shape, still open, and nothing in the tree discriminates it.
+    We already own the repro shape from PR 114; this is the sibling.
+
+
+-- MEDIUM: needs a decision, then a small run ------------------------------
+
+7.  WE_OWE_THEM  land PR 100 by fixing the FIXTURE, not the emitter
+    The emitter is verified correct on their side -- they checked every guard
+    against the code and found no input where the zig arm disagrees with x86.
+    The blocker is that `codex/test/ops` is graded by
+    `build/test-cross-batch.ps1` on arm64 and riscv64 too, and both SATURATE
+    where x86 answers the integer indefinite. Their measured table:
+        probe                  x86-64                 arm64                 riscv64
+        real-to-int NaN        -9223372036854775808   0                     2147483647
+        real-to-int +inf       -9223372036854775808   9223372036854775807   2147483647
+        real-to-int -inf       -9223372036854775808   -9223372036854775808  -2147483648
+        real-to-int 2^63       -9223372036854775808   9223372036854775807   2147483647
+    THEIR SUGGESTED LANDING, verbatim in intent: keep real-from-int and the
+    in-range real-to-int rows in codex/test/ops where all three arches agree,
+    and either leave the NaN/infinity/overflow rows out or put them somewhere
+    not cross-graded -- or use per-backend expectations, which they say the
+    cross battery already supports.
+    UNVERIFIED BY US: that per-backend expectations exist and work. Check
+    test-cross-batch.ps1 before designing around it.
+    ALREADY DONE on `u54-plus-pr100`: the -Kernel path defect they reported is
+    fixed, the row is renumbered 2.19, and its status is recorded honestly.
+    NOT DONE: the fixture decision. That is this item.
+    BLOCKS: safari-codex, which calls the pair from 50 chapters.
+
+8.  NEEDS_INVESTIGATION  the Real representation question they handed back
+    PR 105. ZigEmitter :342 and :373 map `RealTy (w) (m)` to `f64`, discarding
+    both the width and the overflow mode -- so in this plug an f32 Real is an
+    f64, a trapping Real does not trap, and a saturating one does not saturate.
+    They read our declining the other thirteen Real builtins as correct and
+    recorded it as an OPEN REPRESENTATION QUESTION rather than an emitter gap:
+    "Filling those rows would replace an honest refusal with a plausible wrong
+    number." Their words, and we agree.
+    THE LARGEST ITEM ON THIS LIST and the only one that is a design question.
+    Do not start it inside another task.
+
+
+-- STANDING: applies to every PR after this one ----------------------------
+
+9.  Column-2 prose is reserved for external formats, magic numbers and
+    performance characteristics. Roughly half our added lines in PR 101 were
+    prose explaining THEIR code, and they dropped all but two blocks -- the
+    ones explaining something a reader cannot derive. They noted the adjacent
+    code sets a bad example and that they are trying to stop adding to it.
+
+10. Cite a backlog row by SUBJECT, never by number. Ours has been renumbered
+    three times (2.06 -> 2.05, 2.06 -> 2.13, and ours is now 2.19), and their
+    file carries duplicate numbers on purpose.
+
+11. PRs are never merged where they are opened. The depot is Perforce and the
+    GitHub mirror is downstream, so "absorbed at main CL NNNNN" is the landing
+    and the PR closes later, when the push makes it checkable.
