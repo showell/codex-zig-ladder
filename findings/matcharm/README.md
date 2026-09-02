@@ -1,7 +1,9 @@
 # plugs 2.02's open half: which arms `zig-pat-switch-value` under-drops
 
-**Status: read from source at U54, NOT measured.** No corpus run, no plug
-build. This is an argument with a falsifier at the end, not a result.
+**Status: the falsifier was found and it fired.** The fix this note first
+proposed is WRONG, and so is the one upstream suggested. Both would convert a
+loud refusal into a silent wrong answer on a test that already exists.
+Everything below is source reading plus one banked corpus verdict; no new run.
 
 ## What is open, in upstream's words
 
@@ -55,23 +57,79 @@ So the broad fix appears strictly better than the narrow one. I want to be
 careful saying that, because upstream read this code and suggested the narrow
 one, and they may be seeing something this note is not.
 
-## WHAT WOULD FALSIFY THE BROAD FIX
+## THE BROAD FIX IS WRONG, AND SO IS THE NARROW ONE. Checked 2026-09-02.
 
-One case: an earlier `.Name` arm that does NOT match every value of that
-constructor while being trivially guarded. If such a shape exists, dropping a
-later capturing arm on the same name loses a live branch, and that IS a
-miscompile -- worse than today's loud refusal. Candidates to look for before
-touching anything:
+The falsifier this section asked for exists, is in the tree, and has a banked
+expected output: `codex/test/literal-subpattern.codex`.
 
-  - a nested pattern inside the payload that makes the earlier arm partial
-    (does the IR even carry those, or are they lowered to guards?)
-  - a range or literal sub-pattern in a payload position
-  - anything that makes `zig-guard-trivial` answer True on a guard that is not
-    actually total
+    by-int (b) = when b
+      is BInt (0) -> 10
+      is BInt (1) -> 11
+      is BInt (7) -> 17
+      is BInt (n) -> 19
+      is otherwise -> 99
 
-**That question is answerable by reading `zig-guard-trivial` and the lowering of
-nested patterns, and it has not been done.** Until it is, this note prefers the
-narrow fix on grounds of caution, not of correctness.
+Four arms, ONE constructor name. Under the broad fix every arm after the first
+is "shadowed by `.BInt`" and dropped, so `by-int` answers 10 for every BInt
+against an expected `10 / 11 / 17 / 19`. A loud refusal becomes a silent wrong
+answer, which is the worst trade available.
+
+**UPSTREAM'S NARROW FIX BREAKS IT TOO**, and I do not think that was intended.
+Their condition is "the binders are all unused", and
+
+    zig-pat-binder (p) (i) = when p is IrVarPat (name) (ty) (sp) -> name
+                                     is otherwise -> "_"
+
+answers `"_"` for an `IrLitPat`. So `BInt (0)` reads as a bare prong with no
+binder, their condition fires, and the arm is dropped exactly as above. The
+test conflates "binds nothing" with "must be TESTED for something".
+
+## What the guard shapes actually turned out to be
+
+Of the three candidates this note listed, one was impossible and two were real:
+
+  - **A trivially-guarded but partial arm: cannot exist.** `zig-guard-trivial`
+    answers True only for a literal `IrBoolLit True`, which is total by
+    construction, and `emit-zig-match-arms` runs only in the `else` of
+    `zig-branches-guarded`, so every arm reaching it has a constant-true guard.
+  - **Literal sub-patterns: real, tested, and the falsifier above.**
+  - **Nested constructor sub-patterns: representable and mishandled** --
+    `lower-pattern-at` recurses into subs verbatim, so `Some (Just x)` reaches
+    the IR intact.
+
+## SO 2.02'S REAL FIX IS NOT ABOUT SHADOWING AT ALL
+
+`zig-pat-binder` returning `"_"` for everything that is not an `IrVarPat` is the
+root. The zig plug does not TEST a literal sub-pattern; it silently treats it as
+a wildcard. That is why two `BInt` arms collide in the first place -- both emit a
+bare `.BInt` prong -- and it is why widening the shadow test makes things worse
+rather than better.
+
+Emit the test, and the arms stop being duplicates. Both other backends already
+do it: bare metal calls `emit-pattern-lit-test` on an `IrLitPat` sub
+(`X86_64Compound.codex:2208`), and the C# plug emits `cs-bool-lit-text`
+(`CSharpEmitterExpressions.codex:1319`). Only zig drops it.
+
+## AND THE ORACLE ITSELF IS PARTIAL, which is a separate finding
+
+`bind-ctor-fields` on bare metal handles `IrVarPat` and `IrLitPat` and ends
+
+    is otherwise -> bind-ctor-fields st scrut-loc sub-pats tys (i + 1) patches
+
+so a NESTED CONSTRUCTOR sub-pattern is skipped: not tested, not bound. The C#
+plug recurses (`emit-sub-pattern` calls `emit-pattern` on an `IrCtorPat`) and
+gets it right. So for a program matching `Some (Just x)`, C# and bare metal
+DISAGREE, and C# is the one that is correct.
+
+THE LADDER CANNOT SEE THAT. Both of its arms ignore nested constructor subs --
+bare metal skips them, zig calls them `"_"` -- so they agree, wrongly, which is
+exactly the relative-oracle blind spot PRIORITIES describes. The C# plug is the
+only witness in the tree, and it is a crib rather than an oracle.
+
+REACHABILITY IS NOT ESTABLISHED. A source grep finds nested constructor
+patterns in no test and in one compiler file; `literal-subpattern` covers the
+literal case only. So the nested-constructor half may be latent. Whether the
+CHECKER accepts the shape at all is the next question and has not been asked.
 
 ## Cost note, recorded by upstream and not addressed here
 
