@@ -139,26 +139,60 @@ ceiling.** Two runs either side of that fix are byte-identical in outcome --
 same 65-line file, same 1,660 bytes, R13 identical to the bit
 (`f883480824448b4c`, which decodes as x86 instruction bytes: a register holding
 code), only heap addresses moving. The commit that added the ceiling is right
-about zero-ceilings disabling the guard and WRONG that it fixed this. The truth
-ends at `type-bindings 3`, so it dies inside `lower-chapter`.
+about zero-ceilings disabling the guard and WRONG that it fixed this.
 
 **THE FAULT GATE EARNED ITS KEEP TWICE**, and the second was the harder case:
 `lower.truth` was 1,660 bytes with 46 lines of correct output and the dump
 appended, which reads like a truth. Stamping refused, the five banked rungs
 stand, and the run stopped rather than building on a bad foundation.
 
-**Two candidate causes, neither established:**
-- COMPILER-38's rename pass, new at U54, which builds `v_1` binder names by
-  string concatenation -- the very helper the fault lands in;
-- the deck reservations. I used the RAW floors (scale 100); the driver derives
-  a scale from unit length, and for lower's 1,166,918-byte unit that is 77.
-  1,232 MB reserved against the driver's 872 MB.
+## LOWER IS GREEN, AND IT WAS NEITHER CANDIDATE (2026-09-02, later)
 
-**AGREED PLAN, in this order (Steve, 2026-09-02):** isolate first -- run
-`lower` alone with `rename = False`, one guest and one variable, which settles
-whether the rename pass is implicated. THEN correct the scaling, which is right
-on principle whatever the answer. Doing the scale fix first cannot distinguish
-"fixed it" from "moved it".
+**`check-chapter` was being called BARE where the driver wraps it in
+`deck-record`.** One-line fix in `check_call()`, and `lower` banks an 83-line
+truth carrying the three bindings whose Text was corrupt -- `tb fib fn`,
+`tb double fn`, `tb opening eff` -- and the whole IR tree after them.
+
+**COMPILER-38 is FALSIFIED, and cleanly.** `lower` with `rename = False`
+faulted with every register byte-identical to the original: RIP, RBX, R13,
+R10, RDI, RSI, CR2, R15 and the entire stack window. The one difference in the
+whole 65-line file is `F[00]` moving four bytes, `0x211c90` -> `0x211c8c`,
+which is the code address shifting because the harness source changed by one
+word. Even the heap addresses held.
+
+**The scale candidate is closed by arithmetic and never needed a run.** The
+four raw floors total 1,232 MB against derived-77's 954 MB, in a 3,072 MB guest
+whose stack sits at 3,072 MB and whose frontier at the fault was 1,247 MB.
+There is 1.8 GB of slack either way. Correcting the scale is still right for
+fidelity; it was never a cause.
+
+**WHAT THE READING SAID THAT THE DUMP DID NOT.** `emit-let`
+(`Emit/X86_64.codex:2274`) emits the value into a local and then the body, so
+Codex `let` is STRICT and a harness computes every binding before it prints a
+line. Forty-six lines of output therefore means lowering FINISHED; the fault is
+in the print. The print after the last good line is `show-bindings`, whose text
+is `"tb " & b.name & " " & ...`, and the registers agree independently -- `RDI`
+a fresh heap text 15 MB above the top reservation, `RSI` at 2.16 MB in static
+data, which is the `" "` literal. The faulting call is the SECOND `&`, reading
+a CHECK-phase artifact, one phase behind where this log had placed it.
+
+**The mechanism, from the compiler's own source.** `check-chapter` issues a
+`__deck-exit` before its per-definition walk and a `__deck-enter` after it
+(`TypeChecker.codex:2388,2393`) -- the only hand-written pair outside the
+emitter -- so the walk runs outside the phase extent and `deck-short-of` reads
+a live cell. `BuildSettings.codex:154` states the requirement outright. The
+extent it exits is the CALLER'S, and the caller upstream ships is
+`opening.codex:631`. Called bare, the nesting counter runs to -1, where
+`emit-deck-enter-builtin`'s zero-crossing test makes every `deck-record` in the
+walk a no-op: results land on the bivy while `check-batch` reclaims to
+`cb-bivy-mark` as though they had not. `check` prints `cr.types` on the next
+line and never notices. `lower` allocates the resolved tables, a 328 MB
+reservation and the whole of lowering first, then reads a Text whose length
+word is someone else's data.
+
+**Both candidates were about LOWER and the bug was in CHECK.** The rung that
+fails is not the rung that is wrong when the failing rung is the first one to
+read the earlier one's result LATE.
 
 **THE SANDBOX WAS RETIRED, not kept.** `20260902T121126Z-u54-rebank` is gone,
 worktrees and all, and the five working truths went with it -- BOX After-4's
