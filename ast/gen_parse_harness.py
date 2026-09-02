@@ -5,6 +5,7 @@ structural rather than pretty -- it exists to be diffed between the
 bare-metal and zig arms, so every line must be derivable from the CST
 alone."""
 import pathlib
+from emit_harness import DECK_PROLOGUE
 from roots import CODEX
 
 REPO = CODEX
@@ -116,7 +117,7 @@ Section: Show Lists
 
 Section: Driver
   opening : [Console] Nothing = act
-    let toks = tokenize subject-text 1
+    {DECK_PROLOGUE}let toks = tokenize subject-text 1
     in let doc = parse-document (make-parse-state (toks.tokens) subject-text) 0
     in act
       print-line-uni ("lex-tokens " & show (list-length (toks.tokens)))

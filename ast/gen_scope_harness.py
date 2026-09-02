@@ -11,6 +11,7 @@ the CST going in was already different, and having both halves in one run
 answers that without a second experiment."""
 import pathlib
 import re
+from emit_harness import DECK_PROLOGUE
 from roots import CODEX
 
 REPO = CODEX
@@ -117,7 +118,7 @@ Section: Show Lists
 
 Section: Driver
   opening : [Console] Nothing = act
-    let toks = tokenize subject-text 1
+    {DECK_PROLOGUE}let toks = tokenize subject-text 1
     in let doc = parse-document (make-parse-state (toks.tokens) subject-text) 0
     in let dr = desugar-document subject-text doc (doc.chapter-title) 0
     in let ch0 = dr.dr-chapter

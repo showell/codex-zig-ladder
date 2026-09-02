@@ -21,6 +21,7 @@ $lines = [System.Collections.Generic.List[string]]::new()
 foreach ($ch in @('codex/foreword/core/ListUtils.codex',
                   'codex/compiler/Core/BuildSettings.codex',
                   'codex/compiler/Core/Phase.codex',
+                  'codex/compiler/Core/PhaseAllocator.codex',
                   'codex/compiler/Core/TextFormat.codex',
                   'codex/compiler/Core/CdxCodes.codex',
                   'codex/compiler/Core/Severity.codex',
@@ -39,6 +40,10 @@ foreach ($ch in @('codex/foreword/core/ListUtils.codex',
                   'codex/compiler/Syntax/Parser.codex')) {
     Add-PlugChapter -Lines $lines -Path (Join-Path $repo $ch) -Quire 'Parsmi'
 }
+# PhaseAllocator cites Codex chapter BootPaint, and a cite names a CHAPTER,
+# so the unit has to answer for one. BootPaintStubs.codex says why it is a
+# stub: the real chapter puts a WALL CLOCK in the truth arm.
+Add-PlugChapter -Lines $lines -Path (Join-Path $here 'BootPaintStubs.codex') -Quire 'Parsmi'
 Add-PlugChapter -Lines $lines -Path (Join-Path $here 'LexStubs.codex') -Quire 'Parsmi'
 Add-PlugChapter -Lines $lines -Path (Join-Path $here $Harness) -Quire 'Parsmi'
 

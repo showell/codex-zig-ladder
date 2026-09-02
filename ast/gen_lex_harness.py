@@ -4,6 +4,7 @@ snippet and dumps one line per token. show-kind's arms are derived
 mechanically from Token.codex so the harness cannot drift from the
 TokenKind variant."""
 import re, sys, pathlib
+from emit_harness import DECK_PROLOGUE
 from roots import CODEX
 
 REPO = CODEX
@@ -99,7 +100,7 @@ Section: Driver
   end
 
   opening : [Console] Nothing = act
-    let result = tokenize subject-text 1
+    {DECK_PROLOGUE}let result = tokenize subject-text 1
     in act
       print-line-uni ("tokens " & show (list-length (result.tokens)))
       print-tokens (result.tokens) 0 (list-length (result.tokens))
