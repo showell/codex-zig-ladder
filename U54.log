@@ -64,6 +64,83 @@ JUSTIFICATIONS.md. This file is the thread, not the record.
   unconverted derivations, 0/2 built -- run `cycle.sh` once. The banked-against
   table stays at Update 53 until the new bank lands; the WARN says so itself.
 
+## THE DECK INTRINSIC: why no rung that lexes would run, and it was ours
+
+The first rung died in 5 s and the answer took most of the morning and two
+wrong turns. Written out because the mechanism is five links long and every
+one of them is correct on its own.
+
+- **The fault.** `lex` and later `desugar` both page-faulted at
+  `tokenize-collect+546` -- same function, same offset, stack
+  `opening -> tokenize -> tokenize-collect`, resolved against each subject's
+  own `.cdx.map`. `!EXC=0e`, CR2 a wild `0x2_0000000f`.
+- **What changed.** `Syntax/Lexer.codex` gained `lex-state-below`: 0 uses at
+  U53, 4 at U54. `tokenize-collect` now rewinds the bivy after every token and
+  is correct only if `make-token`'s record was really moved to the deck first.
+- **Why it was not.** `deck-record` is the IDENTITY in source -- in
+  `Core/PhaseAllocator.codex` byte-for-byte as in our stub. The real behaviour
+  is a call-site transform, `emit-deck-record-wrapper`, gated on
+  `deck-record-intrinsic`, and the gate asks whether `init-phase-allocator` is
+  among the IR DEFS (`X86_64Chapter.codex:1264`).
+- **Why the def was missing.** Our harness openings never CALLED it. The real
+  driver's `compile-lex` opens with `init-phase-allocator`, then `build
+  lex-deck-height`, then passes a ceiling into `tokenize-into`. Ours called
+  bare `tokenize`. With no caller the def is unreachable and
+  `ir-prune-unreachable-roots` (`opening.codex:1359`, the seed's ordinary CDX
+  path) removed it -- so the gate read "no phase allocator" and every
+  `deck-record` compiled to `mov rax,rdi ; ret`.
+- **CARRYING THE CHAPTER IS NOT ENOUGH, and that is the sharp part.** `desugar`
+  bundles `Core/PhaseAllocator.codex` and faulted identically. A bundle can
+  satisfy every cite, carry the right chapter, and still be compiled without
+  the mechanism, because the gate's input is something dead-code elimination
+  can take away.
+
+**THE LADDER ALREADY KNEW, IN FOUR PLACES.** `lower`, `ir_to_codex`,
+`ir_to_wire` and `ir_to_codex_roundtrip` call `DECK_PROLOGUE`, and the comment
+above each says why in the words this incident would have used: "Without it
+deck-record compiles to `mov rax,rdi ; ret` and the deck discipline is off for
+the whole unit, **which is the condition that faulted clamp**." Four bytes,
+which is exactly what `deck-record` measured as in both faulting maps. The fix
+reached four harnesses of twelve and stopped. This is the second time in one
+day -- `emit_harness.py` records `ir-emit-roots` drifting from six to four in
+BOTH hosted harnesses at once, where "being wrong together looks exactly like
+being right."
+
+**Confirmed by one variable before being applied.** desugar, prologue only,
+bundle untouched: 923-byte fault dump -> 6,041-byte truth, `lex-tokens 5727`,
+`lex-errors 0`. Presence check: `init-phase-allocator` ABSENT from the old
+symbol map, at `0x0010B8FE` in the new one, and the subject grew 438,050 ->
+525,673 bytes, which is the `__deck-enter`/`__deck-exit` pairs the gate flip
+emits.
+
+**Scope, deliberately narrow.** Five rungs call `tokenize` -- lex, parse,
+desugar, scope, check. `ir_to_x86`, `lir_to_x86` and `passes_to_x86` consume IR
+and never lex, so they are untouched. lex and parse also gained the chapter and
+`BootPaintStubs`; `LexStubs` then gave up `deck-record` and `deck-short-of`,
+and parse dropped `LexStubs` entirely once CDX3006 caught the duplicate
+`copy-sx-diag` against the real one in `SyntaxNodes`.
+
+**Two wrong turns, recorded because the pattern outlives the bug.** First:
+"our stub is wrong" -- killed by desugar, which carries the real chapter and
+crashed identically. Second: "the guest never started" -- it started, faulted
+in a fraction of a second, and sat with its dump in a buffer nobody was
+reading; zero CPU meant crashed immediately, not never ran. Both readings ran
+in the direction of a theory already formed. The essay is
+`notes/the-harness-that-skipped-the-setup.md`.
+
+## Two defects found while chasing it
+
+- **`run_cdx` ignores the host's guest-size cap.** `codex_vm.py`'s header says
+  a host caps EVERY driver by exporting `CODEX_MEM_MB` "instead of trusting
+  each wrapper to pass a number explicitly" -- and `run_cdx(kernel,
+  mem_mb=1024, ...)` defaults to a NUMBER, so `MEM_MB` is never consulted on
+  the run path. The droplet exports 3072 and every run-stage guest gets 1024.
+  `compile_blob` takes `None` and is correct. NOT today's cause; not fixed.
+- **A silent guest costs ten minutes.** `recv_all` breaks only on socket
+  timeout or EOF; there is no halt detection, and the truth arm passes
+  `idle_timeout=600`. A guest that faults early then sits quiet is waited out
+  in full. This is what made both faults look like hangs.
+
 ## What the bank costs at this Update
 
 - `~/golds/53b3b2137644/` is DEAD as a comparand: cut at master-plus-outbound
