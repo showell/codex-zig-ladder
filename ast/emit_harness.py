@@ -635,7 +635,7 @@ def subject_end(rung):
     return f'=== end {rung} ==='
 
 
-def harness_source(chapter, prefix, subjects, passes=False, scan=True):
+def harness_source(chapter, prefix, subjects, passes=False, scan=True, probe=False):
     """Render the harness chapter. `prefix` names the walkers so two harnesses
     can be bundled in one unit without colliding.
 
@@ -667,6 +667,34 @@ def harness_source(chapter, prefix, subjects, passes=False, scan=True):
     # that silently did nothing would look exactly like one that ran.
     info = ('\n      print-line-uni ("pass-infos " & show (list-length (passed.infos)))'
             if passes else '')
+    # INSTRUMENT: print the deck geometry BEFORE emission is forced.
+    #
+    # `let` is strict, so a number bound beside `res` is computed before any
+    # print runs and a fault in emission takes the whole dump with it -- which
+    # is exactly how the U54 ir_to_x86 fault arrived with nothing to read but
+    # registers. The only way to see the geometry emission STARTS from is for
+    # a statement to execute before `res` is bound, so under `probe` the emit
+    # moves inside the act block behind one print.
+    #
+    # Wrong on purpose and off by default, like `scan` and `rename`: it moves
+    # where emission happens in the harness, so no truth may be banked from it.
+    probe_close = "\n    end" if probe else ""
+    if probe:
+        # LIFT_SETUP ends with a dangling `in `, so the chain is closed with a
+        # binding of its own -- otherwise the template's following `in act`
+        # reads as `in in act`.
+        probe_src = (frontend_source("src", passes, scan)
+                     + f"\n    in {LIFT_SETUP}let deck-probe = 0")
+        probe_line = ('\n      print-line-uni ("DECK-PROBE lift-base " & show lift-base'
+                      ' & " lift-ceiling " & show lift-ceiling'
+                      ' & " deck-pos " & show __deck-pos'
+                      ' & " heap " & show __heap-save'
+                      ' & " lower-base " & show lower-base'
+                      ' & " check-base " & show check-base)'
+                      '\n      let res = x86-64-emit-cdx ir sorted\n      in act')
+    else:
+        probe_src = pipeline_source("src", passes, scan)
+        probe_line = ''
     decls = '\n\n'.join(f'  subject-{rung} : Text\n'
                         f'  subject-{rung} = "{codex_literal(text)}"'
                         for rung, text in subjects)
@@ -762,8 +790,8 @@ Section: Driver
 
   run-{prefix} : Text, Text -> [Console] Nothing
   run-{prefix} (src) (endmark) = act
-    {pipeline_source("src", passes, scan)}
-    in act
+    {probe_src}
+    in act{probe_line}
       print-line-uni ("check-errors " & show ((cst.bag).error-count))
       print-line-uni ("ir-defs " & show (list-length (ir.defs))){info}
       print-line-uni ("emit-errors " & show ((res.bag).error-count))
@@ -784,7 +812,7 @@ Section: Driver
         {prefix}-print-list (res.tail-bytes) 0
       end
       {prefix}-release deck-base endmark
-    end
+    end{probe_close}
   end
 
  A subject's arena goes back before the next one starts. Nothing here frees as
