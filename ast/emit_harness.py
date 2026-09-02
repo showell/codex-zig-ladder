@@ -184,6 +184,16 @@ CHECK_SETUP = """let keep-height = demand-check-keep-floor
 # So the driver is mirrored here too (`opening.codex:780-785`), the same way
 # CHECK_SETUP mirrors its phase. A real reservation, and a ceiling derived from
 # it rather than a zero that means "do not check".
+# The deck the driver hands the EMITTER, and the reason it exists here even
+# though these harnesses mostly do not lift: `lift-ir-for-emit`
+# (opening.codex:1722) is the last `build` before x86-64-emit-cdx runs, so it
+# is what emission's deck-record extents allocate inside. Without it they
+# allocate inside whatever the previous phase left.
+LIFT_SETUP = """let lift-height = demand-lift-floor
+    in let lift-base = build lift-height
+    in let lift-ceiling = lift-base + lift-height
+    in """
+
 LOWER_SETUP = """let lower-height = demand-lower-floor
     in let lower-base = build lower-height
     in let lower-ceiling = lower-base + lower-height
@@ -508,13 +518,41 @@ def frontend_source(src, passes, scan=True, deck_bytes=None, resolve=True, lift=
     # definition and emit a truncated program without saying so. What bounds
     # the lift here is deck_bytes, and the emitted zig fails loud when it is
     # exceeded: cx_bump_alloc panics with "the two cursors met".
+    # RESOLVE AND LIFT GET THEIR OWN RESERVATIONS, because the driver takes
+    # them and because the guard that catches their absence is real.
+    #
+    # `compile-frontend-cdx` does not stop at LOWER. It seals that phase and
+    # then builds a RESOLVE deck before `rewrite-ir-defs` (opening.codex:853)
+    # and a LIFT deck before emission (`lift-ir-for-emit`, :1722) -- and the
+    # LIFT one matters even to a harness that never lifts, because it is what
+    # hands the EMITTER a fresh deck. A harness that stops reserving at LOWER
+    # runs the whole of x86-64-emit-cdx inside LOWER's spent one.
+    #
+    # That was invisible until the check-chapter wrapper landed. The
+    # per-allocation guard (`deck-guard-code`, X86_64Helpers.codex:46) compares
+    # R10 against `deck-ceiling-addr` and traps with ud2 -- but the cell is
+    # armed at __deck-enter and only holds anything once some `build` has
+    # written `deck-reservation-top-cell`. These harnesses took no `build` at
+    # all, so the guard was dead code and the overrun was silent. Measured
+    # 2026-09-02, first run with reservations present: `ir_to_x86` died
+    # !EXC=06 at `write-bytes+154` with R10 at 1,306 MB against LOWER's
+    # ceiling near 1,238 MB. PhaseAllocator records the same exception from
+    # 2026-08-27 for the same reason.
+    #
+    # `rewrite-ir-defs` also takes the ceiling the driver passes it, where this
+    # passed 0 -- the same "0 means do not check" this file already corrected
+    # for lower-chapter.
+    RESOLVE_SETUP = """let resolve-height = demand-resolve-floor
+    in let resolve-base = build resolve-height
+    in let resolve-ceiling = resolve-base + resolve-height
+    in """
     lowered = "ir-lowered" if lift else "ir"
-    RESOLVE = (f"""in let type-map = build-type-def-map (ch.type-defs) 0 (list-length (ch.type-defs)) []
+    RESOLVE = (f"""in {RESOLVE_SETUP}let type-map = build-type-def-map (ch.type-defs) 0 (list-length (ch.type-defs)) []
     in let sorted = sort-bindings (type-map & bound)
-    in let {lowered} = __record-set ir0 "defs" (rewrite-ir-defs sorted (ir0.defs) 0)""" if resolve else
+    in let {lowered} = __record-set ir0 "defs" (rewrite-ir-defs sorted (ir0.defs) resolve-ceiling)""" if resolve else
         "" if lift else "in let ir = ir0")
     LIFT = (("\n    " if RESOLVE else "")
-            + f"in let ir = lift-lambdas {lowered if resolve else 'ir0'} 0") if lift else ""
+            + f"in {LIFT_SETUP}let ir = lift-lambdas {lowered if resolve else 'ir0'} lift-ceiling") if lift else ""
 
     if scan:
         head = f"""let toks = tokenize {src} 1
@@ -564,8 +602,13 @@ def pipeline_source(src, passes, scan=True, deck_bytes=None):
     has to be open before the first deck-record extent anywhere, not before
     emission, and by emission the frontend has been allocating for a while.
     """
-    return frontend_source(src, passes, scan, deck_bytes) + """
-    in let res = x86-64-emit-cdx ir sorted"""
+    # The LIFT reservation, taken here because this is where the driver takes
+    # it: `lift-ir-for-emit` is the last build before the emitter runs, and
+    # these harnesses do not lift, so nothing else would take it. Emission's
+    # deck-record extents then allocate in a deck of their own instead of in
+    # whatever RESOLVE left behind.
+    return frontend_source(src, passes, scan, deck_bytes) + f"""
+    in {LIFT_SETUP}let res = x86-64-emit-cdx ir sorted"""
 
 
 # The line that separates one subject's dump from the next. The truth arm
