@@ -216,14 +216,30 @@ in findings/ is not outbound. Every row below is currently ANALYSIS ONLY.
  F  SyntaxNodes / Lexer cite    ISSUE      nothing -- measured today      0
     gaps (map-list, copy-sx-    (with D)   (20x CDX3002, cleared by
     diag)                                  adding ListUtils)
+ G  check-chapter requires an   ISSUE      nothing -- MEASURED today:     0
+    open deck extent and        (with D)   bare, lower faults !EXC=0d
+    nothing enforces it                    in __str_concat; wrapped in
+                                           deck-record, lower banks an
+                                           83-line truth, and check is
+                                           unchanged either way
 
-**D AND F ARE SENDABLE NOW AND THE REST ARE NOT.** They are one issue, not two:
-same shape, and the contrast between them IS the argument -- two chapters that
-do not declare what they need fail LOUDLY at compile, and the third compiles
-clean and page-faults at run time because its check is a silent default on a
-gate whose input a pass can prune. D is partly ours and the issue must say so:
-our harnesses never did the driver's setup. The half worth their time is that
-the gate degrades silently rather than refusing.
+**D, F AND G ARE SENDABLE NOW AND THE REST ARE NOT.** They are one issue, not
+three: same shape, and the contrast among them IS the argument. Two chapters
+that do not declare what they need fail LOUDLY at compile (F). The third
+compiles clean and page-faults at run time because its check is a silent
+default on a gate whose input a pass can prune (D). The fourth is not a cite at
+all but a CALLING CONVENTION (G): `check-chapter` issues its own `__deck-exit`
+before the per-definition walk and `__deck-enter` after it, so it only works
+inside an extent its CALLER opened -- `opening.codex:631` opens one and nothing
+says a caller must. Called bare the nesting counter runs to -1, every
+`deck-record` in the walk silently stops being one, and the damage surfaces in
+whichever LATER phase first re-reads the result.
+
+D and G are partly ours and the issue must say so: our harnesses never did the
+driver's setup. The half worth their time is the same half in all four -- the
+deck discipline has requirements that live in prose, and every one of them
+degrades silently rather than refusing. The signature is worth naming: at
+counter -1 the whole mechanism is off and everything still compiles.
 
 **A IS THE BEST PR CANDIDATE** once the box is free: it is our own plug, the
 defect is ours, the fix is local, and `literal-subpattern` is an existing test
