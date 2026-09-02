@@ -70,7 +70,16 @@ logs/*
 !logs/.gitignore
 ast/ringplug.cdx.fp
 ringplug-source-check.codex
-*.truth.prov
+# EVERY provenance sidecar, not just a truth's. `*.truth.prov` was the rule
+# for a long time, which left `ast/<unit>.ir.prov` TRACKED -- twelve files that
+# every truth arm rewrites (`truth_prov.py stamp-ir`), so a checkout that had
+# run anything was permanently dirty and `sandbox.sh`'s own header claiming
+# "*.prov is gitignored" was half true. Read 2026-09-02: the committed copies
+# are never consulted. `check_ir` refuses on a missing `ast/<unit>.ir` BEFORE
+# it opens the sidecar, `.ir` is ignored so a fresh sandbox never has one, and
+# any run that does produce the IR rewrites the sidecar in the same step. Not
+# a pin -- files tracked before the ignore rules caught up.
+*.prov
 # ...except a banked one, for the same reason its truth is kept. The sidecar
 # is the measurement's own record of what produced it -- the seed, and the
 # harness content -- and a bank without it is a set of numbers nobody can
