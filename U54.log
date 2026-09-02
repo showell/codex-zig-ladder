@@ -245,3 +245,52 @@ mistake -- calling the driver's functions without doing the driver's setup.
   reserved for external formats, magic numbers and performance
   characteristics. Roughly half our added lines were prose explaining their own
   code, and they dropped it.
+
+## THE REBANK REACHED 8 OF 12, AND RUNG 9 IS A U54 BUNDLE GAP (2026-09-02)
+
+Sandbox `20260902T151248Z-u54-rebank-deckextent`, ladder `7eb5878`, KEPT --
+eight recorded truths are in it and they are ~13 minutes of guests.
+
+    lex 15s · parse 46s · desugar 57s · scope 70s · check 118s · lower 152s
+    ir_to_codex 148s · ir_to_codex_roundtrip 148s          8/12, 760s in
+
+`check` is green WITH the wrapper and its truth is intact, so the fix is
+neutral for the phase that was already passing and decisive for the one that
+was not. `lower.truth` is byte-identical to the isolated run that had
+`check-chapter` wrapped but `lower-chapter` still bare -- so wrapping
+lower-chapter moved where lowering allocates and not one byte of what it
+produces. The check-chapter wrapper alone was the whole fix.
+
+**Rung 9, `lir_to_x86`, fails to COMPILE and it is nothing to do with the
+harness.** Five CDX3002 at codegen:
+
+    hosted-win-load-addr   hosted-win-heap-base   hosted-win-cell-base
+    hosted-cell-base       bare-metal-heap-base
+
+U54 gave `X86_64State.codex` a Windows-hosted target selection --
+`st-load-base`, `st-heap-base`, `st-base` each branch on `st-windows` -- and
+the constants live on two OTHER pages of the same fourteen-page chapter. The
+first four are NEW AT U54 in `Emit/X86_64Boot.codex`; `bare-metal-heap-base`
+is in `Emit/X86_64Chapter.codex` at both Updates and State only started
+reading it now. Measured by `git grep` across `u53-rebank` and `u54-rebank`.
+
+`bundle_lir_to_x86.ps1` carries three of the fourteen pages on purpose -- it is
+the small back-half slice, 489 KB, no front end at all -- and `bundle_ir_to_x86
+.ps1` carries all fifteen. So the choice at rung 9 is:
+
+  - **add the two pages** (3,684 + 1,292 lines) -- faithful, and the bundle
+    roughly doubles; their own references may cascade and that is unmeasured;
+  - **extend `LirStubs.codex`**, which already exists for exactly this and
+    already carries "faithful copies from unbundled pages ... kept
+    byte-for-byte with their originals" (tco-list-contains, emit-call-to,
+    buf-write-i32). Five Integer constants is the smallest possible instance
+    of what that file is already for.
+
+**Not decided, and it is a real decision** -- the stub route is cheap and its
+risk is a VALUE drifting silently at U55, which is the standing cost of every
+stub in `ast/`. The page route has no drift risk and an unmeasured blast
+radius. Nothing was run either way.
+
+Rungs 10-12 are unreached: `ir_to_wire`, then `ir_to_x86` and `passes_to_x86`
+-- and those last two are the ones that used `frontend_source`, so the U54
+arity fix in `emit_harness.py` is still UNTESTED by a run.
