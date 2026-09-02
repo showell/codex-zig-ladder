@@ -14,4 +14,19 @@
 # the two cannot drift. Lines starting with # are ignored. Anything NOT
 # listed here still stops the build, whatever its spelling -- add to this
 # file only a marker you have confirmed lives in fixed prelude text.
-@compileError("zig plug: no address-of for this type")
+#
+# THE LIST IS EMPTY, and that is the current state rather than an omission.
+# `cx_address_of` was the only entry and it earned its keep exactly once:
+# on 2026-09-02 U54's `mcopy-real-width` reached it with a payload-free
+# enum, three instantiations deep under `check-chapter`. The design worked
+# -- the scan let the build through and `zig build-exe` stopped it -- but
+# the message named no type and no call site, so the diagnosis cost a
+# reference trace. The prong now says
+#
+#     @compileError("zig plug: no address-of for " ++ @typeName(@TypeOf(v)))
+#
+# which the scan's `@compileError("[^"]*")` cannot match at all: the string
+# ends at a `++` and not at a `")`. So it needs no entry, and neither will
+# any other guard written this way. A precondition that names its type is
+# both a better error and invisible to the scan, which is the shape to
+# prefer for a new one.
