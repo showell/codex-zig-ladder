@@ -10,9 +10,39 @@ Chapter: LexStubs
  caller that starts passing a real ceiling gets True, which empties the
  parse and shows up as a diff, instead of a quietly optimistic False.
 
+ copy-sx-diag arrived with Update 54 and is the SAME STUB AS deck-record,
+ for the same reason and in the same expression. U54's lexer rewinds the
+ bivy after every token, so a diagnostic built there is overwritten by the
+ next token's scan; `lex-errors-push` copies the cell onto the deck first --
+ `deck-record (__linked-list-push errs (copy-sx-diag 0 d))`. Outside the
+ kernel there is no bivy to rewind and no deck to copy onto, so the copy has
+ nothing to protect against and the identity is the faithful answer. Half
+ that expression was already stubbed here; this is the other half.
+
+ THE REAL DEFINITION LIVES IN Syntax/SyntaxNodes.codex AND THE LEX SLICE
+ CANNOT REACH IT. Bundling that chapter was tried first and measured, because
+ using real code beats writing a stub: it needs `map-list`, which needs
+ `codex/foreword/core/ListUtils.codex`, and then it needs OverflowMode,
+ DiagnosticBag, AnnotationNode and the three Prose node types -- six more
+ chapters, at which point the lex bundle IS the parse bundle and the cheapest
+ rung stops being the thin front slice it exists to be.
+
+ WHAT THIS STUB IS NOT EXERCISED BY, said plainly. The lex subject is
+ Lexer.codex lexed by itself and its truth ends `errors 0`, so no diagnostic
+ is ever pushed and this function is never called on the measured path. That
+ makes the two options byte-identical here and it is why the choice was safe;
+ it also means a WRONG stub would not show up in this rung, which is the
+ honest risk and the reason the argument above is written out rather than
+ assumed. If a lex subject ever does produce an error, the identity is still
+ what a hosted process wants, and the diff it would move is the lexer's own
+ diagnostic bytes.
+
 Section: Stubs
   deck-record : a -> a
   deck-record (x) = x
+
+  copy-sx-diag : Integer, Diagnostic -> Diagnostic
+  copy-sx-diag (b) (d) = d
 
   deck-short-of : Integer, Integer -> Boolean
   deck-short-of (ceiling) (band) =

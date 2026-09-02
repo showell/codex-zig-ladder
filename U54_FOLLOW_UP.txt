@@ -123,6 +123,32 @@ once U54's rungs are green, which is the run in flight now.
     Do not start it inside another task.
 
 
+-- FOUND BY THE U54 CEREMONY, not by reading their comments -----------------
+
+12. NEEDS_INVESTIGATION  SyntaxNodes.codex does not cite what it uses
+    It uses `for x in ... -> ...` comprehensions, which desugar to `map-list`,
+    and its only cite is `Foreword chapter Maybe`. Nothing in the compiler
+    cites `Foreword chapter ListUtils` except `Core/Collections.codex`, which
+    nothing cites either. So SyntaxNodes compiles only where a bundle happens
+    to add ListUtils directly -- which `bundle_parse.ps1` does, as its first
+    chapter, and every other ladder bundle inherited from it.
+    MEASURED HERE, not reasoned: adding SyntaxNodes to the lex bundle gave 20
+    CDX3002 "Undefined name: map-list", and adding ListUtils cleared all 20.
+    SAME SHAPE AS THE copy-sx-diag PROBLEM one line up: a chapter that does not
+    declare what it needs. Worth an issue once we are through the queue, and
+    worth checking whether the CITE checker can see it -- `build/check-subset-
+    cites.ps1` exists and this got past it.
+
+13. WE_OWE_THEM  the U54 lexer's new deck copy is not in our PR 114 account
+    `lex-errors-push` is NOT the rename our first read called it. U54's lexer
+    rewinds the bivy after every token, so a diagnostic built there would be
+    overwritten; the new function copies the cell onto the deck through
+    `copy-sx-diag 0` first. Their own prose says three sites pushed cells
+    directly before 2026-09-01 and all four lexer refusal tests crashed
+    reading them. Our PR 114 report describes a smaller change than landed.
+    Nothing is wrong on their side; our account of it is just thin.
+
+
 -- STANDING: applies to every PR after this one ----------------------------
 
 9.  Column-2 prose is reserved for external formats, magic numbers and
