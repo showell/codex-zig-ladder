@@ -712,7 +712,19 @@ def harness_source(chapter, prefix, subjects, passes=False, scan=True, probe=Fal
                       ' & " deck-pos " & show __deck-pos'
                       ' & " heap " & show __heap-save'
                       ' & " lower-base " & show lower-base'
-                      ' & " check-base " & show check-base)'
+                      ' & " check-base " & show check-base'
+                      # THE TWO CELLS THE GUARD ACTUALLY READS. The 320 MB run
+                      # proved the fault tracks the CEILING to the byte -- same
+                      # 1,224-byte overshoot at both floors -- so R10 is the
+                      # bivy and the ceiling is armed. `emit-deck-arm` only
+                      # arms on a zero-crossing __deck-enter, which also swaps
+                      # R10 to the deck cursor, and the program prologue zeroes
+                      # both cells at startup. So either something armed
+                      # without the swap, or an extent was entered and never
+                      # exited. These two numbers say which, before emission
+                      # runs.
+                      ' & " ceil-cell " & show (peek-qword deck-ceiling-addr 0)'
+                      ' & " counter " & show (peek-qword deck-bound-counter-addr 0))'
                       '\n      let res = x86-64-emit-cdx ir sorted\n      in act')
     else:
         probe_src = pipeline_source("src", passes, scan)
