@@ -185,6 +185,60 @@ once U54's rungs are green, which is the run in flight now.
     `build/check-subset-cites.ps1` exists and all three got past it.
 
 
+-- OUTBOUND PATH: what each finding still needs before it can be sent --------
+
+Written 2026-09-02 after Steve asked whether these have a delivery route. The
+bar is the standing one: a finding reaches Damian only via a PR carrying a
+backlog row, measured, or with what was NOT measured stated plainly. Analysis
+in findings/ is not outbound. Every row below is currently ANALYSIS ONLY.
+
+    finding                     route      still needs                    cost
+    ------------------------------------------------------------------------
+ A  zig plug drops literal      PR         emit the test in zig-pat-      1 build
+    sub-patterns (2.02's real   (ours)     binder; corpus A/B;            + corpus
+    content)                               literal-subpattern must go     A/B
+                                           refused -> match
+ B  scan-char-literal has no    PR or      run findings/charlit's repro   1 guest
+    unterminated diagnostic     issue      on bare metal; show
+                                (theirs)   CharLiteral + no diagnostic
+ C  real-atan2 signed zero      PR         a probe with the 10 IEEE rows  1 guest
+    (4 divergences)             (foreword) as .expected from bare metal;  + eye
+                                           dm-signbit via real-to-bits    check
+ D  Lexer.codex declares no     ISSUE      nothing -- ALREADY MEASURED    0
+    dependency on the deck                 today: our rungs faulted at
+    intrinsic, and the gate is             tokenize-collect+546 and the
+    defeated by dead-code                  prologue fixed them, with
+    elimination                            init-phase-allocator absent
+                                           then present in the map
+ E  bare metal skips nested     ISSUE      a fixture -- nothing in the    write a
+    ctor sub-patterns where     (latent)   tree reaches the shape, so     program
+    C# recurses                            there is no reproducer yet
+ F  SyntaxNodes / Lexer cite    ISSUE      nothing -- measured today      0
+    gaps (map-list, copy-sx-    (with D)   (20x CDX3002, cleared by
+    diag)                                  adding ListUtils)
+
+**D AND F ARE SENDABLE NOW AND THE REST ARE NOT.** They are one issue, not two:
+same shape, and the contrast between them IS the argument -- two chapters that
+do not declare what they need fail LOUDLY at compile, and the third compiles
+clean and page-faults at run time because its check is a silent default on a
+gate whose input a pass can prune. D is partly ours and the issue must say so:
+our harnesses never did the driver's setup. The half worth their time is that
+the gate degrades silently rather than refusing.
+
+**A IS THE BEST PR CANDIDATE** once the box is free: it is our own plug, the
+defect is ours, the fix is local, and `literal-subpattern` is an existing test
+with a banked expected output that flips refused -> match. That is a clean
+before/after a reviewer can check in one line.
+
+**E IS THE WEAKEST AND SHOULD WAIT.** It is latent, the ladder cannot see it,
+and writing a fixture to demonstrate a divergence nothing in the corpus reaches
+is exactly the shape PR 86 took -- legitimate, but it earns its place only
+after the live items are sent.
+
+**NONE OF A, B, C, E CAN MOVE UNTIL THE REBANK IS DONE.** One compute job at a
+time, and the ceremony outranks them.
+
+
 -- STANDING: applies to every PR after this one ----------------------------
 
 9.  Column-2 prose is reserved for external formats, magic numbers and
