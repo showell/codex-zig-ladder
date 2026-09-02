@@ -210,6 +210,30 @@ CHECK_SETUP = """let keep-height = demand-check-keep-floor
 # outcome.
 PROBE_LIFT_FLOOR = 335544320          # 320 MB, against demand-lift-floor's 104
 
+# THE SEAL EMISSION NEEDS, and it is not optional.
+#
+# `build` publishes its top in deck-reservation-top-cell; `emit-build`
+# (Emit/EmitAllocator.codex:11) is `build` MINUS that poke, so the extent
+# x86-64-emit-cdx hand-issues (Emit/X86_64Chapter.codex:1249) is armed with
+# whatever the last `build` left there -- LIFT's ceiling, not its own.
+# emit-build then takes `deck-pos := __heap-save`, so if the bivy frontier has
+# risen above LIFT's ceiling by even one allocation, `__deck-enter` arms a
+# ceiling the cursor is already past and the first bump inside
+# bare-metal-trampoline hits a ud2 before emission allocates anything.
+#
+# compile-frontend-cdx ends with `compact-phase` (opening.codex:934), which is
+# `__heap-restore (__deck-pos)` -- it drags the frontier back inside the deck
+# and re-establishes the invariant X86_64.codex:1105 states outright: "a
+# compact leaves deck-pos and the bivy frontier equal." We made five `build`
+# calls and no compacts, which is why upstream emits a 3 MB compiler with a
+# 104 MB LIFT floor and we could not emit a 15-line fib with 320 MB.
+#
+# Measured 2026-09-02: frontier 1,852,674,888 against a top of 1,852,674,392
+# before the seal; lift-base + 496 after it, and both ir_to_x86 subjects then
+# emitted clean.
+EMIT_SEAL = """let compacted = phase-compact
+    in """
+
 LIFT_SETUP = """let lift-height = demand-lift-floor
     in let lift-base = build lift-height
     in let lift-ceiling = lift-base + lift-height
@@ -647,7 +671,7 @@ def pipeline_source(src, passes, scan=True, deck_bytes=None):
     # deck-record extents then allocate in a deck of their own instead of in
     # whatever RESOLVE left behind.
     return frontend_source(src, passes, scan, deck_bytes) + f"""
-    in {LIFT_SETUP}let res = x86-64-emit-cdx ir sorted"""
+    in {LIFT_SETUP}{EMIT_SEAL}let res = x86-64-emit-cdx ir sorted"""
 
 
 # The line that separates one subject's dump from the next. The truth arm
@@ -740,8 +764,7 @@ def harness_source(chapter, prefix, subjects, passes=False, scan=True, probe=Fal
         # the invariant: "a compact leaves deck-pos and the bivy frontier
         # equal."
         probe_src = (frontend_source("src", passes, scan)
-                     + f"\n    in {probe_lift}let deck-probe = 0"
-                     + "\n    in let compacted = phase-compact")
+                     + f"\n    in {probe_lift}{EMIT_SEAL}let deck-probe = 0")
         probe_line = ('\n      print-line-uni ("DECK-PROBE lift-base " & show lift-base'
                       ' & " lift-ceiling " & show lift-ceiling'
                       ' & " deck-pos " & show __deck-pos'

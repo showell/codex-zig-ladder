@@ -48,14 +48,9 @@ FIB = (
 
 # The chapter name and walker prefix ('FibxHarness', 'fibx') reach the
 # compiled unit as Codex identifiers and are not the rung's name; they stay.
-# probe=True is a MEASUREMENT, not a shipping setting: it moves emission
-# inside the act block so the deck geometry prints BEFORE the emit is forced.
-# Revert once the ir_to_x86 !EXC=06 is understood; no truth may be banked
-# while it is on.
 out = harness_source('FibxHarness', 'fibx',
                      [('ir_to_x86_on_fib', FIB),
-                      ('ir_to_x86_on_cce', gen_ir_to_x86_on_cce_harness.SUBJECT)],
-                     probe=True)
+                      ('ir_to_x86_on_cce', gen_ir_to_x86_on_cce_harness.SUBJECT)])
 dest = HERE / 'IrToX86Harness.codex'
 dest.write_text(out)
 print(f'{dest}: {len(out)} bytes, subjects ir_to_x86_on_fib + ir_to_x86_on_cce')
