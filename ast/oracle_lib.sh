@@ -183,13 +183,22 @@ PY
     # or missing binary is how a broken subject looks like a passing one.
     echo "--- compiling subject to a bare-metal binary"
     rm -f ast/${m}-subject.cdx ast/${m}.ir
-    if ! python3 -u ring_compile.py ast/${m}-cdx.blob ast/${m}-subject.cdx 2>&1 | tail -20; then
+    # PIPESTATUS, not `if ! cmd | tail`: with no `pipefail` set anywhere in the
+    # ladder, the status of a pipeline is the LAST command's, so `if !` there
+    # tested `tail` and a failing compile read as a success. The bundle step
+    # twenty lines up already avoids the pipe for exactly this reason and these
+    # two did not. Only the `[ -s ... ]` line below caught it, which reports
+    # the wrong check with the wrong message -- and misses entirely a compile
+    # that exits non-zero after writing a non-empty file.
+    python3 -u ring_compile.py ast/${m}-cdx.blob ast/${m}-subject.cdx 2>&1 | tail -20
+    if [ "${PIPESTATUS[0]}" -ne 0 ]; then
         echo "COMPILE FAILED (bare metal) -- see the diagnostics above"; return 1
     fi
     [ -s ast/${m}-subject.cdx ] || { echo "COMPILE FAILED: no ${m}-subject.cdx"; return 1; }
 
     echo "--- compiling subject to IR-CCE for the plug"
-    if ! python3 -u ring_compile.py ast/${m}-ir-cce.blob ast/${m}.ir 2>&1 | tail -20; then
+    python3 -u ring_compile.py ast/${m}-ir-cce.blob ast/${m}.ir 2>&1 | tail -20
+    if [ "${PIPESTATUS[0]}" -ne 0 ]; then
         echo "COMPILE FAILED (IR-CCE) -- see the diagnostics above"; return 1
     fi
     [ -s ast/${m}.ir ] || { echo "COMPILE FAILED: no ${m}.ir"; return 1; }
@@ -271,8 +280,19 @@ PY
 
     # Record what measured this truth -- the seed and the harness content --
     # so banking can refuse a mismatch instead of inferring from timestamps.
-    python3 "$T/truth_prov.py" stamp "$m" \
-        || { echo "PROVENANCE STAMP FAILED for $m"; return 1; }
+    # THE TRUTHS GO WITH THE FAILURE, the same as under a moved seed above.
+    # "A run that fails must leave NO truth (C5)" was applied to one of this
+    # arm's two late failure paths and not the other, so a stamp refusal left
+    # the split truths on disk uncertified -- which is how `lower.truth` came
+    # to exist this morning as 65 lines with a register dump in it, under the
+    # exact name the zig arm and bank_truth.py read. The certifier is the last
+    # thing that can say a measurement is not one; if it says so, the file it
+    # refused has no business surviving.
+    if ! python3 "$T/truth_prov.py" stamp "$m"; then
+        echo "PROVENANCE STAMP FAILED for $m; truths discarded"
+        for _r in $(unit_rungs $m); do rm -f ast/${_r}.truth ast/${_r}.truth.prov; done
+        return 1
+    fi
 }
 
 # The pingpong rung's real claim, which the arm diff does not make.

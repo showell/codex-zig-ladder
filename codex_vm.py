@@ -132,12 +132,26 @@ def recv_all(sock, idle_timeout, overall_timeout):
     last_byte_at = [time.time()]
     deadline = time.time() + overall_timeout
     faulted = False
-    while time.time() < deadline:
+    # THREE WAYS OUT, AND ONLY TWO OF THEM MEAN "THE OUTPUT ENDED".
+    # Idle timeout and EOF are the guest going quiet, which is what this
+    # function is for. A socket error is not, and the deadline is not: both
+    # return a TRUNCATED capture that looks exactly like a complete one, and
+    # the truth arm writes whatever comes back to <unit>.raw and splits it
+    # into a truth. A short truth is the worst shape there is -- plausible,
+    # diffable, and wrong -- so the two error exits are recorded rather than
+    # blurred into the two clean ones.
+    recv_all.truncated = None
+    while True:
+        if time.time() >= deadline:
+            recv_all.truncated = (f'overall_timeout of {overall_timeout}s '
+                                  f'expired with {len(buf):,} bytes captured')
+            break
         try:
             chunk = sock.recv(65536)
         except socket.timeout:
             break
-        except OSError:
+        except OSError as e:
+            recv_all.truncated = f'socket error after {len(buf):,} bytes: {e}'
             break
         if not chunk:
             break
@@ -242,6 +256,14 @@ def run_cdx(kernel, mem_mb=None, timeout=300, idle_timeout=60):
     try:
         t0 = time.time()
         out = recv_all(data, idle_timeout=idle_timeout, overall_timeout=timeout)
+        # The truth-producing path refuses a truncated capture. plug_run reads
+        # a status blip and expects to hit its own deadline, so the judgement
+        # lives here, where the consequence is a banked oracle.
+        if recv_all.truncated:
+            raise RuntimeError(
+                f'{kernel}: output was CUT SHORT, not finished -- '
+                f'{recv_all.truncated}. Nothing may be written from this run: '
+                'a short truth is plausible, diffable and wrong.')
         print(f"program output ({time.time()-t0:.0f}s):")
         for line in out.decode(errors="replace").splitlines():
             if not line.startswith(("WD:", "HEAP:", "STACK:")):
