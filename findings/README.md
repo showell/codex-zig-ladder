@@ -1158,6 +1158,126 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
+## 70. Update 54's check compact validates a type box by READING ITS TAG WORD out of raw memory, which no plug can answer -- and it answers `ErrorTy` silently
+
+Found 2026-09-02 on the ZIG arm, against U54 seed `fcbabf074795`. It is
+UPSTREAM's, not ours, and it is NOT fixed. It is the whole of the zig arm's
+current failure: nine of fourteen rungs are red, and the nine are exactly the
+nine harnesses that call `check-chapter`.
+
+    green   lex  parse  desugar  scope  lir_to_x86        check-chapter: 0
+    red     check  lower  ir_to_codex  ir_to_codex_roundtrip
+            ir_to_wire  ir_to_x86 (fib, cce)
+            passes_to_x86 (mid, arith)                    check-chapter: 1
+
+`check.truth` and `check.zigout` differ in three lines out of fifty-four:
+
+    < tb fib fn          > tb fib other
+    < tb double fn       > tb double other
+    < tb opening eff     > tb opening other
+
+Everything around them agrees -- `check-errors 0`, `substitutions 8`,
+`next-id 8`, `expr-types 11`, identical on both arms. The checker does not
+report a problem and does not lose count. It binds every top-level function
+to `ErrorTy`, which `CodexEmitter` renders `Unknown` and the wire dumps print
+as `error`; `lower` then has no parameter type for `n`, so `n + n` becomes an
+error node and every rung downstream carries `arithmetic operand is neither a
+number nor an integer`. One cause, nine rungs.
+
+### Where it comes from
+
+`check-batch-close` and `check-batch-rewrite-acc` are NEW IN UPDATE 54 (git
+`-S`, both first appear in `c689cafb`) -- the memory-halving campaign, which
+routes every checked binding through `mcopy-type` so the check-era boxes are
+materialised into the keep before the compact reclaims the scratch.
+`Unifier.codex:1387`:
+
+    mcopy-type (ty) (depth) (mc) =
+     let a = address-of ty
+     in if a == 0 then ty
+     else if a < mc.mc-floor then ty
+     else if __heap-save >= mc.mc-ceiling then ErrorTy
+     else if depth >= max-recursion-depth then ErrorTy
+     else if peek-qword a 0 < 0 then ErrorTy
+     else if peek-qword a 0 > 28 then ErrorTy
+     else mcopy-type-memo ty a (memo-probe a mc) depth mc
+
+The last two lines read the box's union tag straight out of memory and range
+it against the 29 `CodexType` constructors. That is a bare-metal
+representation contract -- a Codex box's first qword IS its tag -- and it is
+not a contract a plug can meet. **The plug has two disjoint memory worlds**:
+Codex objects are Zig allocator objects (`cx_new` -> `cx_gpa.create`), while
+`address-of`, `peek-*`, `poke-*` and `__heap-save` all operate on
+`cx_heap_mem`, a separate flat byte region. Nothing a plug allocates has an
+address in the region the peek reads.
+
+Measured, by instrumenting `mcopy_type` in the emitted `check.zig` and
+running it natively:
+
+    MCOPY tag=IntegerTy ptr=709fcf862360 a=216408928 floor=216318440
+          ceil=212124136 hp=115655144 peek0=-9223372036854775808
+    MCOPY tag=TextTy    ptr=709fcf84d5c8 a=216323528 ...
+          peek0=-6148914691236517206
+
+`peek0` is `0x8000...` and `0xAAAA...` -- untouched pages of the plug's own
+reserve, not a tag. Both are `< 0`, so every box takes the first escape and
+answers `ErrorTy`. Note also `ceil` BELOW `floor`, and `hp` a hundred million
+below both: the deck cursor and these pseudo-addresses are not comparable
+quantities, so `a < mc.mc-floor` and `__heap-save >= mc.mc-ceiling` are
+reading noise as well. The tag guard is merely the one that fires first.
+
+### Why it is silent
+
+`mcopy-type` answers `ErrorTy` where the other copiers share the original,
+and `Unifier.codex:857` says why in so many words: "a CodexType handed back
+into scratch is the one that reached codegen". The escape is deliberate and
+it is the safe direction ON BARE METAL, where the caller then raises CDX9002
+by comparing the keep frontier against `mc-ceiling`. Under a plug the
+frontier never moves, so nothing raises anything: `check-errors` stays 0 and
+the wrong types travel the whole pipeline. **A guard whose failure is caught
+by a SECOND measurement in the same address space fails open in any arm where
+that address space is fictional.**
+
+### What the plug's own `address-of` does, and why it is not the fix
+
+`ZigEmitter.codex`'s `zig-p-cx-address-of` returns `@intFromPtr(v) -
+cx_heap_base()` for a pointer, clamped to 0 below the base. That is a hybrid
+and it is wrong in both directions -- it invents an in-region offset for an
+object that is not in the region, and it answers 0 (the compiler's own "no
+address, share me") for any object that happens to sort below the base.
+Two variants were built and run (1.5 s each, natively, no QEMU):
+
+    .pointer => return 0            csharp's answer (`emit = "0L"`).
+                                    Dies EARLIER, in desugar: `copy-sx-token`
+                                    then shares where it must rebuild.
+    .pointer => @intFromPtr(v)      Honest. Every phase through scope passes;
+                                    the run reaches `check_batch_close` and
+                                    PANICS in `cx_peek_qword` -- "address
+                                    133475214959464 outside the region".
+
+The second is the finding stated as a stack trace. It is also, on the
+fail-loud reading, better than what ships today: a stop that names
+`mcopy_type` beats nine rungs of quiet `ErrorTy`. It is not a fix.
+
+### The shape a fix would have
+
+The compiler wants one thing here -- a type box's constructor tag -- and asks
+for it in the one way that cannot be ported. A plug-implementable primitive
+(`__type-tag : CodexType -> Integer`, `@intFromEnum` in zig, a switch in C#,
+the existing peek on bare metal) would let the guard keep its meaning
+everywhere. That is upstream's call and it touches every plug, so it goes out
+as a finding, not as a PR.
+
+### Reproducing it
+
+Costs 1.5 seconds and no guest. From the U54 sandbox:
+
+    zig run /home/steve/runs/20260902T201009Z-u54-plugfix/ladder/ast/check.zig
+
+The emitted `.zig` is a standalone file; the whole nine-rung failure is in it.
+`type_kind`'s `else` prong prints the tag if you append
+`cx_show_int(@intFromEnum(t.*))` -- it reads 7, which is `ErrorTy`.
+
 ## 69. FIXED 2026-08-30. `codexzig` reported no warnings, and the cause was TWO things: the harness dropped every non-error, and the bag it dropped them from was never the driver's
 
 Found 2026-08-30, answering item 5 of `safari-codex/FINDINGS.md`, which asked
