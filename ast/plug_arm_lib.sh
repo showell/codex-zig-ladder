@@ -93,7 +93,8 @@ zig_arm() {
     # Refuse IR no run under this seed and this subject produced, before
     # spending a transport on it. A stale .ir transpiles cleanly and diffs
     # against today's bank as a green that means nothing.
-    python3 "$T/truth_prov.py" check-ir "$m" "$(mode_flags $m)" || return 1
+    unit_flags "$m" || return 1
+    python3 "$T/truth_prov.py" check-ir "$m" "$FLAGS" || return 1
     # Clear the emitted zig AND every verdict this unit owns. A transport or
     # build failure returns before zig_verdict runs at all, so without this the
     # unit's rungs keep yesterday's .diff and bank as agreements.
@@ -124,7 +125,8 @@ ring_arm() {
     # Refuse IR no run under this seed and this subject produced, before
     # spending a transport on it. A stale .ir transpiles cleanly and diffs
     # against today's bank as a green that means nothing.
-    python3 "$T/truth_prov.py" check-ir "$m" "$(mode_flags $m)" || return 1
+    unit_flags "$m" || return 1
+    python3 "$T/truth_prov.py" check-ir "$m" "$FLAGS" || return 1
     # Clear the emitted zig AND every verdict this unit owns. A transport or
     # build failure returns before zig_verdict runs at all, so without this the
     # unit's rungs keep yesterday's .diff and bank as agreements.

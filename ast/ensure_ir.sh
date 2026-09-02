@@ -42,7 +42,7 @@ esac
 # "acceptable" there cannot disagree. Silence on the happy path: a sweep
 # printing twelve reassurances buries the one line that matters.
 if [ -s "$T/ast/${m}.ir" ] \
-   && python3 "$T/truth_prov.py" check-ir "$m" "$(mode_flags $m)" >/dev/null 2>&1; then
+   && { unit_flags "$m" && python3 "$T/truth_prov.py" check-ir "$m" "$FLAGS" >/dev/null 2>&1; }; then
     exit 0
 fi
 
@@ -75,7 +75,8 @@ python3 "$T/check_bundles.py" "$m" || { echo "BUNDLE REFUSED for $m"; exit 1; }
 
 # Only the IR-CCE blob. The CDX blob is the bare-metal binary's input and
 # nothing here compiles one.
-python3 - "$m" "$(mode_flags $m)" <<'PY' || { echo "BLOB WRITE FAILED for $m"; exit 1; }
+unit_flags "$m" || { echo "NO DECK ENTRY for $m"; exit 1; }
+python3 - "$m" "$FLAGS" <<'PY' || { echo "BLOB WRITE FAILED for $m"; exit 1; }
 import sys
 m, flags = sys.argv[1], sys.argv[2]
 src = open(f'{m}-subject.codex', 'rb').read()
@@ -93,7 +94,8 @@ fi
 # Stamp the moment it is known good, for the same reason the truth arm
 # does: the arms READ this file and never write it, so it outlives the run
 # that made it and the sidecar is what tells yesterday's from today's.
-python3 "$T/truth_prov.py" stamp-ir "$m" "$(mode_flags $m)" \
+unit_flags "$m" || { echo "NO DECK ENTRY for $m"; exit 1; }
+python3 "$T/truth_prov.py" stamp-ir "$m" "$FLAGS" \
     || { echo "IR PROVENANCE STAMP FAILED for $m"; exit 1; }
 
 # Judge what the compiler said, not just that it produced bytes. Only the

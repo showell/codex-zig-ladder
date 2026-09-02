@@ -119,8 +119,33 @@ mode_flags() {
         # fixed point, but a worthless round trip.
         ir_to_codex)           echo " decks=100 passes=text-plug" ;;
         ir_to_codex_roundtrip) echo " decks=100 passes=text-plug" ;;
-        *)     echo "" ;;
+        # THE UNITS THAT NEED NOTHING SAY SO, and an unknown one REFUSES.
+        # This was `*) echo "" ;;` -- a unit with no case got no flags, which
+        # is indistinguishable from a unit that needs none. The units/rungs
+        # cross-check above does not cover this table, so adding a
+        # thirteenth unit that needs a deck scale and forgetting the entry
+        # bought silence, and the bill arrived later as CDX9002 or a fault in
+        # whichever rung it was. The comments above say the derived scale
+        # OVERFLOWS for several of these, so a forgotten entry is not a
+        # theoretical hazard.
+        lex|parse|desugar|scope|check|lir_to_x86) echo "" ;;
+        *) echo "mode_flags: no entry for unit '$1' -- add one, with an" >&2
+           echo "  empty case if it genuinely needs no deck scale. A missing" >&2
+           echo "  entry and a deliberate none must not look alike." >&2
+           return 1 ;;
     esac
+}
+
+# HOW TO ASK FOR A UNIT'S FLAGS, and the reason it is not `$(mode_flags $m)`.
+#
+# Command substitution runs a subshell, so a refusal inside mode_flags cannot
+# stop the caller -- `$(mode_flags typo)` yields an empty string and the run
+# carries on with no deck scale, which is the exact silence the refusal was
+# added to end. An ASSIGNMENT does propagate the status, so every caller binds
+# first and checks, and nothing interpolates mode_flags directly any more.
+unit_flags() {              # <unit> -> sets FLAGS, or fails
+    FLAGS=$(mode_flags "$1") || return 1
+    return 0
 }
 
 # Generate the harness, bundle the subject, compile it both ways, run the
@@ -169,7 +194,8 @@ truth_arm() {
     # the next day.
     python3 "$T/check_bundles.py" "$m" || { echo "BUNDLE REFUSED for $m"; return 1; }
 
-    python3 - "$m" "$(mode_flags $m)" <<'PY' || { echo "BLOB WRITE FAILED for $m"; return 1; }
+    unit_flags "$m" || { echo "NO DECK ENTRY for $m"; return 1; }
+    python3 - "$m" "$FLAGS" <<'PY' || { echo "BLOB WRITE FAILED for $m"; return 1; }
 import sys
 m, flags = sys.argv[1], sys.argv[2]
 src = open(f'{m}-subject.codex', 'rb').read()
@@ -206,7 +232,8 @@ PY
     # Stamp the IR the moment it is known good. The zig arm READS this file
     # and never writes it, so in a shared checkout it outlives the run that
     # made it; the sidecar is what lets the arm tell yesterday's from today's.
-    python3 "$T/truth_prov.py" stamp-ir "$m" "$(mode_flags $m)" \
+    unit_flags "$m" || { echo "NO DECK ENTRY for $m"; return 1; }
+    python3 "$T/truth_prov.py" stamp-ir "$m" "$FLAGS" \
         || { echo "IR PROVENANCE STAMP FAILED for $m"; return 1; }
 
     # Judge what the compiler said, not just whether it produced bytes. A

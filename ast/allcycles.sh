@@ -56,7 +56,7 @@ fi
 ir_rebuilt=""
 for m in $LADDER_UNITS; do
     if [ ! -s "$T/ast/${m}.ir" ] \
-       || ! python3 "$T/truth_prov.py" check-ir "$m" "$(mode_flags $m)" >/dev/null 2>&1; then
+       || ! { unit_flags "$m" && python3 "$T/truth_prov.py" check-ir "$m" "$FLAGS" >/dev/null 2>&1; }; then
         bash "$T/ast/ensure_ir.sh" "$m" || { echo "ENSURE_IR FAILED for $m"; exit 1; }
         ir_rebuilt="$ir_rebuilt $m"
     fi

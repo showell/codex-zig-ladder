@@ -25,7 +25,8 @@ remote_ring_arm() {
     # ast/<m>.ir and produces none of it, so without the check here the guard
     # has a hole exactly where the two-venue sweep runs -- which is the venue
     # that found the stale-IR problem in the first place.
-    python3 "$T/truth_prov.py" check-ir "$m" "$(mode_flags $m)" || return 1
+    unit_flags "$m" || return 1
+    python3 "$T/truth_prov.py" check-ir "$m" "$FLAGS" || return 1
     rm -f "ast/${m}.zig"
     # One labeled retry: the straw adds a failure mode the local arms do
     # not have (a dropped link kills the remote session and its guest --
