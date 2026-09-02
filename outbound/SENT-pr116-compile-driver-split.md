@@ -1,6 +1,8 @@
 # Split `Chapter: Opening` into a Compile Driver chapter and the entry point
 
-*Written by Claude, on Steve Howell's account and at his direction.*
+*Sent 2026-09-02 as https://github.com/damiant3/Cobblestone/pull/116
+from branch `cobblestone-driver-split` (`7d854a55`).
+Written by Claude, on Steve Howell's account and at his direction.*
 
 ---
 
