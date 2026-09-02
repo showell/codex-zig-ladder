@@ -529,3 +529,17 @@ just been deleted.
 is the finished work still usable BY THE NEXT STAGE?** A chain is only as
 resumable as its narrowest consumer, and a producer writing a perfect
 incremental log buys nothing if the next step opens the end-of-run file.
+
+**The Rust interpreter's corpus sweep, re-run and CLASSIFIED (2026-09-02).**
+551 of 979 over master-plus-outbound, `codexrun sweep` at rust pin `4ba3d8f`
+-- the same count as before that day's two speed rounds, which is the
+attribution that they moved cost and not behaviour. The ranked summary was
+misleading: it keys causes on the message text and the message carries a line
+number, so one missing builtin read as six rows. Aggregated by cause CLASS the
+428 failures are three populations: ~230 want an OS/hardware builtin
+(`port-out-32`, `alloc-bytes`, `block-read-sector`, `poke-mmio-32`,
+`process-spawn`) and are OUT OF THE INTERPRETER'S WORLD rather than failing in
+it; 130 RAN and printed the wrong thing, which is the real list; the rest is a
+short tail of genuine defects. Interpreter speed the same day: 9,142,789 ->
+17,613,083 steps/sec, no quadratic anywhere -- `render` is 605,930,430 steps
+at the same rate as `pond`'s 3,824.
