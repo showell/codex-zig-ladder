@@ -20,17 +20,34 @@
 # enumerated in write_provenance below -- one row each, nothing decides a result
 # without a row -- and adding a component is adding a line there.
 #
-#   ./sandbox.sh <label> [ladder-ref] [codex-repo] [codex-ref]
+# A sandbox holds TWO worktrees: the WORK repo whose scripts drive the run, and
+# the COBBLESTONE checkout under test. The work repo is the ladder by default
+# and `SANDBOX_REPO` names another -- safari-codex, either transpiler -- because
+# an auxiliary repo gets its OWN sandbox rather than riding along in the
+# ladder's as a third worktree. Those repos build in place today and that is
+# what this makes unnecessary.
+#
+#   ./sandbox.sh <label> [work-ref] [codex-repo] [codex-ref]
+#   SANDBOX_REPO=~/showell_repos/safari-codex ./sandbox.sh <label>
 #   ./sandbox.sh --prune [keep]        keep the newest N (default 10), and
 #                                      any run holding a KEEP file, whose
 #                                      first line says why
 #   ./sandbox.sh --list                live head of each worktree, MOVED if it
 #                                      no longer matches what it was cut from
 #
-# Then:  cd <path>/ladder && . ../env && ...
+# Then:  cd <path>/<work-dir> && . ../env && ...
 set -u
 ROOT="${SANDBOX_ROOT:-$HOME/runs}"
 LADDER_SRC="${LADDER_SRC:-$HOME/showell_repos/codex-zig-ladder}"
+# The work repo, and the directory it gets inside the sandbox. `ladder` is kept
+# as the ladder's directory name because `cd $S/ladder` is written into every
+# runbook, script and memory here; an auxiliary repo takes its own basename.
+WORK_SRC="${SANDBOX_REPO:-$LADDER_SRC}"
+if [ "$(readlink -f "$WORK_SRC")" = "$(readlink -f "$LADDER_SRC")" ]; then
+    WORK_DIR=ladder
+else
+    WORK_DIR=$(basename "$WORK_SRC")
+fi
 
 die() { echo "sandbox: $*" >&2; exit 1; }
 
@@ -89,19 +106,20 @@ case "${1:-}" in
             # ~/runs/stale-zig-plug-2026-08-26-a961dcb6 is a bank, not a
             # sandbox, and read as one it reported two missing worktrees as
             # though something had gone wrong.
-            if [ ! -f "${d}PROVENANCE" ] || [ -z "$(prov_get "${d}PROVENANCE" ladder-sha)" ]; then
+            if [ ! -f "${d}PROVENANCE" ] || [ -z "$(prov_get "${d}PROVENANCE" work-sha)" ]; then
                 if [ -f "${d}MANIFEST" ]; then
                     echo "    (MANIFEST-era sandbox -- provenance not comparable)"
                 elif [ -f "${d}PROVENANCE" ]; then
-                    echo "    (not a sandbox -- PROVENANCE, but no ladder-sha)"
+                    echo "    (not a sandbox -- PROVENANCE, but no work-sha)"
                 else
                     echo "    (no provenance)"
                 fi
                 continue
             fi
-            for w in ladder codex; do
-                rec=$(prov_get "${d}PROVENANCE" "$w-sha")
-                br=$(prov_get "${d}PROVENANCE" "$w-branch")
+            for w in "$(prov_get "${d}PROVENANCE" work-dir)" codex; do
+                key=$w; [ "$w" != codex ] && key=work
+                rec=$(prov_get "${d}PROVENANCE" "$key-sha")
+                br=$(prov_get "${d}PROVENANCE" "$key-branch")
                 live=$(git -C "${d}${w}" rev-parse HEAD 2>/dev/null)
                 if [ -z "$live" ]; then
                     printf '    %-7s (no worktree)\n' "$w"
@@ -135,7 +153,11 @@ case "${1:-}" in
                 continue
             fi
             echo "pruning $d"
-            for w in "$d"ladder "$d"codex; do
+            # Every worktree in the run, found rather than named: the work
+            # repo's directory is `ladder` only when the work repo IS the
+            # ladder, and a hardcoded pair silently leaks an auxiliary repo's
+            # worktree into `git worktree list` forever.
+            for w in "$d"*/; do
                 [ -d "$w" ] && git -C "$w" rev-parse --git-dir >/dev/null 2>&1 \
                     && git -C "$(git -C "$w" rev-parse --path-format=absolute --git-common-dir)/.." worktree remove --force "$w" 2>/dev/null
             done
@@ -148,18 +170,18 @@ esac
 
 label="$1"
 [[ "$label" =~ ^[A-Za-z0-9._-]+$ ]] || die "label must be [A-Za-z0-9._-]"
-ladder_ref="${2:-HEAD}"
+work_ref="${2:-HEAD}"
 codex_src="${3:-$HOME/showell_repos/NewRepository}"
 codex_ref="${4:-HEAD}"
 
-[ -d "$LADDER_SRC/.git" ] || die "no ladder repo at $LADDER_SRC"
+[ -d "$WORK_SRC/.git" ] || [ -f "$WORK_SRC/.git" ] || die "no work repo at $WORK_SRC"
 [ -d "$codex_src/.git" ] || [ -f "$codex_src/.git" ] || die "no codex repo at $codex_src"
 
 # Asked BEFORE anything is created, so a refusal leaves no half-built run.
-require_clean "$LADDER_SRC" "the ladder ($LADDER_SRC)"
+require_clean "$WORK_SRC" "the work repo ($WORK_SRC)"
 require_clean "$codex_src" "the codex checkout ($codex_src)"
 
-ladder_branch=$(branch_of "$LADDER_SRC" "$ladder_ref")
+work_branch=$(branch_of "$WORK_SRC" "$work_ref")
 codex_branch=$(branch_of "$codex_src" "$codex_ref")
 
 run="$ROOT/$(date -u +%Y%m%dT%H%M%SZ)-$label"
@@ -168,12 +190,12 @@ mkdir -p "$run" || die "cannot create $run"
 # -q, not --no-progress: the latter is not an option to `worktree add` on
 # every git, and swallowing stderr hid that for a whole debugging round.
 # Errors are captured and reported, never discarded.
-if ! err=$(git -C "$LADDER_SRC" worktree add -q --detach "$run/ladder" "$ladder_ref" 2>&1); then
+if ! err=$(git -C "$WORK_SRC" worktree add -q --detach "$run/$WORK_DIR" "$work_ref" 2>&1); then
     rmdir "$run" 2>/dev/null
-    die "ladder worktree failed at $ladder_ref: $err"
+    die "work worktree failed at $work_ref: $err"
 fi
 if ! err=$(git -C "$codex_src" worktree add -q --detach "$run/codex" "$codex_ref" 2>&1); then
-    git -C "$LADDER_SRC" worktree remove --force "$run/ladder" 2>/dev/null
+    git -C "$WORK_SRC" worktree remove --force "$run/$WORK_DIR" 2>/dev/null
     rmdir "$run" 2>/dev/null
     die "codex worktree failed at $codex_ref: $err"
 fi
@@ -232,11 +254,12 @@ write_provenance() {
     prov venue         "$(frozen_value CODEX_LADDER_VENUE)"
     prov guest-mem-mb  "$(frozen_value CODEX_MEM_MB)"
     prov accel         "$(frozen_value CODEX_ACCEL)"
-    prov ladder-repo   "$LADDER_SRC"
-    prov ladder-branch "$ladder_branch"
-    prov ladder-ref    "$ladder_ref"
-    prov ladder-sha    "$(git -C "$run/ladder" rev-parse HEAD)"
-    prov ladder-subject "$(git -C "$run/ladder" log --oneline -1 | cut -c1-90)"
+    prov work-dir      "$WORK_DIR"
+    prov work-repo     "$WORK_SRC"
+    prov work-branch   "$work_branch"
+    prov work-ref      "$work_ref"
+    prov work-sha      "$(git -C "$run/$WORK_DIR" rev-parse HEAD)"
+    prov work-subject  "$(git -C "$run/$WORK_DIR" log --oneline -1 | cut -c1-90)"
     prov codex-repo    "$codex_src"
     prov codex-branch  "$codex_branch"
     prov codex-ref     "$codex_ref"
@@ -256,7 +279,7 @@ import seed_identity
 sha = seed_identity.seed_sha256()
 print(sha)
 print(seed_identity.update_label(sha) or "unreleased")
-' "$run/ladder" 2>/dev/null) || die "cannot read the seed in $run/codex"
+' "$run/$WORK_DIR" 2>/dev/null) || die "cannot read the seed in $run/codex"
 seed_sha=$(printf '%s\n' "$seed_read" | sed -n 1p)
 seed_update=$(printf '%s\n' "$seed_read" | sed -n 2p)
 
@@ -268,7 +291,7 @@ write_provenance > "$run/PROVENANCE"
     echo "--- PROVENANCE"
     sed 's/^/    /' "$run/PROVENANCE" | expand -t 4,22
     echo "--- use it"
-    echo "    cd $run/ladder && . ../env"
+    echo "    cd $run/$WORK_DIR && . ../env"
     echo "    (no natives, no truths, no artifacts -- a fresh tree carries none)"
 } >&2
 echo "$run"
