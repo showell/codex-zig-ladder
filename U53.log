@@ -558,3 +558,19 @@ its first run, on `s-new`'s `deck-record` -- and the table carries
 `Option<usize>`, because `Some(0)` and `None` are different facts. Sweep 551 of
 979 before and after, with the `ok` SET identical; ~34 programs moved their
 error from a downstream victim to its cause. Ladder `1286102`, rust `d5cef6e`.
+
+**The cheap slice of the interpreter sweep, and a coincidence retired
+(2026-09-02).** 551 -> 567 over two rounds, 16 programs gained and none lost,
+rust `7e717e1`. The rule worth keeping: **`is-letter`, `is-digit` and
+`is-whitespace` are UNSIGNED RANGES ON THE CHAR-CODE**, and the zig emitter is
+the oracle -- `sub`/`cmp`/`setbe` gives `1..=2`, `3..=12`, `13..=64` or
+`97..=127`. Rust's `is_alphabetic` and `is_ascii_digit` were right on ASCII by
+the alphabet's own construction, i.e. by coincidence; a TAB and a CARRIAGE
+RETURN are not whitespace in Codex, because the alphabet gives them no code.
+Also: one arm covered eight real conversions and was wrong about five (only the
+two `*-from-int` take an Integer, and the two ending in f32 must round THROUGH
+f32); `#8000000000000000` would not parse, because `i64::from_str_radix`
+refuses a set sign bit and a hex literal names a 64-bit PATTERN; `list-snoc`
+and `list-push` are one operation upstream. Ten more programs moved PAST their
+cause into `line N differs`, and `step limit reached` went 2 -> 18 because
+programs that get further need more than the sweep's 60M.
