@@ -142,6 +142,22 @@ with measurements attached rather than a finished piece of work. We are sending
 it now specifically so your side can react early if the direction is wrong,
 rather than after we have built anything on top of it.
 
+## We know this will probably need a second pass
+
+You have told us you have compiler work in flight in this area today, and that
+your change lands when it lands. We are opening this anyway, deliberately,
+because we would rather you see the direction early and tell us it is wrong
+than have us build on it quietly for a week. **We fully expect to re-cut it
+against your `opening.codex` once yours has landed** -- and that is cheap on our
+side, because the split is produced by a script rather than by hand: it finds
+the section boundaries itself, so pointing it at a different file is minutes,
+and re-running the whole verification above is about four minutes of QEMU.
+
+So please do not treat this as a change to merge on our schedule. Merge it when
+it suits you, or tell us to redo it, or take the idea and cut it somewhere else
+entirely. Any of those is a good outcome. And yes to the advance copy if the
+offer stands -- we will shape the next pass against whatever is actually there.
+
 ## If you would rather not
 
 The mechanical part is small enough that you may prefer to do it yourselves, or
