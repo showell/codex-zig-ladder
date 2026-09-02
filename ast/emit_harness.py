@@ -104,6 +104,52 @@ def deck_prologue(deck_bytes=None):
 
 DECK_PROLOGUE = deck_prologue()
 
+# CHECK's own two reservations, and the four arguments they feed.
+#
+# `check-chapter` took five parameters through Update 53 and takes NINE at
+# Update 54: the four new ones are `check-base`, `keep-base`, `keep-ceiling`
+# and `poison`, the per-definition reclamation work. A harness still passing
+# five does not fail loudly -- it UNDER-APPLIES, so `check-chapter ...`
+# evaluates to a function, and the first `cr.state` on it surfaces three
+# phases later as nine CDX2000 "emit-field-access: unresolved type for field",
+# at codegen, naming fields instead of naming the arity. That is COMPILER-18's
+# shape (our issue 79) seen from the outside.
+#
+# Mirrored from the driver rather than invented, `opening.codex:626-633`
+# (`compile-type-check`):
+#
+#     keep-base    = build keep-height
+#     check-base   = build check-deck-height
+#     check-ceiling= check-base + check-deck-height
+#     check-chapter ... check-ceiling check-base keep-base
+#                       (keep-base + keep-height - 4194304) poison
+#
+# The driver scales both floors through `scaled-floor (flags.deck-scale) ...`,
+# which lives in opening.codex and cannot be cited from a harness that IS the
+# opening. At the default scale of 100 (`compile-flags-default`) `scaled-floor`
+# returns the floor itself, so the constants are used directly and the scaling
+# is not reproduced. If a rung ever needs a smaller deck, that is where the
+# knob goes.
+#
+# `poison` is 0: the driver passes `poison-check` only under
+# `flags.poison-compact`, which is off by default and is a debugging aid.
+#
+# THE 4 MiB SUBTRAHEND IS THEIRS, not a fudge -- `keep-base + keep-height -
+# 4194304` is the driver's own expression, so it is copied whole rather than
+# simplified into a number nobody can trace back.
+CHECK_SETUP = """let keep-height = demand-check-keep-floor
+    in let keep-base = build keep-height
+    in let check-height = demand-check-floor
+    in let check-base = build check-height
+    in let check-ceiling = check-base + check-height
+    in """
+
+# The call itself, so the five harnesses that make it cannot drift apart the
+# way `ir-emit-roots` did. `<CH>` is the scoped chapter each harness binds.
+def check_call(ch='ch'):
+    return (f"check-chapter {ch} [] skip-list-text-empty [] check-ceiling "
+            "check-base keep-base (keep-base + keep-height - 4194304) 0")
+
 # The checker records a type for every expression, not only for bindings, and
 # the driver resolves that table too: opening.codex:635 runs
 # resolve-all-expr-types and line 692 rebuilds the UnificationState around the

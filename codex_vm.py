@@ -205,7 +205,17 @@ def compile_blob(blob_path, out_cdx, mem_mb=None, timeout=1800):
     finally:
         proc.kill()
 
-def run_cdx(kernel, mem_mb=1024, timeout=300, idle_timeout=60):
+def run_cdx(kernel, mem_mb=None, timeout=300, idle_timeout=60):
+    # mem_mb DEFAULTS TO None, not to a number, and that is the whole point:
+    # `launch` reads MEM_MB (CODEX_MEM_MB) only when it is handed None. This
+    # said 1024 until 2026-09-02, so every RUN-stage guest got 1024 while the
+    # droplet exported 3072 and the header above promised a host could cap
+    # every driver with one variable. compile_blob was always correct, which
+    # is why only runs were affected and nobody noticed.
+    #
+    # Changing guest size MOVES EVERY TRUTH -- memory lays out differently --
+    # so this landed at an Update boundary with nothing banked under U54 yet,
+    # which is the only cheap moment for it.
     # idle_timeout is silence tolerance, not total time: a program that
     # computes for minutes before its first print needs it raised.
     proc, data, ctrl = launch(kernel, mem_mb)

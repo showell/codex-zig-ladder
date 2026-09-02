@@ -12,9 +12,10 @@ answers that without a second experiment."""
 import pathlib
 import re
 
-from emit_harness import DECK_PROLOGUE, RESOLVED_TABLES
+from emit_harness import CHECK_SETUP, DECK_PROLOGUE, RESOLVED_TABLES, check_call
 from roots import CODEX
 
+CHECK_CALL = check_call()
 REPO = CODEX
 HERE = pathlib.Path(__file__).parent
 
@@ -250,7 +251,7 @@ Section: Driver
     in let ch0 = dr.dr-chapter
     in let ch = scope-achapter ch0 skip-list-text-empty [] 0
     in let rr = resolve-chapter ch skip-list-text-empty [] 0
-    in let cr = check-chapter ch [] skip-list-text-empty [] 0
+    in {CHECK_SETUP}let cr = {CHECK_CALL}
     {RESOLVED_TABLES}
     in let ir = lower-chapter ch bound cst (rr.ctor-names) [] skip-list-text-empty [] 0
     in act
