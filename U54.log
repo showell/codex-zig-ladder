@@ -160,6 +160,13 @@ whether the rename pass is implicated. THEN correct the scaling, which is right
 on principle whatever the answer. Doing the scale fix first cannot distinguish
 "fixed it" from "moved it".
 
+**THE SANDBOX WAS RETIRED, not kept.** `20260902T121126Z-u54-rebank` is gone,
+worktrees and all, and the five working truths went with it -- BOX After-4's
+default, and the KEEP written for it did not earn the exception. What survives
+is `findings/deckfaults/`: both fault dumps, the symbol map without which the
+open one is unreadable, and the analysis. A fresh sandbox is the first step of
+the next session.
+
 See `HARNESS_FIDELITY.md` for the standing account: the harness reimplements
 `opening.codex`, and four of the five deviations found today are the same
 mistake -- calling the driver's functions without doing the driver's setup.
