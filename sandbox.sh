@@ -122,16 +122,16 @@ case "${1:-}" in
                 br=$(prov_get "${d}PROVENANCE" "$key-branch")
                 live=$(git -C "${d}${w}" rev-parse HEAD 2>/dev/null)
                 if [ -z "$live" ]; then
-                    printf '    %-7s (no worktree)\n' "$w"
+                    printf '    %-14s (no worktree)\n' "$w"
                 elif [ "$live" = "$rec" ]; then
-                    printf '    %-7s %s  %s\n' "$w" "${live:0:8}" "$br"
+                    printf '    %-14s %s  %s\n' "$w" "${live:0:8}" "$br"
                 else
                     # The divergence is ALLOWED and being silent about it is
                     # not: a detached worktree gets moved so a branch ref can
                     # advance, which is what 20260824T132742Z-f37-parser did,
                     # and a measurement was nearly attributed to the wrong tree
                     # on the strength of a record that had not noticed.
-                    printf '    %-7s %s  MOVED -- cut from %s (%s)\n' \
+                    printf '    %-14s %s  MOVED -- cut from %s (%s)\n' \
                         "$w" "${live:0:8}" "${rec:0:8}" "$br"
                 fi
             done
