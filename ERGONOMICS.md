@@ -28,6 +28,52 @@ that something is missing from it.
 
 ---
 
+## run_cdx defeats the host's guest-size cap, and codex_vm's own header forbids it (2026-09-02)
+
+`codex_vm.py`'s header states the contract:
+
+    The guest-size default honors CODEX_MEM_MB so a host caps EVERY driver
+    by exporting one variable (~/.codex_ladder_env on the droplet), instead
+    of trusting each wrapper to pass a number explicitly.
+
+`launch(kernel, mem_mb=None, ...)` keeps it -- `if mem_mb is None: mem_mb =
+MEM_MB`. `run_cdx(kernel, mem_mb=1024, ...)` does not: its default is a
+NUMBER, never None, and it is handed straight to `launch`, so `MEM_MB` is
+never consulted on the run path. The droplet exports 3072 and every
+run-stage guest gets 1024. Four callers inherit it -- `oracle_lib.sh`'s truth
+arm, `tier_run.py`, `ast/arithcycle.sh`, `bare_expected.py`. `compile_blob`
+takes `None` and is correct, which is why compiles were never affected and
+this went unnoticed.
+
+Not a correctness defect on its own: every rung has been banked at 1024 and
+the numbers are consistent. It is a foot-gun of the exact shape the header
+was written to prevent, and the fix is one word. What it needs first is a
+decision, because changing it MOVES EVERY TRUTH: a guest with a different
+memory size lays memory out differently, and the rungs are byte-comparisons.
+So this is a re-pin, not an edit -- do it at an Update boundary, with the
+rebank, or not at all.
+
+Found while misreading a faulted guest as a guest that never launched.
+
+## A faulted guest costs ten minutes, because nothing detects a halt (2026-09-02)
+
+`recv_all` breaks on socket timeout or EOF and on nothing else. The truth arm
+passes `idle_timeout=600`, so a subject that faults in the first second then
+sits halted is waited out for the full ten minutes before the arm can even
+report. Twice on 2026-09-02 that read as a hang, and the second time it sent
+the diagnosis down a wrong path for twenty minutes: the guest showed ZERO
+seconds of CPU, which looks exactly like "never started" and actually meant
+"crashed immediately". The dump was sitting unread in the serial buffer the
+whole time and only appeared when killing QEMU closed the socket.
+
+The guest announces the fault itself -- `!EXC=NN`, written by its exception
+handler, which `tools/codex-vm.c` already watches for on its own account.
+`truth_prov.guest_fault` now reads it AFTER the fact; reading it in the
+receive loop would end the wait at the fault instead of ten minutes later,
+and would make a fault look like a fault rather than like a hang.
+
+Cheap, and the ten minutes is per faulting unit.
+
 ## The whole compiler concatenates on Linux, and it is 2,944,968 bytes
 
 **Measured 2026-08-27, and it retires an assumption rather than proposing
