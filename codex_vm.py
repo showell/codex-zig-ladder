@@ -110,11 +110,28 @@ def wait_ready(ctrl, timeout=180):
         buf += chunk
     return buf
 
+# A FAULTED GUEST IS NOT A SLOW ONE, and waiting on it as though it were is
+# what made both U54 faults look like hangs. The guest dumps its registers and
+# halts with the socket open, so there is no EOF; `idle_timeout` is the only
+# thing that ends the read, and the truth arm sets it to 600 because a real
+# subject computes for minutes before its first print. Measured 2026-09-02:
+# two ten-minute waits for dumps that had been sitting in the buffer since the
+# first second.
+#
+# `!EXC=` is the fault handler's own marker and nothing else prints it. Once it
+# is in the stream the guest is dead, the rest of the dump arrives in one
+# burst, and a short silence is conclusive -- so the tolerance drops to
+# FAULT_IDLE_SECONDS rather than the read ending on the spot, which would risk
+# cutting a dump in half. Nothing else changes: a guest that never faults is
+# read exactly as before.
+FAULT_IDLE_SECONDS = 5
+
 def recv_all(sock, idle_timeout, overall_timeout):
     sock.settimeout(idle_timeout)
     buf = b""
     last_byte_at = [time.time()]
     deadline = time.time() + overall_timeout
+    faulted = False
     while time.time() < deadline:
         try:
             chunk = sock.recv(65536)
@@ -126,6 +143,9 @@ def recv_all(sock, idle_timeout, overall_timeout):
             break
         buf += chunk
         last_byte_at[0] = time.time()
+        if not faulted and b"!EXC=" in buf:
+            faulted = True
+            sock.settimeout(min(idle_timeout, FAULT_IDLE_SECONDS))
     recv_all.last_gap = time.time() - last_byte_at[0]
     return buf
 
