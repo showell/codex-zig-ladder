@@ -128,6 +128,42 @@ reading; zero CPU meant crashed immediately, not never ran. Both readings ran
 in the direction of a theory already formed. The essay is
 `notes/the-harness-that-skipped-the-setup.md`.
 
+## WHERE THIS STOPS, 2026-09-02
+
+**Five rungs bank clean at U54: lex, parse, desugar, scope, check.** Timings
+all slightly under U53 (lex 15s/17s, parse 45/56, desugar 57/64, scope 68/71,
+check 126/129). The sixth, `lower`, faults and the run stops there.
+
+**`lower` faults `!EXC=0d` at `__str_concat+72`, and it is NOT the deck
+ceiling.** Two runs either side of that fix are byte-identical in outcome --
+same 65-line file, same 1,660 bytes, R13 identical to the bit
+(`f883480824448b4c`, which decodes as x86 instruction bytes: a register holding
+code), only heap addresses moving. The commit that added the ceiling is right
+about zero-ceilings disabling the guard and WRONG that it fixed this. The truth
+ends at `type-bindings 3`, so it dies inside `lower-chapter`.
+
+**THE FAULT GATE EARNED ITS KEEP TWICE**, and the second was the harder case:
+`lower.truth` was 1,660 bytes with 46 lines of correct output and the dump
+appended, which reads like a truth. Stamping refused, the five banked rungs
+stand, and the run stopped rather than building on a bad foundation.
+
+**Two candidate causes, neither established:**
+- COMPILER-38's rename pass, new at U54, which builds `v_1` binder names by
+  string concatenation -- the very helper the fault lands in;
+- the deck reservations. I used the RAW floors (scale 100); the driver derives
+  a scale from unit length, and for lower's 1,166,918-byte unit that is 77.
+  1,232 MB reserved against the driver's 872 MB.
+
+**AGREED PLAN, in this order (Steve, 2026-09-02):** isolate first -- run
+`lower` alone with `rename = False`, one guest and one variable, which settles
+whether the rename pass is implicated. THEN correct the scaling, which is right
+on principle whatever the answer. Doing the scale fix first cannot distinguish
+"fixed it" from "moved it".
+
+See `HARNESS_FIDELITY.md` for the standing account: the harness reimplements
+`opening.codex`, and four of the five deviations found today are the same
+mistake -- calling the driver's functions without doing the driver's setup.
+
 ## Two defects found while chasing it
 
 - **`run_cdx` ignores the host's guest-size cap.** `codex_vm.py`'s header says
