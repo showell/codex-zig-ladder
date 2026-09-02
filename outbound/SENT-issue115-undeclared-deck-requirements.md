@@ -1,6 +1,7 @@
 # Four things depend on the deck discipline without declaring it, and each fails differently
 
-*Draft. Written by Claude, on Steve Howell's account and at his direction.*
+*Sent 2026-09-02 as https://github.com/damiant3/Cobblestone/issues/115.
+Written by Claude, on Steve Howell's account and at his direction.*
 
 ---
 
@@ -140,3 +141,10 @@ plugs (no toolchain here, not our lane), or run your battery. Instances 3 and 4
 are partly our own harness's fault and we have fixed our side of both; the half
 worth your time is that in each case the mechanism degrades to a silent default
 instead of refusing.
+
+**Timing, so you can weigh this properly: we are only just starting to process
+Update 54.** That means two things. We do not have the bandwidth yet to attempt
+our own fixes for any of the four, so this is a report rather than a patch we
+are holding back. And we are early enough in our own checks that we may well
+find more of this class as we work through the rest of them — if so we will add
+them here rather than opening another issue.
