@@ -41,19 +41,32 @@ removed it, the emitter's gate read "no phase allocator", `deck-record`
 compiled to a 4-byte identity, and U54's bivy rewind reclaimed the tokens.
 Fixed by giving the harnesses the driver's deck prologue.
 
-**`lower-fault-str-concat.raw` -- STILL OPEN.** `!EXC=0d` (#GP) at
-`__str_concat+72`, after 46 lines of correct output, inside `lower-chapter`.
-Identical across two runs either side of the deck-ceiling change, `R13`
-byte-identical at `f883480824448b4c` (x86 instruction bytes -- a register
-holding code), only heap addresses moving. So the ceiling was NOT the cause.
+**`lower-fault-str-concat.raw` -- RESOLVED 2026-09-02, and it was NEITHER
+candidate.** `!EXC=0d` (#GP) at `__str_concat+72` after 46 lines of correct
+output. Cause: the harness called `check-chapter` BARE where the driver wraps
+it in `deck-record` (`opening.codex:631`). check-chapter issues its own
+`__deck-exit` before the per-definition walk and `__deck-enter` after it
+(`TypeChecker.codex:2388,2393`), exiting an extent it assumes the CALLER
+opened; bare, the nesting counter runs to -1, where every `deck-record` in the
+walk is a no-op and the results land on the bivy while `check-batch` reclaims
+as though they had not. Fixed by giving `check_call()` the wrapper; `lower`
+banks an 83-line truth.
 
-Two candidates, neither established:
-  - COMPILER-38's rename pass, new at U54, which builds `v_1` binder names by
-    string concatenation -- the helper the fault lands in;
-  - the deck reservations: the harness uses RAW floors (scale 100, 1,232 MB)
-    where the driver DERIVES a scale from unit length (77 for this unit,
-    872 MB).
+**NOT inside `lower-chapter`, which this file said twice.** `emit-let`
+(`Emit/X86_64.codex:2274`) is strict, so a harness computes every binding
+before it prints a line: 46 lines of output means lowering FINISHED. The fault
+is in the next print, `show-bindings`, whose text is `"tb " & b.name & " "` --
+and the registers agree, `RDI` a fresh heap text and `RSI` at 2.16 MB in
+static data, which is the `" "` literal. The faulting call is the second `&`,
+reading a CHECK-phase Text one phase behind where the dump was read.
 
-The agreed order is isolate first -- `lower` alone with `rename = False`, one
-guest and one variable -- then correct the scaling, which is right on principle
-either way. See `HARNESS_FIDELITY.md`.
+Both candidates were falsified:
+  - **COMPILER-38's rename pass** -- `rename = False` faults with every
+    register byte-identical, the only change in 65 lines being `F[00]` moving
+    four bytes because the source moved by one word.
+  - **the deck reservations** -- closed by arithmetic, no run needed: 1,232 MB
+    raw against 954 MB at the derived scale of 77, in a 3,072 MB guest whose
+    stack sits at 3,072 MB and whose frontier at the fault was 1,247 MB.
+
+See `HARNESS_FIDELITY.md` for the standing account; this dump is kept as the
+specimen the sixth deviation was read out of.

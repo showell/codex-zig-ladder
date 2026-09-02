@@ -1,5 +1,13 @@
 # The U54 lex page fault: mechanism, read out of the compiler's own source
 
+> **Both U54 faults are RESOLVED as of 2026-09-02.** This file is the lex one,
+> whose mechanism it gets right. The `lower` fault it speculates about at the
+> end was neither of the candidates named anywhere in this directory: the
+> harness called `check-chapter` bare where the driver wraps it in
+> `deck-record`, and the fault was in a PRINT of a CHECK-phase Text, not inside
+> `lower-chapter`. See `README.md` and `HARNESS_FIDELITY.md`. Kept unedited
+> below the line because the two wrong turns it records are the point.
+
 Status: mechanism established by code reading; Probe B running, Probe C not run.
 Nothing here is confirmed by a green rung yet.
 
