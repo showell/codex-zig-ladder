@@ -195,9 +195,10 @@ LOWER_SETUP = """let lower-height = demand-lower-floor
 # True, so nothing may ship with it. It exists because the COMPILER-38 rename
 # pass is the one thing lowering gained at Update 54, and one guest with one
 # variable is what tells a candidate from a cause.
-def lower_call(ch='ch', bound='bound', cst='cst', rename=True):
-    return (f"lower-chapter {ch} {bound} {cst} (rr.ctor-names) [] "
-            f"skip-list-text-empty [] lower-ceiling {rename}")
+def lower_call(ch='ch', bound='bound', cst='cst', rename=True,
+               renames='[]', colliding='skip-list-text-empty', assignments='[]'):
+    return (f"deck-record (lower-chapter {ch} {bound} {cst} (rr.ctor-names) "
+            f"{renames} {colliding} {assignments} lower-ceiling {rename})")
 
 
 # CHECK IS THE ONE PHASE THAT CANNOT BE CALLED BARE, and it says so itself.
@@ -223,9 +224,10 @@ def lower_call(ch='ch', bound='bound', cst='cst', rename=True):
 # and then reads a Text whose length word is someone else's data -- measured
 # 2026-09-02 as !EXC=0d in `__str_concat` with R10 non-canonical, bumped by a
 # garbage length. See HARNESS_FIDELITY.md.
-def check_call(ch='ch'):
-    return (f"deck-record (check-chapter {ch} [] skip-list-text-empty [] "
-            "check-ceiling check-base keep-base "
+def check_call(ch='ch', renames='[]', colliding='skip-list-text-empty',
+               assignments='[]'):
+    return (f"deck-record (check-chapter {ch} {renames} {colliding} "
+            f"{assignments} check-ceiling check-base keep-base "
             "(keep-base + keep-height - 4194304) 0)")
 
 # The checker records a type for every expression, not only for bindings, and
@@ -525,20 +527,30 @@ def frontend_source(src, passes, scan=True, deck_bytes=None, resolve=True, lift=
     in let assignments = []
     in let colliding = skip-list-text-empty
     in let renames = []"""
-    lower = ("""in let ir-raw = lower-chapter ch bound cst (rr.ctor-names) renames colliding assignments 0
+    # NOT a second spelling of the two phase calls. frontend_source kept its
+    # own for as long as it has existed, and that is exactly how it arrived at
+    # Update 55 still passing Update 53's arities while check_call and
+    # lower_call had been corrected: five harnesses wrong together, which is
+    # the shape `ir-emit-roots` had and the shape emit_harness's own prose
+    # warns about. There is one spelling of each call in this file now, and the
+    # scan tables that make these harnesses differ from the others are
+    # ARGUMENTS to it rather than a reason to copy it.
+    lower_here = lower_call(renames='renames', colliding='colliding',
+                            assignments='assignments')
+    lower = (f"""let ir-raw = {lower_here}
     in let passed = run-ir-pipeline default-ir-pipeline ir-raw False
     in let ir0 = passed.chapter""" if passes else
-        "in let ir0 = lower-chapter ch bound cst (rr.ctor-names) renames colliding assignments 0")
+        f"let ir0 = {lower_here}")
     return deck_prologue(deck_bytes) + head + f"""
     in let doc = parse-document (make-parse-state (toks.tokens) {src}) 0
     in let dr = desugar-document {src} doc (doc.chapter-title) 0
     in let ch0 = dr.dr-chapter
     in let ch = scope-achapter ch0 colliding assignments 0
     in let rr = resolve-chapter ch colliding assignments 0
-    in let cr = check-chapter ch renames colliding assignments 0
+    in {CHECK_SETUP}let cr = {check_call(renames='renames', colliding='colliding', assignments='assignments')}
     {EXPR_TYPES}
     {BINDINGS}
-    {lower}
+    in {LOWER_SETUP}{lower}
     {RESOLVE}{LIFT}"""
 
 
