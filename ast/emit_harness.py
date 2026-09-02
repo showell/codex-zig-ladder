@@ -568,12 +568,30 @@ def frontend_source(src, passes, scan=True, deck_bytes=None, resolve=True, lift=
     in let resolve-ceiling = resolve-base + resolve-height
     in """
     lowered = "ir-lowered" if lift else "ir"
-    RESOLVE = (f"""in {RESOLVE_SETUP}let type-map = build-type-def-map (ch.type-defs) 0 (list-length (ch.type-defs)) []
-    in let sorted = sort-bindings (type-map & bound)
-    in let {lowered} = __record-set ir0 "defs" (rewrite-ir-defs sorted (ir0.defs) resolve-ceiling)""" if resolve else
+    # EVERY ONE OF THESE IS WRAPPED, because two of them take a CEILING and a
+    # ceiling read from outside an extent truncates silently.
+    #
+    # `deck-bound-short-of ceiling band` reads R10. Inside an extent R10 is the
+    # deck cursor and the question is "how much of this deck is left"; outside
+    # one R10 is the BIVY, which `build` has just advanced to the reservation's
+    # top, so the predicate is true on the FIRST item and the walk returns what
+    # it has -- nothing. `rewrite-ir-defs-acc` (IR/ResolveTypes.codex:113) and
+    # `lift-defs` (IR/LambdaLifting.codex:50) both do exactly that.
+    #
+    # Measured 2026-09-02, and it cost a second run: giving rewrite-ir-defs the
+    # driver's real ceiling while still calling it bare turned "never check"
+    # into "always truncate". `ir-defs 0` for a three-definition subject, then
+    # CDX2040 "Unresolved call to 'opening'" at codegen -- a silent truncation
+    # reported four phases later as a missing entry point.
+    #
+    # The driver wraps all four: opening.codex:857-859 for the resolve trio and
+    # :1726 for the lift.
+    RESOLVE = (f"""in {RESOLVE_SETUP}let type-map = deck-record (build-type-def-map (ch.type-defs) 0 (list-length (ch.type-defs)) [])
+    in let sorted = deck-record (sort-bindings (type-map & bound))
+    in let {lowered} = __record-set ir0 "defs" (deck-record (rewrite-ir-defs sorted (ir0.defs) resolve-ceiling))""" if resolve else
         "" if lift else "in let ir = ir0")
     LIFT = (("\n    " if RESOLVE else "")
-            + f"in {LIFT_SETUP}let ir = lift-lambdas {lowered if resolve else 'ir0'} lift-ceiling") if lift else ""
+            + f"in {LIFT_SETUP}let ir = deck-record (lift-lambdas {lowered if resolve else 'ir0'} lift-ceiling)") if lift else ""
 
     if scan:
         head = f"""let toks = tokenize {src} 1
