@@ -106,6 +106,35 @@ Section: Stubs
  behavior is the compiler's: tco-list-contains from X86_64Compound,
  emit-call-to from X86_64, buf-write-i32 from X86_64Chapter.
 
+ THE TARGET-SELECTION CONSTANTS, new work at Update 54. X86_64State's
+ st-load-base, st-heap-base and st-base each branch on st-windows, and
+ the addresses they choose between live on pages this bundle does not
+ carry -- four in X86_64Boot, bare-metal-heap-base in X86_64Chapter.
+ Only the bare-metal arm is ever taken here; the others must merely
+ resolve.
+
+ THE PAGES WERE TRIED FIRST AND THE ANSWER WAS NO, measured 2026-09-02.
+ X86_64Boot + X86_64Chapter left three names open (X86_64IO); adding
+ that left SIXTEEN across X86_64, X86_64Compound, X86_64Helpers and
+ CdxWriter. That closure is ir_to_x86's bundle -- 2.4 MB against this
+ rung's 489 KB -- so taking the pages deletes the reason this rung
+ exists, which is to be the small back-half slice with no front end.
+ Stubbing five Integers keeps the slice.
+
+ The cost is that a VALUE can drift at the next Update while this still
+ compiles. That is the standing cost of every copy above, and the
+ reason each one names its origin.
+
+  hosted-cell-base : Integer = 131072
+
+  hosted-win-load-addr : Integer = 1056768
+
+  hosted-win-cell-base : Integer = 1342177280
+
+  hosted-win-heap-base : Integer = 1610612736
+
+  bare-metal-heap-base : Integer = 6291456
+
   tco-list-contains : List Integer, Integer, Integer -> Boolean
   tco-list-contains (xs) (v) (i) =
    if i == list-length xs then False
