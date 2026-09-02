@@ -162,6 +162,24 @@ def codex_branch(rev='HEAD'):
         '(detached, no branch contains it)'
 
 
+def tail_is_inert(paths):
+    """Can the ladder read ANY of these paths? If not, a tail touching only
+    them cannot move a truth or an arm.
+
+    Pure, and separated from git for one reason: this is the whole judgment in
+    `measures_release`, and a judgment reachable only by constructing a branch
+    is a judgment nobody re-checks. `--gate` below exercises it directly.
+
+    `docs/` is the only inert prefix and the list is deliberately not longer.
+    The ladder reads `seed/`, `codex/`, `build/` and `tools/`; a root-level
+    file (`.p4ignore`, a README) is not obviously any of those, and guessing
+    in the permissive direction is how a gate stops being one. An empty list
+    is NOT inert -- no tail at all is `is_release`, which is a different and
+    stronger fact, and answering True here would blur the two.
+    """
+    return bool(paths) and all(p.startswith('docs/') for p in paths)
+
+
 def tree_stamp(rev='HEAD'):
     """WHICH TREE -- the half of a bank's identity the seed cannot supply.
 
@@ -180,10 +198,29 @@ def tree_stamp(rev='HEAD'):
     keeps this honest across Updates nobody has taught it about, which is the
     failure `update_label` has now had twice.
 
-    `is_release` is the whole verdict: the rev is that commit, or it is not.
+    `is_release` is the narrow verdict: the rev IS that commit, or it is not.
     `rev` is a parameter so the refusal can be exercised against a branch that
     should trip it WITHOUT checking that branch out -- a gate nobody has seen
     fire is a gate nobody knows works.
+
+    A RELEASE CAN SHIP AS MORE THAN ONE COMMIT, and Update 54 did: `c689cafb`
+    carried the seed and `14ec571b` corrected the release note two hours later
+    (PR 100 is not on main, nine of ten are). The pin sits on the correction,
+    so `is_release` is False on a tree that is the release in every respect the
+    ladder can measure. `--force` is the wrong answer to that -- it writes
+    "NOT THE RELEASE" into the bank's TREE file, which is a false statement.
+
+    So the tail is DERIVED and CLASSIFIED rather than asserted. `tail` is every
+    commit after the release commit; `tail_paths` is what they touch;
+    `measures_release` is True when the tail is empty (`is_release`) or touches
+    NOTHING OUTSIDE `docs/`. The ladder never reads `docs/` -- not the seed, not
+    `codex/`, not `build/`, not `tools/` -- so a docs-only tail cannot move a
+    truth or an arm, and that is a mechanical fact rather than a judgment about
+    what a commit meant. Anything else, including a root-level file, is not
+    inert and still needs `--force`.
+
+    The tail is CARRIED, not swallowed. A caller that accepts it has to say so
+    in the artifact it writes, or this has bought silence instead of honesty.
     """
     head = _git('rev-parse', rev)
     release = _git('log', '-1', '--format=%H', rev, '--', 'seed/Codex.cdx')
@@ -192,6 +229,10 @@ def tree_stamp(rev='HEAD'):
                          'this checkout cannot say which release it descends from')
     blob = subprocess.run(['git', '-C', str(CODEX), 'show',
                            f'{release}:seed/Codex.cdx'], capture_output=True)
+    tail = [l for l in _git('log', '--format=%h %s', f'{release}..{head}').splitlines() if l]
+    tail_paths = sorted({l for l in _git('diff', '--name-only',
+                                         f'{release}..{head}').splitlines() if l})
+    inert = tail_is_inert(tail_paths)
     return {
         'head': head,
         'branch': codex_branch(rev),
@@ -201,6 +242,10 @@ def tree_stamp(rev='HEAD'):
         # comes from a seed no commit in this history ever introduced.
         'release_seed': hashlib.sha256(blob.stdout).hexdigest(),
         'is_release': head == release,
+        'tail': tail,
+        'tail_paths': tail_paths,
+        # A tree the ladder cannot tell apart from the release commit.
+        'measures_release': head == release or inert,
     }
 
 
@@ -221,7 +266,40 @@ def require_match(banked_sha):
             f'{banked_sha[:16]}; re-bank or point CODEX_ROOT at the right checkout')
 
 
+def _gate_selftest():
+    """Show the release gate firing, in both directions, with no branch names.
+
+    BOX Before-11: a comparison whose every row reads ok has never executed its
+    own mismatch branch. Each row here is a tail the ladder either can or
+    cannot read, and the REFUSING rows are the ones that give this its value.
+    """
+    cases = [
+        ([], False, 'no tail at all -- that is is_release, not this'),
+        (['docs/PM/CurrentPlan.md'], True, 'a release-note correction'),
+        (['docs/a.md', 'docs/b.md'], True, 'two docs files'),
+        (['docs/a.md', 'codex/compiler/Syntax/Lexer.codex'], False,
+         'MIXED -- one readable path is enough to refuse'),
+        (['codex/plugs/zig/ZigEmitter.codex'], False, 'the emitter under test'),
+        (['seed/Codex.cdx'], False, 'the seed itself'),
+        (['build/compile.ps1'], False, 'the harness the arms drive'),
+        (['.p4ignore'], False, 'a root file: not obviously unread, so refused'),
+    ]
+    bad = 0
+    for paths, want, why in cases:
+        got = tail_is_inert(paths)
+        if got != want:
+            bad += 1
+        print(f"{'ok ' if got == want else 'RED'} inert={str(got):5} "
+              f"want={str(want):5} {why}\n      {paths}")
+    print('\nthe gate fires in both directions' if not bad
+          else f'\n{bad} ROW(S) RED -- the gate does not do what it says')
+    return 1 if bad else 0
+
+
 if __name__ == '__main__':
+    import sys as _sys
+    if '--gate' in _sys.argv:
+        raise SystemExit(_gate_selftest())
     s = stamp()
     named = f"Update {s['update']}" if s['update'] is not None else 'no release note names it'
     print(f"seed    {s['sha256']}")
@@ -232,4 +310,11 @@ if __name__ == '__main__':
     print(f"head    {t['head'][:12]}  {t['branch']}")
     print(f"release {t['release'][:12]}  "
           + ('HEAD IS the release commit' if t['is_release']
+             else f"HEAD is {len(t['tail'])} commit(s) past it, docs only "
+                  '-- the ladder measures the release exactly'
+             if t['measures_release']
              else 'HEAD carries work the release does not'))
+    for line in t['tail']:
+        print(f"        + {line}")
+    for path in t['tail_paths']:
+        print(f"          {path}")

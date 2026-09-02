@@ -190,6 +190,76 @@ def check_ir(unit, flags):
             '(rerun the truth arm)')
 
 
+# ---------------------------------------------------------------------------
+# The ZIG ARM's verdict, which had no provenance at all.
+#
+# `bank_truth.arm_verdict` reads ast/<rung>.diff by EXISTENCE and SIZE: absent
+# means the arm never reached a verdict, empty means it agreed, non-empty means
+# it differed. That reading is correct only if a `.diff` on disk was written by
+# THIS run -- and it was not guaranteed to be. `zig_verdict` writes the file on
+# its `diff` line and nothing else; a stale-truth refusal, a transport failure
+# or a zig build failure all return BEFORE it, leaving the previous run's
+# `.diff` untouched under exactly the name the next reader looks for. A fresh
+# sandbox hides this because it carries no artifacts; a second run in the same
+# sandbox does not, and that is the ordinary way a red rung gets re-run.
+#
+# Two changes close it, and the first is the one that matters. The arm now
+# DELETES the verdict before it can fail, so ABSENT is honest again -- the root
+# cause was that absence was load-bearing and nothing enforced it. The sidecar
+# here is the second: it records what the verdict was a function of, so a
+# `.diff` carried in from another tree or taken under another seed is refused
+# rather than counted.
+#
+# The key is (seed, truth bytes, emitted zig bytes) -- not the plug fingerprint.
+# The fingerprint is guarded DURING the run by plug_provenance/ring_provenance,
+# and it answers a different question: which emitter built the plug. What the
+# verdict is actually a function of is the two files that were compared and the
+# seed that produced both sides, and keying on those means the check still works
+# for either arm without either arm having to say which it was.
+
+def diff_sidecar(rung):
+    return AST / f'{rung}.diff.prov'
+
+
+def _sha_of(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else ''
+
+
+def diff_key(rung, unit):
+    return (seed_sha256(), _sha_of(AST / f'{rung}.truth'), _sha_of(AST / f'{unit}.zig'))
+
+
+def stamp_diff(rung, unit):
+    seed, truth, zig = diff_key(rung, unit)
+    if not truth or not zig:
+        raise SystemExit(f'cannot stamp {rung}.diff: '
+                         + ('no truth beside it' if not truth
+                            else f'no ast/{unit}.zig beside it'))
+    diff_sidecar(rung).write_text(f'{seed}\n{truth}\n{zig}\n')
+
+
+def check_diff(rung, unit):
+    """Is ast/<rung>.diff a verdict THIS tree produced? Returns a reason, or None.
+
+    Not a SystemExit like its siblings: this is read at BANK time over every
+    rung, and the caller reports each rung's state rather than dying on the
+    first. A missing `.diff` is not this function's business -- absent is a
+    legitimate third state and `arm_verdict` names it.
+    """
+    p = diff_sidecar(rung)
+    if not p.is_file():
+        return 'no provenance sidecar beside the diff'
+    got = [x.strip() for x in p.read_text().split('\n')]
+    want = diff_key(rung, unit)
+    if len(got) < 3 or tuple(got[:3]) != want:
+        if len(got) > 0 and got[0] != want[0]:
+            return f'verdict taken under seed {got[0][:12]}, disk has {want[0][:12]}'
+        if len(got) > 1 and got[1] != want[1]:
+            return 'the truth it was diffed against has moved since'
+        return 'the emitted zig has moved since the verdict was taken'
+    return None
+
+
 if __name__ == '__main__':
     if len(sys.argv) == 3 and sys.argv[1] == 'stamp':
         seed, content = stamp_unit(sys.argv[2])
@@ -203,6 +273,9 @@ if __name__ == '__main__':
               f'seed {seed[:12]}, subject {subj[:12]}')
     elif len(sys.argv) in (3, 4) and sys.argv[1] == 'check-ir':
         check_ir(sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else '')
+    elif len(sys.argv) == 4 and sys.argv[1] == 'stamp-diff':
+        stamp_diff(sys.argv[2], sys.argv[3])
     else:
         raise SystemExit('usage: truth_prov.py stamp|check <unit|rung>\n'
-                         '       truth_prov.py stamp-ir|check-ir <unit> [flags]')
+                         '       truth_prov.py stamp-ir|check-ir <unit> [flags]\n'
+                         '       truth_prov.py stamp-diff <rung> <unit>')

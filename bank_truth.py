@@ -87,16 +87,26 @@ def arm_verdict(rungs):
     that travels with the answer.
     """
     ast = LADDER / 'ast'
-    agreed, differed, no_result = [], [], []
+    agreed, differed, no_result, stale = [], [], [], []
     for m in rungs:
         d = ast / f'{m}.diff'
         if not d.is_file():
             no_result.append(m)
+            continue
+        # A FOURTH state, and it used to be invisible. The three above are read
+        # off a file's existence and size, which says what a verdict WAS but
+        # not that this tree produced it. `check_diff` compares the recorded
+        # (seed, truth, emitted zig) against what is on disk now; a verdict
+        # carried in from another sandbox, or taken before a re-pin, lands here
+        # instead of being counted as an agreement.
+        why = truth_prov.check_diff(m, truth_prov.unit_of(m))
+        if why:
+            stale.append((m, why))
         elif d.stat().st_size == 0:
             agreed.append(m)
         else:
             differed.append(m)
-    return agreed, differed, no_result
+    return agreed, differed, no_result, stale
 
 
 def main():
@@ -121,10 +131,24 @@ def main():
     # overwrite one, so an unreleased seed (slug `seed-<hash>`) needs no gate
     # here: its name collides with nothing.
     t = tree_stamp()
-    at_release = t['is_release'] and t['release_seed'] == s['sha256']
+    # A release can ship as more than one commit -- Update 54 shipped the seed
+    # in c689cafb and corrected its release note in 14ec571b -- so the gate is
+    # `measures_release`, which allows a tail the ladder provably cannot read
+    # (docs/ only) and nothing else. `is_release` stays the narrow fact and is
+    # still what TREE reports.
+    at_release = t['measures_release'] and t['release_seed'] == s['sha256']
     print(f"tree   {t['head'][:12]}  {t['branch']}")
-    print(f"       release {t['release'][:12]}"
-          + ('  -- HEAD is it' if at_release else '  -- HEAD IS NOT IT'))
+    if t['is_release']:
+        print(f"       release {t['release'][:12]}  -- HEAD is it")
+    else:
+        print(f"       release {t['release'][:12]}  -- HEAD is "
+              f"{len(t['tail'])} commit(s) past it"
+              + ('  (docs only -- the ladder reads none of it)'
+                 if at_release else '  -- HEAD IS NOT IT'))
+        for line in t['tail']:
+            print(f"         + {line}")
+        for path in t['tail_paths']:
+            print(f"           {path}")
     off_release = None
     if s['update'] is not None and not at_release:
         why = ('the seed on disk is not the one that commit carries'
@@ -234,19 +258,42 @@ def main():
     # TREE is the answer SEED could never give. A reader holding two banks and
     # asking what changed between them needs to know they describe two
     # releases and not two branches; before this file, nothing in a bank said.
+    # The TAIL is written down whenever there is one. A gate that ACCEPTS
+    # something has to leave the reader able to see what it accepted, or it
+    # has bought silence rather than honesty: a bank whose TREE says only
+    # "HEAD is the release" would hide the two commits Update 54 shipped on
+    # top of its seed commit, and the next reader could not tell this tree
+    # from one carrying unlanded compiler work.
+    tail = ''
+    if t['tail']:
+        tail = ('tail     ' + f"{len(t['tail'])} commit(s) after the release commit"
+                + (', touching docs/ only -- the ladder reads none of it\n'
+                   if t['measures_release'] else ', NOT inert\n')
+                + ''.join(f'         + {l}\n' for l in t['tail'])
+                + ''.join(f'           {p}\n' for p in t['tail_paths']))
     (tmp / 'TREE').write_text(
         f"head     {t['head']}\n"
         f"branch   {t['branch']}\n"
         f"release  {t['release']}\n"
+        + tail
         + ('verdict  HEAD is the release commit this seed belongs to\n'
+           if t['is_release'] else
+           'verdict  HEAD is the release commit plus a docs-only tail; the '
+           'ladder measures the release exactly\n'
            if at_release else
            f'verdict  NOT THE RELEASE, banked with --force: {off_release}\n'))
-    agreed, differed, no_result = arm_verdict(rungs)
+    agreed, differed, no_result, stale_arms = arm_verdict(rungs)
     arms = [f'agreed {len(agreed)} of {len(rungs)}']
     if differed:
         arms.append(f'differed {len(differed)}: {" ".join(differed)}')
     if no_result:
         arms.append(f'no result {len(no_result)}: {" ".join(no_result)}')
+    # An unprovenanced verdict is reported as its own state, never folded into
+    # one of the other three. Silently counting it as an agreement is the whole
+    # defect this state exists to name.
+    if stale_arms:
+        arms.append(f'unprovenanced {len(stale_arms)}: '
+                    + '; '.join(f'{m} ({why})' for m, why in stale_arms))
     (tmp / 'ARMS').write_text('\n'.join(arms) + '\n')
     if dest.exists():
         shutil.rmtree(dest)

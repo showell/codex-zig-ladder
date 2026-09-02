@@ -54,6 +54,15 @@ zig_verdict() {
         || { echo "SPLIT FAILED for $m -- see ast/${m}.zigraw"; return 1; }
     local rung rc=0
     for rung in $(unit_rungs $m); do
+        # THE OLD VERDICT GOES FIRST, before anything below can fail.
+        # bank_truth reads <rung>.diff by existence and size, and reads ABSENT
+        # as "the arm reached no verdict" -- which is what "6 of 14" meant for
+        # Update 52. That reading was only true by luck: every refusal below
+        # returns without writing the file, so a previous run's verdict stayed
+        # on disk under the name the bank reads, and a rung that refused today
+        # banked as one that agreed. A fresh sandbox carries no artifacts and
+        # hid it; re-running a red rung in the same sandbox is where it bites.
+        rm -f ${rung}.diff ${rung}.diff.prov
         # A truth recorded under another seed diffs as confidently as a
         # fresh one. Refuse it at the rung that would use it, not hours
         # later at bank time (C4).
@@ -65,6 +74,11 @@ zig_verdict() {
             head -15 ${rung}.diff
             rc=1
         fi
+        # What this verdict is a function of: the seed, the truth it was
+        # diffed against, and the emitted zig that produced the other side.
+        # Recorded for BOTH outcomes -- an agreement is exactly the verdict
+        # somebody will later want to know was real.
+        python3 "$T/truth_prov.py" stamp-diff "$rung" "$m" || rc=1
     done
     return $rc
 }
@@ -80,7 +94,11 @@ zig_arm() {
     # spending a transport on it. A stale .ir transpiles cleanly and diffs
     # against today's bank as a green that means nothing.
     python3 "$T/truth_prov.py" check-ir "$m" "$(mode_flags $m)" || return 1
+    # Clear the emitted zig AND every verdict this unit owns. A transport or
+    # build failure returns before zig_verdict runs at all, so without this the
+    # unit's rungs keep yesterday's .diff and bank as agreements.
     rm -f ast/${m}.zig
+    for _r in $(unit_rungs $m); do rm -f ast/${_r}.diff ast/${_r}.diff.prov; done
     # Transport chatter goes to a log, not to the caller: the sweep prints
     # a bounded slice of each rung's output, and a transfer that narrates
     # 25 lines pushed the verdict past the cut -- fibx passed SILENTLY,
@@ -107,7 +125,11 @@ ring_arm() {
     # spending a transport on it. A stale .ir transpiles cleanly and diffs
     # against today's bank as a green that means nothing.
     python3 "$T/truth_prov.py" check-ir "$m" "$(mode_flags $m)" || return 1
+    # Clear the emitted zig AND every verdict this unit owns. A transport or
+    # build failure returns before zig_verdict runs at all, so without this the
+    # unit's rungs keep yesterday's .diff and bank as agreements.
     rm -f ast/${m}.zig
+    for _r in $(unit_rungs $m); do rm -f ast/${_r}.diff ast/${_r}.diff.prov; done
     if ! python3 -u plug_run_ring.py ast/${m}.ir ast/${m}.zig \
         > ast/${m}.transport.log 2>&1; then
         echo "TRANSPORT FAILED for $m (ast/${m}.transport.log):"
