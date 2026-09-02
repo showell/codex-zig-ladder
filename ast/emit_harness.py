@@ -705,8 +705,25 @@ def harness_source(chapter, prefix, subjects, passes=False, scan=True, probe=Fal
         # binding of its own -- otherwise the template's following `in act`
         # reads as `in in act`.
         probe_lift = LIFT_SETUP.replace('demand-lift-floor', str(PROBE_LIFT_FLOOR))
+        # THE SEAL THE DRIVER TAKES AND WE NEVER DID.
+        #
+        # `build` publishes its top in deck-reservation-top-cell; `emit-build`
+        # (EmitAllocator.codex:11) is `build` MINUS that poke, so the emit
+        # extent is armed with whatever the last `build` left there -- LIFT's
+        # ceiling. emit-build then takes deck-pos := __heap-save, and if the
+        # bivy frontier has risen above LIFT's ceiling by even one allocation,
+        # __deck-enter arms a ceiling the cursor is already past and the first
+        # bump in bare-metal-trampoline hits the ud2.
+        #
+        # compile-frontend-cdx ends with compact-phase (opening.codex:934),
+        # which is __heap-restore (__deck-pos) -- it drags the frontier back
+        # inside the deck, which is why upstream emits 3 MB with a 104 MB LIFT
+        # floor and we could not emit fib with 320 MB. X86_64.codex:1105 states
+        # the invariant: "a compact leaves deck-pos and the bivy frontier
+        # equal."
         probe_src = (frontend_source("src", passes, scan)
-                     + f"\n    in {probe_lift}let deck-probe = 0")
+                     + f"\n    in {probe_lift}let deck-probe = 0"
+                     + "\n    in let compacted = phase-compact")
         probe_line = ('\n      print-line-uni ("DECK-PROBE lift-base " & show lift-base'
                       ' & " lift-ceiling " & show lift-ceiling'
                       ' & " deck-pos " & show __deck-pos'
@@ -724,7 +741,8 @@ def harness_source(chapter, prefix, subjects, passes=False, scan=True, probe=Fal
                       # exited. These two numbers say which, before emission
                       # runs.
                       ' & " ceil-cell " & show (peek-qword deck-ceiling-addr 0)'
-                      ' & " counter " & show (peek-qword deck-bound-counter-addr 0))'
+                      ' & " counter " & show (peek-qword deck-bound-counter-addr 0)'
+                      ' & " res-top " & show (peek-qword deck-reservation-top-addr 0))'
                       '\n      let res = x86-64-emit-cdx ir sorted\n      in act')
     else:
         probe_src = pipeline_source("src", passes, scan)
