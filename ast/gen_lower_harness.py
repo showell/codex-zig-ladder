@@ -12,7 +12,7 @@ answers that without a second experiment."""
 import pathlib
 import re
 
-from emit_harness import CHECK_SETUP, DECK_PROLOGUE, RESOLVED_TABLES, check_call, lower_call
+from emit_harness import CHECK_SETUP, DECK_PROLOGUE, LOWER_SETUP, RESOLVED_TABLES, check_call, lower_call
 from roots import CODEX
 
 CHECK_CALL = check_call()
@@ -254,7 +254,7 @@ Section: Driver
     in let rr = resolve-chapter ch skip-list-text-empty [] 0
     in {CHECK_SETUP}let cr = {CHECK_CALL}
     {RESOLVED_TABLES}
-    in let ir = {LOWER_CALL}
+    in {LOWER_SETUP}let ir = {LOWER_CALL}
     in act
       print-line-uni ("lex-tokens " & show (list-length (toks.tokens)))
       print-line-uni ("lex-errors " & show (list-length (toks.errors)))

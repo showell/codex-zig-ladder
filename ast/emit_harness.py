@@ -161,9 +161,38 @@ CHECK_SETUP = """let keep-height = demand-check-keep-floor
 #
 # It is also the flag that makes these rungs EXERCISE COMPILER-38 rather than
 # route around it, which is one of the things upstream asked us to confirm.
+# LOWER's reservation, and the ceiling that guards it.
+#
+# The eighth argument is a CEILING and the harnesses passed 0 for it, which
+# disables the overflow guard: `deck-short-of` answers False for a 0 ceiling,
+# so nothing ever asks whether the deck is running out. That was survivable
+# while it was, and stopped being at U54.
+#
+# WHY IT SURVIVED AND THEN DID NOT. These four harnesses have had a LIVE deck
+# (DECK_PROLOGUE) and a 0 ceiling for a long time and were green at U53. U54
+# adds the COMPILER-38 rename pass, which builds `v_1` binder names by string
+# concatenation -- more deck traffic, through the very helper the fault landed
+# in. Measured 2026-09-02: `lower` faulted !EXC=0d (#GP) at `__str_concat+72`
+# with registers holding what read as instruction bytes, after 65 good lines
+# of output.
+#
+# PhaseAllocator's own prose describes this exact failure and is why a starved
+# deck is not a theory: "Starving that floor to 16 MB did not raise CDX9002; it
+# crashed in __text_compare on a garbage pointer, which is the failure the
+# guard exists to prevent, with the guard present and compiled in."
+#
+# So the driver is mirrored here too (`opening.codex:780-785`), the same way
+# CHECK_SETUP mirrors its phase. A real reservation, and a ceiling derived from
+# it rather than a zero that means "do not check".
+LOWER_SETUP = """let lower-height = demand-lower-floor
+    in let lower-base = build lower-height
+    in let lower-ceiling = lower-base + lower-height
+    in """
+
+
 def lower_call(ch='ch', bound='bound', cst='cst'):
     return (f"lower-chapter {ch} {bound} {cst} (rr.ctor-names) [] "
-            "skip-list-text-empty [] 0 True")
+            "skip-list-text-empty [] lower-ceiling True")
 
 
 # The call itself, so the five harnesses that make it cannot drift apart the
