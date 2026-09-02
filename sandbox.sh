@@ -29,6 +29,18 @@
 #
 #   ./sandbox.sh <label> [work-ref] [codex-repo] [codex-ref]
 #   SANDBOX_REPO=~/showell_repos/safari-codex ./sandbox.sh <label>
+#
+# `env` EXPORTS WHAT THE LADDER'S PROCESSES READ, and a work repo that reads
+# other names needs them supplied by the caller -- who must READ that repo's
+# scripts rather than guess, because a wrong guess here is silent. Measured
+# 2026-09-02, and it is the reason this paragraph exists:
+# `safari-codex/harness/*.sh` opens with
+# `export CODEX_ROOT="${SAFARI_COBBLESTONE:-$HOME/showell_repos/cobblestone-safari}"`,
+# so it OVERRIDES the CODEX_ROOT this file sets. Sourcing a safari sandbox's
+# env and running its harness would leave the sandbox's checkout untouched and
+# quietly measure `cobblestone-safari` instead -- a run that looks isolated and
+# is not, which is the one failure this whole file exists to prevent. Nothing
+# is wired for those repos yet, deliberately.
 #   ./sandbox.sh --prune [keep]        keep the newest N (default 10), and
 #                                      any run holding a KEEP file, whose
 #                                      first line says why
