@@ -36,10 +36,11 @@ Five deviations, found one at a time, each after a failure:
 | `check-chapter` 5 args at U53, 9 at U54 | nine CDX2000 at codegen naming FIELDS, not arity | ~30 min |
 | `lower-chapter` 8 args at U53, 9 at U54 | same shape, one function over | ~20 min |
 | `lower-chapter`'s ceiling passed as 0, disabling the deck guard | suspected in a #GP; **turned out to be a no-op for it** | ~20 min |
-| deck floors used RAW (scale 100) where the driver DERIVES a scale from unit length | not yet resolved | open |
+| deck floors used RAW (scale 100) where the driver DERIVES a scale from unit length | measured harmless -- see below | closed |
+| `check-chapter` called BARE where the driver wraps it in `deck-record` | `lower` faulted `!EXC=0d` in `__str_concat` reading a CHECK-phase Text | found by reading |
 
-Four of the five are the same mistake: **the harness called the driver's
-functions without doing the driver's setup.** The fifth is the same mistake
+Five of the six are the same mistake: **the harness called the driver's
+functions without doing the driver's setup.** The sixth is the same mistake
 about the driver's ARGUMENTS.
 
 **The ladder already knew and the knowledge did not spread.** Four of twelve
@@ -49,6 +50,59 @@ earlier instances of the identical shape: `ir-emit-roots` drifting from six to
 four in BOTH hosted harnesses at once, and the four diagnostic bags the driver
 builds itself that a harness calling only the phases never gets. Its own words:
 "being wrong together looks exactly like being right."
+
+## The sixth deviation, and it is checklist item 3 unapplied
+
+**`check-chapter` cannot be called bare, and it says so itself.** It issues a
+`__deck-exit` immediately before its per-definition walk and a `__deck-enter`
+after it (`Types/TypeChecker.codex:2388,2393`) -- the only hand-written pair
+anywhere in the compiler outside the emitter. `BuildSettings.codex:154` states
+the requirement in as many words: "CHECK is the exception and the reason is
+three lines of check-chapter ... so that walk runs OUTSIDE the extent and the
+cell is live."
+
+**The extent it exits is the CALLER'S**, and the caller upstream ships is
+`opening.codex:631`, `deck-record (check-chapter ...)`. Every harness here
+called it bare.
+
+What that does is mechanical. `emit-deck-enter-builtin` swaps R10 only on the
+ZERO crossing of a nesting counter. Bare, the counter goes 0 -> -1 at
+check-chapter's own exit; at -1 every `deck-record` inside the walk is a no-op,
+so the per-definition results land on the BIVY while `check-batch` reclaims to
+`cb-bivy-mark` as though they had not.
+
+**And it is invisible to the phase that commits it.** `check` prints
+`cr.types` on the next line and is green. `lower` builds the resolved tables,
+takes a 328 MB reservation and runs the whole of lowering first, and only then
+reads a `Text` whose length word is now someone else's data. That is the
+`!EXC=0d` in `__str_concat`: R10 non-canonical because the previous concat
+bumped it by a garbage length.
+
+**The scale deviation is closed by arithmetic, not by a run.** The four raw
+floors total 1,232 MB and the derived-77 total is 954 MB, in a guest of 3,072
+MB whose stack sits at 3,072 MB and whose frontier at the fault was 1,247 MB.
+There is 1.8 GB of slack either way, so the scale cannot have caused this. It
+is still worth correcting for fidelity; it was never a candidate.
+
+## Reading a fault dump: `let` is STRICT, so printed output bounds the fault
+
+The 2026-09-02 dump was read as "it dies inside `lower-chapter`" because the
+truth stops at the last CHECK line. That inference is backwards.
+
+`emit-let` (`Emit/X86_64.codex:2274`) emits the value into a local and then the
+body: **Codex `let` is strict.** A harness is one `let` chain ending in an
+`act` block, so every binding -- `ir = lower-chapter ...` included -- is
+computed BEFORE the first line is printed. (`ir` has four uses, so no
+occurrence pass can sink it, either.)
+
+**So output in a dump is a floor on progress, not a ceiling.** Forty-six lines
+printed means every phase completed; the fault is in the PRINT, and the print
+names its own subject. Here the next statement was `show-bindings`, whose text
+is `"tb " & b.name & " " & ...`, and the registers say the same thing
+independently: `RDI` a fresh heap text 15 MB above the top reservation, `RSI`
+at 2.16 MB in static data -- the `" "` literal. The faulting call is the
+SECOND `&`, on a CHECK-phase artifact, one phase behind where the dump was
+read.
 
 ## The checklist, for the next Update
 
