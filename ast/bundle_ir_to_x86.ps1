@@ -115,7 +115,47 @@ foreach ($ch in @('codex/compiler/Core/OffsetTable.codex',
                   # resolve phase now, so every subject needs this chapter --
                   # it used to arrive only via the whole rung's extras.
                   'codex/compiler/IR/ResolveTypes.codex',
-                  'codex/compiler/Emit/IRTextEmitter.codex')) {
+                  'codex/compiler/Emit/IRTextEmitter.codex',
+                  # THE DRIVER, and the six foreword chapters it cites that
+                  # nothing else here pulls in. Update 55 split the entry point
+                  # out -- opening.codex defines `codex-opening` and a
+                  # fourteen-line EntryPoint.codex holds `opening` -- so this
+                  # chapter is bundlable by a subject that supplies its own
+                  # entry point, which every harness does. Carrying it is what
+                  # lets a harness CALL the driver's phases instead of copying
+                  # their argument lists, which is where our harness bugs live.
+                  #
+                  # The foreword six are carried REAL rather than stubbed.
+                  # Stubbing them was tried and abandoned: `gate-import` answers
+                  # `ImportResult`, a type outside the cited list, so the stub
+                  # surface has a transitive closure and every guessed record
+                  # shape is a type error waiting. These compile and guess
+                  # nothing, and `compile-frontend-passes` never reaches a disk.
+                  #
+                  # BootPaint is the one that stays a stub, and it is not
+                  # inconsistency: `bp-rtc-seconds` is a wall clock, and a rung
+                  # whose truth changes between two identical runs is not an
+                  # oracle. See BootPaintStubs.codex.
+                  # The middle end, which the driver reaches and does not
+                  # cite -- B5 gives a bundle one flat namespace, so upstream
+                  # never notices that `opening.codex` reads `run-ir-pipeline`
+                  # while citing nothing that defines it. The wrappers that
+                  # add these for their own reasons still name them; Add-PlugChapter
+                  # de-duplicates, so saying it twice is free.
+                  'codex/compiler/IR/Occurrence.codex',
+                  'codex/compiler/IR/IRCheck.codex',
+                  'codex/compiler/IR/LambdaLifting.codex',
+                  'codex/compiler/IR/Simplify.codex',
+                  'codex/compiler/IR/Passes.codex',
+                  'codex/compiler/IR/LirTargets.codex',
+                  'codex/compiler/Emit/CodexEmitter.codex',
+                  'codex/foreword/core/Maybe.codex',
+                  'codex/foreword/core/Wrap64.codex',
+                  'codex/foreword/core/CCE.codex',
+                  'codex/foreword/core/Fat16.codex',
+                  'codex/foreword/core/ImportGate.codex',
+                  'codex/foreword/core/FactDisk.codex',
+                  'codex/compiler/opening.codex')) {
     Add-PlugChapter -Lines $lines -Path (Join-Path $repo $ch) -Quire 'Parsmi'
 }
 # Update 42 gave PhaseAllocator a cite of Codex chapter BootPaint, and a cite
