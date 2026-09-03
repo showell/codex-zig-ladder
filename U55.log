@@ -25,6 +25,29 @@ Tags `u54`, `u55` and `u54-zig-prelude-split` mark where each piece came from.
 The per-fix ledger -- branch, base, proof, what it invalidates -- is
 `CARRY_FORWARD.md`.
 
+## Our assets that the superset broke
+
+The progression's own prediction, arriving on schedule: a fix is not carried
+until every asset that reads the changed thing has been carried too.
+
+- **Three ladder bundlers each held a private `-Chapters @('ZigEmitter',
+  'ZigPlug')`.** The four-way split updated the author's build.ps1 and none of
+  them. First run: 17 x CDX3002 six seconds in, naming definitions that sat in
+  files nobody had asked for. One list now (`zig_plug_pages.txt`), one guard
+  (`check_zig_pages.py`, verified RED against a plain U55 tree).
+
+- **The READERS were worse, because they fail silently.** `tier_coverage.py`
+  scans for the ZigBuiltinEmitter table, which moved to page 2: it found ZERO
+  builtins and would have reported complete coverage of an empty set. Measured,
+  0 before and 79 after. `check_builtin_sites.py` found one of its three spans
+  and printed a clean sheet for the other two. Neither crashed.
+
+- **`xref bundle` said the split was cite-neutral and it was right about the
+  wrong thing.** It was handed a concatenation of the four pages, which is what
+  a correct bundle looks like -- so it could not see that the real bundler was
+  building a different one. A tool fed the intended input cannot report the
+  actual input.
+
 ## Steps
 
 - **Read before running anything.** 455 files, +51,913/-8,177 over U54. Compiler
