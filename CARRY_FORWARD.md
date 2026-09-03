@@ -43,33 +43,49 @@ and reads like an answer.
 
 ## The rows
 
-Update 55 is `675a0775`, seed `81F9E8171DCF6268`.
+Update 55 is `675a0775`, tag `u55`, seed `81F9E8171DCF6268`.
 
-### ON U55 -- carried forward
+**Everything we own now lives on ONE branch: `NewRepository@u56-candidate`**
+(worktree `cobblestone-u56`), cut from `u55` and nothing else. The per-fix
+branches below are its sources; they stay, but the superset is what gets built,
+tested and split into PRs.
 
-| Fix | Lives on | Proven | Destined | Invalidates |
-|---|---|---|---|---|
-| Four memory builtins: `peek-32`, `poke-32`, `alloc-bytes`, `poke-byte`, `__memset`; Nothing-returning fragments return void; address-of knows an enum | `NewRepository@u55-plus-memory-builtins` (worktree `cobblestone-u55min`), 4 commits on U55 | Refusal set at U55 drops to exactly ONE (`T38`) | U56, as the U55 rebasing of plugs-backlog 2.19 | every zig-arm result |
-| WGSL causes 1 and 3: loop-helper returns a typed zero; `f32` literals emit as hex constant expressions, and refuse above `e == 255` | `NewRepository@wgsl-firefox` (worktree `cobblestone-wgsl`), 2 commits on U55 | naga 19/44 -> 41/44 by simulation; eye-tested in Firefox | U56, as a PR with the gate | wgsl arm only |
-| `lower-chapter` takes 11 parameters and returns a tuple at U55 | `codex-zig-transpiler@u55-minimal` | The transpiler reaches emission; only `T38` refuses | ours, not upstream's | transpiler only |
-| `zigc` CALLS the driver instead of copying it | `codex-zig-ladder@master` | The rung bundles `Chapter: Opening`; harness went 10 KB -> 1.1 KB | ours | zigc rung only |
-| The same conversion for the transpiler | `codex-zig-transpiler@u55-driver` (`8541c14`) | Compiles; costs three more builtins (see OPEN) | ours | transpiler only |
+### Carried onto u56-candidate
 
-### ON U54 -- STRANDED, not yet carried forward
+| Fix | Source branch | How it was carried | Proven |
+|---|---|---|---|
+| Four memory builtins + Nothing-returning fragments + address-of knows an enum | `u55-plus-memory-builtins` | cherry-pick, clean | refusal set at U55 drops to one (`T38`) |
+| `real-to-int` / `real-from-int`, the f64 conversions | `zig-plug-real-bitcast` | cherry-pick, 4 conflicts resolved by keeping BOTH sides | U55 has no such emitter at all |
+| `run.ps1` creates its output dir and falls back to the seed | `zig-plug-real-bitcast` | cherry-pick, clean | not absorbed by U55; checked by diffing the file |
+| WGSL causes 1 and 3 | `wgsl-firefox` | cherry-pick, clean | naga 19/44 -> 41/44; eye-tested in Firefox |
+| ZigEmitter split four ways | `zig-prelude-chapter` (U54) | **RE-RUN, not rebased** | 421 definitions in, 421 out, 0 duplicates |
+| Four dead definitions deleted | `zig-prelude-chapter` (U54) | re-verified dead at U55, then re-deleted | no caller under codex/, apps/, docs/, build/ |
 
-| Fix | Lives on | Why it is stuck |
-|---|---|---|
-| `ZigEmitter.codex` split four ways (2555/1049/513/564 lines) + 4 dead definitions deleted | `NewRepository@zig-prelude-chapter` (worktree `cobblestone-outbound54`), 4 commits on U54 | Needs rebasing onto U55. U55 touched `ZigEmitter.codex` (20 lines), so this will conflict, and the split must be re-cut against U55's text. |
-| plugs-backlog row 2.19, the PR-shaped version of the memory builtins | `NewRepository@zig-plug-memory-builtins`, 5 commits on U54 | Its four code commits ARE carried forward above. Only the backlog row is stranded -- it conflicts on U55's renumbering of `plugs-backlog.md`. |
+### NOT carried, deliberately
 
-### OPEN -- known, unfixed
+| Fix | Why |
+|---|---|
+| `real-to-bits` / `bits-to-real`, the f64 bitcasts | **U55 absorbed them.** Cherry-picking would have duplicated upstream's own work; the conflict at `ZigBuiltinEmitter` is what revealed it. |
+| plugs-backlog rows | PR-shaping, not needed to build. U55 renumbered the file to 2.28 and rewrote 14,377 lines, so rows get written fresh against U55's numbering when the PRs are cut. |
 
-| Issue | Where it bites | What is known |
-|---|---|---|
-| `T38` | `codex-zig-transpiler`, the one remaining refusal at U55+4 | PRE-EXISTING, not U55 damage (U54 `__lam_436`, U55 `__lam_443`), and OURS: the harness maps over `(cr.env).bindings`, a two-level field access the emitter cannot type. The driver sorts first and resolves once. The proof is two lines below in our own output, where `map_list(TypeBinding, TypeBinding, ...)` over `sort-bindings` emits cleanly. |
-| WGSL cause 2 | `cobblestone-wgsl` | INCOMPLETE and known to be so. Helpers are emitted by `wgsl-topo-pass` at MODULE level where `ctx.kprefix` is `""`, so keeping the prefix keeps nothing: the signature loses the parameter and the body still writes `(*tex)[ti]`. Needs an owner-prefix per helper via the `wgsl-reachable` walk. |
-| Driver-citing enlarges the plug surface | the fork below | A subject carrying `Chapter: Opening` reaches serial, device and x86-64 code, so the zig plug owes `port-out-byte` (`opening.codex:343`), `poke-16` and `__self-type-defs`. Measured 2026-09-03: four refused builtin kinds becomes seven. NOT yet established whether those are genuinely reachable from a driver-citing entry or an artifact of wider-than-necessary reachability -- `port-out-byte` appears exactly once, which smells narrow. |
-| U55's `.sources` sidecar digests the empty set | our bundles | `Get-PlugSourceDigest` globs `*.codex` in the plug dir; the ladder assembles a synthetic plug whose dir holds none. Nothing in our flow reads it, so it is gitignored, not fixed. |
+### What Rust said before any box time
+
+Run differentially against a plain `u55` worktree, because a whole-tree number
+alone means nothing:
+
+- `parsedump cover` -- **1959 parse errors both sides, 44 unstructured bodies
+  both sides.** No regression. `TOO MANY LOOSE TOKENS` fires identically on
+  plain U55, so it is a pre-existing whole-tree condition and not ours.
+- `xref dangling` -- **1676 names both sides, set-identical.** Nothing new
+  dangles, nothing stopped dangling.
+- `xref bundle` on the zig plug -- **147 unresolved names both sides**, and the
+  required-chapter list byte-identical. The split adds no cite requirement.
+- Definition count reconciled exactly: 418 at U55, +5 memory builtins, +2
+  conversions, -4 dead = **421**, matching `cohesion` across the four pages.
+  0 duplicate names across the pages.
+- **Rust also caught its own blindness:** `xref chapter` keyed on the FILE, so
+  the four-page chapter reported 194 definitions and appeared to read itself.
+  Fixed in `rust-codex-compiler@1777a2e` before trusting anything else it said.
 
 ## The fork that has to be settled first
 

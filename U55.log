@@ -7,6 +7,24 @@ What was changed and what was run, in order, one line each. Detail lives in the
 commit it points to; findings go to the register, measurements to
 JUSTIFICATIONS. This file is the thread, not the record.
 
+## The superset branch
+
+`NewRepository@u56-candidate` (worktree `cobblestone-u56`) is where every fix we
+own now lives. It is cut from `u55` and nothing else, so its base is one tag.
+
+Built by CARRYING FORWARD, not by rebasing a chain: cherry-pick what already
+applies, and for the zig-emitter split RE-RUN the cut against U55's text, because
+U55 edited the very section that moves. Bases were checked with `git merge-base`,
+never assumed.
+
+What went in: the memory builtins, the real conversions, the wgsl fixes, the
+four-way emitter split, the dead-definition deletion. What did NOT: the f64
+bitcasts, which U55 already absorbed.
+
+Tags `u54`, `u55` and `u54-zig-prelude-split` mark where each piece came from.
+The per-fix ledger -- branch, base, proof, what it invalidates -- is
+`CARRY_FORWARD.md`.
+
 ## Steps
 
 - **Read before running anything.** 455 files, +51,913/-8,177 over U54. Compiler
