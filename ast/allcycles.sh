@@ -49,6 +49,29 @@ if ! python3 "$T/restore_truths.py" > "$T/ast/.restore.log" 2>&1; then
     # if what is on disk is not usable, which is the check that matters.
     echo "--- restore_truths: nothing restored (see ast/.restore.log)"
     sed 's/^/    /' "$T/ast/.restore.log" | head -8
+    # NO BANK AT ALL IS NOT "nothing to restore" -- IT IS THE WRONG SCRIPT.
+    # A sweep compares this plug's arms against BANKED truths. With no bank
+    # for the seed there is nothing to compare to, and the run does not fail
+    # here: it fails whenever the first rung needs a .truth as its own
+    # subject. Measured 2026-09-03 on the first U55 sandbox, that was
+    # ir_to_codex_roundtrip, 398 seconds and six rungs of QEMU later, as a
+    # FileNotFoundError from a harness generator.
+    #
+    # A new seed invalidates both arms, so the answer is a rebank, and
+    # rebank_all.sh says so in its own header. Say it here, at second zero,
+    # where the log is still being read.
+    if grep -q 'NO BANK for this seed' "$T/ast/.restore.log"; then
+        echo
+        echo "REFUSING: there is no bank for this seed, so a sweep has nothing to compare against."
+        echo "  A new seed invalidates BOTH arms -- the bare-metal truth binary AND the IR-CCE"
+        echo "  the plug consumes. Bank first, then sweep:"
+        echo
+        echo "      bash ast/rebank_all.sh      # hours-class, detaches itself"
+        echo "      bash ast/allcycles.sh       # then this"
+        echo
+        summary_done=1
+        exit 1
+    fi
 else
     sed 's/^/    /' "$T/ast/.restore.log" | grep -E 'restored|NOTE|harness' | head -6
 fi
