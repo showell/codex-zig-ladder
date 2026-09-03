@@ -372,9 +372,26 @@ def compile_ring(blob_path, out_path, mem_mb=MEM_MB, timeout=1800, seed=None,
                         continue
                     kind = ("BUSY past the hard cap" if busy
                             else f"WEDGED on {len(stall_pcs)} distinct PC(s)")
+                    # WHAT THE GUEST CAN SEE, versus what the host believes it
+                    # wrote. A guest parked in __bare_metal_read_serial looks
+                    # identical whether the refill never happened or happened
+                    # and went unnoticed -- RING_TEST_NO_REFILL produces exactly
+                    # the same PC and the same rpos as the real failure did. The
+                    # cursors tell those apart, and nothing else does.
+                    try:
+                        gw = int.from_bytes(gdb.read_mem(WPOS_ADDR, 8), "little")
+                        gr = int.from_bytes(gdb.read_mem(RPOS_ADDR, 8), "little")
+                        seen = (f"cursors as the GUEST sees them: wpos {gw} rpos {gr};"
+                                f" host wrote wpos {wpos}"
+                                + ("  <-- the guest cannot see the host's wpos"
+                                   if gw != wpos else
+                                   "  <-- the guest CAN see it and is not acting on it"))
+                    except Exception as e:
+                        seen = f"cursors unreadable: {e}"
                     raise RuntimeError(
                         f"guest stopped consuming at rpos {rpos} of {len(blob)}"
-                        f" -- {kind} after {held:.0f}s / {stalled} rounds; in {where}")
+                        f" -- {kind} after {held:.0f}s / {stalled} rounds; in {where}."
+                        f" {seen}")
                 gdb.cont_nowait()
             fill_secs = time.time() - t_fill
             print(f"ring refill consumed: {len(blob)} bytes in {fill_secs:.1f}s"
