@@ -337,6 +337,52 @@ arms get wrong. Every finding the port produced that the ladder could not have
 produced came from an ABSOLUTE standard. Both items above buy absolute oracles;
 that is the gap, not the individual defects.
 
+## UPDATE 55 IS READ BUT NOT BANKED. Objective: the ONE question a release has to answer.
+
+`675a0775`, sandbox `20260903T184329Z-u55-driver`. The thread is in
+[U55.log](U55.log); what is left is here.
+
+**No truth exists for this seed, so no rung has compared anything.** Harness
+gates are green, the contracts we hard-code did not move, and the keep protocol
+is patched -- but "bare metal and zig agree, and nothing regressed" is still
+unanswered, and that is the only question a release has to answer. Everything
+below is subordinate to cutting truths and running a sweep.
+
+- **Eight lowering rungs still copy the driver.** `zigc` calls it and is 1,100
+  bytes; the rest still carry the hand-built pipeline that five of the last
+  seven Updates broke. `codexir` deviates on purpose (`resolve=False`,
+  ConstructedTy vs the seed's ctd) and is a JUDGEMENT call, not a mechanical
+  one. `lower`, `ir_to_codex` and `ir_to_wire` would have to carry the whole
+  x86 backend to cite the driver, which would stop them being isolated phase
+  oracles -- so the honest answer for those three may be "never", and it should
+  be decided rather than drifted into.
+
+- **`check_bundles` does not catch a same-quire double-include.** Its rule is
+  the same chapter NAME under two different QUIRES; naming a chapter in both a
+  base list and a wrapper's ExtraChapters is one quire, includes it twice, and
+  costs CDX3004 once per chapter. Cost one guest on 2026-09-03. A chapter
+  legitimately spanning files is normal and must not be flagged, so the rule
+  needs care.
+
+- **`opening.codex` reads `run-ir-pipeline`, `default-ir-pipeline`,
+  `ir-check-violation-bag` and `occ-info-bag` while citing nothing that defines
+  them.** B5's flat namespace hides it upstream; a subject built from the cite
+  list alone does not resolve them. It means a chapter's cite list is not a
+  description of its dependencies, which is worth telling Damian BEFORE anyone
+  splits that file. Measure the tree-wide count first -- it is a design property
+  of B5, not obviously a defect, and a phenomenon is not a finding.
+
+- **The quotations seam in `opening.codex` is measured and free.** 31
+  definitions, 12,126 bytes, ZERO calls out of the block, entered through four
+  names from two callers -- the signed-works trust system. Survey at
+  `notes/opening-codex-seams.md`. Two smaller leaves behind it: the Measurement
+  nine (zero out, four in) and the disk-loading seven (ONE door). Not started,
+  and it is upstream's file, so it goes out as a PR or not at all.
+
+- **Our plugs backlog rows were renumbered again**: 2.19 and 2.20 now belong to
+  the img plug and the evidence plug. Any PR text of ours citing them is stale.
+  Cite the defect, not the number.
+
 ## IN FLIGHT WITH DAMIAN: three PRs and one issue, all opened 2026-08-29
 
 **Nothing is prepared and unsent.** What is out:
