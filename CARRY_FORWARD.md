@@ -60,6 +60,15 @@ tested and split into PRs.
 | WGSL causes 1 and 3 | `wgsl-firefox` | cherry-pick, clean | naga 19/44 -> 41/44; eye-tested in Firefox |
 | ZigEmitter split four ways | `zig-prelude-chapter` (U54) | **RE-RUN, not rebased** | 421 definitions in, 421 out, 0 duplicates |
 | Four dead definitions deleted | `zig-prelude-chapter` (U54) | re-verified dead at U55, then re-deleted | no caller under codex/, apps/, docs/, build/ |
+| Closure params move to `_cp` | `zig-plug-closure-param-namespace` / `cobblestone-zig-peek32` | **applied BY HAND** -- the split had moved `zig-closure-params` to page 3, so the patch aimed at a file that no longer held it | U55 still emits `"p" & integer-to-text i` |
+| The check compact is bare-metal memory work, hosted skips it | `compiler-hosted-kind-check-compact` (**SENT as PR 117**, COMPILER-43) | cherry-pick, clean | U55's TypeChecker has no `hosted` at all |
+
+**Both were found by reading what the ladder's own working tree carried
+(`ladder_status.py`) and asking whether U55 had taken it.** Neither was in the
+ledger an hour earlier. A fix can hide in a working tree that everything builds
+from, precisely because everything builds from it -- which is the argument for
+one superset branch rather than a checkout that has drifted into being the
+record.
 
 ### NOT carried, deliberately
 
