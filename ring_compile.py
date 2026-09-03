@@ -285,6 +285,18 @@ def compile_ring(blob_path, out_path, mem_mb=MEM_MB, timeout=1800, seed=None,
             # rather than argued about.
             stall_rounds = int(os.environ.get("RING_STALL_ROUNDS", "400"))
             hard_secs = float(os.environ.get("RING_STALL_HARD_SECS", "900"))
+            # RING_TEST_NO_REFILL exists so the detector above can be PROVEN to
+            # work. A healthy run stalls zero rounds -- the guest drains 1.2 MB
+            # in 0.3s -- so the stall branch never executes and every part of it
+            # is untested code that has only ever reported success. Withholding
+            # the refill parks the guest exactly where the real failure parked
+            # it: everything staged consumed, rpos frozen at the ring size,
+            # waiting for input that never comes. If the detector cannot see
+            # THAT, it cannot see anything.
+            no_refill = os.environ.get("RING_TEST_NO_REFILL") == "1"
+            if no_refill:
+                print("  [test] RING_TEST_NO_REFILL: refills withheld on purpose;"
+                      " the guest is meant to stall", flush=True)
             symbols = _load_symbols(seed or f"{REPO}/seed/Codex.cdx")
             stall_pcs = {}
             max_stalled = 0
@@ -299,7 +311,7 @@ def compile_ring(blob_path, out_path, mem_mb=MEM_MB, timeout=1800, seed=None,
                 if rpos >= len(blob):
                     break
                 room = RING_SIZE - (wpos - rpos)
-                if room > 0 and wpos < len(blob):
+                if room > 0 and wpos < len(blob) and not no_refill:
                     t_write = time.time()
                     chunk = blob[wpos:wpos + room]
                     off = 0
