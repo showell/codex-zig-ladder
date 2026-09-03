@@ -55,8 +55,29 @@ def span(lines, header):
     return i, j + 1
 
 
-def audit(path):
-    lines = path.read_text(errors='replace').split('\n')
+def origin(pages, n):
+    """Turn a concatenated line number back into (file, line-in-file)."""
+    for p in pages:
+        k = len(pathlib.Path(p).read_text(errors='replace').split('\n'))
+        if n <= k:
+            return pathlib.Path(p).name, n
+        n -= k
+    return '?', n
+
+
+def audit(pages):
+    # ONE CHAPTER, FOUR FILES, and the three spans below now live on three
+    # different ones: zig-prelude-decls on page 1, zig-builtin-emitters on
+    # page 2, the zig-p-* fragments on page 4. The pages are concatenated in
+    # bundle order, which is the order the compiler sees them in, so a span
+    # that opens on one page and closes on the next is read whole.
+    #
+    # Reported line numbers are therefore offsets into the CONCATENATION, not
+    # into any one file. `origin()` below turns one back into file:line.
+    if isinstance(pages, (str, pathlib.Path)):
+        pages = [pathlib.Path(pages)]
+    texts = [pathlib.Path(p).read_text(errors='replace') for p in pages]
+    lines = '\n'.join(texts).split('\n')
     di, dj = span(lines, '  zig-prelude-decls : List Text')
     bi, bj = span(lines, '  zig-builtin-emitters : List ZigBuiltinEmitter')
     try:
@@ -81,11 +102,16 @@ def audit(path):
 
 
 def main():
-    path = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else None
-    if path is None:
-        print('usage: check_builtin_sites.py <ZigEmitter.codex>', file=sys.stderr)
-        return 2
-    counts, loose = audit(path)
+    # THE EMITTER IS FOUR FILES, and the emission sites this audits are spread
+    # across them -- the ZigBuiltinEmitter table is on page 2. Auditing page 1
+    # alone finds no table and reports a clean sheet.
+    if len(sys.argv) > 1:
+        pages = [pathlib.Path(a) for a in sys.argv[1:]]
+    else:
+        sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+        import zig_pages
+        pages = zig_pages.paths()
+    counts, loose = audit(pages)
     for k, v in counts.items():
         print(f'  {v:5}  {k}')
     print(f'  {len(loose):5}  HAND-WRITTEN EMISSION SITES '

@@ -22,12 +22,13 @@ mkdir -p "$S"
 # and the fingerprint stamped afterwards would describe a plug that was
 # never rebuilt.
 PLUG_SRC="$REPO/codex/plugs/zig/build-output/plug-source.codex"
+ZIG_PAGES=$("$T/zig_pages.sh")
 rm -f "$PLUG_SRC"
 ~/.local/pwsh/pwsh -NoProfile -Command "
 \$ErrorActionPreference = 'Stop'
 . $REPO/codex/plugs/common/plug-build-lib.ps1
 function Build-PlugCdx { Write-Host '[bundle only, compile skipped]' }
-Build-TranspilerPlug -PlugDir $REPO/codex/plugs/zig -PlugName zig -Chapters @('ZigEmitter', 'ZigPlug')
+Build-TranspilerPlug -PlugDir $REPO/codex/plugs/zig -PlugName zig -Chapters @($ZIG_PAGES, 'ZigPlug')
 "
 [ -s "$PLUG_SRC" ] || { echo "BUNDLE FAILED: no plug-source.codex"; exit 1; }
 

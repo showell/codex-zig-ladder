@@ -28,7 +28,14 @@ foreach ($decl in @('codex/compiler/Core/Name.codex',
 }
 Add-PlugChapter -Lines $lines -Path (Join-Path $repo 'codex/plugs/common/PlugTypes.codex') -Quire 'Zig'
 Add-PlugChapter -Lines $lines -Path (Join-Path $repo 'codex/plugs/common/IRTextParser.codex') -Quire 'Zig'
-Add-PlugChapter -Lines $lines -Path (Join-Path $repo 'codex/plugs/zig/ZigEmitter.codex') -Quire 'Zig'
+# EVERY PAGE OF Chapter: Zig Emitter, from the one list the bash bundlers also
+# read. It was this single line when the emitter was one file; the emitter is
+# four files now and a bundle carrying only the first reports 17 undefined
+# names, each of them defined on a page that was never asked for.
+foreach ($zp in (Get-Content (Join-Path $PSScriptRoot '..' 'zig_plug_pages.txt') |
+                 Where-Object { $_.Trim() -and -not $_.Trim().StartsWith('#') })) {
+    Add-PlugChapter -Lines $lines -Path (Join-Path $repo "codex/plugs/zig/$($zp.Trim()).codex") -Quire 'Zig'
+}
 Add-PlugChapter -Lines $lines -Path (Join-Path $here $Body) -Quire 'Zig'
 
 $preLines = Resolve-PlugForewords $lines

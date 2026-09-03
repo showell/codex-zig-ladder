@@ -1,0 +1,16 @@
+# The pages of Chapter: Zig Emitter, IN ORDER, one per line.
+#
+# A CHAPTER'S PAGES ARE LISTED, NOT DISCOVERED -- and every bundler in this
+# repository has to list the same ones. Three of them did, separately, and when
+# the emitter went from one file to four on 2026-09-03 only the author's
+# build.ps1 was updated. The ladder bundled page 1 alone and the plug compile
+# came back with 17 x CDX3002 Undefined name: emit-zig-expr, naming a definition
+# that was sitting in a file nobody had asked for.
+#
+# check_zig_pages.py cross-checks this list against the plug directory, so a
+# page upstream adds or renames fails BEFORE a bundle is built rather than as a
+# pile of undefined names inside one.
+ZigEmitter
+ZigEmitterExpressions
+ZigEmitterApply
+ZigPrelude

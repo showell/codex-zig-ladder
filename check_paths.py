@@ -46,7 +46,10 @@ FROM_CHECKOUT = [
     ('seed/Codex.cdx', 'the seed: the trusted binary every measurement is compared against'),
     ('build/concat-codex-self.ps1', 'used by recon.sh to concatenate the compiler'),
     ('codex/plugs/common/plug-build-lib.ps1', "the author's bundler library, sourced by every bundle_*.ps1"),
-    ('codex/plugs/zig/ZigEmitter.codex', 'the plug under test'),
+    ('codex/plugs/zig/ZigEmitter.codex', 'the plug under test, page 1 of 4'),
+    ('codex/plugs/zig/ZigEmitterExpressions.codex', 'page 2: expressions and the builtin table'),
+    ('codex/plugs/zig/ZigEmitterApply.codex', 'page 3: lambdas, closures and application'),
+    ('codex/plugs/zig/ZigPrelude.codex', 'page 4: the emitted zig runtime'),
     ('codex/test/plug-oracle-arith.codex', "the passes_to_x86_on_arith rung's subject"),
 ]
 

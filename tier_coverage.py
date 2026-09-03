@@ -49,7 +49,12 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))  # ladder-root-bootstrap
 from ladder_root import CODEX, LADDER
 
-EMITTER = CODEX / 'codex' / 'plugs' / 'zig' / 'ZigEmitter.codex'
+import zig_pages
+
+# THE EMITTER IS FOUR FILES. The ZigBuiltinEmitter table moved to page 2
+# on 2026-09-03, so reading ZigEmitter.codex alone found zero builtins and
+# reported full coverage of nothing.
+EMITTER_TEXT = zig_pages.text()
 SUBJECT = LADDER / 'ast' / 'passes_to_x86-subject.codex'
 FINDINGS = LADDER / 'findings'
 
@@ -67,13 +72,13 @@ def main():
                          '(ast/bundle_passes_to_x86.ps1), since the count is against real source')
 
     names = sorted(set(re.findall(r'ZigBuiltinEmitter \{ name = "([^"]+)"',
-                                  EMITTER.read_text())))
+                                  EMITTER_TEXT)))
     subject = SUBJECT.read_text(errors='replace')
     tiers = ''.join(f.read_text(errors='replace') for f in sorted(FINDINGS.glob('*.codex')))
 
     helper = dict(re.findall(
         r'ZigBuiltinEmitter \{ name = "([^"]+)", emit = [^"]*"(cx_[a-z_0-9]+)\(',
-        EMITTER.read_text()))
+        EMITTER_TEXT))
     zigs = [p.read_text(errors='replace') for p in sorted((LADDER / 'ast').glob('*.zig'))]
 
     def reached(name):

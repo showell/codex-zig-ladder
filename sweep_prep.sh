@@ -41,12 +41,13 @@ echo "###   $(git -C "$REPO" log --oneline -1 2>/dev/null | cut -c1-72)"
 PLUG_DIR="$REPO/codex/plugs/zig"
 PLUG_SRC="$PLUG_DIR/build-output/plug-source.codex"
 PLUG_CDX="$PLUG_DIR/build-output/zig-plug.cdx"
+ZIG_PAGES=$("$T/zig_pages.sh")
 rm -f "$PLUG_SRC"
 ~/.local/pwsh/pwsh -NoProfile -Command "
 \$ErrorActionPreference = 'Stop'
 . $REPO/codex/plugs/common/plug-build-lib.ps1
 function Build-PlugCdx { Write-Host '[bundle only, compile skipped]' }
-Build-TranspilerPlug -PlugDir $PLUG_DIR -PlugName zig -Chapters @('ZigEmitter', 'ZigPlug')
+Build-TranspilerPlug -PlugDir $PLUG_DIR -PlugName zig -Chapters @($ZIG_PAGES, 'ZigPlug')
 " | tail -1
 [ -s "$PLUG_SRC" ] || { echo "BUNDLE FAILED: no plug-source.codex"; exit 1; }
 python3 - "$PLUG_SRC" "$T/.prep-plug.blob" <<'PY'
