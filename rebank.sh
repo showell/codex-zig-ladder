@@ -15,24 +15,44 @@
 # plain upstream, no unlanded work underneath. A bank taken on our stack
 # would silently fold our own branches into every future comparison.
 #
-# EXCEPT THAT AT U54 THE RELEASE CANNOT BUILD THE NATIVES, so read the rule
-# as: the MINIMAL tree that builds them, and nothing above it. Measured
-# 2026-09-03 -- native_build.sh at 14ec571b (upstream/master, Update 54) dies
+# EXCEPT THAT AT U54 NEITHER THE RELEASE NOR THE TREE BELOW OUR COMPILER FIX
+# CAN BE BANKED, so read the rule as: the minimal tree where the corpus is
+# actually MEASURABLE, and nothing above it. Two measurements, 2026-09-03, and
+# the second one is the whole reason this paragraph is long.
+#
+# ONE: native_build.sh at 14ec571b (upstream/master, Update 54) dies
 # transpiling zigemit through the plug:
 #
 #     REFUSED: untranslated constructs in zigemit.zig
 #           1 @compileError("zig plug: no address-of for this type")
 #
 # U54's own check-batch machinery reaches prelude text U54's own zig plug
-# cannot emit, which is what PRs 118 and 119 are for. Five plug commits above
-# upstream supply the arms this script needs (peek-32, poke-32/alloc-bytes,
-# poke-byte/__memset, closure params, Nothing/address-of); the sixth,
-# f22e9c5f, is PR 117's COMPILER change and is deliberately not underneath the
-# bank. So the ref is b449275a -- upstream plus the toolchain prerequisites,
-# no compiler change. A tree that cannot build the tools is not a baseline;
-# it is no measurement at all.
+# cannot emit. Five plug commits above upstream supply the arms it needs
+# (peek-32, poke-32/alloc-bytes, poke-byte/__memset, closure params,
+# Nothing/address-of) -- PRs 118 and 119.
 #
-# When those plug PRs land, this returns to plain upstream and the paragraph
+# TWO, and it is the one that costs a bank: b449275a -- upstream plus those
+# five, with our compiler fix deliberately left out -- BUILDS the natives and
+# then emits @compileError for half the corpus. Same 1239 programs, one commit
+# apart:
+#
+#                       f22e9c5f      b449275a
+#     clean                  747           358
+#     markers                268           665
+#     match verdicts         314            29
+#
+# Without the hosted-kind guard the check compact rides along in every hosted
+# program and reaches prelude text no plug has -- finding 70, read from the
+# corpus instead of the ladder. A bank with 29 match verdicts is not a
+# regression baseline; a --changed run against it would drown in markers ->
+# match. So the ref is f22e9c5f: upstream, the five plug arms, and PR 117.
+#
+# THE COST IS REAL AND IT IS THE LESSER ONE. Three of our PRs sit under this
+# bank, so a future comparison is against our stack and not against a tree
+# Damian would recognise. That is worth saying out loud in anything the bank is
+# quoted in. The alternative was a baseline that measures almost nothing.
+#
+# When 117, 118 and 119 land, this returns to plain upstream and the paragraph
 # above it is the whole rule again.
 set -u
 cd "$(dirname "$0")" || exit 2
