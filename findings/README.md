@@ -1158,7 +1158,7 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
-## 70. Update 54's check compact validates a type box by READING ITS TAG WORD out of raw memory, which no plug can answer -- and it answers `ErrorTy` silently. FIX FOUND AND MEASURED: `hosted-kind` at the top of `check-batch-close`, 14/14
+## 70. SENT as [PR 117](https://github.com/damiant3/Cobblestone/pull/117), backlog row COMPILER-43. Update 54's check compact validates a type box by READING ITS TAG WORD out of raw memory, which no plug can answer -- and it answers `ErrorTy` silently. FIX MEASURED: `hosted-kind` at the top of `check-batch-close`, 14/14
 
 Found 2026-09-02 on the ZIG arm, against U54 seed `fcbabf074795`. It is
 UPSTREAM's, not ours. It is not fixed in the tree, but the fix is
