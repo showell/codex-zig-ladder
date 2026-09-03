@@ -28,11 +28,23 @@ comparing quires rather than names is what keeps this free of false positives.
 """
 
 import collections
+import os
 import pathlib
 import re
+import subprocess
 import sys
 
 from ladder_root import CODEX, LADDER
+
+# `xref bundle` answers "what does this bundle read that it does not define"
+# from the bundled text, in about four seconds and with no guest. It is NAMED
+# rather than guessed, the same rule $CODEX_GOLDS follows, and a missing binary
+# says so rather than skipping quietly -- a check that silently does not run is
+# the failure mode this whole file exists to close.
+XREF = pathlib.Path(os.environ.get(
+    'CODEX_XREF',
+    pathlib.Path.home() / 'showell_repos' / 'rust-codex-compiler' /
+    'target' / 'release' / 'xref'))
 
 CHAPTER = re.compile(r'^Chapter:\s*(?:([^-\n]+(?:-[^-\n]+)*)--)?(.+?)\s*$', re.M)
 
@@ -43,6 +55,29 @@ def check(subject):
     for quire, name in CHAPTER.findall(subject.read_text(errors='replace')):
         seen[name].add(quire or '<no quire>')
     return {n: q for n, q in seen.items() if len(q) > 1}
+
+
+def missing_cites(subject):
+    """Names the bundle uses and no chapter in it defines.
+
+    Bundling is cheap and a guest is not: finding the driver's chapter list by
+    compiling cost three guests and about nine minutes on 2026-09-03, and every
+    one of those failures was visible in the bundled text. This asks the same
+    question in four seconds.
+
+    It answers NAMES, not types -- a bundle this calls complete can still fail
+    on a shape, so a green line here is not a promise that the compile passes.
+    """
+    if not XREF.is_file():
+        return None, (f'no xref at {XREF}; set CODEX_XREF or build '
+                      'rust-codex-compiler (missing-cite check NOT run)')
+    r = subprocess.run([str(XREF), 'bundle', str(subject), str(CODEX / 'codex')],
+                       capture_output=True, text=True)
+    if r.returncode == 0:
+        return [], None
+    if r.returncode != 1:
+        return None, f'xref bundle failed: {(r.stderr or r.stdout).strip()[:200]}'
+    return [l for l in r.stdout.splitlines() if l.strip()], None
 
 
 def newest_input(ast, m):
@@ -127,7 +162,17 @@ def main():
                 print(f'           drop it from bundle_{m}.ps1 if a cite already '
                       f'pulls it in, or keep it if the explicit copy is the only one')
         else:
-            print(f'{m:10s} ok')
+            gaps, why = missing_cites(subject)
+            if why is not None:
+                bad += 1
+                print(f'{m:10s} CANNOT CHECK CITES -- {why}')
+            elif gaps:
+                bad += 1
+                print(f'{m:10s} MISSING CITES:')
+                for line in gaps[2:]:
+                    print(f'      {line}')
+            else:
+                print(f'{m:10s} ok')
             checked += 1
 
     if bad:
