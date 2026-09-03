@@ -381,11 +381,21 @@ def compile_ring(blob_path, out_path, mem_mb=MEM_MB, timeout=1800, seed=None,
                     try:
                         gw = int.from_bytes(gdb.read_mem(WPOS_ADDR, 8), "little")
                         gr = int.from_bytes(gdb.read_mem(RPOS_ADDR, 8), "little")
+                        # THREE cases, not two, and only one of them is a
+                        # guest bug. An empty ring the guest is correctly
+                        # waiting on reads the same as a full one it is
+                        # ignoring unless wpos is compared against rpos FIRST.
+                        if gw != wpos:
+                            why = ("  <-- the host's wpos never reached the guest"
+                                   " (write lost)")
+                        elif gw > gr:
+                            why = ("  <-- DATA IS WAITING and the guest is not"
+                                   " taking it: it slept through the wake")
+                        else:
+                            why = ("  <-- the ring is EMPTY, so the guest is"
+                                   " waiting correctly; the host owes it a refill")
                         seen = (f"cursors as the GUEST sees them: wpos {gw} rpos {gr};"
-                                f" host wrote wpos {wpos}"
-                                + ("  <-- the guest cannot see the host's wpos"
-                                   if gw != wpos else
-                                   "  <-- the guest CAN see it and is not acting on it"))
+                                f" host wrote wpos {wpos}" + why)
                     except Exception as e:
                         seen = f"cursors unreadable: {e}"
                     raise RuntimeError(
