@@ -24,9 +24,11 @@ $ErrorActionPreference = 'Stop'
     -OutName 'passes_to_x86-subject.codex' `
     -PlugName 'passes_to_x86-subject' `
     -ExtraChapters @(
-        # The middle end moved into bundle_ir_to_x86.ps1's own list when the
-        # driver joined it -- Chapter: Opening reads these without citing them.
-        # Naming them here too includes each chapter TWICE, and Add-PlugChapter
-        # does NOT de-duplicate across calls: the result is CDX3004, "spans 2
-        # files, but this page carries no Page N of M marker", once per chapter.
+        'codex/compiler/IR/Occurrence.codex',
+        'codex/compiler/IR/IRCheck.codex',
+        'codex/compiler/IR/LambdaLifting.codex',
+        'codex/compiler/IR/Simplify.codex',
+        'codex/compiler/IR/Passes.codex',
+        'codex/compiler/IR/LirTargets.codex',
+        'codex/compiler/Emit/CodexEmitter.codex'
         )

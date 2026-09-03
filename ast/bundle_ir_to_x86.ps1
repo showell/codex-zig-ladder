@@ -20,7 +20,12 @@ param(
     # duplicate TYPE is CDX3001, a hard error. Same mechanism the BootPaint and
     # AstNodes 'Deck Copies' drop already use.
     [hashtable]$ExtraDrops = @{},
-    [string]$BootPaint = 'BootPaintStubs.codex'
+    [string]$BootPaint = 'BootPaintStubs.codex',
+    # OPT IN to carrying Chapter: Opening. A subject only wants the driver if
+    # its harness CALLS the driver; carrying it otherwise costs a fifth of the
+    # subject's lines and every byte of that is compiled by a guest. zigc asks
+    # for it, the rungs still standing in for the driver do not.
+    [switch]$WithDriver
 )
 $ErrorActionPreference = 'Stop'
 $ladder = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path  # ladder-root-bootstrap: reaches the LADDER only; the checkout comes from ladder_root
@@ -115,47 +120,7 @@ foreach ($ch in @('codex/compiler/Core/OffsetTable.codex',
                   # resolve phase now, so every subject needs this chapter --
                   # it used to arrive only via the whole rung's extras.
                   'codex/compiler/IR/ResolveTypes.codex',
-                  'codex/compiler/Emit/IRTextEmitter.codex',
-                  # THE DRIVER, and the six foreword chapters it cites that
-                  # nothing else here pulls in. Update 55 split the entry point
-                  # out -- opening.codex defines `codex-opening` and a
-                  # fourteen-line EntryPoint.codex holds `opening` -- so this
-                  # chapter is bundlable by a subject that supplies its own
-                  # entry point, which every harness does. Carrying it is what
-                  # lets a harness CALL the driver's phases instead of copying
-                  # their argument lists, which is where our harness bugs live.
-                  #
-                  # The foreword six are carried REAL rather than stubbed.
-                  # Stubbing them was tried and abandoned: `gate-import` answers
-                  # `ImportResult`, a type outside the cited list, so the stub
-                  # surface has a transitive closure and every guessed record
-                  # shape is a type error waiting. These compile and guess
-                  # nothing, and `compile-frontend-passes` never reaches a disk.
-                  #
-                  # BootPaint is the one that stays a stub, and it is not
-                  # inconsistency: `bp-rtc-seconds` is a wall clock, and a rung
-                  # whose truth changes between two identical runs is not an
-                  # oracle. See BootPaintStubs.codex.
-                  # The middle end, which the driver reaches and does not
-                  # cite -- B5 gives a bundle one flat namespace, so upstream
-                  # never notices that `opening.codex` reads `run-ir-pipeline`
-                  # while citing nothing that defines it. The wrappers that
-                  # add these for their own reasons still name them; Add-PlugChapter
-                  # de-duplicates, so saying it twice is free.
-                  'codex/compiler/IR/Occurrence.codex',
-                  'codex/compiler/IR/IRCheck.codex',
-                  'codex/compiler/IR/LambdaLifting.codex',
-                  'codex/compiler/IR/Simplify.codex',
-                  'codex/compiler/IR/Passes.codex',
-                  'codex/compiler/IR/LirTargets.codex',
-                  'codex/compiler/Emit/CodexEmitter.codex',
-                  'codex/foreword/core/Maybe.codex',
-                  'codex/foreword/core/Wrap64.codex',
-                  'codex/foreword/core/CCE.codex',
-                  'codex/foreword/core/Fat16.codex',
-                  'codex/foreword/core/ImportGate.codex',
-                  'codex/foreword/core/FactDisk.codex',
-                  'codex/compiler/opening.codex')) {
+                  'codex/compiler/Emit/IRTextEmitter.codex')) {
     Add-PlugChapter -Lines $lines -Path (Join-Path $repo $ch) -Quire 'Parsmi'
 }
 # Update 42 gave PhaseAllocator a cite of Codex chapter BootPaint, and a cite
@@ -164,6 +129,46 @@ foreach ($ch in @('codex/compiler/Core/OffsetTable.codex',
 foreach ($ch in $ExtraChapters) {
     $drop = if ($ExtraDrops.ContainsKey($ch)) { $ExtraDrops[$ch] } else { @() }
     Add-PlugChapter -Lines $lines -Path (Join-Path $repo $ch) -Quire 'Parsmi' -DropSections $drop
+}
+# THE DRIVER, carried only when the harness CALLS it.
+#
+# Update 55 split the entry point out -- opening.codex defines `codex-opening`
+# and a fourteen-line EntryPoint.codex holds `opening` -- so Chapter: Opening is
+# bundlable by a subject that supplies its own entry point. A harness that
+# carries it can call `compile-frontend-cdx` instead of reimplementing it, and a
+# moved signature then becomes a compile error at a call we did not write.
+#
+# The six foreword chapters are carried REAL rather than stubbed. Stubbing was
+# tried and abandoned: `gate-import` answers `ImportResult`, a type outside the
+# cited list, so the stub surface has a transitive closure and every guessed
+# record shape is a type error waiting. These compile and guess nothing, and
+# `compile-frontend-cdx` never reaches a disk. BootPaint is the one that must
+# stay a stub -- `bp-rtc-seconds` is a wall clock and a rung whose truth changes
+# between two identical runs is not an oracle.
+#
+# The middle end is here because the driver READS it without citing it: B5 gives
+# a bundle one flat namespace, so upstream never notices `opening.codex` using
+# `run-ir-pipeline` while citing nothing that defines it. A wrapper that also
+# names these must stop, because ADD-PLUGCHAPTER DOES NOT DE-DUPLICATE ACROSS
+# CALLS -- the result is CDX3004, "spans 2 files, but this page carries no
+# Page N of M marker", once per chapter.
+if ($WithDriver) {
+    @('codex/compiler/IR/Occurrence.codex',
+      'codex/compiler/IR/IRCheck.codex',
+      'codex/compiler/IR/LambdaLifting.codex',
+      'codex/compiler/IR/Simplify.codex',
+      'codex/compiler/IR/Passes.codex',
+      'codex/compiler/IR/LirTargets.codex',
+      'codex/compiler/Emit/CodexEmitter.codex',
+      'codex/foreword/core/Maybe.codex',
+      'codex/foreword/core/Wrap64.codex',
+      'codex/foreword/core/CCE.codex',
+      'codex/foreword/core/Fat16.codex',
+      'codex/foreword/core/ImportGate.codex',
+      'codex/foreword/core/FactDisk.codex',
+      'codex/compiler/opening.codex') | ForEach-Object {
+        Add-PlugChapter -Lines $lines -Path (Join-Path $repo $_) -Quire 'Parsmi'
+    }
 }
 $bootPaintPath = if ($BootPaint -match '/') { Join-Path $repo $BootPaint } else { Join-Path $here $BootPaint }
 Add-PlugChapter -Lines $lines -Path $bootPaintPath -Quire 'Parsmi'
