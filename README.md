@@ -1452,7 +1452,72 @@ What happens when the depot publishes a release, in order. Each step exists
 because skipping it has already cost something once; the citations are to the
 Update where it did.
 
-### 1. Read before running anything
+### 1. Stand on THEIR driver, not on a copy of it
+
+**Before anything else, ask what our side still re-implements.** Every harness
+that copies the driver's phase order is a copy of something we do not own, and
+it goes stale silently: Codex curries, so a call left short of an argument is a
+FUNCTION VALUE, not an error. Five of the last seven Updates moved a phase
+function we call, and every one was found by a rung dying an hour into a run.
+
+Update 55 split the entry point out -- `opening.codex` defines `codex-opening`,
+`EntryPoint.codex` holds `opening` -- so **`Chapter: Opening` is bundlable by a
+subject that supplies its own entry point**, and a harness can call the driver
+instead of restating it. `ast/emit_harness.py`'s `driver_cdx_source()` does
+that, and `zigc` uses it: thirty lines of copied phase order and deck arithmetic
+became two calls.
+
+    in let fe = compile-frontend-cdx src "Codex_Codex" compile-flags-default
+    in let res = compile-to-cdx fe
+
+**Where a harness cannot cite the driver, say why in the harness prose.** The
+cost is real and worth stating: a subject carrying `Chapter: Opening` reaches
+serial, device and x86-64 code, so a source plug then owes emitters for paths a
+hosted target never runs. That is a reason to stay with a copy; "we always have"
+is not.
+
+### 2. Run the linters before any guest
+
+Three checks, all seconds, all needing no QEMU. They exist because each one has
+already been paid for the expensive way.
+
+**Arity -- our calls against their signatures.**
+
+    xref arity ast/ $CODEX_ROOT/codex/ --phases     # driver phases only
+    xref arity ast/ $CODEX_ROOT/codex/              # everything
+
+Indexes every definition in the checkout by its parameter list and walks every
+application in ours. `lower-chapter` went 8 -> 9 -> 11 across three Updates and
+`check-chapter` 5 -> 9 at U54; the second of those went unnoticed for two
+Updates and is the actual cause of the T38 refusal, where the emitter cannot
+type the closure it must generate for a call four arguments short. Partial
+application is legal, so a short call in argument position is dropped; `--partial`
+shows those.
+
+**Cites -- does each bundle define what it reads.**
+
+    python3 check_bundles.py            # every bundle, rung subjects and plugs
+
+`xref bundle` under the hood, and it names the file to add rather than only the
+name that is missing. cycle.sh runs it on the plug bundle between bundling and
+the guest. The gap it closed: for years this asked only about
+`ast/<m>-subject.codex`, so the plug bundle -- the one every rung depends on --
+was the one nobody checked, and a bundle short three chapters cost 23 seconds of
+QEMU and a dead sweep to discover.
+
+**Pages -- is a multi-file chapter still all there.**
+
+    python3 check_zig_pages.py          # Chapter: Zig Emitter is four files
+
+A chapter spanning k > 1 files needs `Page N of M` at every foot, and every
+bundler must LIST the pages. Upstream adding, renaming or renumbering one is a
+red line here rather than a pile of undefined names inside a bundle.
+
+**A green from all three is not a promise the compile passes.** They answer
+NAMES and COUNTS, never shapes. A bundle they call complete can still fail on a
+type.
+
+### 3. Read before running anything
 
 Fetch, and read the release commit against our own registers before any
 compile runs:
@@ -1475,7 +1540,7 @@ compile runs:
   can move a contract either file hard-codes, and a moved contract shows up
   as a diff in every truth at once, indistinguishable from a compiler
   change. Read those diffs against BOTH files first. Also
-  `codex/plugs/zig/` (the emitter is fleet-maintained now, see step 4) and
+  `codex/plugs/zig/` (the emitter is fleet-maintained now, see step 6) and
   the net stack if the TCP arm matters to the question at hand.
 - **The seed hashes.** The release note names the public seed; depot `main`
   may already be several seeds past it. The bank is a claim about the
@@ -1504,23 +1569,25 @@ compile runs:
       grep -ohE '\b(compile-[a-z-]+|lower-chapter|check-chapter|scope-achapter|resolve-chapter|run-ir-pipeline|lift-lambdas)\b' \
         ast/*Harness.codex ast/gen_*_harness.py | sort -u
 
-  Every `^[-+]  <name> :` line is a signature that moved. Cross it against the
-  calls in `ast/*Harness.codex` and `ast/gen_*_harness.py` BEFORE the first
-  guest. It is a two-minute read that has cost hours five times.
+  Every `^[-+]  <name> :` line is a signature that moved. **`xref arity` does the
+  crossing** -- see step 2 -- so read the diff for INTENT and let the tool find
+  the call sites. What the diff tells you and the tool cannot: whether a new
+  parameter wants a value the harness has lying around, or a deck reservation it
+  has to compute.
 
-  The second command is also the size of the exposure, and it is worth seeing
-  written down. Measured 2026-09-03: **9** hand-written `lower-chapter` calls,
-  22 `resolve-chapter`, 17 `scope-achapter`, 10 `check-chapter`, 5
-  `run-ir-pipeline`. Fifty-odd call sites we wrote against signatures we do not
-  own, in a language that answers an under-applied call with a value rather
-  than an error.
+  The size of the exposure is worth seeing written down. Measured 2026-09-03:
+  **9** hand-written `lower-chapter` calls, 22 `resolve-chapter`, 17
+  `scope-achapter`, 10 `check-chapter`, 5 `run-ir-pipeline`. Fifty-odd call
+  sites we wrote against signatures we do not own, in a language that answers an
+  under-applied call with a value rather than an error. Step 1 is how that
+  number goes down; step 2 is how it stays honest until it does.
 
   **The fix for the class, not the instance**, is the entry-point split that
   landed at U55: cite `Chapter: Opening` and call the driver's own phase
   functions, so a moved signature is a compile error at the call we did not
   write. See "A harness stands in for the driver" above.
 
-### 2. Probe the contract before committing hours to it
+### 4. Probe the contract before committing hours to it
 
 Both seeds are one `git show <commit>:seed/Codex.cdx` away, and
 `ring_compile.compile_ring(..., seed=...)` accepts an explicit seed, so the
@@ -1549,7 +1616,7 @@ time). If output differs in size for the same input, that is the first look
 at what the Update changed in the image -- note it, it previews the bank
 diff.
 
-### 3. Prerequisites for the rebank itself
+### 5. Prerequisites for the rebank itself
 
 - **The clone sits on the pin branch, and the SEED must be the release's.**
   The pin ("The checkout" above) is the release commit plus its sanctioned
@@ -1587,7 +1654,7 @@ diff.
   stales every column at once; banking them here, tracked, is what lets
   the next Update diff tier rows the way `bank_diff.sh` diffs truths.
 
-### 4. Decide what the zig arms measure
+### 6. Decide what the zig arms measure
 
 The truth arms depend only on the seed. The arms phase builds the plug from
 the tree's `ZigEmitter.codex`, and since the depot settled ownership
@@ -1617,7 +1684,17 @@ it is already landed or filed upstream -- a bank whose two biggest rungs can
 never execute measures less, not more honestly. A correctness fix may not,
 because a wrong answer IS the measurement.
 
-### 5. Run, bank, retire
+### 7. Run, bank, retire
+
+**A NEW SEED MEANS REBANK, NOT SWEEP, AND THE ORDER IS NOT NEGOTIABLE.** A
+sweep (`ast/allcycles.sh`) compares this plug's arms against BANKED truths, and
+a new Update's seed has none -- `restore_truths.py` says `NO BANK for this
+seed` and the sweep used to carry on regardless. It does not fail there; it
+fails whenever the first rung needs a `.truth` as its own subject, which is
+`ir_to_codex_roundtrip`, six rungs and 398 seconds of QEMU later, as a
+FileNotFoundError out of a harness generator. Measured on the first U55
+sandbox. `allcycles.sh` now refuses at second zero and names the remedy, but
+the order is the thing to remember: **rebank, then sweep.**
 
 - **Warmups first**: `./cycle.sh hello recurse fib` checks the plug end to
   end on the new checkout in minutes. `rebank_all.sh` does not run them --
