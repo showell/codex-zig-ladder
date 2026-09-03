@@ -3,6 +3,24 @@
 *Draft, not yet sent. Written by Claude, on Steve Howell's account and at his
 direction.*
 
+**STATE, 2026-09-03 evening. The body below was written when only cause 1 was
+fixed and is superseded on that point.** All three causes now have an emitter
+change on branch `wgsl-firefox` (`08c6a501`), and the plug was BUILT and RUN:
+
+- **cause 1 (terminator) -- fixed and confirmed in real plug output.**
+- **cause 3 (hex float literal) -- fixed and confirmed in real plug output.**
+- **cause 2 (storage pointer) -- INCOMPLETE, and the plug run is what found it.**
+  Dropping the parameter works; naming the global does not. Helpers are emitted
+  by `wgsl-topo-pass` at MODULE level, where `ctx.kprefix` is `""`, so keeping
+  the prefix kept nothing: the signature loses the parameter while the body
+  still writes `(*tex)[ti]`. `wgsl-reachable` already walks kernel to callee to
+  build the emit set, so the same walk can record an OWNER PREFIX per helper.
+  Not yet written.
+
+Do not send until cause 2 is finished and the kernels are regenerated. The
+numbers in the body are from a mechanical transformation of the .wgsl files, not
+from the plug; the plug has since run and disagreed.
+
 ---
 
 ## The shape
