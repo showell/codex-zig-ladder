@@ -268,7 +268,7 @@ Section: Driver
     in let rr = resolve-chapter ch skip-list-text-empty [] 0
     in {CHECK_SETUP}let cr = {CHECK_CALL}
     {RESOLVED_TABLES}
-    in {LOWER_SETUP}let ir = {LOWER_CALL}
+    in {LOWER_SETUP}let (ir, lower-keep-end) = {LOWER_CALL}
     in let tm = IRTextMeta {{
      chapter-title = ch.chapter-title,
      prose = ch.prose,

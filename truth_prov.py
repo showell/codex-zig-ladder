@@ -262,21 +262,40 @@ def ir_sidecar(unit):
 
 
 def ir_key(unit, flags):
-    """(seed, subject bytes, mode flags) -- everything the IR depends on."""
+    """(seed, subject bytes, mode flags, harness set) -- everything the IR
+    depends on.
+
+    THE SUBJECT BUNDLE IS NOT ENOUGH, and the gap is silent. `<unit>-subject.codex`
+    is the OUTPUT of the bundler, and the bundler runs only AFTER this key says
+    the IR is stale -- so a harness generator that changed on disk leaves the
+    subject exactly as the previous run wrote it, this key matches its own
+    stamp, `ensure_ir.sh` exits 0 without a word, and the rung is measured
+    against an IR built by the OLD harness.
+
+    Paid for on 2026-09-03 while teaching the harnesses Update 55's keep
+    protocol: `emit_harness.py` was edited, `lower.ir` was fifteen minutes older
+    than the harness beside it, and the rebuild that was supposed to prove the
+    fix printed nothing and returned success.
+
+    `set_hash` is the truth arm's own watch list -- `gen_<unit>_harness.py`,
+    `bundle_<unit>.ps1` and SHARED -- so the two gates now cover the same
+    inputs, which is what the asymmetry was.
+    """
     subject = AST / f'{unit}-subject.codex'
     if not subject.is_file():
         raise SystemExit(f'cannot key {unit}.ir: no {subject.name} beside it')
     return (seed_sha256(),
             hashlib.sha256(subject.read_bytes()).hexdigest(),
-            flags.strip())
+            flags.strip(),
+            set_hash(unit))
 
 
 def stamp_ir(unit, flags):
     ir = AST / f'{unit}.ir'
     if not ir.is_file() or ir.stat().st_size == 0:
         raise SystemExit(f'cannot stamp {unit}.ir: it is missing or empty')
-    seed, subj, fl = ir_key(unit, flags)
-    ir_sidecar(unit).write_text(f'{seed}\n{subj}\n{fl}\n')
+    seed, subj, fl, hset = ir_key(unit, flags)
+    ir_sidecar(unit).write_text(f'{seed}\n{subj}\n{fl}\n{hset}\n')
     return seed, subj
 
 
@@ -299,12 +318,17 @@ def check_ir(unit, flags):
                          'another checkout (rerun the truth arm)')
     got = p.read_text().split('\n')
     want = ir_key(unit, flags)
-    if len(got) < 3 or tuple(x.strip() for x in got[:3]) != want:
+    # A sidecar written before the harness set joined the key has three fields.
+    # It is not wrong, it is UNVERIFIABLE for the half that was just added, so
+    # it refuses and the IR is rebuilt -- which costs one guest and cannot
+    # report a stale harness as agreement.
+    if len(got) < 4 or tuple(x.strip() for x in got[:4]) != want:
         raise SystemExit(
             f'STALE IR for {unit}: recorded under seed {got[0][:12]} / '
             f'subject {got[1][:12] if len(got) > 1 else "?"} / flags '
-            f'"{got[2] if len(got) > 2 else "?"}", disk has '
-            f'{want[0][:12]} / {want[1][:12]} / "{want[2]}" '
+            f'"{got[2] if len(got) > 2 else "?"}" / harness '
+            f'{got[3][:12] if len(got) > 3 else "(none recorded)"}, disk has '
+            f'{want[0][:12]} / {want[1][:12]} / "{want[2]}" / {want[3][:12]} '
             '(rerun the truth arm)')
 
 

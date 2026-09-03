@@ -239,9 +239,20 @@ LIFT_SETUP = """let lift-height = demand-lift-floor
     in let lift-ceiling = lift-base + lift-height
     in """
 
-LOWER_SETUP = """let lower-height = demand-lower-floor
+# UPDATE 55 GAVE LOWERING A KEEP, and the reservation order below is the
+# driver's, not a convenience: `compile-frontend-passes` (opening.codex:789)
+# builds the KEEP FIRST, then the scratch deck, then sets the deck to the
+# scratch base before it calls. `lower-chapter` reads `__deck-pos` as its own
+# scratch base (Lowering.codex:1736) and switches between the two itself, so a
+# caller that leaves the deck wherever the previous phase left it hands lowering
+# an arbitrary scratch region. That is why the `__deck-set` is here and is not
+# optional -- it was not needed before U55, because nothing read the position.
+LOWER_SETUP = """let lower-keep-height = demand-lower-keep-floor
+    in let lower-keep-base = build lower-keep-height
+    in let lower-height = demand-lower-floor
     in let lower-base = build lower-height
     in let lower-ceiling = lower-base + lower-height
+    in let set-ls = __deck-set lower-base
     in """
 
 
@@ -250,10 +261,22 @@ LOWER_SETUP = """let lower-height = demand-lower-floor
 # True, so nothing may ship with it. It exists because the COMPILER-38 rename
 # pass is the one thing lowering gained at Update 54, and one guest with one
 # variable is what tells a candidate from a cause.
+# AND IT ANSWERS A TUPLE NOW: `(IRChapter, Integer)`, the chapter and the keep
+# end. Every caller binds `let (ir, lower-keep-end) = ...`; the second half is
+# what the driver tests its saturation against and no rung reads it yet.
+#
+# `lower-chapter` has moved for three Updates running -- 8 parameters at U53, 9
+# at U54, 11 and a tuple at U55 -- and NONE of them read as an arity error.
+# Codex curries, so an under-applied call is a FUNCTION VALUE and the failure
+# lands one line later against whatever consumes it: `CDX2001: Type mismatch:
+# Rec:IRChapter vs Fun` at `run-ir-pipeline`, naming neither this call nor the
+# argument it wants. README "Processing a new Update" step 1 has the read that
+# catches it before a guest runs.
 def lower_call(ch='ch', bound='bound', cst='cst', rename=True,
                renames='[]', colliding='skip-list-text-empty', assignments='[]'):
     return (f"deck-record (lower-chapter {ch} {bound} {cst} (rr.ctor-names) "
-            f"{renames} {colliding} {assignments} lower-ceiling {rename})")
+            f"{renames} {colliding} {assignments} lower-ceiling {rename} "
+            f"lower-keep-base (lower-keep-base + lower-keep-height))")
 
 
 # CHECK IS THE ONE PHASE THAT CANNOT BE CALLED BARE, and it says so itself.
@@ -638,10 +661,10 @@ def frontend_source(src, passes, scan=True, deck_bytes=None, resolve=True, lift=
     # ARGUMENTS to it rather than a reason to copy it.
     lower_here = lower_call(renames='renames', colliding='colliding',
                             assignments='assignments')
-    lower = (f"""let ir-raw = {lower_here}
+    lower = (f"""let (ir-raw, lower-keep-end) = {lower_here}
     in let passed = run-ir-pipeline default-ir-pipeline ir-raw False
     in let ir0 = passed.chapter""" if passes else
-        f"let ir0 = {lower_here}")
+        f"let (ir0, lower-keep-end) = {lower_here}")
     return deck_prologue(deck_bytes) + head + f"""
     in let doc = parse-document (make-parse-state (toks.tokens) {src}) 0
     in let dr = desugar-document {src} doc (doc.chapter-title) 0
