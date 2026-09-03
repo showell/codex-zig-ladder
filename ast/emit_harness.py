@@ -678,6 +678,42 @@ def frontend_source(src, passes, scan=True, deck_bytes=None, resolve=True, lift=
     {RESOLVE}{LIFT}"""
 
 
+# ---------------------------------------------------------------------------
+# CALLING THE DRIVER INSTEAD OF COPYING IT.
+#
+# Everything above this line reimplements `compile-frontend-*`: the phase calls
+# in order, their deck reservations, their argument lists. That copy is where
+# essentially all of our harness bugs live -- five of the last seven Updates
+# moved a signature it hard-codes, and `lower-chapter` alone moved three
+# Updates running without ever reading as an arity error, because Codex curries
+# and an under-applied call is a value.
+#
+# It existed because two chapters cannot both define `opening`, so a subject
+# supplying its own entry point could not bundle Chapter: Opening and therefore
+# could not call the compiler's phases. UPDATE 55 REMOVED THAT: opening.codex
+# defines `codex-opening` and a fourteen-line EntryPoint.codex holds `opening`.
+#
+# So a harness can carry the driver and call it, and a moved signature becomes a
+# compile error at a call WE DID NOT WRITE. The subject has to carry the
+# driver's chapters -- see bundle_ir_to_x86.ps1 -- and `xref bundle` names any
+# that are missing in four seconds.
+#
+# `"Codex_Codex"` is not a placeholder. `emit-cdx` (opening.codex:1615) passes
+# exactly that for every source it compiles, and this rung's whole check is that
+# its CDX equals the one the seed's driver produced, so the chapter-name has to
+# be the driver's and not the document's.
+def driver_cdx_source(src, deck_bytes=None):
+    """The driver's own CDX path: frontend, lift and emission, as two calls.
+
+    Replaces `pipeline_source(..., passes=True)` for a rung whose subject
+    carries Chapter: Opening. `compile-frontend-cdx` does lex, parse, desugar,
+    scope, check, lower, the IR pipeline, resolve AND the lambda lift;
+    `compile-to-cdx` emits. Binds `res`, so callers are unchanged.
+    """
+    return deck_prologue(deck_bytes) + f"""let fe = compile-frontend-cdx {src} "Codex_Codex" compile-flags-default
+    in let res = compile-to-cdx fe"""
+
+
 def pipeline_source(src, passes, scan=True, deck_bytes=None):
     """frontend_source plus the x86 emission, bound as `res`. The rungs that
     dump a CDX want this; the one that emits IR wants the frontend only --
