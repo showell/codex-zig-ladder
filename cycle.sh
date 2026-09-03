@@ -32,6 +32,20 @@ Build-TranspilerPlug -PlugDir $REPO/codex/plugs/zig -PlugName zig -Chapters @($Z
 "
 [ -s "$PLUG_SRC" ] || { echo "BUNDLE FAILED: no plug-source.codex"; exit 1; }
 
+# ASK THE CHEAP QUESTION BEFORE THE EXPENSIVE ONE. A bundle short a chapter is
+# visible in its own text and costs milliseconds to see; the guest finds the
+# same thing 23 seconds of QEMU later as a wall of CDX3002, and the sweep dies
+# 398 seconds in. Measured 2026-09-03, when the emitter became four files and
+# the bundle carried one. xref bundle even names the file to add.
+#
+# Scoped to zig-plug: this runs on every warmup, and grading the rung subjects
+# here would re-answer a question their own bundlers already asked.
+if ! python3 "$T/check_bundles.py" zig-plug > "$S/.bundle-check.log" 2>&1; then
+    sed 's/^/    /' "$S/.bundle-check.log"
+    echo "BUNDLE IS SHORT A CHAPTER -- not sending it to a guest"
+    exit 1
+fi
+
 python3 - <<PY
 src = open('$REPO/codex/plugs/zig/build-output/plug-source.codex','rb').read()
 open('$S/plug-unit.blob','wb').write(b"CDX map\n" + src + b"\x04")

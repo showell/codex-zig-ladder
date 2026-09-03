@@ -135,12 +135,63 @@ def newest_input(ast, m):
                default=(0, None))
 
 
+
+# THE PLUG BUNDLES ARE NOT `ast/<m>-subject.codex` AND SO WERE NEVER CHECKED.
+# That is the gap this file existed to close and did not: on 2026-09-03 the
+# emitter became four files, the ladder's bundlers still named one, and the
+# plug bundle went to a guest missing three chapters. It came back 23 seconds
+# of QEMU later as 17 x CDX3002, and the sweep died 398 seconds in. `xref
+# bundle` answers it from the text in milliseconds AND names the remedy:
+#
+#     ADD zig/ZigEmitterExpressions.codex
+#           emit-zig-expr
+#
+# Their staleness witness is the plug source itself, not a bundle_<m>.ps1
+# walk, because these are built by cycle.sh and ringplug_build.sh.
+def plug_bundles():
+    out = []
+    tcp = CODEX / 'codex' / 'plugs' / 'zig' / 'build-output' / 'plug-source.codex'
+    if tcp.is_file():
+        out.append(('zig-plug', tcp))
+    ring = LADDER / 'ast' / 'ringplug-source.codex'
+    if ring.is_file():
+        out.append(('ringplug', ring))
+    return out
+
+
+def plug_inputs():
+    """Everything a zig plug bundle is assembled from, for the mtime check."""
+    d = CODEX / 'codex' / 'plugs' / 'zig'
+    ins = sorted(d.glob('*.codex'))
+    for extra in (CODEX / 'codex' / 'plugs' / 'common' / 'plug-build-lib.ps1',
+                  LADDER / 'zig_plug_pages.txt'):
+        if extra.is_file():
+            ins.append(extra)
+    return ins
+
+
 def main():
     ast = LADDER / 'ast'
-    names = sys.argv[1:] or sorted(
+    # An explicit argument list selects from BOTH families -- the ast/ rung
+    # subjects and the plug bundles. cycle.sh passes `zig-plug` because it has
+    # just built that one and nothing else; treating the name as a missing rung
+    # subject would have made it fail for the wrong reason.
+    wanted = set(sys.argv[1:])
+    plugs = [(l, s) for l, s in plug_bundles() if not wanted or l in wanted]
+    names = sorted(
         p.name[:-len('-subject.codex')] for p in ast.glob('*-subject.codex'))
+    if wanted:
+        names = [m for m in names if m in wanted]
+        unknown = wanted - set(names) - {l for l, _ in plugs}
+        if unknown:
+            print(f'no such bundle: {", ".join(sorted(unknown))}')
+            return 2
 
     bad, stale, checked, absent = 0, 0, 0, 0
+    # A double-include and a short bundle are different failures with
+    # different remedies, and one counter made the summary say the wrong
+    # one out loud.
+    short = 0
     for m in names:
         subject = ast / f'{m}-subject.codex'
         if not subject.is_file():
@@ -167,7 +218,7 @@ def main():
                 bad += 1
                 print(f'{m:10s} CANNOT CHECK CITES -- {why}')
             elif gaps:
-                bad += 1
+                short += 1
                 print(f'{m:10s} MISSING CITES:')
                 for line in gaps[2:]:
                     print(f'      {line}')
@@ -175,10 +226,45 @@ def main():
                 print(f'{m:10s} ok')
             checked += 1
 
+    # The plug bundles, through the same two questions.
+    for label, subject in plugs:
+        ins = plug_inputs()
+        newest = max((f.stat().st_mtime for f in ins), default=0)
+        witness = max(ins, key=lambda f: f.stat().st_mtime) if ins else None
+        if subject.stat().st_mtime < newest:
+            print(f'{label:10s} STALE -- {witness.name} has changed since it was '
+                  f'bundled; rebundle before trusting this')
+            stale += 1
+            continue
+        dupes = check(subject)
+        if dupes:
+            bad += 1
+            print(f'{label:10s} DOUBLE-INCLUDED:')
+            for name, quires in sorted(dupes.items()):
+                print(f'           {name!r} under {sorted(quires)}')
+            continue
+        gaps, why = missing_cites(subject)
+        if why is not None:
+            bad += 1
+            print(f'{label:10s} CANNOT CHECK CITES -- {why}')
+        elif gaps:
+            bad += 1
+            short += 1
+            print(f'{label:10s} MISSING CITES -- the bundle is short a chapter:')
+            for line in gaps[2:]:
+                print(f'      {line}')
+        else:
+            checked += 1
+            print(f'{label:10s} ok')
+
     if bad:
         print(f'\n{bad} bundle(s) carry a chapter twice. Check each bundled subject '
               f'rather than deleting every explicit listing: parse, desugar and irmem '
               f'name ListUtils and are RIGHT to, because nothing there cites it.')
+    if short:
+        print(f'\n{short} bundle(s) are SHORT A CHAPTER -- they read names nothing in '
+              f'them defines. Each ADD line above names the file to add to the '
+              f'bundler; for the zig plug that is zig_plug_pages.txt.')
     # Stale and absent are failures, not asides. Skipping a subject and then
     # printing OK is a positive claim about bundles nobody opened, which is the
     # shape of green this file exists to refuse -- and it was in this file.
@@ -187,12 +273,12 @@ def main():
               f'are regenerable: run the bundle script, or a rung that does.')
     if absent:
         print(f'\n{absent} named subject(s) have no bundled file at all.')
-    if bad or stale or absent:
+    if bad or short or stale or absent:
         return 1
     if not checked:
         print('\nnothing to check: no bundled subjects found')
         return 1
-    print(f'\nOK: no chapter appears under two quires in any of {checked} bundles')
+    print(f'\nOK: {checked} bundle(s) -- no chapter under two quires, and none reads a\n    name it does not define')
     return 0
 
 
