@@ -14,6 +14,26 @@
 # are measured against, so it has to be a tree Damian would recognise --
 # plain upstream, no unlanded work underneath. A bank taken on our stack
 # would silently fold our own branches into every future comparison.
+#
+# EXCEPT THAT AT U54 THE RELEASE CANNOT BUILD THE NATIVES, so read the rule
+# as: the MINIMAL tree that builds them, and nothing above it. Measured
+# 2026-09-03 -- native_build.sh at 14ec571b (upstream/master, Update 54) dies
+# transpiling zigemit through the plug:
+#
+#     REFUSED: untranslated constructs in zigemit.zig
+#           1 @compileError("zig plug: no address-of for this type")
+#
+# U54's own check-batch machinery reaches prelude text U54's own zig plug
+# cannot emit, which is what PRs 118 and 119 are for. Five plug commits above
+# upstream supply the arms this script needs (peek-32, poke-32/alloc-bytes,
+# poke-byte/__memset, closure params, Nothing/address-of); the sixth,
+# f22e9c5f, is PR 117's COMPILER change and is deliberately not underneath the
+# bank. So the ref is b449275a -- upstream plus the toolchain prerequisites,
+# no compiler change. A tree that cannot build the tools is not a baseline;
+# it is no measurement at all.
+#
+# When those plug PRs land, this returns to plain upstream and the paragraph
+# above it is the whole rule again.
 set -u
 cd "$(dirname "$0")" || exit 2
 . ../env || exit 2
