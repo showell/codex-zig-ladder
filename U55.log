@@ -1,0 +1,100 @@
+# Update 55 ceremony log
+
+Upstream `675a0775` (2026-09-02), seed `81F9E817...` (3,179,934 bytes).
+Sandbox `20260903T184329Z-u55-driver`. NOT banked; see "What is missing".
+
+What was changed and what was run, in order, one line each. Detail lives in the
+commit it points to; findings go to the register, measurements to
+JUSTIFICATIONS. This file is the thread, not the record.
+
+## Steps
+
+- **Read before running anything.** 455 files, +51,913/-8,177 over U54. Compiler
+  27 files, +1,126/-551: `IR/Lowering` +319, `opening` +133,
+  `TypeCheckerInference` +125, `Emit/X86_64Helpers` **-213**.
+
+- **The contracts we hard-code did NOT move**, and U55 touches all three files
+  they live in. `serial-ring-buf-addr` 5242880, `serial-ring-buf-size` 1048576,
+  `serial-write-pos-addr` 28704, `serial-read-pos-addr` 28712 -- all unchanged,
+  matching `ring_compile.py` exactly. `tools/codex-vm.c`'s 121 new lines are a
+  Windows WHP teardown race (application processors not stopped before the
+  partition was deleted under them); we run QEMU. `build/vm-config.ps1` is host
+  memory accounting. `X86_64Boot` changed for two real fixes -- the
+  spawn-affinity rest value stored twelve instructions before the page tables
+  zeroed its page (COMPILER-49), and capability masks now going through a
+  register because `or rax, imm32` sign-extends under REX.W.
+
+- **`seed_identity` does NOT derive Update 55.** `sandbox.sh` reports
+  `seed-update unreleased`; U54 derived with no matcher change.
+
+- **U54's seed cannot compile U55's source.** Same blob, two seeds: U55 compiles
+  it clean in 5.1 s, U54 halts with eight errors of the form
+  `Type mismatch: Con:Integer[T64] vs Integer`. That is the constrained integer
+  the trapping work introduced, not a defect -- and it means no cross-seed
+  comparison is available on U55 source.
+
+- **Harness gates green at U55 unchanged**: 6 emit roots, 7 bags merged, both
+  harnesses gated.
+
+- **The sweep died at rung 7**, `ir_to_codex`, with
+  `CDX2001: Type mismatch: Rec:IRChapter vs Fun`. `lower-chapter` takes ELEVEN
+  parameters at U55 and answers `(IRChapter, Integer)` -- 8 at U53, 9 at U54.
+  Codex curries, so an under-applied call is a VALUE and the error names
+  `run-ir-pipeline` rather than the call or the missing argument.
+
+- **The keep protocol is patched in one place** (`ast/emit_harness.py`), because
+  `lower_call()` and `LOWER_SETUP` generate all nine call sites. The reservation
+  ORDER is the driver's: keep first, then the scratch deck, then
+  `__deck-set lower-base`, because `lower-chapter` reads `__deck-pos` as its own
+  scratch base and nothing read the position before U55. `lower.ir` rebuilds
+  clean, SIZE 6176090.
+
+- **The IR provenance key was blind to the harness that produced it.** `ir_key`
+  was (seed, subject bytes, flags), and the subject is the BUNDLER'S OUTPUT --
+  produced only after the key says the IR is stale. The rebuild meant to prove
+  the keep fix printed nothing and returned success against an IR fifteen
+  minutes older than the harness beside it. It now carries `set_hash(unit)`.
+
+## What U55 did with our work
+
+- **Issue 109 -> COMPILER-36 LANDED.** Trapping integer arithmetic: multiply
+  21676, add and sub 21798, spelling unit 21902. Plugs row 2.21, zig and csharp
+  57 of 57 on the oracle.
+- **Issue 115 -> COMPILER-48 instance 5 LANDED** (22074, 22100). The emit deck
+  armed a ceiling 27x above its extent with the UD2 unreachable.
+- **safari-codex taken in with credit** (22154, 22160). All 27 port chapters
+  compile clean, non-vacuously; 730 wasm functions; 18 graders against our golds.
+- **COMPILER-42 struck from Damian's queue for good** -- "the agents' problem".
+  The ownership-analysis arc landed and the rewrite pass ships OFF by default:
+  correctness broken, a self-applied compiler crashes in `mcopy-labels`.
+- **PR 116 CLOSED in favour of upstream's smaller cut**, which landed:
+  `opening.codex` defines `codex-opening`, `EntryPoint.codex` holds `opening`.
+  Their review caught that 18 of our 891 moved lines carried pre-tuple
+  `lower-chapter` text, so applying ours would have reverted landed work and
+  gated green.
+- **Not landed, still ours**: peek-32, poke-32, poke-byte, `__memset`,
+  alloc-bytes, real-to-int, real-from-int. Landed: address-of, peek-byte,
+  hosted-kind, real-to-bits, bits-to-real.
+- **Our plugs rows were renumbered again.** 2.19 and 2.20 now belong to the img
+  plug and the evidence plug. A PR that cites a row number cites something that
+  moves.
+
+## What the entry-point split bought
+
+`Chapter: Opening` is bundlable, so a harness can CALL the driver instead of
+copying it. Proven: the driver compiles inside a rung subject (66,199 lines,
+SIZE 14316197), and `zigc`'s harness is now 1,100 bytes where it was ten
+thousand -- `compile-frontend-cdx` then `compile-to-cdx`, SIZE 15824631.
+
+Finding the driver's chapter list cost three guest compiles. `xref bundle` now
+answers it in four seconds and is wired into `check_bundles.py`.
+
+## What is missing
+
+- **No truth bank for this seed**, so no rung has compared anything. The bank is
+  the ceremony's point and it has not been reached.
+- **The remaining eight lowering rungs still copy the driver.** `codexir`
+  deviates on purpose (`resolve=False`); `lower`, `ir_to_codex` and
+  `ir_to_wire` would have to carry the x86 backend to cite it.
+- **`opening.codex` reads `run-ir-pipeline` and cites nothing that defines it**
+  -- B5's flat namespace hides it upstream. Worth telling Damian.
