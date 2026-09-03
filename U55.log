@@ -48,6 +48,42 @@ until every asset that reads the changed thing has been carried too.
   building a different one. A tool fed the intended input cannot report the
   actual input.
 
+## The ir_to_wire flake, and the day it cost
+
+**ONE failure, ever.** `ir_to_wire`'s bare-metal compile raised `guest stopped
+consuming at rpos 1048576 of 1235320` once, 22:42:41, fifteen minutes into the
+u56-candidate rebank. Twelve runs since have passed, including three
+back-to-back on the same tree with byte-identical input.
+
+**It was not caused by anything we changed.** The commit I spent five box runs
+implicating -- the hosted check-compact skip -- had ALREADY passed this rung in
+a full rebank on 2026-09-03 00:02 (`20260902T231322Z-u54-hostedkind`, cut from
+`f22e9c5f` itself). That evidence was in a run directory the whole time and cost
+nothing to read. I bisected instead, and every step of the bisection was noise
+read as signal, because the failure is intermittent and I treated n=1 as
+deterministic.
+
+Two claims I made and had to withdraw: that the TypeChecker delta was the
+trigger, and that this rung had been "dark for two Updates" -- the second taken
+from a mid-cycle line in U54.log rather than from the run directories, which
+show it passing on 2026-09-01 and three times on 2026-09-02.
+
+**What the guest is actually doing.** `__bare_metal_read_serial` HLTs when
+`wpos == rpos` and needs an interrupt to re-check (`hlt` then `jmp wait-loop`,
+`X86_64Helpers.codex`). Every subject over 1 MB hits that window once, at the
+refill. A healthy run closes it inside one 150 ms poll -- measured `longest
+stall 0 rounds` on every pass -- so the wake normally arrives. The failure is a
+rare miss of it. The host's claim that "each round's stop/resume doubles as that
+missing wake" is doubtful: a gdbstub stop/resume does not inject an interrupt,
+and a halted CPU resumes halted.
+
+**Not chased further, deliberately.** n=1, no fix pending, and ten quiet
+attempts would not have distinguished a 1-in-50 race from a fixed one. What was
+kept instead is the diagnosis: the detector now fails in 3 seconds instead of
+60, says WEDGED or BUSY from RIP, names the seed function, and prints the ring
+cursors as the GUEST sees them -- so the next occurrence is read off the log
+rather than bisected for a day.
+
 ## Steps
 
 - **Read before running anything.** 455 files, +51,913/-8,177 over U54. Compiler
