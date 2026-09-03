@@ -75,6 +75,22 @@ JUSTIFICATIONS. This file is the thread, not the record.
 - **Not landed, still ours**: peek-32, poke-32, poke-byte, `__memset`,
   alloc-bytes, real-to-int, real-from-int. Landed: address-of, peek-byte,
   hosted-kind, real-to-bits, bits-to-real.
+
+- **SO THE NATIVE BUILD STILL CANNOT SUCCEED AT PLAIN U55**, for the same reason
+  it could not at plain U54, and this is the release fact that matters most to
+  us. The compiler's own `Types/Unifier.codex` CALLS `peek-32` in its memo
+  slots --
+
+      937:   else let v = peek-32 (slot + 8) 0
+      959:   in let k = bit-and (peek-32 slot 0) 4294967295
+
+  -- and U55's `ZigEmitter` has no emitter for it, nor for `poke-32`,
+  `__memset` or `alloc-bytes`, all of which the compiler also uses. Our
+  `zig-plug-memory-builtins` branch is still the fix and is still unlanded.
+
+  Established by grep in seconds rather than by a thirteen-minute native build,
+  which is the whole of "scale the gate to the question": the build would have
+  answered the same thing and cost the box.
 - **Our plugs rows were renumbered again.** 2.19 and 2.20 now belong to the img
   plug and the evidence plug. A PR that cites a row number cites something that
   moves.
