@@ -1,27 +1,104 @@
 Chapter: BootPaint
 
- The two definitions Core/PhaseAllocator.codex cites, and nothing else.
+ The names Core/PhaseAllocator.codex and Chapter: Opening cite, and nothing
+ else.
 
- Update 42 gave PhaseAllocator `cites Codex chapter BootPaint (bp-rtc-seconds,
- bp-log-phase)`. A cite names a CHAPTER rather than a symbol, so every subject
- carrying the real PhaseAllocator has to answer for a chapter of that name or
- plug-build-lib refuses the bundle with exit 3. It refuses correctly; the
- harness was the thing at fault for not listening.
+ A cite names a CHAPTER rather than a symbol, so every subject carrying the
+ real PhaseAllocator -- or, since the harnesses started citing the driver, the
+ real Opening -- has to answer for a chapter of this name or plug-build-lib
+ refuses the bundle with exit 3. It refuses correctly; the harness was the
+ thing at fault for not listening.
 
  The real chapter is 341 lines that ground Device.Port and paint a progress
- strip onto a screen these subjects do not have. What PhaseAllocator actually
- wants from it is a clock reading and a log line, and it spends both on a
- report nothing in a subject reads.
+ strip onto a screen these subjects do not have. Opening spends it on a report
+ nothing in a subject reads.
 
- A stub is the honest choice here rather than the convenient one. Carrying the
- real chapter would put a WALL CLOCK inside the truth arm: phase-took would
- return however long that particular boot happened to take, and a rung whose
- truth file changes between two identical runs cannot be an oracle at all.
- Zero is the only reading that keeps the subject deterministic, and both arms
- read it from here.
+ A STUB IS THE HONEST CHOICE HERE RATHER THAN THE CONVENIENT ONE, and the
+ reason is a clock. Carrying the real chapter would put a WALL CLOCK inside the
+ truth arm: `bp-rtc-seconds` would return however long that particular boot
+ happened to take, `phase-took` would report it, and a rung whose truth file
+ changes between two identical runs cannot be an oracle at all. Zero is the
+ only reading that keeps the subject deterministic, and both arms read it here.
+
+ THE COLOURS ARE REAL, and that is not inconsistency. They are pure data with
+ no clock and no screen behind them, so copying the values costs nothing and a
+ subject that ever does print one prints what the driver would have.
+
+ THE THREE `[Console]` REPORTERS PRINT NOTHING. `disk-rung`, `disk-mark` and
+ `disk-stop` write progress lines to the serial console, and the truth arm
+ reads that console: a stub that printed would put driver chatter inside the
+ oracle's own output stream, which is the same defect as the clock wearing a
+ different hat.
+
+Section: Colours
+
+  bp-blue : Integer = 255
+  bp-cyan : Integer = 65535
+  bp-magenta : Integer = 16711935
+  bp-orange : Integer = 16744448
+  bp-red : Integer = 16711680
+  bp-white : Integer = 16777215
+  bp-yellow : Integer = 16776960
+
+Section: Cells
+
+  bp-log-count-cell : Integer = 128000
+  bp-log-rows : Integer = 128016
+  bp-log-start-cell : Integer = 128008
+  bp-progress-height : Integer = 0
+
+Section: The Clock, Which Reads Zero
 
   bp-rtc-seconds : Integer -> Integer
   bp-rtc-seconds (mode) = 0
 
+  bp-rtc-date-text : Integer -> Text
+  bp-rtc-date-text (mode) = ""
+
+  bp-hms-text : Integer -> Text
+  bp-hms-text (secs) = ""
+
+Section: The Screen, Which Is Not There
+
+  bp-armed : Integer -> Boolean
+  bp-armed (mode) = False
+
+  bp-hold-band-if-armed : Integer -> Integer
+  bp-hold-band-if-armed (mode) = 0
+
+  bp-paint : Integer -> Integer
+  bp-paint (mode) = 0
+
+  bp-pass : Integer, Integer, Integer -> Integer
+  bp-pass (a) (b) (c) = 0
+
+  bp-poke64 : Integer, Integer -> Integer
+  bp-poke64 (addr) (val) = 0
+
+  bp-progress : Integer, Integer, Integer, Integer -> Integer
+  bp-progress (a) (b) (c) (d) = 0
+
+  bp-truth : Boolean -> Integer
+  bp-truth (ok) = 0
+
   bp-log-phase : Text, Integer, Integer -> Integer
   bp-log-phase (label) (secs) (mb) = 0
+
+Section: The Reporters, Which Print Nothing
+
+  disk-rung : Text, Integer, Integer, Integer -> [Console] Nothing
+  disk-rung (label) (a) (b) (c) = act
+    print-uni ""
+  end
+
+  disk-mark : Text, Integer, Integer, Integer -> [Console] Nothing
+  disk-mark (label) (a) (b) (c) = act
+    print-uni ""
+  end
+
+  disk-stop : Boolean, Integer -> [Console] Nothing
+  disk-stop (ok) (n) = act
+    print-uni ""
+  end
+
+Page 1
