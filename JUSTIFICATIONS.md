@@ -5,6 +5,50 @@ One entry per decision, newest first. This file exists so the README and
 the memory notes can say "do X" without re-arguing it; if a rule here ever
 looks wrong, re-measure before overturning it.
 
+## A cite list is not a dependency list, and 2,362 uncited reads say so (2026-09-03)
+
+**Decision: do NOT file "opening.codex reads `run-ir-pipeline` and cites nothing
+that defines it" as a defect.** It is a universal property of the codebase, not
+an omission in one chapter, and filing it as a defect would be filing the
+language's own namespace rule as a bug.
+
+**How it came up.** Assembling a rung subject from `opening.codex`'s cite list
+alone produced twenty `CDX3002`s: `run-ir-pipeline`, `default-ir-pipeline`,
+`ir-check-violation-bag`, `occ-info-bag`. PORTING_NOTES B5 says chapters share
+ONE FLAT NAMESPACE inside a bundle, so upstream never sees it -- some other
+chapter's cite drags `IR/Passes.codex` in and the name resolves. It looked like
+a clean small finding.
+
+**Measured before filing, over U55 (`675a0775`), every chapter under
+`codex/compiler`, using `xref chapter` against the whole checkout and comparing
+each chapter's declared cites to the chapters its reads actually come from:**
+
+| chapter | uncited names | uncited chapters |
+|---|---|---|
+| IR Text Emitter | 155 | 7 |
+| X86-64 Code Generator | 145 | 9 |
+| **Opening** | **142** | **36** |
+| Desugarer | 140 | 10 |
+| Codex Emitter | 138 | 11 |
+| Parser | 138 | 17 |
+| Syntax Nodes | 124 | 9 |
+| Lexer | 104 | 9 |
+
+**TOTAL: 2,362 uncited reads.** `Opening` is not an outlier; it is
+unremarkable. `Syntax Nodes` reading 124 names it does not cite is the same
+chapter issue 115 row 1 already reports for `ListUtils`, and that row is still
+open at U55.
+
+**What follows.** The observation worth passing to Damian is not "add four
+cites" but "a chapter's cite list does not describe its dependencies, at a
+measured 2,362 instances" -- which matters to anyone SPLITTING a chapter,
+because the pieces cannot be assembled from the cites. That is a note on the
+existing issue 115, not a new issue, and certainly not a PR.
+
+**What we build instead.** `xref bundle` answers "what does this bundle lack"
+from the bundled text in four seconds, which is the form the fact is useful in.
+The ladder needs no upstream change to work.
+
 ## Update 52 before the rungs: the arms that answer for the compiler alone (2026-08-28)
 
 Update 52 has to be judged on its own, and the obstacle is that TWO emitter
