@@ -270,6 +270,21 @@ places they differ are the places their output can legitimately differ from the
 seed's: proof pruning, dropped-def handling, mode flags. `passes_to_x86` and `zigc` come
 closest to the driver -- they run the same phases in the same order.
 
+**AND AT UPDATE 55 THE COLLISION THAT FORCED ALL OF THIS WENT AWAY.** Upstream
+split the entry point out: `opening.codex` now defines `codex-opening`, and a
+fourteen-line `codex/compiler/EntryPoint.codex` holds
+`opening = codex-opening` and nothing else. `Chapter: Opening` is therefore
+BUNDLABLE by a program that supplies its own `opening`, which is the thing that
+was impossible for fourteen Updates. It is upstream's own smaller cut of the
+seam PR 116 asked for, and it closed PR 116.
+
+So the standing instruction changes direction. A harness should stop
+re-implementing the driver and start CITING it: cite `Codex chapter Opening`,
+call `compile-frontend-passes` or the phase function the rung is about, and
+carry only what the rung genuinely needs to differ in. Every hand copy of the
+driver's argument lists is a bug waiting for the next Update to write it --
+see the ceremony step below for the count.
+
 ### The two arms
 
 Every rung has a **truth arm**, which is the seed on bare metal, and a **zig
@@ -1465,6 +1480,45 @@ compile runs:
 - **The seed hashes.** The release note names the public seed; depot `main`
   may already be several seeds past it. The bank is a claim about the
   released seed, so everything below uses the release commit, not main.
+- **THE DRIVER'S SIGNATURES, BEFORE ANY GUEST RUNS.** Five of the last seven
+  Updates moved a phase function our harnesses call, and every one of them was
+  discovered by a rung dying an hour in rather than by reading. `lower-chapter`
+  alone has moved three Updates running:
+
+      U53   8 params                              -> IRChapter
+      U54   9 params  (+ rename : Boolean)        -> IRChapter
+      U55  11 params  (+ keep-base, keep-ceiling) -> (IRChapter, Integer)
+
+  **An arity change here does not read as an arity error.** Codex curries, so
+  an under-applied call is a FUNCTION VALUE, and the type error surfaces one
+  line later against whatever consumes the result -- at U54 and again at U55 it
+  read `CDX2001: Type mismatch: Rec:IRChapter vs Fun` against `run-ir-pipeline`,
+  naming neither the call nor the argument it wants. That cost an afternoon the
+  first time. Read the signatures instead:
+
+      # every signature the release moved, in the files our harnesses call into
+      git -C $CODEX_ROOT diff <old> <new> -- codex/compiler \
+        | grep -E '^[-+]  [a-z][a-z0-9-]* :' | sort -u -k2
+
+      # every driver function our harnesses call
+      grep -ohE '\b(compile-[a-z-]+|lower-chapter|check-chapter|scope-achapter|resolve-chapter|run-ir-pipeline|lift-lambdas)\b' \
+        ast/*Harness.codex ast/gen_*_harness.py | sort -u
+
+  Every `^[-+]  <name> :` line is a signature that moved. Cross it against the
+  calls in `ast/*Harness.codex` and `ast/gen_*_harness.py` BEFORE the first
+  guest. It is a two-minute read that has cost hours five times.
+
+  The second command is also the size of the exposure, and it is worth seeing
+  written down. Measured 2026-09-03: **9** hand-written `lower-chapter` calls,
+  22 `resolve-chapter`, 17 `scope-achapter`, 10 `check-chapter`, 5
+  `run-ir-pipeline`. Fifty-odd call sites we wrote against signatures we do not
+  own, in a language that answers an under-applied call with a value rather
+  than an error.
+
+  **The fix for the class, not the instance**, is the entry-point split that
+  landed at U55: cite `Chapter: Opening` and call the driver's own phase
+  functions, so a moved signature is a compile error at the call we did not
+  write. See "A harness stands in for the driver" above.
 
 ### 2. Probe the contract before committing hours to it
 
