@@ -15,6 +15,7 @@ import pathlib
 import re
 import socket
 import sys
+import bisect
 import time
 
 import codex_vm
@@ -110,12 +111,64 @@ class Gdb:
                 self.s.sendall(b"+")
                 return
 
+    def read_pc(self):
+        """RIP, so a stall can be told apart from a wedge.
+
+        `rpos` not moving means the guest is not CONSUMING. It says nothing
+        about whether the guest is running: a compiler legitimately reads
+        nothing for as long as it takes to check a chapter. Watching RIP as
+        well is what separates "busy" from "stuck", and QEMU's x86-64 gdbstub
+        numbers RIP 16 (0x10).
+        """
+        try:
+            r = self.cmd(b"p10")
+        except Exception:
+            return None
+        if r.startswith(b"E") or len(r) < 16:
+            return None
+        return int.from_bytes(bytes.fromhex(r.decode()[:16]), "little")
+
     def detach(self):
         try:
             self.cmd(b"D")
         except Exception:
             pass
         self.s.close()
+
+def _load_symbols(seed_path):
+    """The seed's symbol map, for naming the address a stall sits on.
+
+    `seed/Codex.map` is written beside every kernel: `0xADDR SIZE name`. The
+    guest here IS the seed, so a stalled RIP resolves to the seed's own
+    function -- which turns "the guest stopped" into "the guest is in
+    <name>", the difference between a mystery and a lead.
+    """
+    m = re.sub(r"\.cdx$", ".map", str(seed_path))
+    try:
+        rows = []
+        for line in open(m, "r", errors="replace"):
+            if line.startswith("#"):
+                continue
+            parts = line.split(None, 2)
+            if len(parts) == 3 and parts[0].startswith("0x"):
+                rows.append((int(parts[0], 16), int(parts[1]), parts[2].strip()))
+        rows.sort()
+        return rows
+    except Exception:
+        return []
+
+
+def _symbolize(pc, rows):
+    if pc is None or not rows:
+        return "?"
+    i = bisect.bisect_right(rows, (pc, 1 << 62, "")) - 1
+    if i < 0:
+        return f"{pc:#x}"
+    addr, size, name = rows[i]
+    if pc < addr + size:
+        return f"{name}+{pc - addr:#x}"
+    return f"{pc:#x} (past {name})"
+
 
 def compile_ring(blob_path, out_path, mem_mb=MEM_MB, timeout=1800, seed=None,
                  sentinel=None):
@@ -210,6 +263,32 @@ def compile_ring(blob_path, out_path, mem_mb=MEM_MB, timeout=1800, seed=None,
             t_write_total = 0.0
             rounds = 0
             dry_rounds = 0
+            # WHAT A STALL IS, AND WHAT IT IS NOT.
+            #
+            # `rpos` standing still means the guest is not CONSUMING. It does
+            # not mean the guest has stopped: the compiler reads nothing at all
+            # while it checks a chapter, and the biggest subjects go tens of
+            # seconds between reads. The old rule -- 400 rounds of no rpos, so
+            # about 60 seconds -- could not tell those apart, so it was both too
+            # tight for a slow guest and far too slack for a wedged one.
+            #
+            # RIP separates them. A guest that is executing moves its program
+            # counter; a guest that is wedged does not, or cycles a handful of
+            # addresses. So:
+            #
+            #   PC pinned or cycling a tiny set  -> WEDGED, fail fast and name
+            #                                       the seed function it is in
+            #   PC ranging widely, rpos frozen   -> BUSY, keep waiting up to a
+            #                                       hard wall-clock cap
+            #
+            # Both knobs are env-settable so the thresholds can be measured
+            # rather than argued about.
+            stall_rounds = int(os.environ.get("RING_STALL_ROUNDS", "400"))
+            hard_secs = float(os.environ.get("RING_STALL_HARD_SECS", "900"))
+            symbols = _load_symbols(seed or f"{REPO}/seed/Codex.cdx")
+            stall_pcs = {}
+            max_stalled = 0
+            t_stall0 = None
             gdb.cont_nowait()
             while True:
                 t_wake = time.time()
@@ -248,17 +327,50 @@ def compile_ring(blob_path, out_path, mem_mb=MEM_MB, timeout=1800, seed=None,
                     # not drained a byte of. Rounds past the last byte are
                     # drain-wait, not straw width, so they do not count.
                     dry_rounds += 1
-                stalled = 0 if rpos != last_rpos else stalled + 1
+                if rpos != last_rpos:
+                    stalled = 0
+                    stall_pcs = {}
+                    t_stall0 = None
+                else:
+                    stalled += 1
+                    if t_stall0 is None:
+                        t_stall0 = time.time()
+                    pc = gdb.read_pc()
+                    if pc is not None:
+                        stall_pcs[pc] = stall_pcs.get(pc, 0) + 1
+                    max_stalled = max(max_stalled, stalled)
                 last_rpos = rpos
-                if stalled > 400:
-                    raise RuntimeError(f"guest stopped consuming at rpos {rpos} of {len(blob)}")
+                if stalled > stall_rounds:
+                    held = time.time() - t_stall0
+                    top = sorted(stall_pcs.items(), key=lambda kv: -kv[1])[:6]
+                    where = ", ".join(
+                        f"{_symbolize(a, symbols)} x{n}" for a, n in top) or "no PC samples"
+                    busy = len(stall_pcs) > 4
+                    # A guest that is plainly EXECUTING is not a wedge, and
+                    # killing it here is how a slow rung became a red one. Wait
+                    # for the hard cap instead, and say so once.
+                    if busy and held < hard_secs:
+                        if stalled == stall_rounds + 1:
+                            print(f"  [stall] rpos {rpos} frozen {held:.0f}s but the guest is"
+                                  f" EXECUTING ({len(stall_pcs)} distinct PCs): {where}",
+                                  flush=True)
+                            print(f"  [stall] waiting up to {hard_secs:.0f}s"
+                                  f" (RING_STALL_HARD_SECS)", flush=True)
+                        gdb.cont_nowait()
+                        continue
+                    kind = ("BUSY past the hard cap" if busy
+                            else f"WEDGED on {len(stall_pcs)} distinct PC(s)")
+                    raise RuntimeError(
+                        f"guest stopped consuming at rpos {rpos} of {len(blob)}"
+                        f" -- {kind} after {held:.0f}s / {stalled} rounds; in {where}")
                 gdb.cont_nowait()
             fill_secs = time.time() - t_fill
             print(f"ring refill consumed: {len(blob)} bytes in {fill_secs:.1f}s"
                   f" ({rounds} refills, {t_write_total:.1f}s of that in"
                   f" gdbstub writes ="
                   f" {100 * t_write_total / max(fill_secs, 1e-9):.0f}%,"
-                  f" {dry_rounds} rounds with no room freed)",
+                  f" {dry_rounds} rounds with no room freed,"
+                  f" longest stall {max_stalled} rounds of {stall_rounds})",
                   flush=True)
         print("detaching", flush=True)
         gdb.detach()
