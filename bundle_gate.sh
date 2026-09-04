@@ -24,7 +24,7 @@
 # that set today.
 set -uo pipefail
 T="$(cd "$(dirname "$0")" && pwd)"
-BUNDLE="${CODEXBUNDLE:-$HOME/showell_repos/rust-codex-compiler/target/release/bundle}"
+BUNDLE="${CODEXBUNDLE:-${CARGO_TARGET_DIR:-$HOME/build/rust-target}/release/bundle}"
 [ -x "$BUNDLE" ] || { echo "no bundle binary at $BUNDLE; set CODEXBUNDLE" >&2; exit 2; }
 : "${CODEX_ROOT:?CODEX_ROOT names the checkout both bundlers must read}"
 
