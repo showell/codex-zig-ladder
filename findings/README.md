@@ -1158,6 +1158,65 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
+## 73. Twenty chapters are committed with CRLF, all but four of them in `foreword`, and every bundler that reads in text mode hides it
+
+**Found 2026-09-04 by writing a SECOND bundler.** The Rust arm now resolves its
+own cites, and the first thing a differential comparison surfaced was five
+corpus units out of 611 that disagree with the Python resolver's. All five
+disagree only in carriage returns.
+
+**The count, measured:** 20 of the checkout's 3,718 `.codex` files (excluding
+`old/`) contain CR. Sixteen are in `codex/foreword` -- `signal` 4, `engine` 4,
+`sim` 3, `math` 2, `ai` 2, plus `Synth` -- which is to say in the library that
+programs reach transitively; the rest are under `apps/`.
+
+**Why nothing sees it.** Python reads with `read_text`, and universal-newline
+translation turns CRLF into LF before the bundler is handed a byte. So the
+units every arm consumes are uniformly LF whatever the sources are, and the
+sources can drift without any arm noticing. Reading bytes instead makes it
+visible immediately.
+
+**What it is NOT.** It is not a compile failure. Our lexer treats CR as trivia
+and the corpus parses, so the program is the same either way. What is not the
+same is a bundler that quietly rewrites its input, which means the committed
+bytes and the compiled bytes differ with nothing recording that they do.
+
+**Confidence: HIGH, and it is hygiene rather than a defect.** Trivially fixable
+with a normalisation pass or a `.gitattributes` rule. Filed because the next
+person to write a tool that reads bytes will re-find it, and because a
+whole-file hash of any chapter in that set answers differently depending on who
+read it.
+
+## 72. The quire registry advertises three directories that do not exist, and five committed test programs cite one of them
+
+**Found 2026-09-04, the first run of an independent cite resolver.**
+`build/quire-map.ps1` -- generated from `codex/build/quiremapScript.codex`, and
+the single registry every bundler, compiler, linter and plug build is told to
+take its map from -- registers `Magic` at `apps/games/magic`, `WaDemo` at
+`apps/wademo` and `Product` at `codex/product`. None of the three is a
+directory in the checkout.
+
+**One of them is live.** `Magic` and `Product` are cited by nothing, so they are
+dead weight. `WaDemo` is cited by five programs under `codex/test`:
+`wademo-pivot`, `wademo-codebook`, `wademo-bulk`, `wademo-schema` and
+`wademo-pyramid`, naming four chapters -- `NhgisCodebook`, `WaBulk`, `WaLoad`,
+`WaSchema`. Those chapters have no files, so the five programs cannot be
+assembled into a unit at all and are absent from every resolved corpus.
+
+**The ladder's own harness reports this**, and that is worth saying so the
+finding is not overstated: `resolve_corpus.py` prints ten UNRESOLVED lines and
+excludes the five units having said so. What is silent is upstream -- the
+registry keeps advertising the quire, and the five programs stay committed
+citing it.
+
+**Confidence: HIGH.** Directly observed: three `ls` failures against the
+registry's own paths, and five files whose cites name chapters that do not
+exist. Either the app comes back or the registry entry and the five programs
+go; which of those is right is upstream's call and not ours to guess.
+
+**What we did NOT check:** whether any of the three directories exists on a
+branch other than the one we read, or whether a build step creates them.
+
 ## 71. SENT as [issue 122](https://github.com/damiant3/Cobblestone/issues/122). `real-cos 0.0` is not 1.0. `codex/foreword/gpu/DeviceMath.codex`, upstream's chapter -- filed 2026-09-04 from the safari port's own spec suite.
 
 **The claim.** `real-cos 0.0` returns `0.999999943741051`, an absolute

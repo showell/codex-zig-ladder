@@ -184,6 +184,108 @@ def arities(text):
     return out
 
 
+# THE DECLARED TYPE AS A TYPE, not as its IR rendering.
+#
+# `ir_types` above answers what the IR PRINTS -- `(fn text int-default)` -- and
+# that spelling cannot express a forall or a type variable. `show` is
+# `ForAllTy 0 (FunTy (TypeVar 0) empty-row TextTy)`, so it is one of the 140
+# builtins absent from that table, and the CHECKER is exactly what needs it:
+# instantiating a forall mints a fresh type variable, and the count is graded.
+#
+# A compact s-expression rather than Rust constructor calls: it stays readable
+# in a diff, and the parser that reads it back is forty lines and testable,
+# where generated Rust is neither.
+CHECK_ATOM = {
+    'int-ty-default': 'int',
+    'TextTy': 'text',
+    'BooleanTy': 'bool',
+    'CharTy': 'char',
+    'NothingTy': 'nothing',
+    'VoidTy': 'void',
+    'ErrorTy': 'error',
+    'ProofTy': 'proof',
+    'real-f64': 'real',
+    'real-f32': 'real-approx',
+    'empty-row': 'empty',
+}
+
+
+def _check_type(form):
+    """Render a parsed bs-type as the checker's s-expression, or None."""
+    if isinstance(form, str):
+        if form in CHECK_ATOM:
+            return CHECK_ATOM[form]
+        # `TypeVar 0` arrives split when it is bare; a lone name we do not know
+        # is refused rather than invented.
+        return None
+    if not form:
+        return None
+    head = form[0]
+    if head == 'FunTy' and len(form) >= 4:
+        a, row, r = _check_type(form[1]), form[2], _check_type(form[3])
+        if a is None or r is None:
+            return None
+        if row == 'empty-row':
+            return f'(fn {a} empty {r})'
+        if isinstance(row, list) and row and row[0] == 'concrete-row':
+            lab = row[1].strip('"') if len(row) > 1 else ''
+            # No inner quotes: this lands inside a Rust string literal, and a
+            # label with a `"` in it would end the literal early. Labels are
+            # dotted identifiers, so a bare word loses nothing.
+            return f'(fn {a} (row {lab}) {r})'
+        return None
+    if head == 'TypeVar' and len(form) >= 2:
+        return f'(tvar {form[1]})'
+    if head == 'ForAllTy' and len(form) >= 3:
+        b = _check_type(form[2])
+        return f'(forall {form[1]} {b})' if b else None
+    if head == 'ForAllEff' and len(form) >= 3:
+        b = _check_type(form[2])
+        return f'(foralleff {form[1]} {b})' if b else None
+    if head == 'ListTy' and len(form) >= 2:
+        e = _check_type(form[1])
+        return f'(list {e})' if e else None
+    if head == 'EffectfulTy' and len(form) >= 4:
+        b = _check_type(form[3])
+        return f'(eff {b})' if b else None
+    return None
+
+
+def check_types(text):
+    """name -> the declared type as the checker's s-expression."""
+    out = {}
+    for chunk in text.split('BuiltinSpec {')[1:]:
+        m = re.match(r'\s*bs-name\s*=\s*"([^"]*)"', chunk)
+        if not m:
+            continue
+        ty = re.search(r'bs-type\s*=\s*Just\s*', chunk)
+        if not ty:
+            continue
+        if chunk[ty.end():ty.end() + 1] != '(':
+            bare = re.match(r'([A-Za-z_][\w-]*)', chunk[ty.end():])
+            r = _check_type(bare.group(1)) if bare else None
+        else:
+            form, _ = _sexp(chunk, ty.end())
+            r = _check_type(form)
+        if r is not None:
+            out[m.group(1)] = r
+    return out
+
+
+def as_rust_check_types(found, tys):
+    body = '\n'.join('    ("{}", "{}"),'.format(n, tys[n]) for n in found if n in tys)
+    return ('// Each builtin\'s DECLARED TYPE, as the checker needs it, read from\n'
+            '// Types/Builtins.codex by ladder builtins_probe.py --rust-check-types.\n'
+            '//\n'
+            '// Not the IR spelling: that cannot express a forall, which is why `show`\n'
+            '// is absent from BUILTIN_IR_TYPES and present here. The checker mints a\n'
+            '// fresh variable when it instantiates one, and next-id is graded.\n'
+            '//\n'
+            '// Re-run the probe after a pin change; do not edit by hand.\n'
+            'pub const BUILTIN_TYPES: [(&str, &str); '
+            + str(sum(1 for n in found if n in tys)) + '] = [\n' + body + '\n];\n')
+
+
 def ir_types(text):
     """name -> the builtin's declared type, spelled the way the IR spells it.
 
@@ -266,6 +368,8 @@ def main():
     ap.add_argument('--rust', action='store_true', help='emit the Rust table on stdout')
     ap.add_argument('--rust-types', action='store_true',
                     help='emit the Rust IR-type table on stdout')
+    ap.add_argument('--rust-check-types', action='store_true',
+                    help="emit the checker's declared-type table on stdout")
     a = ap.parse_args()
     found = names()
     ar = arities(SOURCE.read_text(errors='replace'))
@@ -275,6 +379,10 @@ def main():
     tys = ir_types(SOURCE.read_text(errors='replace'))
     if getattr(a, 'rust_types'):
         print(as_rust_types(found, tys), end='')
+        return 0
+    cts = check_types(SOURCE.read_text(errors='replace'))
+    if getattr(a, 'rust_check_types'):
+        print(as_rust_check_types(found, cts), end='')
         return 0
     print(f'{len(found)} builtin names from {SOURCE}')
     untyped = [n for n in found if n not in ar]
