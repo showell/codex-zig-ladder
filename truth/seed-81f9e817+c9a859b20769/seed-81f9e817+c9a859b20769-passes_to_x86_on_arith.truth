@@ -1,0 +1,26 @@
+check-errors 0
+ir-defs 29
+pass-infos 1
+emit-errors 6
+emit-diags 19
+  diag 4010 sev 2 bounds proven: runtime check elided
+  diag 4010 sev 2 bounds proven: runtime check elided
+  diag 4010 sev 2 bounds proven: runtime check elided
+  diag 4011 sev 2 no-alias proven: store through fresh allocation preserves cache
+  diag 4010 sev 2 bounds proven: runtime check elided
+  diag 4010 sev 2 bounds proven: runtime check elided
+  diag 4010 sev 2 bounds proven: runtime check elided
+  diag 4011 sev 2 no-alias proven: store through fresh allocation preserves cache
+  diag 4010 sev 2 bounds proven: runtime check elided
+  diag 4010 sev 2 bounds proven: runtime check elided
+  diag 4010 sev 2 bounds proven: runtime check elided
+  diag 4010 sev 2 bounds proven: runtime check elided
+  diag 4011 sev 2 no-alias proven: store through fresh allocation preserves cache
+  diag 2000 sev 0 IrLambda survived lambda lifting
+  diag 2000 sev 0 IrLambda survived lambda lifting
+  diag 2000 sev 0 IrLambda survived lambda lifting
+  diag 2000 sev 0 IrLambda survived lambda lifting
+  diag 2000 sev 0 IrLambda survived lambda lifting
+  diag 2000 sev 0 IrLambda survived lambda lifting
+.
+CODEGEN-HALTED: errors in bag; no binary printed

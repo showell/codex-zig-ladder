@@ -1,0 +1,31 @@
+head     55cc796717ff2b125335e6377fef13f7377a1e09
+branch   (detached) contained by: u56-candidate
+release  675a0775fe12a79543b8a53bd46cfac996fdf505
+tail     13 commit(s) after the release commit, NOT inert
+         + 55cc7967 zig plug: box every payload-carrying variant, the way bare metal does
+         + c9a859b2 the check compact is bare-metal memory work, and a hosted target skips it
+         + 0cc2bb09 zig plug: closure parameters move into the emitter's namespace
+         + 9a5c8ac4 the zig emitter splits four ways, re-cut against Update 55
+         + 833cbd0b zig plug: four definitions nothing reads, re-verified dead at Update 55
+         + 43bbe3ab zig plug: run.ps1 creates its output directory and falls back to the seed
+         + edbd2160 zig plug: emit real-to-int and real-from-int, the f64 conversions
+         + 833f9291 cause 3: a hex float literal is a constant expression and a bitcast is not
+         + 37a1799b the wgsl plug emits shaders Firefox rejects: fix two of the three causes
+         + a30a4b2b zig plug: Nothing-returning memory builtins return void, and address-of knows an enum
+         + b4b52423 zig plug: poke-byte and __memset, which the native build needs
+         + d12dc7ad zig plug: poke-32 and alloc-bytes, so peek32-sign can run
+         + 71155be9 zig plug: peek-32, which U54's memo slots reach and the plug could not emit
+           apps/gpushow/tools/validate-naga.mjs
+           build/check-zig-prelude-surface.ps1
+           codex/compiler/Types/TypeChecker.codex
+           codex/plugs/wasm/page-lenses.ps1
+           codex/plugs/wgsl/WgslEmitter.codex
+           codex/plugs/zig/ZigEmitter.codex
+           codex/plugs/zig/ZigEmitterApply.codex
+           codex/plugs/zig/ZigEmitterExpressions.codex
+           codex/plugs/zig/ZigPrelude.codex
+           codex/plugs/zig/build.ps1
+           codex/plugs/zig/run.ps1
+           codex/test/ops/real-int-conversions.codex
+           codex/test/ops/real-int-conversions.expected
+verdict  NOT THE RELEASE, banked with --force: None

@@ -1,0 +1,126 @@
+lex-tokens 5986
+lex-errors 0
+chapter |AST Nodes|
+defs 44
+def ast-real-qual-word-p params 1 anns 1 L188C3 slug AST Nodes
+def ast-all-real-quals-p params 3 anns 1 L195C3 slug AST Nodes
+def ast-real-qual-app-p params 2 anns 1 L202C3 slug AST Nodes
+def ast-tparam-name-p params 1 anns 1 L209C3 slug AST Nodes
+def ast-text-in-list params 4 anns 1 L215C3 slug AST Nodes
+def ast-collect-atexpr-tparams params 2 anns 1 L221C3 slug AST Nodes
+def ast-collect-atexpr-list-tparams params 4 anns 1 L241C3 slug AST Nodes
+def ast-collect-rec-field-tparams params 4 anns 1 L246C3 slug AST Nodes
+def ast-collect-var-ctor-tparams params 4 anns 1 L252C3 slug AST Nodes
+def ast-names-of-texts params 4 anns 1 L258C3 slug AST Nodes
+def ast-rec-tparams params 2 anns 1 L263C3 slug AST Nodes
+def ast-var-tparams params 2 anns 1 L269C3 slug AST Nodes
+def aexpr-span params 1 anns 1 L305C3 slug AST Nodes
+def copy-as-name params 2 anns 1 L321C3 slug AST Nodes
+def copy-as-names params 2 anns 1 L324C3 slug AST Nodes
+def copy-as-litk params 1 anns 1 L327C3 slug AST Nodes
+def copy-as-binop params 1 anns 1 L336C3 slug AST Nodes
+def copy-as-actstmt params 2 anns 1 L359C3 slug AST Nodes
+def copy-as-letbind params 2 anns 1 L365C3 slug AST Nodes
+def copy-as-pat params 2 anns 1 L368C3 slug AST Nodes
+def copy-as-matcharm params 2 anns 1 L377C3 slug AST Nodes
+def copy-as-fieldexpr params 2 anns 1 L386C3 slug AST Nodes
+def copy-as-handleclause params 2 anns 1 L389C3 slug AST Nodes
+def copy-as-expr params 2 anns 1 L398C3 slug AST Nodes
+def copy-as-typeexpr params 2 anns 1 L422C3 slug AST Nodes
+def copy-as-param params 2 anns 1 L435C3 slug AST Nodes
+def copy-as-def params 2 anns 1 L438C3 slug AST Nodes
+def copy-as-recordfielddef params 2 anns 1 L448C3 slug AST Nodes
+def copy-as-variantctordef params 2 anns 1 L451C3 slug AST Nodes
+def copy-as-typedef params 2 anns 1 L454C3 slug AST Nodes
+def copy-as-effectopdef params 2 anns 1 L461C3 slug AST Nodes
+def copy-as-effectdef params 2 anns 1 L464C3 slug AST Nodes
+def copy-as-classdef params 2 anns 1 L467C3 slug AST Nodes
+def copy-as-instmethod params 2 anns 1 L470C3 slug AST Nodes
+def copy-as-instancedef params 2 anns 1 L478C3 slug AST Nodes
+def copy-as-citesdecl params 2 anns 1 L486C3 slug AST Nodes
+def copy-as-chapter params 2 anns 1 L495C3 slug AST Nodes
+def copy-as-defs-guarded params 6 anns 1 L542C3 slug AST Nodes
+def copy-as-typedefs-guarded params 6 anns 1 L548C3 slug AST Nodes
+def copy-as-proseblocks-guarded params 6 anns 1 L554C3 slug AST Nodes
+def copy-as-annotations-guarded params 6 anns 1 L560C3 slug AST Nodes
+def empty-as-chapter params 2 anns 1 L566C3 slug AST Nodes
+def copy-as-chapter-guarded params 3 anns 1 L587C3 slug AST Nodes
+def relocate-chapter-tail params 4 anns 1 L615C3 slug AST Nodes
+.
+parse-errors 0
+--- desugar ---
+dr-sat 0
+a-name |AST Nodes|
+a-chapter-title |AST Nodes|
+a-prose-len 0
+a-defs 47
+adef ast-real-qual-word-p params 1 dtype 1 L188C3 slug AST Nodes
+adef ast-all-real-quals-p params 3 dtype 1 L195C3 slug AST Nodes
+adef ast-real-qual-app-p params 2 dtype 1 L202C3 slug AST Nodes
+adef ast-tparam-name-p params 1 dtype 1 L209C3 slug AST Nodes
+adef ast-text-in-list params 4 dtype 1 L215C3 slug AST Nodes
+adef ast-collect-atexpr-tparams params 2 dtype 1 L221C3 slug AST Nodes
+adef ast-collect-atexpr-list-tparams params 4 dtype 1 L241C3 slug AST Nodes
+adef ast-collect-rec-field-tparams params 4 dtype 1 L246C3 slug AST Nodes
+adef ast-collect-var-ctor-tparams params 4 dtype 1 L252C3 slug AST Nodes
+adef ast-names-of-texts params 4 dtype 1 L258C3 slug AST Nodes
+adef ast-rec-tparams params 2 dtype 1 L263C3 slug AST Nodes
+adef ast-var-tparams params 2 dtype 1 L269C3 slug AST Nodes
+adef aexpr-span params 1 dtype 1 L305C3 slug AST Nodes
+adef copy-as-name params 2 dtype 1 L321C3 slug AST Nodes
+adef copy-as-names params 2 dtype 1 L324C3 slug AST Nodes
+adef copy-as-litk params 1 dtype 1 L327C3 slug AST Nodes
+adef copy-as-binop params 1 dtype 1 L336C3 slug AST Nodes
+adef copy-as-actstmt params 2 dtype 1 L359C3 slug AST Nodes
+adef copy-as-letbind params 2 dtype 1 L365C3 slug AST Nodes
+adef copy-as-pat params 2 dtype 1 L368C3 slug AST Nodes
+adef copy-as-matcharm params 2 dtype 1 L377C3 slug AST Nodes
+adef copy-as-fieldexpr params 2 dtype 1 L386C3 slug AST Nodes
+adef copy-as-handleclause params 2 dtype 1 L389C3 slug AST Nodes
+adef copy-as-expr params 2 dtype 1 L398C3 slug AST Nodes
+adef copy-as-typeexpr params 2 dtype 1 L422C3 slug AST Nodes
+adef copy-as-param params 2 dtype 1 L435C3 slug AST Nodes
+adef copy-as-def params 2 dtype 1 L438C3 slug AST Nodes
+adef copy-as-recordfielddef params 2 dtype 1 L448C3 slug AST Nodes
+adef copy-as-variantctordef params 2 dtype 1 L451C3 slug AST Nodes
+adef copy-as-typedef params 2 dtype 1 L454C3 slug AST Nodes
+adef copy-as-effectopdef params 2 dtype 1 L461C3 slug AST Nodes
+adef copy-as-effectdef params 2 dtype 1 L464C3 slug AST Nodes
+adef copy-as-classdef params 2 dtype 1 L467C3 slug AST Nodes
+adef copy-as-instmethod params 2 dtype 1 L470C3 slug AST Nodes
+adef copy-as-instancedef params 2 dtype 1 L478C3 slug AST Nodes
+adef copy-as-citesdecl params 2 dtype 1 L486C3 slug AST Nodes
+adef copy-as-chapter params 2 dtype 1 L495C3 slug AST Nodes
+adef copy-as-defs-guarded params 6 dtype 1 L542C3 slug AST Nodes
+adef copy-as-typedefs-guarded params 6 dtype 1 L548C3 slug AST Nodes
+adef copy-as-proseblocks-guarded params 6 dtype 1 L554C3 slug AST Nodes
+adef copy-as-annotations-guarded params 6 dtype 1 L560C3 slug AST Nodes
+adef empty-as-chapter params 2 dtype 1 L566C3 slug AST Nodes
+adef copy-as-chapter-guarded params 3 dtype 1 L587C3 slug AST Nodes
+adef relocate-chapter-tail params 4 dtype 1 L615C3 slug AST Nodes
+adef __eq_AExpr params 2 dtype 1 L0C0 slug 
+adef __eq_APat params 2 dtype 1 L0C0 slug 
+adef __eq_ATypeExpr params 2 dtype 1 L0C0 slug 
+.
+a-type-defs 23
+a-effect-defs 0
+a-class-defs 0
+a-instance-defs 0
+a-citations 0
+a-ground-effects 0
+a-prose-blocks 0
+a-annotations 0
+a-sections 9
+a-section Names and Literals
+a-section Expressions
+a-section Patterns
+a-section Type Expressions
+a-section Definitions
+a-section Implicit Type Parameters
+a-section Chapter
+a-section Span Accessor
+a-section Deck Copies
+.
+a-rt-names 0
+a-conversions 0
+---
