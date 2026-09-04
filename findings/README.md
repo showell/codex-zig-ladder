@@ -1165,6 +1165,16 @@ own cites, and the first thing a differential comparison surfaced was five
 corpus units out of 611 that disagree with the Python resolver's. All five
 disagree only in carriage returns.
 
+**IT IS NOT PLAIN CRLF, and that took a byte-level comparison to see.** Every
+one of the 20 files carries a DOUBLED carriage return -- `0d 0d 0a` -- exactly
+once, on its `Chapter:` line; the rest of each file is ordinary CRLF. Consistent
+with a tool that wrote `\r\n` into a handle already in text-translating mode,
+once, when the header was written. Python's universal-newline mode makes a lone
+CR a break too, so it reads a blank line there and the file looks fine; a
+byte reader sees two CRs on one line. **The two bundlers therefore disagree by a
+whole LINE, not a byte**, which is why it first looked like a chapter-ordering
+bug. Added to issue 124 as a follow-up comment.
+
 **The count, measured:** 20 of the checkout's 3,718 `.codex` files (excluding
 `old/`) contain CR. Sixteen are in `codex/foreword` -- `signal` 4, `engine` 4,
 `sim` 3, `math` 2, `ai` 2, plus `Synth` -- which is to say in the library that
