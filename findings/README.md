@@ -1158,6 +1158,57 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
+## 74. SENT as [issue 125](https://github.com/damiant3/Cobblestone/issues/125). A Real literal's decimal-to-binary conversion is not correctly rounded: 10 of 120 ordinary doubles land one ULP away, in the FRONT END, so every backend inherits it
+
+**Found 2026-09-04 by two spec files disagreeing across arms**, and it is the
+first cross-arm disagreement this port's unit tests have produced.
+`safari/spec/BikeSpec.codex` and `ViewYawSpec.codex` grade a handful of values at
+tolerance 0.0 and passed on our Rust interpreter while the zig arm reported BAD.
+
+**The arithmetic is NOT what differs.** Probing with `real-to-bits` -- the one
+instrument that can see a Real across arms, since `show` on a Real is refused --
+both arms return bit-identical results for every computed value in both specs.
+What differs is the LITERALS the specs compare against.
+
+**Measured, 120 random doubles in (-1000, 1000), each written as its shortest
+round-tripping decimal:**
+
+| arm | wrong | worst gap |
+|---|---|---|
+| our Rust front end | **0 of 120** | -- |
+| Codex, via the zig arm | **10 of 120** | 1 ULP |
+
+Three concrete cases, with the correctly-rounded answer on the left:
+
+    0.012500000000000011   4578359381184846240   Codex: ...241
+    0.40800000000000003    4601021494509774570   Codex: ...569
+    0.42350000000000004    4601300717686671541   Codex: ...540
+
+**It is the FRONT END and not the emitter.** `ZigEmitter.codex:1616` renders a
+Real literal as `@as(f64, @bitCast(@as(i64, " & integer-to-text n & ")))` --
+it prints a bit pattern it is given and does no conversion of its own. And
+`IR/IRChapter.codex:21` declares `IrNumLit (Integer) (SourceSpan)`, typed
+`real-f64` at line 173: the IR carries the BITS. So the decimal text is
+converted at or before IR construction, and every backend -- bare metal, zig,
+wasm, the C# plug -- is handed the same wrong bits. Zig's own parser never sees
+the decimal at all.
+
+**Confidence: HIGH on the what and the where-ish.** Directly measured, on 120
+values, with an instrument that reads bit patterns rather than printed text, and
+reproduced on three hand-picked literals. **What we did NOT do: find the
+conversion routine.** We searched `codex/compiler/Syntax` and the obvious
+digit-accumulation shapes and did not locate it, so we cannot say whether this is
+a naive `acc * 10 + d` accumulation, a power-of-ten scaling, or something else.
+Nor did we run bare metal -- the inference that it shares the defect rests on the
+IR carrying the bits, which is read from source above.
+
+**Why it matters more than one ULP sounds.** It is silent, it affects 8% of
+ordinary literals, and it puts a floor under every cross-arm comparison in this
+repo: any test that grades a computed Real against a written-down Real at
+tolerance 0.0 can fail on an arm for reasons that have nothing to do with the
+arm. Our own specs now carry that knowledge as a note rather than as a loosened
+tolerance, because the tolerance was right and the conversion is wrong.
+
 ## 73. SENT as [issue 124](https://github.com/damiant3/Cobblestone/issues/124). Twenty chapters are committed with CRLF, all but four of them in `foreword`, and every bundler that reads in text mode hides it
 
 **Found 2026-09-04 by writing a SECOND bundler.** The Rust arm now resolves its
