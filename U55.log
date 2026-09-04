@@ -84,6 +84,31 @@ kept instead is the diagnosis: the detector now fails in 3 seconds instead of
 cursors as the GUEST sees them -- so the next occurrence is read off the log
 rather than bisected for a day.
 
+## PARKED: ir_to_wire says `error` where the zig arm says `boolean`
+
+The uniform-boxing sweep took the ladder from 6/14 to 11/14. Two rungs remain,
+and one of them is a MISMATCH rather than a refusal, which is the failure mode
+this whole apparatus exists to find:
+
+    zig  ... (binary le (name "n" int-default) (int-lit 1) boolean) ...
+    bare ... (binary le (name "n" int-default) (int-lit 1) error)   ...
+
+BARE METAL produced ErrorTy for a comparison that is plainly boolean, and the
+zig arm produced the right answer. That direction is the surprising part and it
+is why this is parked rather than dismissed: `error` here is `mcopy-type`'s
+unsafe escape, the same signature as the hosted check-compact defect
+(COMPILER-43), showing up on the arm that is supposed to be the oracle.
+
+Not chased yet. Before anyone does: the truths in that sweep were carried over
+from the u56-rebank2 sandbox rather than re-measured, and the sweep says so
+itself ("bare metal was NOT re-measured in this sweep"). So the first question
+is whether a fresh bare-metal run still says `error`, and that is one guest, not
+a bisection.
+
+The other remaining rung, ir_to_x86, panics with "integer does not fit in
+destination type" -- a runtime trap in the emitted zig, also newly reachable now
+that boxing lets the program get that far.
+
 ## Steps
 
 - **Read before running anything.** 455 files, +51,913/-8,177 over U54. Compiler
