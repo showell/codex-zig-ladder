@@ -238,6 +238,26 @@ measurement.
 
 ## Anatomy of a rung
 
+**WHAT A RUNG COMPARES IS TWO BACKENDS IN ONE RUN, not two versions.** The seed
+compiles the subject to a bare-metal binary and QEMU runs it: that output is the
+`.truth`. The same subject's IR goes through the plug to zig, `zig build-exe`
+builds it, and it runs natively. The two outputs must be byte-identical. Nothing
+here is a comparison against yesterday.
+
+**No truth carries a runtime allocation or deck count**, and it is worth saying
+because grepping one for `alloc` or `deck` suggests otherwise. Every hit is
+either tokenised SOURCE -- `lex.truth` is a token dump of `Lexer.codex`, whose
+identifiers include `__alloc` -- or a line of the EMITTED BINARY's symbol map,
+`0x00100114 53 __alloc`, which is a static address and size. So how much the zig
+arm allocates at run time is not compared and cannot break a rung.
+
+What CAN differ is a decision made FROM an address. `address-of p < mc.mc-floor`
+picks share-versus-copy and `address-of m == 0` guards the ordinal functions.
+The first is an optimisation whose two outcomes are value-identical; the second
+is Finding 31's territory, where answering 0 made every object identical to
+every other one and to null.
+
+
 ### The subject and its harness
 
 A subject is a set of real compiler chapters, concatenated with stubs and a
