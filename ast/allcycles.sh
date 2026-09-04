@@ -60,7 +60,13 @@ if ! python3 "$T/restore_truths.py" > "$T/ast/.restore.log" 2>&1; then
     # A new seed invalidates both arms, so the answer is a rebank, and
     # rebank_all.sh says so in its own header. Say it here, at second zero,
     # where the log is still being read.
-    if grep -q 'NO BANK for this seed' "$T/ast/.restore.log"; then
+    # AND NO WORKING TRUTHS. A rebank leaves its truths in ast/, so there is
+    # nothing to RESTORE and nothing that needs restoring -- which is the
+    # survivable case the paragraph above already described, and which the
+    # first version of this guard overrode. It refused the sweep at the end of
+    # a 30-minute rebank whose 14 truths were sitting right there.
+    if grep -q 'NO BANK for this seed' "$T/ast/.restore.log" \
+       && ! ls "$T"/ast/*.truth >/dev/null 2>&1; then
         echo
         echo "REFUSING: there is no bank for this seed, so a sweep has nothing to compare against."
         echo "  A new seed invalidates BOTH arms -- the bare-metal truth binary AND the IR-CCE"
