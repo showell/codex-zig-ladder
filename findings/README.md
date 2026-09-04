@@ -1158,7 +1158,7 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
-## 73. Twenty chapters are committed with CRLF, all but four of them in `foreword`, and every bundler that reads in text mode hides it
+## 73. SENT as [issue 124](https://github.com/damiant3/Cobblestone/issues/124). Twenty chapters are committed with CRLF, all but four of them in `foreword`, and every bundler that reads in text mode hides it
 
 **Found 2026-09-04 by writing a SECOND bundler.** The Rust arm now resolves its
 own cites, and the first thing a differential comparison surfaced was five
@@ -1187,7 +1187,7 @@ person to write a tool that reads bytes will re-find it, and because a
 whole-file hash of any chapter in that set answers differently depending on who
 read it.
 
-## 72. The quire registry advertises three directories that do not exist, and five committed test programs cite one of them
+## 72. SENT as [issue 123](https://github.com/damiant3/Cobblestone/issues/123). The quire registry advertises three directories that do not exist, and five committed test programs cite one of them
 
 **Found 2026-09-04, the first run of an independent cite resolver.**
 `build/quire-map.ps1` -- generated from `codex/build/quiremapScript.codex`, and
