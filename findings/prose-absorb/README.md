@@ -1,8 +1,19 @@
 # A hanging-indent prose continuation is lexed as CODE
 
-**Status: HALF PROVEN. Do not send.** The lexer half is upstream's, read from
-their source. The absorption half is measured only in our Rust interpreter and
-needs the bare-metal oracle before anyone calls it a compiler defect.
+**Status: PROVEN ON BARE METAL, 2026-09-04. Ready to send.**
+
+| | bare metal | our interpreter |
+|---|---|---|
+| `real-mode-opening` (depot control) | MATCHES its `.expected` | -- |
+| continuation absent | 2 | 2 |
+| continuation at column 2 | 2 | 2 |
+| **continuation at column 4** | **1002** | **1002** |
+
+The control is a depot test whose `.expected` is already the depot's, run FIRST
+and reproduced byte-for-byte, so the rig is proven on the spot. Bare metal and
+our interpreter agree exactly: OUR STACK IS FAITHFUL AND THIS IS UPSTREAM'S
+DEFECT. Run with `bare_expected.py real-mode-opening prose-none prose-col2
+prose-col4` against a u56-candidate checkout.
 
 ## The rule, from upstream's own lexer
 
@@ -47,16 +58,22 @@ expression. Change the text and it is not benign. Measured with our interpreter:
 
 The column is the only variable.
 
-## The question that decides who owns this
+## Why it happens
 
-Upstream's `skip-prose-line` emits NO token, so their parser sees
-`n + 1` `Newline` `Newline` `+ 1000`. Whether their parser continues a binary
-expression across two newlines is not established here. Codex refuses multi-line
-APPLICATIONS (CDX1070); this is a binary operator, which may differ.
+`skip-prose-line` emits NO token, so the parser sees `n + 1` `Newline`
+`Newline` `+ 1000` and continues the binary expression across both newlines.
+Codex refuses multi-line APPLICATIONS (CDX1070); a binary operator is evidently
+not refused the same way.
 
-- **If bare metal also answers 1002** -- a silent-miscompile hazard in the
-  release, and this reproducer is the finding.
-- **If bare metal answers 2** -- then the 1002 is OUR parser continuing an
-  expression across skipped prose, and the finding is against us.
+## What it costs, and what it does not
 
-Run `ProseAbsorbRun.codex` through the bare-metal oracle and record which.
+The three occurrences in the released compiler -- `opening.codex:114-117`,
+`IR/IRCheck.codex:38-39`, `Emit/X86_64Lir.codex:539` -- are benign BY LUCK:
+their continuation text is prose words and backticks, which cannot continue an
+expression, so the tokens land in no construct and are dropped. Change the words
+and the same shape is a silent wrong answer with no diagnostic anywhere.
+
+A suggested fix is not ours to pick, but the cheap one is a diagnostic rather
+than a semantic change: a line whose first non-space character sits at column 3
+or beyond, immediately following a prose line, is far more likely to be a
+hanging indent than code -- and saying so costs nothing where guessing does.
