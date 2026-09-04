@@ -86,13 +86,22 @@ meaning depended on a decision made for SIZING. Update 55's memory campaign
 added `lcopy-pat`, which asks `address-of` of an IR pattern for the first time
 -- 0 occurrences at U53 and U54, 8 at U55. Old gap, new caller.
 
-**TWO RUNGS OPEN, and one is a MISMATCH not a refusal.** `ir_to_wire`: the zig
-arm types a comparison `boolean` and the bare-metal ORACLE types it `error`.
-That is `mcopy-type`'s unsafe escape on the arm that is supposed to be the
-truth. FIRST QUESTION, one guest and not a bisection: the truths in that sweep
-were carried over rather than re-measured and the sweep says so itself, so
-re-measure before anyone chases it. `ir_to_x86` panics with "integer does not
-fit in destination type". Both are written up in [U55.log](U55.log).
+**TWO RUNGS OPEN, and one is a MISMATCH not a refusal.** `ir_to_wire`: **bare
+metal types a comparison `boolean` and the ZIG PLUG types it `error`.**
+Corrected 2026-09-04 -- this file and U55.log both had the direction backwards
+and blamed the oracle. `ast/plug_arm_lib.sh:70` runs `diff <(truth) zigout`, so
+the left side is bare metal, and the banked truth
+(`truth/seed-81f9e817+c9a859b20769`) contains `boolean` outright. So the oracle
+is RIGHT, `boolean` is the correct type for `n <= 1`, and the plug is emitting
+`error` -- our bug, the same ErrorTy signature as finding 70, not a reason to
+distrust bare metal. `ir_to_x86` panics with "integer does not fit in
+destination type". Both are written up in [U55.log](U55.log).
+
+**And the "re-measure first" caveat is DISCHARGED.** The concern was that the
+truths were carried over rather than re-measured. They were carried over -- and
+they are byte-identical to the ones `u56-rebank2` measured fresh, under the same
+seed stamp, so the comparison was always against genuine `u56-candidate` bare
+metal. Both sandboxes are gone; the measurement survives as the banked set.
 
 **Issue 120 is SENT** (prose hanging indent lexes as code and joins the previous
 definition's expression, proven on bare metal with a control). **Issue 121 was
