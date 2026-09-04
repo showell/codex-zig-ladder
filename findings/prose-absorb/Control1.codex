@@ -1,0 +1,16 @@
+Chapter: Control1
+  cites Foreword chapter Console
+
+Section: Definitions
+
+  answer : Integer -> Integer
+  answer (n) =
+   n + 1
+
+ A prose line at column 2 explaining the above, whose continuation
+
+Section: Entry
+
+  opening : [Console] Nothing = act
+   print-line-uni (integer-to-text (answer 1))
+  end

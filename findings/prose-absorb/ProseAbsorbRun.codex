@@ -1,0 +1,17 @@
+Chapter: ProseAbsorbRun
+  cites Foreword chapter Console
+
+Section: Definitions
+
+  answer : Integer -> Integer
+  answer (n) =
+   n + 1
+
+ A prose line at column 2 explaining the above, whose continuation
+   + 1000
+
+Section: Entry
+
+  opening : [Console] Nothing = act
+   print-line-uni (integer-to-text (answer 1))
+  end
