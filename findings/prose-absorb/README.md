@@ -1,6 +1,7 @@
 # A hanging-indent prose continuation is lexed as CODE
 
-**Status: PROVEN ON BARE METAL, 2026-09-04. Ready to send.**
+**Status: SENT as issue 120, 2026-09-04.**
+https://github.com/damiant3/Cobblestone/issues/120 -- `outbound/SENT-issue120-prose-hanging-indent.md` is the text as filed.
 
 | | bare metal | our interpreter |
 |---|---|---|
