@@ -4,11 +4,20 @@
 *.ir
 *.ir.map
 *.truth
-# ...except a bank. A working truth beside the rung regenerates by rerunning
-# the rung, so it stays out; a bank under truth/<update>/ is the measurement
-# itself, taken deliberately by bank_truth.py, and is the only artifact that
-# can say what an Update changed in the emitted image.
-!truth/**/*.truth
+# NO EXCEPTION FOR A SAVED SET, and the exception that used to be here is
+# deleted rather than narrowed. `!truth/**/*.truth` kept 177 files and 7.1 MB of
+# bare-metal measurements in this repository and on GitHub, on the argument that
+# they cost an hour of QEMU each and git was the durable place. That argument was
+# already contradicted next door: the IR golds are the same kind of artifact, 95
+# MB of them, and they live outside every repo under ~/golds reached through
+# $CODEX_GOLDS.
+#
+# STEVE'S RULE, 2026-09-04: no measurements in the repos and none on GitHub.
+# Sandboxes are where measurements get written -- one sandbox, one commit, with
+# its own PROVENANCE -- and losing them when the box dies is an accepted risk.
+# The repository holds what regenerates them, and nothing they produced.
+truth/
+corpus/census.json
 *.zig
 *.zigout
 *.diff
