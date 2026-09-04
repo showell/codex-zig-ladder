@@ -1193,6 +1193,15 @@ converted at or before IR construction, and every backend -- bare metal, zig,
 wasm, the C# plug -- is handed the same wrong bits. Zig's own parser never sees
 the decimal at all.
 
+**WE ALREADY HAD THE MECHANISM AND DID NOT CONNECT IT.** Finding 1B records
+that Cobblestone accumulates a Real literal's digits into a WRAPPING i64, and
+`rust-codex-compiler/safari/run.sh` has carried `literal_main` as a
+must-differ regression for it since. That is the same routine at a different
+magnitude: building the significand as an integer and scaling by a power of ten
+rounds TWICE, which lands within an ULP at ordinary precision and overflows
+outright at nineteen digits. Searching upstream source for the routine was the
+wrong first move; our own register had it.
+
 **Confidence: HIGH on the what and the where-ish.** Directly measured, on 120
 values, with an instrument that reads bit patterns rather than printed text, and
 reproduced on three hand-picked literals. **What we did NOT do: find the
