@@ -6,6 +6,12 @@
 set -e
 . "$(dirname "$0")/oracle_lib.sh"
 
+# ONE SANDBOX, ONE COMMIT. Asked at second zero, where the answer is free: a
+# checkout that moved under a run makes every measurement before the move a
+# claim about a tree that is not here any more. bank_truth's provenance gate
+# catches it too, but only at the END of an hours-class run.
+python3 "$(dirname "$0")/../check_sandbox.py" || exit 1
+
 # A detached sweep that dies must not be indistinguishable from one still
 # running: the trap makes the log's last line say how far it got (C1).
 rungs_green=0
