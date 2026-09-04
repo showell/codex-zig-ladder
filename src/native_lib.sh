@@ -39,7 +39,7 @@ ring_plug_fresh() {
 build_one() {
     local name=$1 gen=$2 bundle=$3 subject=$4
     echo "############ $name"
-    cd "$T/ast"
+    cd "$O"
     if [ -n "$gen" ]; then python3 "$gen"; fi
 
     rm -f "$subject"

@@ -27,7 +27,7 @@ zig_verdict() {
     local m=$1
     local prov=${2:-plug_provenance}
     $prov || return 1
-    cd $T/ast
+    cd "$O"
     # program output goes to stderr (std.debug.print); truth was serial bytes
     #
     # The run is bounded (bounded_run, resident) for this incident: an

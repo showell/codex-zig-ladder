@@ -7,7 +7,7 @@ set -e
 . "$(dirname "$0")/oracle_lib.sh"   # T, REPO, bounded_run, the venue gate
 SUBJ=$REPO/codex/test/plug-oracle-arith.codex
 
-cd $T/ast
+cd "$O"
 python3 - <<PY
 src = open('$SUBJ', 'rb').read()
 open('arith-cdx.blob', 'wb').write(b"CDX map\n" + src + b"\x04")

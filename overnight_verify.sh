@@ -96,7 +96,7 @@ fi
 
 if ! skip B2; then
     PHASE=B2; STAMP "B2: heap RSS rider (ir_to_x86 under the branch emitter)"
-    ( cd "$T/ast" && bounded_run "$ZIG_ARM_MEMORY_MAX" /usr/bin/time -v timeout 900 zig run ir_to_x86.zig 2>&1 || true ) \
+    ( cd "$T/src" && bounded_run "$ZIG_ARM_MEMORY_MAX" /usr/bin/time -v timeout 900 zig run ir_to_x86.zig 2>&1 || true ) \
         | grep -E "Maximum resident|Elapsed" || echo "(rider inconclusive -- non-blocking)"
 fi
 

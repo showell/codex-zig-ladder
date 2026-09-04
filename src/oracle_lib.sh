@@ -10,6 +10,12 @@
 # passes_to_x86 carry two, marked by the rung's `_on_<subject>` suffix, and
 # gen_<rung>_harness.py for their second rung holds nothing but its subject.
 T="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # ladder-root-bootstrap: reaches the LADDER only; the checkout comes from ladder_root
+# WHERE GENERATED FILES GO, and it is not $T. $T is the ladder's SOURCE; every
+# harness, subject, blob, emitted zig and truth a rung produces belongs in the
+# sandbox. ladder_root.py refuses when there is no $SANDBOX rather than falling
+# back to the checkout -- falling back is how 343 MB got into a 4 MB repo.
+O="$(python3 "$T/ladder_root.py" out)" || exit 1
+mkdir -p "$O"
 REPO="$(python3 "$T/ladder_root.py" codex)"
 
 # The ladder, cheapest first. allcycles.sh sweeps it and rebank_all.sh
@@ -152,7 +158,7 @@ unit_flags() {              # <unit> -> sets FLAGS, or fails
 # bare-metal binary, bank its output as the truth side.
 truth_arm() {
     local m=$1
-    cd $T/ast
+    cd "$O"
     # The seed as this arm begins. CODEX_ROOT names a working tree that
     # can move underneath an hours-class run, and a truth split under a
     # different seed than compiled it is exactly the mixed state the
@@ -292,7 +298,7 @@ PY
     # One run, one truth file per subject in it. A unit carrying one subject
     # prints no marks and passes through, so this is the same operation for
     # every rung on the ladder rather than a special case for the big two.
-    (cd $T/ast && python3 split_truth.py ${m}.raw truth $(unit_rungs $m)) \
+    (cd "$O" && python3 "$T/src/split_truth.py" ${m}.raw truth $(unit_rungs $m)) \
         || { echo "SPLIT FAILED for $m -- see src/${m}.raw"; return 1; }
 
     # The seed must still be the one that started the arm, or the truths
@@ -335,7 +341,7 @@ PY
 # the rung has existed. A missing file fails here rather than passing quietly:
 # an unrun rung and a green one must not look alike.
 roundtrip_fixed_point() {
-    cd $T/ast
+    cd "$O"
     local f
     for f in ir_to_codex.truth ir_to_codex_roundtrip.truth; do
         [ -s "$f" ] || {

@@ -102,7 +102,7 @@ def natives_stamp():
     The emitter sha would name the SOURCE; the binaries name what ran.
 
     WITHIN one tree only. Each native bakes its own build directory in --
-    `<sandbox>/ladder/ast` appears verbatim in both binaries -- and every
+    `<sandbox>/ladder/src` appears verbatim in both binaries -- and every
     sandbox is a fresh directory, so two builds of IDENTICAL source in two
     sandboxes always stamp differently. The stamp answers "are these the
     binaries I measured a moment ago", never "is this the same build as

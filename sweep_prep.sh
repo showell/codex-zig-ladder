@@ -63,7 +63,7 @@ plug_fingerprint > "$PLUG_DIR/build-output/zig-plug.fingerprint" || exit 1
 rm -f "$T/.prep-plug.blob"
 
 # --- the ring plug (src/ringplug.cdx) ---
-cd "$T/ast"
+cd "$T/src"
 rm -f ringplug-source.codex
 ~/.local/pwsh/pwsh -NoProfile -File ./bundle_ringplug.ps1 | tail -1
 [ -s ringplug-source.codex ] || { echo "BUNDLE FAILED: no ringplug-source.codex"; exit 1; }

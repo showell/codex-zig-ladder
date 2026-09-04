@@ -47,7 +47,7 @@ if [ -s "$T/src/${m}.ir" ] \
 fi
 
 echo "--- ensure_ir: ${m}.ir is missing or refused; rebuilding it from source"
-cd "$T/ast"
+cd "$O"
 
 # The harness is GENERATED, and a fresh sandbox has none -- which is how
 # the first run of this script found out, by handing pwsh a LexHarness.codex

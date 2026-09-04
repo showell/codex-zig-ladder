@@ -50,7 +50,7 @@ echo "### zigc_verify $(date +%H:%M:%S)"
 echo "    subject $SUBJ"
 echo "    plug    $PLUG"
 
-cd "$T/ast"
+cd "$T/src"
 
 # 1. The harness, then the subject. Same shape as every rung: generate,
 #    remove the old one first so a generator crash cannot bundle yesterday's.

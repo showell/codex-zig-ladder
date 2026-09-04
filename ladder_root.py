@@ -60,6 +60,46 @@ def codex_root():
         f'set CODEX_ROOT to the checkout you mean')
 
 
+class OutRootError(RuntimeError):
+    """No sandbox to write into, and a checkout is not an acceptable substitute."""
+
+
+def out_root():
+    """Where everything GENERATED goes. The sandbox, never a git checkout.
+
+    **THIS IS THE THIRD ROOT AND IT SHOULD HAVE BEEN THERE FROM THE START.**
+    LADDER and CODEX are both places to READ. Nothing named a place to WRITE, so
+    every generator wrote beside itself and every cycle wrote beside the rung it
+    ran -- which put 343 MB of harnesses, subjects, blobs, emitted zig and truths
+    inside a 4 MB source repository, invisible because .gitignore covered for it.
+
+    `$SANDBOX/work` when a sandbox is set, and `sandbox.sh` sets it. **A missing
+    sandbox is a REFUSAL, not a fallback to the checkout** -- falling back is
+    precisely how the checkout filled up, and a fallback that is convenient
+    every time is a rule that is enforced none of the time.
+
+    `LADDER_OUT` overrides, for a one-off that genuinely has nowhere else to go.
+    It has to be named, which is the point: an override in a command line is a
+    decision somebody made and can be read back, where a silent default is not.
+    """
+    named = os.environ.get('LADDER_OUT')
+    if named:
+        path = pathlib.Path(named).expanduser().resolve()
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+    sandbox = os.environ.get('SANDBOX')
+    if not sandbox:
+        raise OutRootError(
+            'no $SANDBOX, so there is nowhere to write generated files.\n'
+            '  Generated output belongs in a sandbox -- one sandbox, one commit -- '
+            'and never in a checkout.\n'
+            '  Cut one:  ./sandbox.sh <label> [ladder-ref] [codex-repo] [codex-ref]\n'
+            '  Or name a directory explicitly:  LADDER_OUT=<dir>')
+    path = pathlib.Path(sandbox).expanduser().resolve() / 'work'
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 CODEX = codex_root()
 
 
@@ -68,4 +108,4 @@ if __name__ == '__main__':
     # variable name, the marker, the error text -- has exactly one home.
     import sys
     which = sys.argv[1] if len(sys.argv) > 1 else 'codex'
-    print(CODEX if which == 'codex' else LADDER)
+    print(CODEX if which == 'codex' else out_root() if which == 'out' else LADDER)

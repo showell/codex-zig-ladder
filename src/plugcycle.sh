@@ -18,7 +18,7 @@ echo "REBUILT"
 # 13 MB IRs through the TCP arm is a different (slower, capped) measurement.
 $(arm_for "$m") "$m" && exit 0
 
-cd "$T/ast"
+cd "$O"
 # zig's own errors land in ${m}.zigraw (zig_verdict's stderr capture);
 # ${m}.zigout is the split program output and never held them.
 echo "errors: $(grep -c ': error: ' ${m}.zigraw || true)  markers-in-source: $(grep -o 'zig plug: [^\"]*' ${m}.zig | wc -l)"
