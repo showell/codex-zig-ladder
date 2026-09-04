@@ -82,6 +82,51 @@ ENDS_THE_SPINE = {'TypeVar', 'ListTy', 'VectorTy', 'ConstructedTy', 'PropEqTy',
                   'deck-record'}
 
 
+# The IR spelling of a builtin's declared type, which is what an emitted
+# `(name "f" <type>)` node has to carry. Derived from the golds, not invented:
+# `text-to-integer`'s `FunTy TextTy empty-row int-ty-default` appears in
+# neg-int-parse.ir as `(fn text int-default)`, and an effectful arrow appears as
+# `(fn text nothing (row (labels ...) "" 6))` -- so the row is DROPPED when it
+# is empty and printed when it is not.
+#
+# REFUSES rather than guesses. A head this does not know returns None and the
+# builtin is emitted with no type, which makes the emitter refuse that call site
+# loudly instead of shipping a plausible wrong type into a byte-compare.
+IR_ATOM = {
+    'int-ty-default': 'int-default',
+    'TextTy': 'text',
+    'BooleanTy': 'boolean',
+    'CharTy': 'char',
+    'NothingTy': 'nothing',
+    'real-f64': 'real',
+    # NOT 'real'. The golds distinguish the two widths -- `to-real-approx` is
+    # `(fn real real-approx)` -- and collapsing them agreed with the golds on
+    # every builtin that never mentions f32, which is what made it look right.
+    'real-f32': 'real-approx',
+}
+
+
+def _ir_type(form):
+    """Render a parsed bs-type as IR type text, or None if not yet known."""
+    if isinstance(form, str):
+        return IR_ATOM.get(form)
+    if not form:
+        return None
+    head = form[0]
+    if head == 'FunTy' and len(form) >= 4:
+        a, row, r = _ir_type(form[1]), form[2], _ir_type(form[3])
+        if a is None or r is None:
+            return None
+        # An empty row is not printed. A concrete one carries labels this probe
+        # does not reconstruct, so it refuses rather than inventing a shape.
+        if row == 'empty-row':
+            return f'(fn {a} {r})'
+        return None
+    if head in ('ForAllTy', 'ForAllEff', 'EffectfulTy'):
+        return _ir_type(form[-1])
+    return None
+
+
 def _arity(form, name):
     """How many arguments the FunTy spine takes.
 
@@ -139,6 +184,51 @@ def arities(text):
     return out
 
 
+def ir_types(text):
+    """name -> the builtin's declared type, spelled the way the IR spells it.
+
+    Same per-entry split as `arities`, and for the same reason. A name absent
+    from the result has a type this probe cannot render yet; the emitter must
+    then REFUSE that call site rather than emit a node with a guessed type,
+    because a wrong type in a byte-compare looks exactly like a right one until
+    the diff.
+    """
+    out = {}
+    for chunk in text.split('BuiltinSpec {')[1:]:
+        m = re.match(r'\s*bs-name\s*=\s*"([^"]*)"', chunk)
+        if not m:
+            continue
+        t = re.search(r'bs-type\s*=\s*Just\s*', chunk)
+        if not t:
+            continue
+        if chunk[t.end():t.end() + 1] != '(':
+            bare = re.match(r'([A-Za-z_][\w-]*)', chunk[t.end():])
+            r = _ir_type(bare.group(1)) if bare else None
+        else:
+            form, _ = _sexp(chunk, t.end())
+            r = _ir_type(form)
+        if r is not None:
+            out[m.group(1)] = r
+    return out
+
+
+def as_rust_types(found, tys):
+    body = '\n'.join(
+        '    ("{}", "{}"),'.format(n, tys[n]) for n in found if n in tys)
+    return ('// The IR spelling of each builtin\'s declared type, read from\n'
+            '// Types/Builtins.codex by ladder builtins_probe.py --rust-types.\n'
+            '//\n'
+            '// A `(name "f" <type>)` node in emitted IR carries this. Only the\n'
+            '// builtins whose type this probe can render are here: a name ABSENT is a\n'
+            '// name the emitter must refuse, not one to default. A wrong type reads\n'
+            '// exactly like a right one until the byte-compare.\n'
+            '//\n'
+            '// Re-run the probe after a pin change; do not edit by hand.\n'
+            'pub const BUILTIN_IR_TYPES: [(&str, &str); '
+            + str(sum(1 for n in found if n in tys)) + '] = [\n'
+            + body + '\n];\n')
+
+
 def names():
     text = SOURCE.read_text(errors='replace')
     found = ENTRY.findall(text)
@@ -174,17 +264,25 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--rust', action='store_true', help='emit the Rust table on stdout')
+    ap.add_argument('--rust-types', action='store_true',
+                    help='emit the Rust IR-type table on stdout')
     a = ap.parse_args()
     found = names()
     ar = arities(SOURCE.read_text(errors='replace'))
     if a.rust:
         print(as_rust(found, ar), end='')
         return 0
+    tys = ir_types(SOURCE.read_text(errors='replace'))
+    if getattr(a, 'rust_types'):
+        print(as_rust_types(found, tys), end='')
+        return 0
     print(f'{len(found)} builtin names from {SOURCE}')
     untyped = [n for n in found if n not in ar]
     nullary = [n for n in found if ar.get(n) == 0]
     print(f'  {len(ar)} declare a type; {len(untyped)} do not: ' + ', '.join(untyped))
     print(f'  {len(nullary)} are NULLARY -- a declared type that is not an arrow')
+    print(f'  {len(tys)} have a type this probe can spell in IR form; '
+          f'{len(ar) - len(tys)} do not yet')
     print('  ' + ', '.join(f'{n}/{ar[n]}' for n in found[:8] if n in ar) + ' ...')
     return 0
 
