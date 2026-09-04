@@ -51,7 +51,7 @@ import sys
 
 import truth_prov
 from ladder_root import LADDER
-from seed_identity import stamp, truth_dir
+from seed_identity import measurement_slug, stamp, truth_dir
 
 
 def main():
@@ -63,7 +63,12 @@ def main():
     args = ap.parse_args()
 
     s = stamp()
-    bank = truth_dir(s['slug'])
+    # NAMED BY THE MEASUREMENT, and there is deliberately NO FALLBACK to the
+    # release's directory. Quietly restoring another tree's truths is how a
+    # sweep reports green against answers measured somewhere else -- which is
+    # what made an 11/14 look untrustworthy and a 6/14 look like a wall.
+    slug = measurement_slug()
+    bank = truth_dir(slug)
     ast = LADDER / 'ast'
 
     print(f"seed   {s['sha256'][:16]}  (Update {s['update']})")
@@ -89,8 +94,8 @@ def main():
 
     restored, present, missing, stale = [], [], [], []
     for m in _rungs():
-        src = bank / f"{s['slug']}-{m}.truth"
-        src_prov = bank / f"{s['slug']}-{m}.truth.prov"
+        src = bank / f"{slug}-{m}.truth"
+        src_prov = bank / f"{slug}-{m}.truth.prov"
         dst = ast / f'{m}.truth'
         dst_prov = truth_prov.sidecar(m)
 

@@ -30,16 +30,25 @@ The Update prefix is in the name as well as the directory on purpose: a file
 pulled out of its directory to be mailed, pasted or diffed still says what it
 is. A bare `lower.truth` in a bug report names nothing.
 
-A bank's NAME comes from the seed, and the seed does not identify the tree.
-`seed/Codex.cdx` is tracked upstream and a PR against the compiler source does
-not rebuild it, so a branch carrying unlanded compiler work has the release's
-seed byte for byte and banks as `u53` -- over the release bank, under the
-release's name. That is not hypothetical: `master-plus-outbound` rebanked with
-`lex.truth` 5,339 -> 5,335 tokens, the first difference at PR 114's own added
-line, while `parse.truth` came back byte-identical. Same seed, two trees, one
-of them Update 53. So the tree is checked too, and a bank records it in TREE
-beside SEED: the release commit is the newest commit reachable from HEAD that
-touched the seed, and HEAD must BE it.
+A NAME COMES FROM THE SEED **AND THE TREE**, because the seed alone does not
+identify a checkout. `seed/Codex.cdx` is tracked upstream and a PR against the
+compiler source does not rebuild it, so a branch carrying unlanded compiler work
+has the release's seed byte for byte. That is not hypothetical:
+`master-plus-outbound` measured `lex.truth` at 5,335 tokens where Update 53's
+release measured 5,339, first difference at PR 114's own added line, while
+`parse.truth` came back byte-identical. Same seed, two trees, one of them a
+release.
+
+So a release is `u53` and anything else is `u53+<head12>` -- see
+`seed_identity.measurement_slug`. **THIS REPLACED A REFUSAL, and the refusal was
+the bug.** The old rule was that HEAD must BE the release commit, enforced
+because the directory carried the release's name and a branch would have
+overwritten it. What it cost, 2026-09-03: a complete, correct set of fourteen
+`u56-candidate` truths, recorded in 1,793 seconds and then refused by the sweep
+in the same script while the files sat in `ast/`. The ladder's ordinary job is
+comparing a branch we understand against a branch we do not; two releases is
+merely the case where both names are releases, and it was the only case this
+script would record.
 
 A bank is a SET, and taking one from a mixed working tree is the one way to
 make it lie. If some rungs ran under a different seed or older harness content
@@ -59,7 +68,7 @@ import sys
 
 import truth_prov
 from ladder_root import LADDER
-from seed_identity import stamp, tree_stamp, truth_dir
+from seed_identity import measurement_slug, stamp, tree_stamp, truth_dir
 
 # What a bank must contain. Taken from oracle_lib.sh so the two cannot drift
 # about what the ladder is: a rung missing from the bank is a rung whose truth
@@ -117,7 +126,8 @@ def main():
     args = ap.parse_args()
 
     s = stamp()
-    dest = truth_dir(s['slug'])
+    slug = measurement_slug()
+    dest = truth_dir(slug)
     ast = LADDER / 'ast'
 
     named = f"Update {s['update']}" if s['update'] is not None else 'no release note names it'
@@ -150,26 +160,19 @@ def main():
         for path in t['tail_paths']:
             print(f"           {path}")
     off_release = None
-    if s['update'] is not None and not at_release:
-        why = ('the seed on disk is not the one that commit carries'
-               if t['is_release'] else
-               'HEAD carries work that release does not contain')
-        print(f'\nNOT THE RELEASE: this bank would be named {dest.name}, and '
-              f'{why}.')
-        print(f'A bank taken here folds this tree into every later comparison '
-              f'under the release\'s name.')
-        if not args.force:
-            print('Bank at the release, or pass --force and say why.')
-            return 1
-        try:
-            off_release = input('--force: one line saying why this tree is '
-                                'banked as the release: ').strip()
-        except EOFError:
-            off_release = ''
-        if not off_release:
-            # A --force with no reason is the silent overwrite wearing a flag.
-            print('no reason given; nothing banked')
-            return 1
+    # NO GATE HERE ANY MORE, and its absence is the point. This used to REFUSE
+    # to save unless HEAD was the release commit, because the directory was
+    # named for the release and a branch's truths would have overwritten it.
+    # The name now carries the tree, so a branch's measurements cannot collide
+    # with a release's and there is nothing left to protect.
+    #
+    # What that gate actually cost, measured 2026-09-03: a complete, correct set
+    # of fourteen `u56-candidate` truths, recorded in 1,793 seconds and then
+    # refused by the sweep in the same script -- "no bank for this seed" --
+    # while the files sat in ast/. The ladder's ordinary job is comparing a
+    # branch we understand to a branch we do not; Update N against Update N+1 is
+    # just the case where both happen to be releases, and it was the only case
+    # this script would let you record.
     print()
 
     # A truth is bankable when its recorded provenance -- the seed it ran
@@ -239,7 +242,7 @@ def main():
     tmp.mkdir(parents=True)
     banked_prov = 0
     for m, src in ready:
-        shutil.copy2(src, tmp / f"{s['slug']}-{m}.truth")
+        shutil.copy2(src, tmp / f"{slug}-{m}.truth")
         # The sidecar travels WITH the truth. A banked truth without its
         # provenance is a measurement nobody can place afterwards: SEED
         # below records the seed, but a truth is keyed on the seed AND the
@@ -252,7 +255,7 @@ def main():
         # loosened here; something previously thrown away is kept.
         prov = truth_prov.sidecar(m)
         if prov.is_file():
-            shutil.copy2(prov, tmp / f"{s['slug']}-{m}.truth.prov")
+            shutil.copy2(prov, tmp / f"{slug}-{m}.truth.prov")
             banked_prov += 1
     (tmp / 'SEED').write_text(f"{s['sha256']}\n{s['bytes']}\n{s['update']}\n")
     # TREE is the answer SEED could never give. A reader holding two banks and
@@ -298,7 +301,7 @@ def main():
     if dest.exists():
         shutil.rmtree(dest)
     tmp.rename(dest)
-    print(f"banked {len(ready)} truths as {s['slug']}-<rung>.truth")
+    print(f"banked {len(ready)} truths as {slug}-<rung>.truth")
     # The arms are reported, never enforced. A bank taken before the zig arms
     # have run at all is a complete bank of bare-metal truths whose ARMS says
     # so, which is the ordinary state now that bare metal goes first.

@@ -249,11 +249,41 @@ def tree_stamp(rev='HEAD'):
     }
 
 
+def measurement_slug(rev='HEAD'):
+    """What a set of truths is OF: the seed, and the tree if it is not a release.
+
+    **THE OLD NAMING WAS THE WHOLE PROBLEM.** A directory named for the release
+    the seed came from is the right name for exactly one tree -- the release --
+    and the wrong name for every branch that shares that seed, because
+    `seed/Codex.cdx` is tracked upstream and our own compiler work does not
+    rebuild it. So a branch's measurements wanted to land on top of the
+    release's, under the release's name, and the only thing standing between
+    them was a gate that REFUSED TO SAVE AT ALL. Measured 2026-09-03: a
+    complete, correct set of fourteen `u56-candidate` truths was recorded in
+    1,793 seconds and then refused by the sweep in the same script, because it
+    had nowhere to live that was not a lie.
+
+    A branch gets its own name instead. Nothing collides, so nothing needs
+    guarding, and comparing branch A to branch B is the ordinary case rather
+    than the exception -- which is what the ladder actually does. Comparing
+    Update N to Update N+1 is just the case where both names happen to be
+    releases.
+    """
+    s = stamp()
+    t = tree_stamp(rev)
+    if t['measures_release'] and t['release_seed'] == s['sha256']:
+        return s['slug']
+    return f"{s['slug']}+{t['head'][:12]}"
+
+
 def truth_dir(slug=None):
-    """Where truths for a given seed live. Banked truths are the one durable
-    artifact per rung; everything else the ladder writes is regenerable and
-    stays unversioned beside the rung."""
-    return LADDER / 'truth' / (slug or stamp()['slug'])
+    """Where truths for a given measurement live. Banked truths are the one
+    durable artifact per rung; everything else the ladder writes is regenerable
+    and stays unversioned beside the rung.
+
+    Defaults to `measurement_slug()`, which is the seed's slug for a release and
+    `<slug>+<head12>` for anything else."""
+    return LADDER / 'truth' / (slug or measurement_slug())
 
 
 def require_match(banked_sha):
