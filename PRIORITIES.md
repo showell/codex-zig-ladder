@@ -71,6 +71,45 @@ half; `check_harness_gates.py` catches the mismatch in either direction.
 against it was a regex over text or a corpus that does not contain the shapes.
 A corpus that passes tells you the corpus lacks the shape.
 
+## THE NIGHT OF 2026-09-03/04: WHAT MOVED, AND WHAT IS OPEN
+
+**`u56-candidate` is the superset.** `NewRepository@u56-candidate`, worktree
+`cobblestone-u56`, cut from tag `u55` and carrying eleven fixes we own. The
+per-fix ledger -- branch, base, proof, what it invalidates -- is
+[CARRY_FORWARD.md](CARRY_FORWARD.md). Build, test and cut PRs from THIS.
+
+**The ladder is 11/14 green on it**, up from 6. Uniform boxing in the zig plug
+(`zig-typedef-boxed`) took `lower`, `ir_to_codex`, the roundtrip and both
+`passes_to_x86` rungs green with no regression. Bare metal boxes every variant
+value; the plug boxed only what zig's finite-size rule forced, so `address-of`'s
+meaning depended on a decision made for SIZING. Update 55's memory campaign
+added `lcopy-pat`, which asks `address-of` of an IR pattern for the first time
+-- 0 occurrences at U53 and U54, 8 at U55. Old gap, new caller.
+
+**TWO RUNGS OPEN, and one is a MISMATCH not a refusal.** `ir_to_wire`: the zig
+arm types a comparison `boolean` and the bare-metal ORACLE types it `error`.
+That is `mcopy-type`'s unsafe escape on the arm that is supposed to be the
+truth. FIRST QUESTION, one guest and not a bisection: the truths in that sweep
+were carried over rather than re-measured and the sweep says so itself, so
+re-measure before anyone chases it. `ir_to_x86` panics with "integer does not
+fit in destination type". Both are written up in [U55.log](U55.log).
+
+**Issue 120 is SENT** (prose hanging indent lexes as code and joins the previous
+definition's expression, proven on bare metal with a control). **Issue 121 was
+filed and WITHDRAWN** the same night -- the address-of gap is ours to fix in the
+plug, not Damian's to guard, and we fixed it.
+
+**Rust: `fib` is byte-identical through LOWER**, six layers. `./slice.sh` is the
+loop. See [the essay](http://143.244.172.148:9100/notes/rust-codex-compiler-where-it-stands.md)
+for where that goes next; the short version is that the interpreter, the linter
+and the arms are the near-term payoff and the IR is mostly in service of zig.
+
+**Three new linters, all seconds, all before any guest**: `xref arity` (our
+calls against their signatures -- it found `check-chapter` drifted 5 -> 9
+parameters at U54 and nobody noticed for two Updates), `check_bundles.py` now
+covering the PLUG bundles, and `check_zig_pages.py`. The README's
+"Processing a new Update" now leads with the driver and then these.
+
 ## Objectives
 
 Every item opens with an **Objective** naming what it is FOR in one word,
