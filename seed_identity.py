@@ -249,6 +249,33 @@ def tree_stamp(rev='HEAD'):
     }
 
 
+# Paths a BARE-METAL TRUTH cannot be moved by. Narrower question than
+# `tail_is_inert`, and deliberately a separate list: that one asks whether the
+# LADDER can read a path, which covers both arms. This asks whether the ORACLE
+# can, and the zig plug is the arm under test rather than the oracle --
+# bank_truth's own docstring puts it as "the plug's arms live next door, because
+# nothing they do can reach a bare-metal truth". Widening `tail_is_inert` to
+# match would have said a plug-only branch MEASURES THE RELEASE, which is false
+# for the arm and would have hidden a real difference.
+ORACLE_INERT = ('docs/', 'codex/plugs/')
+
+
+def oracle_rev(rev='HEAD'):
+    """The newest commit at or before `rev` that could have moved a truth.
+
+    Derived the same way the release commit is -- walk back until something the
+    oracle can read was touched -- so a run of plug-only commits does not
+    invent a new measurement. That is not hypothetical: `u56-candidate`'s
+    truths were measured at `c9a859b2` and the branch then moved to `55cc7967`,
+    one commit touching only `codex/plugs/zig/`. Naming by the head sha would
+    have retired fourteen valid truths and asked for another 1,793 seconds of
+    QEMU to reproduce them byte for byte.
+    """
+    excludes = [f':(exclude){p}' for p in ORACLE_INERT]
+    out = _git('log', '-1', '--format=%H', rev, '--', '.', *excludes)
+    return out.strip() or _git('rev-parse', rev).strip()
+
+
 def measurement_slug(rev='HEAD'):
     """What a set of truths is OF: the seed, and the tree if it is not a release.
 
@@ -273,7 +300,7 @@ def measurement_slug(rev='HEAD'):
     t = tree_stamp(rev)
     if t['measures_release'] and t['release_seed'] == s['sha256']:
         return s['slug']
-    return f"{s['slug']}+{t['head'][:12]}"
+    return f"{s['slug']}+{oracle_rev(rev)[:12]}"
 
 
 def truth_dir(slug=None):
