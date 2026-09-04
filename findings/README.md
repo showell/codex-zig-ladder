@@ -1158,6 +1158,60 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
+## 71. SENT as [issue 122](https://github.com/damiant3/Cobblestone/issues/122). `real-cos 0.0` is not 1.0. `codex/foreword/gpu/DeviceMath.codex`, upstream's chapter -- filed 2026-09-04 from the safari port's own spec suite.
+
+**The claim.** `real-cos 0.0` returns `0.999999943741051`, an absolute
+error of 5.6e-8, and `real-sin`/`real-cos` carry no stated accuracy at
+all -- in a chapter whose `real-atan`, forty lines below, documents a
+measured "worst absolute error 6.7e-16 radians, 4 ULP".
+
+**Why the most trivial input is the worst case, which is the whole
+point.** The chapter reduces, folds to a quadrant, and evaluates an
+11th-order Taylor sine about zero:
+
+    dm-sin-poly (r) = r - r3/6 + r5/120 - r7/5040 + r9/362880 - r11/39916800
+    real-cos (x)    = dm-sin-poly (dm-fold-quadrant (dm-reduce (x + dm-half-pi)))
+
+`cos 0` becomes `sin (pi/2)`, and pi/2 is the LARGEST argument
+`dm-fold-quadrant` can ever produce -- so the one input every caller
+tries first lands exactly on the series' worst point. The next Taylor
+term at pi/2 is 5.692e-8 against a measured error of 5.626e-8, so
+truncation is the entire cause and nothing else is involved.
+
+**Confidence: HIGH, and it needs no arm to establish.** `real-sin` and
+`real-cos` are pure Codex arithmetic with no builtin beneath them, so
+the value is fixed by the source and IEEE-754 rather than by any plug.
+Recomputing the chapter's own expression in another language gives
+0.999999943741051 to the last bit, and two independent implementations
+of Codex -- our Rust interpreter and codexzig -- print it byte-identically.
+What is NOT established is bare metal, which we did not run: the x86
+rungs are a heavier job than the claim needs, and no plug can disagree
+with arithmetic this file specifies completely.
+
+**Why nothing caught it.** `codex/test/lib/device-math.codex` grades this
+exact call -- `near (real-cos 0.0) 1.0 tr-tol` -- at `tr-tol = 0.0000001`.
+The error is 5.6e-8, so the test passes. **The tolerance is calibrated
+just above the defect**, which means the one test that looks at this
+value cannot see it, and any future regression up to 1e-7 is equally
+invisible.
+
+**A fix, measured.** Two more terms -- `+ r13/6227020800 - r15/1307674368000`
+-- take the worst-case error from 5.6e-8 to 6.0e-12, a factor of 9,000,
+for four multiplies and two divides on a path that already does six.
+Folding to pi/4 with a companion cosine polynomial would do better still
+and is a larger change. NOT MEASURED by us: the cost on a GPU target,
+which is what this chapter is for, and whether any caller depends on the
+current value.
+
+**How it surfaced.** Writing `spec/TrigSpec.codex` in the safari port --
+a self-checking Codex test whose expected values come from mathematics
+rather than from capture -- and tightening its tolerance until it broke,
+which put the accuracy at 3e-8 for sine and 7e-8 for cosine where the
+port had never stated one. The port's own `to-rider` then showed the
+error downstream: a rotation at yaw 0.0 returns -3.4999998 for an exact
+-3.5.
+
+
 ## 70. SENT as [PR 117](https://github.com/damiant3/Cobblestone/pull/117), backlog row COMPILER-43. Update 54's check compact validates a type box by READING ITS TAG WORD out of raw memory, which no plug can answer -- and it answers `ErrorTy` silently. FIX MEASURED: `hosted-kind` at the top of `check-batch-close`, 14/14
 
 Found 2026-09-02 on the ZIG arm, against U54 seed `fcbabf074795`. It is
