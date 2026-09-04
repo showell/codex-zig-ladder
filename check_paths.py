@@ -24,7 +24,7 @@ The rule this enforces is narrower than "never count directories", because that
 rule cannot be obeyed: a script has to reach ladder_root.py somehow, and the
 only thing it knows is where it is. The real rule is that counting may reach the
 LADDER and never the CHECKOUT. The ladder's internal layout is fixed and moves
-as a unit, so ast/ is always one below the root; the checkout is the thing the
+as a unit, so src/ is always one below the root; the checkout is the thing the
 move makes unrelated, and every path to it goes through ladder_root.
 
 So one bootstrap line per script is allowed, and it has to ask: mark it
@@ -64,10 +64,10 @@ FROM_CYCLE_BUILD = [
 
 # The ladder's own tree.
 FROM_LADDER = [
-    ('ast/emit_harness.py', 'the shared harness template'),
-    ('ast/oracle_lib.sh', 'the rung machinery, and the truth arm'),
-    ('ast/plug_arm_lib.sh', "the plug's arms, sourced by oracle_lib.sh"),
-    ('ast/allcycles.sh', 'the sweep'),
+    ('src/emit_harness.py', 'the shared harness template'),
+    ('src/oracle_lib.sh', 'the rung machinery, and the truth arm'),
+    ('src/plug_arm_lib.sh', "the plug's arms, sourced by oracle_lib.sh"),
+    ('src/allcycles.sh', 'the sweep'),
     ('codex_vm.py', 'the QEMU driver'),
     ('ring_compile.py', 'the ring transport'),
 ]

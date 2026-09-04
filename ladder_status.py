@@ -22,10 +22,10 @@ def ladder_rungs():
     """The rung list, read from its one authority (oracle_lib.sh). Rungs,
     not units: a truth and its sidecar are per-rung files, and a unit that
     carries two rungs has no truth of its own."""
-    for line in (LADDER / 'ast' / 'oracle_lib.sh').read_text().splitlines():
+    for line in (LADDER / 'src' / 'oracle_lib.sh').read_text().splitlines():
         if line.startswith('LADDER_RUNGS='):
             return line.split('=', 1)[1].strip().strip('"')
-    raise SystemExit('LADDER_RUNGS not found in ast/oracle_lib.sh')
+    raise SystemExit('LADDER_RUNGS not found in src/oracle_lib.sh')
 
 
 def sh(cmd):
@@ -53,8 +53,8 @@ def main():
 
     fresh, stale, unproven = [], [], []
     for m in ladder_rungs().split():
-        prov = LADDER / 'ast' / f'{m}.truth.prov'
-        truth = LADDER / 'ast' / f'{m}.truth'
+        prov = LADDER / 'src' / f'{m}.truth.prov'
+        truth = LADDER / 'src' / f'{m}.truth'
         if not truth.is_file():
             unproven.append(m + '(missing)')
         elif not prov.is_file():

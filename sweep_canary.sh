@@ -3,7 +3,7 @@
 # stop at the first red rung and say so. Its whole identity is answering
 # "did I just break the emitter" in minutes (2-3 including the straw is
 # the agreed budget; clear failure beats instant failure). Full coverage
-# is sweep_long.sh's job; the all-local fallback is ast/allcycles.sh.
+# is sweep_long.sh's job; the all-local fallback is src/allcycles.sh.
 #
 # Assumes sweep_prep.sh ran since the last emitter edit; the per-job
 # staleness checks in droplet_transpile.sh make forgetting that loud.

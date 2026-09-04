@@ -12,7 +12,7 @@ renders it, not the seed. That is the right instrument for a COMPILER SOURCE
 change, because the seed cannot carry one -- the seed is the shipped compiler
 and a patch to `Lowering.codex` is not in it. It is the wrong instrument for
 "what does the shipped compiler do", which is `run_seed_probe.sh`'s question.
-The harness was eliminated as a confound on 2026-08-27: `ast/CodexIrHarness`
+The harness was eliminated as a confound on 2026-08-27: `src/CodexIrHarness`
 reproduces the driver's check-lower boundary, sort and deep-resolve included.
 
     ./h2_wire.py findings/probe-h2-lambda-types.codex

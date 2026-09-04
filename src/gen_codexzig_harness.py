@@ -72,7 +72,7 @@ Section: Halt
  report.
 
  CODEGEN-HALTED is the marker the rest of the tree already refuses on by
- name (ast/f4_boot.py), which is why the text is that and not a new word.
+ name (src/f4_boot.py), which is why the text is that and not a new word.
 
 {halt_formatter('czg', 'zig')}
 

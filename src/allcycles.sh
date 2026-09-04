@@ -25,7 +25,7 @@ trap '[ -z "$summary_done" ] && echo "### SWEEP INTERRUPTED: $rungs_green/$rungs
 # only one would report yesterday's emitter for whichever rungs use the
 # other. Output captured, not discarded: a refusal used to send its
 # PLUG COMPILE FAILED to /dev/null and kill the sweep with no message.
-if ! ringout=$(bash "$T/ast/ringplug_build.sh" 2>&1); then
+if ! ringout=$(bash "$T/src/ringplug_build.sh" 2>&1); then
     printf '%s\n' "$ringout" | tail -10
     echo "RING PLUG BUILD FAILED -- sweep not run"
     exit 1
@@ -48,13 +48,13 @@ fail=0
 # the arms use, so a seed that does not match refuses here with a name
 # instead of rung by rung an hour in. Silent and harmless when the working
 # truths are already there.
-if ! python3 "$T/restore_truths.py" > "$T/ast/.restore.log" 2>&1; then
+if ! python3 "$T/restore_truths.py" > "$T/src/.restore.log" 2>&1; then
     # Not fatal on its own: a bank with no sidecars (taken before
     # 2026-08-24) cannot be restored from, and a tree that already has its
     # truths does not need to be. The arms refuse individually and loudly
     # if what is on disk is not usable, which is the check that matters.
-    echo "--- restore_truths: nothing restored (see ast/.restore.log)"
-    sed 's/^/    /' "$T/ast/.restore.log" | head -8
+    echo "--- restore_truths: nothing restored (see src/.restore.log)"
+    sed 's/^/    /' "$T/src/.restore.log" | head -8
     # NO BANK AT ALL IS NOT "nothing to restore" -- IT IS THE WRONG SCRIPT.
     # A sweep compares this plug's arms against BANKED truths. With no bank
     # for the seed there is nothing to compare to, and the run does not fail
@@ -66,33 +66,33 @@ if ! python3 "$T/restore_truths.py" > "$T/ast/.restore.log" 2>&1; then
     # A new seed invalidates both arms, so the answer is a rebank, and
     # rebank_all.sh says so in its own header. Say it here, at second zero,
     # where the log is still being read.
-    # AND NO WORKING TRUTHS. A rebank leaves its truths in ast/, so there is
+    # AND NO WORKING TRUTHS. A rebank leaves its truths in src/, so there is
     # nothing to RESTORE and nothing that needs restoring -- which is the
     # survivable case the paragraph above already described, and which the
     # first version of this guard overrode. It refused the sweep at the end of
     # a 30-minute rebank whose 14 truths were sitting right there.
-    if grep -q 'NO BANK for this seed' "$T/ast/.restore.log" \
-       && ! ls "$T"/ast/*.truth >/dev/null 2>&1; then
+    if grep -q 'NO BANK for this seed' "$T/src/.restore.log" \
+       && ! ls "$T"/src/*.truth >/dev/null 2>&1; then
         echo
         echo "REFUSING: there is no bank for this seed, so a sweep has nothing to compare against."
         echo "  A new seed invalidates BOTH arms -- the bare-metal truth binary AND the IR-CCE"
         echo "  the plug consumes. Bank first, then sweep:"
         echo
-        echo "      bash ast/rebank_all.sh      # hours-class, detaches itself"
-        echo "      bash ast/allcycles.sh       # then this"
+        echo "      bash src/rebank_all.sh      # hours-class, detaches itself"
+        echo "      bash src/allcycles.sh       # then this"
         echo
         summary_done=1
         exit 1
     fi
 else
-    sed 's/^/    /' "$T/ast/.restore.log" | grep -E 'restored|NOTE|harness' | head -6
+    sed 's/^/    /' "$T/src/.restore.log" | grep -E 'restored|NOTE|harness' | head -6
 fi
 
 ir_rebuilt=""
 for m in $LADDER_UNITS; do
-    if [ ! -s "$T/ast/${m}.ir" ] \
+    if [ ! -s "$T/src/${m}.ir" ] \
        || ! { unit_flags "$m" && python3 "$T/truth_prov.py" check-ir "$m" "$FLAGS" >/dev/null 2>&1; }; then
-        bash "$T/ast/ensure_ir.sh" "$m" || { echo "ENSURE_IR FAILED for $m"; exit 1; }
+        bash "$T/src/ensure_ir.sh" "$m" || { echo "ENSURE_IR FAILED for $m"; exit 1; }
         ir_rebuilt="$ir_rebuilt $m"
     fi
 done
@@ -135,7 +135,7 @@ echo "=== diagnostics census ==="
 # not with the source.
 diag_files=""
 for _u in $LADDER_UNITS; do
-    diag_files="$diag_files $T/ast/${_u}-subject.cdx.diags $T/ast/${_u}.ir.diags"
+    diag_files="$diag_files $T/src/${_u}-subject.cdx.diags $T/src/${_u}.ir.diags"
 done
 # The pinned counts were taken over BOTH halves of every unit. ensure_ir.sh
 # writes no <unit>-subject.cdx.diags, so a sweep that rebuilt any IR is
@@ -158,7 +158,7 @@ if [ -n "$ir_rebuilt" ]; then
     echo "CENSUS NOT COMPARED: the IR for$ir_rebuilt was rebuilt by"
     echo "  ensure_ir.sh, so no bare-metal .diags exists for those units and"
     echo "  this population is not the one the counts are pinned over. Run"
-    echo "  ast/rebank_all.sh for a census that can be believed."
+    echo "  src/rebank_all.sh for a census that can be believed."
 else
     python3 "$T/check_diags.py" --census $diag_files || fail=1
 fi
@@ -174,7 +174,7 @@ echo "SWEEP: $rungs_green/$rungs_total rungs green ($((SECONDS - started))s elap
 # truths restored from the bank, green says the plug still reproduces the
 # BANK -- which is the ladder's question, but it is not a statement about
 # bare metal, and a log read next week must not have to infer which it was.
-[ -s "$T/ast/.restore.log" ] && grep -q '^restored [1-9]' "$T/ast/.restore.log" \
+[ -s "$T/src/.restore.log" ] && grep -q '^restored [1-9]' "$T/src/.restore.log" \
     && echo "  TRUTHS RESTORED FROM THE BANK -- this sweep says the plug still reproduces the bank, NOT that bare metal was re-measured"
 # A green sweep records truths and diffs in the working tree and nothing
 # else: "banked" is bank_truth.py's word, and a session that reads this

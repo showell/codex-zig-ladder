@@ -13,7 +13,7 @@
 # only with that item.
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
-. "$T/ast/oracle_lib.sh"
+. "$T/src/oracle_lib.sh"
 # Self-hosting the whole compiler through the ring and then through
 # the plug: the longest guest in the tree.
 REPO="$(python3 "$T/ladder_root.py" codex)"

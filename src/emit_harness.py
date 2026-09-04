@@ -422,7 +422,7 @@ def halt_gate(prefix, artifact):
     next line continues the let-chain.
 
     CODEGEN-HALTED is the marker the rest of the tree refuses on by name
-    (ast/f4_boot.py), which is why the text is that and not a new word.
+    (src/f4_boot.py), which is why the text is that and not a new word.
     """
     return (f"{BAG_SIDE}in let {prefix}-bag = {BAG_MERGE}\n"
             f"    in if bag-has-errors {prefix}-bag "

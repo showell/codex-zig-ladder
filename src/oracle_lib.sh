@@ -208,7 +208,7 @@ PY
     # A failed compile must stop the run. Banking a truth file from a stale
     # or missing binary is how a broken subject looks like a passing one.
     echo "--- compiling subject to a bare-metal binary"
-    rm -f ast/${m}-subject.cdx ast/${m}.ir
+    rm -f src/${m}-subject.cdx src/${m}.ir
     # PIPESTATUS, not `if ! cmd | tail`: with no `pipefail` set anywhere in the
     # ladder, the status of a pipeline is the LAST command's, so `if !` there
     # tested `tail` and a failing compile read as a success. The bundle step
@@ -216,18 +216,18 @@ PY
     # two did not. Only the `[ -s ... ]` line below caught it, which reports
     # the wrong check with the wrong message -- and misses entirely a compile
     # that exits non-zero after writing a non-empty file.
-    python3 -u ring_compile.py ast/${m}-cdx.blob ast/${m}-subject.cdx 2>&1 | tail -20
+    python3 -u ring_compile.py src/${m}-cdx.blob src/${m}-subject.cdx 2>&1 | tail -20
     if [ "${PIPESTATUS[0]}" -ne 0 ]; then
         echo "COMPILE FAILED (bare metal) -- see the diagnostics above"; return 1
     fi
-    [ -s ast/${m}-subject.cdx ] || { echo "COMPILE FAILED: no ${m}-subject.cdx"; return 1; }
+    [ -s src/${m}-subject.cdx ] || { echo "COMPILE FAILED: no ${m}-subject.cdx"; return 1; }
 
     echo "--- compiling subject to IR-CCE for the plug"
-    python3 -u ring_compile.py ast/${m}-ir-cce.blob ast/${m}.ir 2>&1 | tail -20
+    python3 -u ring_compile.py src/${m}-ir-cce.blob src/${m}.ir 2>&1 | tail -20
     if [ "${PIPESTATUS[0]}" -ne 0 ]; then
         echo "COMPILE FAILED (IR-CCE) -- see the diagnostics above"; return 1
     fi
-    [ -s ast/${m}.ir ] || { echo "COMPILE FAILED: no ${m}.ir"; return 1; }
+    [ -s src/${m}.ir ] || { echo "COMPILE FAILED: no ${m}.ir"; return 1; }
 
     # Stamp the IR the moment it is known good. The zig arm READS this file
     # and never writes it, so in a shared checkout it outlives the run that
@@ -242,7 +242,7 @@ PY
     # warnings scroll. check_diags.py holds a table of every code we have
     # looked at, with a reason, and refuses anything not in it -- so a code we
     # have never seen stops the rung instead of joining the scroll.
-    if ! python3 "$T/check_diags.py" ast/${m}-subject.cdx.diags ast/${m}.ir.diags; then
+    if ! python3 "$T/check_diags.py" src/${m}-subject.cdx.diags src/${m}.ir.diags; then
         echo "DIAGNOSTICS REFUSED for $m (see check_diags.py POLICY)"; return 1
     fi
 
@@ -256,36 +256,36 @@ PY
     # The truths and their provenance sidecars go too: a run or split that
     # fails must leave NO truth, or the next verdict diffs against
     # yesterday's and can print ORACLE PASS from it.
-    for _r in $(unit_rungs $m); do rm -f ast/${_r}.truth ast/${_r}.truth.prov; done
-    rm -f ast/${m}.raw
+    for _r in $(unit_rungs $m); do rm -f src/${_r}.truth src/${_r}.truth.prov; done
+    rm -f src/${m}.raw
     if ! python3 - "$m" <<'PY'
 import sys
 import codex_vm
 m = sys.argv[1]
 # idle_timeout is silence tolerance, not total runtime: these subjects
 # compute for a long stretch before their first print.
-out = codex_vm.run_cdx(f'ast/{m}-subject.cdx', timeout=5400, idle_timeout=600)
+out = codex_vm.run_cdx(f'src/{m}-subject.cdx', timeout=5400, idle_timeout=600)
 lines = [l for l in out.decode(errors='replace').splitlines()
          if not l.startswith(("WD:", "HEAP:", "STACK:"))]
-open(f'ast/{m}.raw', 'w').write("\n".join(lines) + "\n")
-print(f"ran ast/{m}-subject.cdx: {len(lines)} lines")
+open(f'src/{m}.raw', 'w').write("\n".join(lines) + "\n")
+print(f"ran src/{m}-subject.cdx: {len(lines)} lines")
 PY
     then
         echo "RUN FAILED for $m -- the guest did not finish"; return 1
     fi
-    [ -s ast/${m}.raw ] || { echo "RUN FAILED: no ast/${m}.raw"; return 1; }
+    [ -s src/${m}.raw ] || { echo "RUN FAILED: no src/${m}.raw"; return 1; }
 
     # A FAULTED GUEST STILL PRODUCED OUTPUT, and run_cdx returns it rather
     # than raising -- it raises only when the guest never finished at all. So
     # the checks above pass on a #PF dump: it is output, it is non-empty, and
     # split_truth cuts it into per-rung files that look like truths. Asked
-    # HERE, before the split, so a fault leaves ast/<m>.raw for reading and no
+    # HERE, before the split, so a fault leaves src/<m>.raw for reading and no
     # truth at all -- which is the rule the removals above already follow.
     # truth_prov.stamp_unit asks again at the certifier, because this arm is
     # not the only caller.
-    if ! python3 "$T/truth_prov.py" fault "ast/${m}.raw"; then
+    if ! python3 "$T/truth_prov.py" fault "src/${m}.raw"; then
         echo "RUN FAULTED for $m -- the guest raised an exception; the dump is"
-        echo "  in ast/${m}.raw and no truth was written"
+        echo "  in src/${m}.raw and no truth was written"
         return 1
     fi
 
@@ -293,7 +293,7 @@ PY
     # prints no marks and passes through, so this is the same operation for
     # every rung on the ladder rather than a special case for the big two.
     (cd $T/ast && python3 split_truth.py ${m}.raw truth $(unit_rungs $m)) \
-        || { echo "SPLIT FAILED for $m -- see ast/${m}.raw"; return 1; }
+        || { echo "SPLIT FAILED for $m -- see src/${m}.raw"; return 1; }
 
     # The seed must still be the one that started the arm, or the truths
     # just split were measured by one compiler and will be stamped as
@@ -301,7 +301,7 @@ PY
     if ! PYTHONPATH="$T" python3 -c \
         "import seed_identity; seed_identity.require_match('$seed_at_start')"; then
         echo "SEED MOVED under $m during the truth arm; truths discarded"
-        for _r in $(unit_rungs $m); do rm -f ast/${_r}.truth ast/${_r}.truth.prov; done
+        for _r in $(unit_rungs $m); do rm -f src/${_r}.truth src/${_r}.truth.prov; done
         return 1
     fi
 
@@ -317,7 +317,7 @@ PY
     # refused has no business surviving.
     if ! python3 "$T/truth_prov.py" stamp "$m"; then
         echo "PROVENANCE STAMP FAILED for $m; truths discarded"
-        for _r in $(unit_rungs $m); do rm -f ast/${_r}.truth ast/${_r}.truth.prov; done
+        for _r in $(unit_rungs $m); do rm -f src/${_r}.truth src/${_r}.truth.prov; done
         return 1
     fi
 }
@@ -399,7 +399,7 @@ plug_provenance() {
     return 1
 }
 
-# The ring arm's plug is ast/ringplug.cdx, not the TCP plug, so its
+# The ring arm's plug is src/ringplug.cdx, not the TCP plug, so its
 # provenance is the ring fingerprint ringplug_build.sh stamped -- the same
 # check plug_run_ring.py makes before transpiling, repeated here because
 # the checkout can move between the transpile and the verdict. Checking
@@ -407,7 +407,7 @@ plug_provenance() {
 # refused every ring rung in a fresh sandbox (2026-08-22).
 ring_provenance() {
     (cd "$T" && python3 -c 'import pathlib, plug_run_ring; plug_run_ring.refuse_stale_ringplug(pathlib.Path("."))') \
-        || { echo "RING PLUG PROVENANCE REFUSED -- run ast/ringplug_build.sh"; return 1; }
+        || { echo "RING PLUG PROVENANCE REFUSED -- run src/ringplug_build.sh"; return 1; }
 }
 
 # A RESIDENT bound on everything the zig arm runs. The 4 GiB arena the
@@ -440,4 +440,4 @@ bounded_run() {   # <MemoryMax> <command...>
 # set, because nothing they do can reach a bare-metal truth. Sourced here
 # so every caller of zig_arm/ring_arm/arm_for sees them unchanged.
 # plug_arm_lib.sh's own header carries the argument.
-. "$T/ast/plug_arm_lib.sh"
+. "$T/src/plug_arm_lib.sh"

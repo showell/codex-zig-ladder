@@ -34,7 +34,7 @@ stems = sys.argv[1:]
 if not stems:
     raise SystemExit(__doc__.strip().splitlines()[2].strip())
 
-work = LADDER / 'ast'
+work = LADDER / 'src'
 bad = 0
 for stem in stems:
     found = sorted((CODEX / 'codex' / 'test').glob(f'*/{stem}.codex'))

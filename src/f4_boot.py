@@ -98,7 +98,7 @@ if __name__ == "__main__":
     # the only way to exercise it was to boot three CDXs under QEMU. `--parse`
     # carves the banked truths and checks the declared lengths without a VM,
     # so the next dump-format change fails in a second instead of in a session
-    # nobody runs. It reads the BANK, not ast/, so it works in a fresh tree.
+    # nobody runs. It reads the BANK, not src/, so it works in a fresh tree.
     if "--parse" in sys.argv:
         import seed_identity
         bank = LADDER / "truth" / seed_identity.stamp()["slug"]

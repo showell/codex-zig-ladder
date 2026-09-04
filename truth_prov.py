@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Provenance for working truths: which seed ran, and which harness content.
 
-A truth is a measurement, and ast/<rung>.truth records only the measured
+A truth is a measurement, and src/<rung>.truth records only the measured
 bytes -- nothing in it says which seed ran or which harness built the
 subject. Banking used to infer both (the seed from whatever is on disk at
 bank time, freshness from timestamps), and each inference had a documented
 way to lie: repoint CODEX_ROOT between run and bank and the bank stamps the
 wrong seed; switch branches to older harness content and mtimes call stale
 truths fresh. So the truth arm RECORDS them instead: after a successful
-split it writes ast/<rung>.truth.prov beside each truth --
+split it writes src/<rung>.truth.prov beside each truth --
 
     line 1: sha256 of the seed that ran
     line 2: sha256 over the harness content the subject was built from
@@ -20,14 +20,14 @@ not time: a checkout that changes nothing changes nothing here, and an edit
 that changes anything changes the hash however the clock reads.
 
 The same mechanism guards the other artifact the sweep does not create:
-`ast/<unit>.ir`. `allcycles.sh` READS it and the truth arm WRITES it, so in
+`src/<unit>.ir`. `allcycles.sh` READS it and the truth arm WRITES it, so in
 a shared checkout it persists from whatever ran last and the dependency is
 invisible. A stale one means the zig arm transpiles yesterday's IR and diffs
 it against today's bank -- a green that means nothing.
 
 Its key is different from a truth's, and deliberately so. IR is a pure
 function of the seed, the subject's own bytes and the mode flags: the PLUG
-does not participate in producing it. So `ast/<unit>.ir.prov` records those
+does not participate in producing it. So `src/<unit>.ir.prov` records those
 three and nothing else. Keying it on the Codex checkout's HEAD instead --
 the first shape proposed -- would refuse on every plug commit, which is
 every commit that cannot possibly have changed the IR, and a guard that
@@ -44,7 +44,7 @@ import sys
 from ladder_root import LADDER
 from seed_identity import seed_sha256
 
-AST = LADDER / 'ast'
+AST = LADDER / 'src'
 SHARED = ['emit_harness.py', 'oracle_lib.sh', 'split_truth.py']
 COMPOSITE = {'ir_to_x86': ['ir_to_x86_on_fib', 'ir_to_x86_on_cce'],
              'passes_to_x86': ['passes_to_x86_on_mid', 'passes_to_x86_on_arith']}
@@ -134,8 +134,8 @@ def guest_fault(path):
 
     THE PATH IS USED AS GIVEN, and it did not used to be. This resolved a
     relative argument against AST, which is what the one INTERNAL caller means
-    by `lower.truth` -- and the CLI caller passes `ast/lower.raw` from the
-    ladder root, so the same line built `<ladder>/ast/ast/lower.raw`, missed,
+    by `lower.truth` -- and the CLI caller passes `src/lower.raw` from the
+    ladder root, so the same line built `<ladder>/src/src/lower.raw`, missed,
     and the `except OSError` below turned the miss into "no fault". Two
     conventions, one heuristic, and it silently picked the wrong one for the
     caller whose whole job is to stop a fault dump becoming a truth.
@@ -308,7 +308,7 @@ def check_ir(unit, flags):
     """
     ir = AST / f'{unit}.ir'
     if not ir.is_file() or ir.stat().st_size == 0:
-        raise SystemExit(f'NO IR for {unit}: ast/{unit}.ir is missing or '
+        raise SystemExit(f'NO IR for {unit}: src/{unit}.ir is missing or '
                          'empty, and the zig arm does not produce it '
                          '(rerun the truth arm)')
     p = ir_sidecar(unit)
@@ -335,7 +335,7 @@ def check_ir(unit, flags):
 # ---------------------------------------------------------------------------
 # The ZIG ARM's verdict, which had no provenance at all.
 #
-# `bank_truth.arm_verdict` reads ast/<rung>.diff by EXISTENCE and SIZE: absent
+# `bank_truth.arm_verdict` reads src/<rung>.diff by EXISTENCE and SIZE: absent
 # means the arm never reached a verdict, empty means it agreed, non-empty means
 # it differed. That reading is correct only if a `.diff` on disk was written by
 # THIS run -- and it was not guaranteed to be. `zig_verdict` writes the file on
@@ -376,12 +376,12 @@ def stamp_diff(rung, unit):
     if not truth or not zig:
         raise SystemExit(f'cannot stamp {rung}.diff: '
                          + ('no truth beside it' if not truth
-                            else f'no ast/{unit}.zig beside it'))
+                            else f'no src/{unit}.zig beside it'))
     diff_sidecar(rung).write_text(f'{seed}\n{truth}\n{zig}\n')
 
 
 def check_diff(rung, unit):
-    """Is ast/<rung>.diff a verdict THIS tree produced? Returns a reason, or None.
+    """Is src/<rung>.diff a verdict THIS tree produced? Returns a reason, or None.
 
     Not a SystemExit like its siblings: this is read at BANK time over every
     rung, and the caller reports each rung's state rather than dying on the

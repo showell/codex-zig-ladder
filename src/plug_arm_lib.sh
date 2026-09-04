@@ -12,7 +12,7 @@
 # compare against it. So they sit outside the watched set, and the set now
 # contains what a truth actually depends on.
 #
-# The pressure was real before it was measured. `ast/ensure_ir.sh` is its
+# The pressure was real before it was measured. `src/ensure_ir.sh` is its
 # own file rather than a function in `oracle_lib.sh` for exactly this
 # reason, which is a design bent around a hash.
 #
@@ -42,7 +42,7 @@ zig_verdict() {
     # worth keeping -- the terminal gets a digest, the files get everything.
     if ! (bounded_run "$ZIG_ARM_MEMORY_MAX" timeout 600 zig run ${m}.zig \
             > ${m}.stdout 2> ${m}.zigraw); then
-        echo "--- zig compile/run failed; full output in ast/${m}.zigraw and ast/${m}.stdout"
+        echo "--- zig compile/run failed; full output in src/${m}.zigraw and src/${m}.stdout"
         grep -E 'panic:|error:|CODEGEN-HALTED|cursors met|exhausted' ${m}.zigraw ${m}.stdout | head -6
         return 1
     fi
@@ -51,7 +51,7 @@ zig_verdict() {
     # own verdict: a merged diff would name the unit and leave the reader to
     # work out which subject moved.
     python3 split_truth.py ${m}.zigraw zigout $(unit_rungs $m) \
-        || { echo "SPLIT FAILED for $m -- see ast/${m}.zigraw"; return 1; }
+        || { echo "SPLIT FAILED for $m -- see src/${m}.zigraw"; return 1; }
     local rung rc=0
     for rung in $(unit_rungs $m); do
         # THE OLD VERDICT GOES FIRST, before anything below can fail.
@@ -98,17 +98,17 @@ zig_arm() {
     # Clear the emitted zig AND every verdict this unit owns. A transport or
     # build failure returns before zig_verdict runs at all, so without this the
     # unit's rungs keep yesterday's .diff and bank as agreements.
-    rm -f ast/${m}.zig
-    for _r in $(unit_rungs $m); do rm -f ast/${_r}.diff ast/${_r}.diff.prov; done
+    rm -f src/${m}.zig
+    for _r in $(unit_rungs $m); do rm -f src/${_r}.diff src/${_r}.diff.prov; done
     # Transport chatter goes to a log, not to the caller: the sweep prints
     # a bounded slice of each rung's output, and a transfer that narrates
     # 25 lines pushed the verdict past the cut -- fibx passed SILENTLY,
     # which reads exactly like a rung that never ran.
     if ! python3 -u plug_run_checked.py \
         $REPO/codex/plugs/zig/build-output/zig-plug.cdx \
-        ast/${m}.ir ast/${m}.zig > ast/${m}.transport.log 2>&1; then
-        echo "TRANSPORT FAILED for $m (ast/${m}.transport.log):"
-        tail -6 ast/${m}.transport.log
+        src/${m}.ir src/${m}.zig > src/${m}.transport.log 2>&1; then
+        echo "TRANSPORT FAILED for $m (src/${m}.transport.log):"
+        tail -6 src/${m}.transport.log
         return 1
     fi
     zig_verdict $m
@@ -130,12 +130,12 @@ ring_arm() {
     # Clear the emitted zig AND every verdict this unit owns. A transport or
     # build failure returns before zig_verdict runs at all, so without this the
     # unit's rungs keep yesterday's .diff and bank as agreements.
-    rm -f ast/${m}.zig
-    for _r in $(unit_rungs $m); do rm -f ast/${_r}.diff ast/${_r}.diff.prov; done
-    if ! python3 -u plug_run_ring.py ast/${m}.ir ast/${m}.zig \
-        > ast/${m}.transport.log 2>&1; then
-        echo "TRANSPORT FAILED for $m (ast/${m}.transport.log):"
-        tail -6 ast/${m}.transport.log
+    rm -f src/${m}.zig
+    for _r in $(unit_rungs $m); do rm -f src/${_r}.diff src/${_r}.diff.prov; done
+    if ! python3 -u plug_run_ring.py src/${m}.ir src/${m}.zig \
+        > src/${m}.transport.log 2>&1; then
+        echo "TRANSPORT FAILED for $m (src/${m}.transport.log):"
+        tail -6 src/${m}.transport.log
         return 1
     fi
     zig_verdict $m ring_provenance

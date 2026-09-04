@@ -10,7 +10,7 @@
 # The staleness check runs HERE, where the checkout lives, before
 # anything is pushed -- the droplet has no checkout to re-bundle
 # against: plug_run_ring.refuse_stale_ringplug (re-bundles, compares
-# ast/ringplug.cdx.fp), the same check the local arm runs.
+# src/ringplug.cdx.fp), the same check the local arm runs.
 # The kernel travels only when the droplet's fingerprint copy differs.
 # The droplet invokes the driver with an explicit kernel path, skipping
 # the droplet-side re-bundle, and caps the guest at mem_mb=3072, the seed
@@ -36,8 +36,8 @@ ring)
 import pathlib, plug_run_ring
 plug_run_ring.refuse_stale_ringplug(pathlib.Path('$T'))
 print('ringplug fresh against the checkout')"
-    KERNEL="$T/ast/ringplug.cdx"
-    FP_FILE="$T/ast/ringplug.cdx.fp"
+    KERNEL="$T/src/ringplug.cdx"
+    FP_FILE="$T/src/ringplug.cdx.fp"
     RNAME=ringplug.cdx
     ;;
 tcp)

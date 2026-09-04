@@ -3,7 +3,7 @@
 
 A sweep asks one question -- does today's plug still reproduce the banked
 measurement -- and `allcycles.sh` answers it by diffing each arm against
-`ast/<rung>.truth`. Those working files are gitignored, so a FRESH sandbox
+`src/<rung>.truth`. Those working files are gitignored, so a FRESH sandbox
 has none, and the only way to make them used to be a full rebank: the whole
 truth arm, bare-metal binary and subject run included, roughly 27 minutes of
 re-measuring an answer that is already banked. That is the wrong price for
@@ -69,7 +69,7 @@ def main():
     # what made an 11/14 look untrustworthy and a 6/14 look like a wall.
     slug = measurement_slug()
     bank = truth_dir(slug)
-    ast = LADDER / 'ast'
+    ast = LADDER / 'src'
 
     print(f"seed   {s['sha256'][:16]}  (Update {s['update']})")
     print(f"bank   {bank}")
@@ -146,7 +146,7 @@ def main():
         if prov and prov[1] != truth_prov.set_hash(truth_prov.unit_of(m)):
             drifted.append(m)
 
-    print(f'\nrestored {len(restored)} truths and their sidecars into ast/')
+    print(f'\nrestored {len(restored)} truths and their sidecars into src/')
     if stale:
         print('REFUSED after restore -- these do not pass the gate the arms '
               'use, so the sweep would refuse them one at a time:')
@@ -167,7 +167,7 @@ def main():
 
 
 def _rungs():
-    text = (LADDER / 'ast' / 'oracle_lib.sh').read_text()
+    text = (LADDER / 'src' / 'oracle_lib.sh').read_text()
     for line in text.splitlines():
         if line.startswith('LADDER_RUNGS='):
             return line.split('"')[1].split()

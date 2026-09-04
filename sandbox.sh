@@ -5,11 +5,11 @@
 #
 # ISOLATION. The failure this exists to prevent is not "a run crashed" -- it is
 # a run that READS yesterday's artifact and passes. Every ladder output
-# (ast/*.truth, *.prov, *.ir, *.zig, native/*) is gitignored, so a shared
+# (src/*.truth, *.prov, *.ir, *.zig, native/*) is gitignored, so a shared
 # checkout accumulates a full set of plausible, real, stale files under exactly
 # the names the next run looks for. Instrumented binaries are worse again:
 # 2026-08-21 left a debug-instrumented native/codexir and a clobbered
-# ast/codexir.zig in the shared tree, either of which would have been used
+# src/codexir.zig in the shared tree, either of which would have been used
 # silently. A sandbox is two detached git worktrees plus an env file; worktrees
 # share the object store, so the cost is the working tree and not the history,
 # and a fresh one carries NO gitignored artifacts at all. A run that needs

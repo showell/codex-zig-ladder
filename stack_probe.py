@@ -33,7 +33,7 @@ number that moves is a question rather than a surprise.
 **Bank only a VERBATIM-emitter measurement.** The number belongs to an
 emitter, and the ladder's rule for what a `uNN` bank stands behind is the
 release's own emitter (README, "Decide what the zig arms measure"). A run
-whose `ast/codexir.zig` came from an unlanded branch is a real
+whose `src/codexir.zig` came from an unlanded branch is a real
 measurement and a useful one, but it is not what u<NN> means; keep it in
 the finding that motivated it, where the branch can be named, and bank
 here when the branch lands. The `# emitter:` line records which arm a
@@ -42,7 +42,7 @@ banked row came from so the two can never be confused after the fact.
     ./stack_probe.py            measure and diff against the bank
     ./stack_probe.py --bank     measure and write the bank
 
-Needs `ast/codexir.zig`, which `native_build.sh` leaves behind; this does
+Needs `src/codexir.zig`, which `native_build.sh` leaves behind; this does
 not build it, because rebuilding the natives is the expensive half and a
 probe that quietly did it would hide which emitter the number belongs to.
 """
@@ -71,7 +71,7 @@ DOCUMENTS = {
     # The largest real document the ladder has: the whole x86-64 back end
     # bundled, 4,511 top-level definitions. This is the one that decides
     # whether the emitter's constant is enough for real work.
-    'back-end-unit': ('ladder', 'ast/ir_to_x86-subject.codex'),
+    'back-end-unit': ('ladder', 'src/ir_to_x86-subject.codex'),
     # One ordinary chapter, for scale: if the big document's cost is per
     # definition, this should land many steps below it rather than near it.
     'one-chapter': ('codex', 'codex/compiler/Syntax/Lexer.codex'),
@@ -170,7 +170,7 @@ def render(rows, slug, emitter):
     # plugs is two different answers, and a gold row that named only the
     # seed would read as a contradiction rather than as a different arm.
     out = [f'# stack_probe, seed {seed_sha256()[:16]}, bank {slug}',
-           f'# emitter: ast/codexir.zig sha256 {emitter[:16]}',
+           f'# emitter: src/codexir.zig sha256 {emitter[:16]}',
            '# min = smallest passing step; cliff = largest failing step below it',
            '# cycle = repeated frames in the failing trace, most frequent first']
     for name, (mb, cliff, cycle) in rows.items():
@@ -187,9 +187,9 @@ def main():
                     help='write the measurement as the new gold for this seed')
     args = ap.parse_args()
 
-    emitted = LADDER / 'ast' / 'codexir.zig'
+    emitted = LADDER / 'src' / 'codexir.zig'
     if not emitted.is_file():
-        raise SystemExit('stack_probe: no ast/codexir.zig. Run native_build.sh '
+        raise SystemExit('stack_probe: no src/codexir.zig. Run native_build.sh '
                          'first -- this probe measures the emitter that built '
                          'it and will not build one itself.')
     src_text = emitted.read_text()
@@ -197,7 +197,7 @@ def main():
     s = stamp()
     gold_dir = LADDER / 'findings' / 'gold' / s['slug']
     gold = gold_dir / 'stack.txt'
-    work = LADDER / 'ast' / '.stack-probe'
+    work = LADDER / 'src' / '.stack-probe'
     work.mkdir(exist_ok=True)
 
     print(f"seed {s['sha256'][:16]}  bank {s['slug']}")

@@ -3,15 +3,15 @@
 # build/run/diff local, venue by workload class. Sources oracle_lib.sh
 # for the unit list, verdicts and guards, and shadows only the two arm
 # functions with remote variants -- the local arms stay the authority for
-# the all-local fallback (ast/allcycles.sh, untouched). Those live in
-# ast/plug_arm_lib.sh since 2026-08-25, which oracle_lib.sh sources, so
+# the all-local fallback (src/allcycles.sh, untouched). Those live in
+# src/plug_arm_lib.sh since 2026-08-25, which oracle_lib.sh sources, so
 # sourcing oracle_lib.sh still brings in everything shadowed here.
 #
 # Not a runnable script; sweep_prep.sh, sweep_canary.sh and sweep_long.sh
 # source it.
 
 T="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-. "$T/ast/oracle_lib.sh"
+. "$T/src/oracle_lib.sh"
 # rung_stamp lives in oracle_lib.sh now, shared with
 # the legacy loops (wiring batch, process review D3/S1).
 
@@ -22,27 +22,27 @@ remote_ring_arm() {
     local m=$1
     cd "$T"
     # The same refusal the local arms make. This path is a THIRD consumer of
-    # ast/<m>.ir and produces none of it, so without the check here the guard
+    # src/<m>.ir and produces none of it, so without the check here the guard
     # has a hole exactly where the two-venue sweep runs -- which is the venue
     # that found the stale-IR problem in the first place.
     unit_flags "$m" || return 1
     python3 "$T/truth_prov.py" check-ir "$m" "$FLAGS" || return 1
-    rm -f "ast/${m}.zig"
+    rm -f "src/${m}.zig"
     # One labeled retry: the straw adds a failure mode the local arms do
     # not have (a dropped link kills the remote session and its guest --
     # the 2026-08-20 wifi blip cost fib its rung), and a transient link
     # failure should cost a retry, not a red rung. Labeled, so a plug
     # that genuinely dies shows up as two identical failures, never as
     # quiet flakiness.
-    if ! ./droplet_transpile.sh "ast/${m}.ir" "ast/${m}.zig" ring \
-            > "ast/${m}.transport.log" 2>&1; then
-        echo "TRANSPORT FAILED for $m, retrying once (ast/${m}.transport.log):"
-        tail -6 "ast/${m}.transport.log"
-        rm -f "ast/${m}.zig"
-        if ! ./droplet_transpile.sh "ast/${m}.ir" "ast/${m}.zig" ring \
-                >> "ast/${m}.transport.log" 2>&1; then
+    if ! ./droplet_transpile.sh "src/${m}.ir" "src/${m}.zig" ring \
+            > "src/${m}.transport.log" 2>&1; then
+        echo "TRANSPORT FAILED for $m, retrying once (src/${m}.transport.log):"
+        tail -6 "src/${m}.transport.log"
+        rm -f "src/${m}.zig"
+        if ! ./droplet_transpile.sh "src/${m}.ir" "src/${m}.zig" ring \
+                >> "src/${m}.transport.log" 2>&1; then
             echo "TRANSPORT FAILED for $m twice -- not a blip:"
-            tail -6 "ast/${m}.transport.log"
+            tail -6 "src/${m}.transport.log"
             return 1
         fi
     fi

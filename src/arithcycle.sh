@@ -17,22 +17,22 @@ PY
 
 cd $T
 echo "--- compiling subject to a bare-metal binary"
-rm -f ast/arith-subject.cdx ast/arith.ir
-python3 -u ring_compile.py ast/arith-cdx.blob ast/arith-subject.cdx 2>&1 | tail -3
-[ -s ast/arith-subject.cdx ] || { echo "COMPILE FAILED: no arith-subject.cdx"; exit 1; }
+rm -f src/arith-subject.cdx src/arith.ir
+python3 -u ring_compile.py src/arith-cdx.blob src/arith-subject.cdx 2>&1 | tail -3
+[ -s src/arith-subject.cdx ] || { echo "COMPILE FAILED: no arith-subject.cdx"; exit 1; }
 
 echo "--- compiling subject to IR-CCE for the plug"
-python3 -u ring_compile.py ast/arith-ir-cce.blob ast/arith.ir 2>&1 | tail -3
-[ -s ast/arith.ir ] || { echo "COMPILE FAILED: no arith.ir"; exit 1; }
+python3 -u ring_compile.py src/arith-ir-cce.blob src/arith.ir 2>&1 | tail -3
+[ -s src/arith.ir ] || { echo "COMPILE FAILED: no arith.ir"; exit 1; }
 
 echo "--- running the subject on bare metal"
 python3 - <<PY
 import codex_vm
-out = codex_vm.run_cdx('ast/arith-subject.cdx', timeout=600, idle_timeout=120)
+out = codex_vm.run_cdx('src/arith-subject.cdx', timeout=600, idle_timeout=120)
 lines = [l for l in out.decode(errors='replace').splitlines()
          if not l.startswith(("WD:", "HEAP:", "STACK:"))]
-open('ast/arith.truth', 'w').write("\n".join(lines) + "\n")
-print(f"banked ast/arith.truth: {len(lines)} lines")
+open('src/arith.truth', 'w').write("\n".join(lines) + "\n")
+print(f"banked src/arith.truth: {len(lines)} lines")
 PY
 
 cd ast
@@ -45,10 +45,10 @@ fi
 echo "truth matches the repo's .expected"
 
 cd $T
-rm -f ast/arith.zig
+rm -f src/arith.zig
 python3 -u plug_run_checked.py \
     $REPO/codex/plugs/zig/build-output/zig-plug.cdx \
-    ast/arith.ir ast/arith.zig
+    src/arith.ir src/arith.zig
 cd ast
 if ( bounded_run "$ZIG_ARM_MEMORY_MAX" timeout 600 zig run arith.zig 2> arith.zigout ); then
     if diff <(tr -d '\r' < arith.truth) arith.zigout > arith.diff 2>&1; then

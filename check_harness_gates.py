@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Both harnesses copy two lists from the driver. Keep the copies honest.
 
-`ast/CodexIrHarness.codex` and `ast/CodexZigHarness.codex` stand in for
+`src/CodexIrHarness.codex` and `src/CodexZigHarness.codex` stand in for
 `opening.codex`, which cannot be bundled beside them because it defines
 `opening` itself. So each copies two things the driver owns: the set of IR
 emit roots, and the set of diagnostic bags it merges before deciding whether
@@ -30,8 +30,8 @@ import pathlib
 
 T = pathlib.Path(__file__).resolve().parent
 HARNESSES = {
-    "ir": T / "ast" / "CodexIrHarness.codex",
-    "zig": T / "ast" / "CodexZigHarness.codex",
+    "ir": T / "src" / "CodexIrHarness.codex",
+    "zig": T / "src" / "CodexZigHarness.codex",
 }
 
 

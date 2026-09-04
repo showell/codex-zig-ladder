@@ -13,7 +13,7 @@ never reached the build" could only ever pass. `corpus_run.bank_describes_this_t
 compared the same shas and so could only ever say the bank was stale, which
 made the census banner fire on every run and a re-bank pointless.
 
-The fix is to name a tool by its INPUTS. `build_one` in ast/native_lib.sh
+The fix is to name a tool by its INPUTS. `build_one` in src/native_lib.sh
 bundles a subject, compiles it to IR with the seed, pushes that IR through the
 ring plug, and builds the emitted zig. Four things decide the binary and
 nothing else does:
@@ -38,7 +38,7 @@ import subprocess
 import seed_identity
 
 HERE = pathlib.Path(__file__).resolve().parent
-AST = HERE / 'ast'
+AST = HERE / 'src'
 
 # The bundle each tool is built from. The names differ because the bundlers
 # do -- zigemit's is `-source`, the other two are `-subject` -- and that is

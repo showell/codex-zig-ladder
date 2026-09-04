@@ -4,8 +4,8 @@
 Every script here used to derive its roots by walking a fixed number of
 directories up from itself, which worked only because the ladder sat inside the
 Codex checkout: the ladder root was `..` and the checkout was `../..`. Ninety-odd
-sites did that, and they already disagreed -- ast/gen_scale_harness.py walked two
-levels and ast/gen_check_harness.py walked three, meaning one of them wanted the
+sites did that, and they already disagreed -- src/gen_scale_harness.py walked two
+levels and src/gen_check_harness.py walked three, meaning one of them wanted the
 ladder and the other wanted the checkout, and nothing said which.
 
 Once the ladder lives in its own repository the two are unrelated paths, so the

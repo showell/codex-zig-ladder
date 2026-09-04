@@ -1,5 +1,5 @@
 #!/bin/bash
-# Produce ast/<unit>.ir when a sweep needs one and the tree has none.
+# Produce src/<unit>.ir when a sweep needs one and the tree has none.
 #
 # allcycles.sh runs the zig and ring arms against truths ALREADY BANKED,
 # but zig_arm refuses without a per-sandbox <unit>.ir, and a fresh sandbox
@@ -14,7 +14,7 @@
 # This is the truth arm's first half and nothing else: bundle, blob,
 # compile to IR-CCE, stamp. It does NOT compile the bare-metal binary and
 # does NOT run it, so it writes no .truth and CANNOT be used to bank.
-# Banking goes through ast/rebank_all.sh, which is the only thing that
+# Banking goes through src/rebank_all.sh, which is the only thing that
 # measures both arms.
 #
 # WHAT THIS COSTS THE SWEEP THAT USES IT: no <unit>-subject.cdx.diags is
@@ -41,7 +41,7 @@ esac
 # Already good? check-ir is the same gate the arms use, so "good" here and
 # "acceptable" there cannot disagree. Silence on the happy path: a sweep
 # printing twelve reassurances buries the one line that matters.
-if [ -s "$T/ast/${m}.ir" ] \
+if [ -s "$T/src/${m}.ir" ] \
    && { unit_flags "$m" && python3 "$T/truth_prov.py" check-ir "$m" "$FLAGS" >/dev/null 2>&1; }; then
     exit 0
 fi
@@ -85,11 +85,11 @@ print(f"ir-cce blob written ({len(src)} bytes of source), mode flags:{flags or '
 PY
 
 cd "$T"
-rm -f "ast/${m}.ir"
-if ! python3 -u ring_compile.py "ast/${m}-ir-cce.blob" "ast/${m}.ir" 2>&1 | tail -20; then
+rm -f "src/${m}.ir"
+if ! python3 -u ring_compile.py "src/${m}-ir-cce.blob" "src/${m}.ir" 2>&1 | tail -20; then
     echo "COMPILE FAILED (IR-CCE) for $m -- see the diagnostics above"; exit 1
 fi
-[ -s "ast/${m}.ir" ] || { echo "COMPILE FAILED: no ${m}.ir"; exit 1; }
+[ -s "src/${m}.ir" ] || { echo "COMPILE FAILED: no ${m}.ir"; exit 1; }
 
 # Stamp the moment it is known good, for the same reason the truth arm
 # does: the arms READ this file and never write it, so it outlives the run
@@ -101,7 +101,7 @@ python3 "$T/truth_prov.py" stamp-ir "$m" "$FLAGS" \
 # Judge what the compiler said, not just that it produced bytes. Only the
 # IR half exists here; check_diags takes what it is given and says how many
 # files it judged, so a shrinking population is visible rather than assumed.
-if ! python3 "$T/check_diags.py" "ast/${m}.ir.diags"; then
+if ! python3 "$T/check_diags.py" "src/${m}.ir.diags"; then
     echo "DIAGNOSTICS REFUSED for $m (see check_diags.py POLICY)"; exit 1
 fi
 echo "--- ensure_ir: ${m}.ir rebuilt and stamped"

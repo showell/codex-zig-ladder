@@ -28,7 +28,7 @@ done
 echo "=== diagnostics census ==="
 diag_files=""
 for _u in $LADDER_UNITS; do
-    diag_files="$diag_files $T/ast/${_u}-subject.cdx.diags $T/ast/${_u}.ir.diags"
+    diag_files="$diag_files $T/src/${_u}-subject.cdx.diags $T/src/${_u}.ir.diags"
 done
 python3 "$T/check_diags.py" --census $diag_files || fail=1
 

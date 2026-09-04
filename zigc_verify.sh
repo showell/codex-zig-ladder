@@ -24,20 +24,20 @@
 #   - not a native-code compiler. zigc runs natively; its OUTPUT is still a
 #     kernel image, which is what the Codex compiler is for.
 #
-#   ./zigc_verify.sh [subject.codex]     default: ast/repro.codex
+#   ./zigc_verify.sh [subject.codex]     default: src/repro.codex
 #
 # The BUILD of zigc does not depend on the subject, and it is the expensive
 # half: a seed compile of a 13.9 MB IR, the ring plug, and the transport.
 # Screening candidate subjects used to pay all of it per candidate, which is
 # why "find a subject that needs none of the driver's extras" -- a SEARCH --
 # had been stuck. So the binary is cached beside its fingerprint, the way
-# ast/ringplug.cdx already is: content, never mtime, and it says out loud
+# src/ringplug.cdx already is: content, never mtime, and it says out loud
 # when it reuses. `rm zigc` forces a rebuild; there is no flag for it.
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
-. "$T/ast/oracle_lib.sh"
+. "$T/src/oracle_lib.sh"
 
-SUBJ="${1:-$T/ast/repro.codex}"
+SUBJ="${1:-$T/src/repro.codex}"
 [ -s "$SUBJ" ] || { echo "no subject at $SUBJ"; exit 2; }
 REPO="$(python3 "$T/ladder_root.py" codex)"
 PLUG="$REPO/codex/plugs/zig/build-output/zig-plug.cdx"
@@ -86,8 +86,8 @@ cd "$T"
 # compares a sha before spending any QEMU. Building it first means the
 # fingerprint below can name the plug that WOULD transpile this subject,
 # rather than the one that did, three runs ago.
-bash "$T/ast/ringplug_build.sh" > ast/ringplug.build.log 2>&1 \
-    || { echo "RING PLUG BUILD FAILED:"; tail -8 ast/ringplug.build.log; exit 1; }
+bash "$T/src/ringplug_build.sh" > src/ringplug.build.log 2>&1 \
+    || { echo "RING PLUG BUILD FAILED:"; tail -8 src/ringplug.build.log; exit 1; }
 
 # What the built zigc depends on, and nothing else: the bundled harness, the
 # plug bundle that transpiles it, the seed that compiles it, and the zig that
@@ -105,9 +105,9 @@ if [ -x "$T/zigc" ] && [ "$(cat "$T/zigc.fp" 2>/dev/null)" = "$want" ]; then
     echo "    zigc already built from this harness, plug, seed and zig"
     echo "    ($(echo $want | head -c 12)) -- not rebuilding. rm zigc to force."
 else
-rm -f ast/zigc.ir ast/zigc.zig
-python3 -u ring_compile.py ast/zigc-ir-cce.blob ast/zigc.ir 2>&1 | tail -5
-[ -s ast/zigc.ir ] || { echo "COMPILE FAILED: no zigc.ir"; exit 1; }
+rm -f src/zigc.ir src/zigc.zig
+python3 -u ring_compile.py src/zigc-ir-cce.blob src/zigc.ir 2>&1 | tail -5
+[ -s src/zigc.ir ] || { echo "COMPILE FAILED: no zigc.ir"; exit 1; }
 # The RING, not TCP. arm_for sends ir_to_x86 and passes_to_x86 through the
 # ring and everything else over TCP, and this subject is the passes_to_x86
 # chapter set -- its IR is 13.9 MB. The first run of this script used the
@@ -116,9 +116,9 @@ python3 -u ring_compile.py ast/zigc-ir-cce.blob ast/zigc.ir 2>&1 | tail -5
 # picking one, which is the check doing its job. plug_run_ring takes the
 # IR and the output and re-bundles the ring plug itself, so it needs no
 # plug path.
-python3 -u plug_run_ring.py ast/zigc.ir ast/zigc.zig > ast/zigc.transport.log 2>&1 \
-    || { echo "TRANSPORT FAILED (ast/zigc.transport.log):"; tail -6 ast/zigc.transport.log; exit 1; }
-[ -s ast/zigc.zig ] || { echo "TRANSPORT FAILED: no zigc.zig"; exit 1; }
+python3 -u plug_run_ring.py src/zigc.ir src/zigc.zig > src/zigc.transport.log 2>&1 \
+    || { echo "TRANSPORT FAILED (src/zigc.transport.log):"; tail -6 src/zigc.transport.log; exit 1; }
+[ -s src/zigc.zig ] || { echo "TRANSPORT FAILED: no zigc.zig"; exit 1; }
 
 # A marker means the plug refused a construct the subject actually uses,
 # and it must stop the build. It must NOT count a prelude precondition --
@@ -137,7 +137,7 @@ guards = {m.group(1) for ln in
           pathlib.Path('findings/prelude-comptime-guards.txt').read_text().splitlines()
           if ln.strip() and not ln.startswith('#')
           for m in [MARKER.search(ln)] if m}
-zig = pathlib.Path('ast/zigc.zig').read_text()
+zig = pathlib.Path('src/zigc.zig').read_text()
 marks = [m for m in MARKER.findall(zig) if m not in guards]
 print(f"    zigc.zig: {len(zig.splitlines())} lines, "
       f"{len(marks)} plug refusals ({len(MARKER.findall(zig)) - len(marks)} prelude guards excluded)")
@@ -151,37 +151,37 @@ PY
 #    than trusting whatever binary is on disk.
 rm -f "$T/zigc" "$T/zigc.fp"
 zbuild_start=$SECONDS
-zig build-exe ast/zigc.zig -femit-bin="$T/zigc" || { echo "ZIG BUILD FAILED"; exit 1; }
+zig build-exe src/zigc.zig -femit-bin="$T/zigc" || { echo "ZIG BUILD FAILED"; exit 1; }
 echo "    zig build-exe: $((SECONDS - zbuild_start))s"
 printf '%s\n' "$want" > "$T/zigc.fp"
 fi   # end of the build half; everything below depends on the SUBJECT
 
 # 4. The two compiles of the same program.
 run_start=$SECONDS
-"$T/zigc" < "$SUBJ" > "$T/ast/zigc-out.cdx" || { echo "ZIGC RUN FAILED"; exit 1; }
+"$T/zigc" < "$SUBJ" > "$T/src/zigc-out.cdx" || { echo "ZIGC RUN FAILED"; exit 1; }
 zigc_secs=$((SECONDS - run_start))
 python3 - "$SUBJ" <<'PY' || { echo "SEED BLOB FAILED"; exit 1; }
 import sys
 src = open(sys.argv[1], 'rb').read()
-open('ast/seed-out.blob', 'wb').write(b"CDX map\n" + src + b"\x04")
+open('src/seed-out.blob', 'wb').write(b"CDX map\n" + src + b"\x04")
 PY
 seed_start=$SECONDS
-python3 -u ring_compile.py ast/seed-out.blob ast/seed-out.cdx 2>&1 | tail -3
+python3 -u ring_compile.py src/seed-out.blob src/seed-out.cdx 2>&1 | tail -3
 seed_secs=$((SECONDS - seed_start))
-[ -s ast/seed-out.cdx ] || { echo "SEED COMPILE FAILED: no seed-out.cdx"; exit 1; }
+[ -s src/seed-out.cdx ] || { echo "SEED COMPILE FAILED: no seed-out.cdx"; exit 1; }
 
 # 5. The verdict. Bytes first -- it is the whole claim.
 echo
-echo "    zigc  $(stat -c%s "$T/ast/zigc-out.cdx") bytes in ${zigc_secs}s"
-echo "    seed  $(stat -c%s "$T/ast/seed-out.cdx") bytes in ${seed_secs}s"
-if cmp -s "$T/ast/zigc-out.cdx" "$T/ast/seed-out.cdx"; then
+echo "    zigc  $(stat -c%s "$T/src/zigc-out.cdx") bytes in ${zigc_secs}s"
+echo "    seed  $(stat -c%s "$T/src/seed-out.cdx") bytes in ${seed_secs}s"
+if cmp -s "$T/src/zigc-out.cdx" "$T/src/seed-out.cdx"; then
     echo "### ZIGC PASS: the two CDX files are byte-identical"
 else
     echo "### ZIGC DIFF: the CDX files differ -- this is a finding, not a flake."
     echo "    Before filing it, check whether this subject needs what zigc"
     echo "    deliberately drops (proof pruning, dropped-def handling, mode"
     echo "    flags): that is two DRIVERS disagreeing and is expected."
-    cmp "$T/ast/zigc-out.cdx" "$T/ast/seed-out.cdx" | head -3
+    cmp "$T/src/zigc-out.cdx" "$T/src/seed-out.cdx" | head -3
     exit 1
 fi
 
@@ -190,4 +190,4 @@ fi
 #    proof -- a CDX that matches and does not run would mean the comparison
 #    is measuring the wrong bytes.
 echo "--- booting zigc's own output"
-python3 -c "import codex_vm; codex_vm.run_cdx('ast/zigc-out.cdx')" 2>&1 | tail -4
+python3 -c "import codex_vm; codex_vm.run_cdx('src/zigc-out.cdx')" 2>&1 | tail -4

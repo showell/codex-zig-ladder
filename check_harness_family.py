@@ -35,7 +35,7 @@ HOME = pathlib.Path.home() / 'showell_repos'
 # listed: codexwasm is in discovery as of 2026-08-30 and will be packaged by the
 # session that owns it. Add it here when it settles.
 KNOWN = [
-    HOME / 'codex-zig-ladder' / 'ast' / 'CodexZigHarness.codex',
+    HOME / 'codex-zig-ladder' / 'src' / 'CodexZigHarness.codex',
     HOME / 'codex-zig-transpiler' / 'source' / 'CodexZigHarness.codex',
 ]
 PREFIX = re.compile(r'\b(czg|cwm|irc)-')

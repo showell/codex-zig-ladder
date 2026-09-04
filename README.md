@@ -1,4 +1,15 @@
-# codex-zig-ladder -- a Diverse Double-Compiling check on the Codex compiler
+# codex-zig-ladder
+
+**`ast/` IS NOW `src/` (2026-09-04), and the rename is the smaller half.** The
+directory held 101 files of source and, at its worst, 79 MB of output written
+beside them -- generated harnesses next to their generators, subjects next to
+the bundlers. `ast` had stopped describing either. Records written before this
+date -- `findings/`, `JUSTIFICATIONS.md`, the `U*.log` files -- still say `ast/`
+and are left alone, because they are dated measurements and re-labelling them
+would make them claim something that was not true when they were taken.
+
+**`.gitignore` carries no rules any more, on purpose.** See the file itself.
+ -- a Diverse Double-Compiling check on the Codex compiler
 
 **Codex** is a programming language whose compiler is written in itself and
 emits bare-metal kernel images, so compiling anything with it means booting a
@@ -309,19 +320,19 @@ see the ceremony step below for the count.
 
 Every rung has a **truth arm**, which is the seed on bare metal, and a **zig
 arm**, which is the plug's output built and run natively. The per-rung wrappers
-are named `ast/truthcycle_<m>.sh` and `ast/<m>cycle.sh` where they exist, but
+are named `src/truthcycle_<m>.sh` and `src/<m>cycle.sh` where they exist, but
 they are conveniences and the set is incomplete: `lex`'s truth arm is
-`ast/truthcycle.sh`, `ir_to_codex`, `ir_to_codex_roundtrip` and `lower` have no
+`src/truthcycle.sh`, `ir_to_codex`, `ir_to_codex_roundtrip` and `lower` have no
 `<m>cycle.sh`, and `ir_to_x86_on_cce` and `passes_to_x86_on_arith` have
 wrappers that run the unit they ride in, because they
 have no compile of their own to run. The arms themselves are `truth_arm` and
-`arm_for` in `ast/oracle_lib.sh`; the wrappers are one line each on top.
+`arm_for` in `src/oracle_lib.sh`; the wrappers are one line each on top.
 
 A **cycle** is one full turn of a subject through an arm: bundle the source,
 compile it (through the seed on the truth arm; through the plug, from banked
 IR, on the zig arm), run what came out, compare the output. Every
 script with `cycle` in its name is one of these turns -- `truthcycle_<m>.sh`
-turns a rung's truth arm, `ast/<m>cycle.sh` its zig arm, and the root
+turns a rung's truth arm, `src/<m>cycle.sh` its zig arm, and the root
 `cycle.sh` turns the plug itself (bundle, ring-compile, and warmup oracles as
 the run-and-compare, when named). `allcycles.sh` is exactly its name: the
 plug's cycle, then every rung's. When prose here prices a mistake "a cycle",
@@ -329,7 +340,7 @@ this turn is the unit -- about a minute for a small probe, a quarter-hour
 when the plug itself must rebuild.
 
 **Banking** is recording a truth arm's output as the golden file
-(`ast/<m>.truth`) that the zig arm is diffed against. **Re-banking** is doing it
+(`src/<m>.truth`) that the zig arm is diffed against. **Re-banking** is doing it
 again because something upstream moved -- most often a new seed, which
 invalidates both arms at once.
 
@@ -347,14 +358,14 @@ The arm's name suggests the guest has left the loop, and it has not. A
 zig-arm turn assumes three artifacts on disk, every one of them seed-produced
 in QEMU:
 
-- **the subject's IR** (`ast/<m>.ir`), written by the seed at the last
+- **the subject's IR** (`src/<m>.ir`), written by the seed at the last
   re-bank -- the zig arm never re-compiles the subject;
-- **the banked truth** (`ast/<rung>.truth`) it will be judged against, from
+- **the banked truth** (`src/<rung>.truth`) it will be judged against, from
   the same re-bank;
-- **the plug itself** (`zig-plug.cdx` for TCP, `ast/ringplug.cdx` for the
+- **the plug itself** (`zig-plug.cdx` for TCP, `src/ringplug.cdx` for the
   ring), a CDX binary the seed compiled
   from the ZigEmitter bundle -- `zig-plug.cdx` when `cycle.sh` last
-  turned, `ast/ringplug.cdx` when `ringplug_build.sh` did (allcycles.sh
+  turned, `src/ringplug.cdx` when `ringplug_build.sh` did (allcycles.sh
   runs both). The turn guards this with fingerprint checks
   (`plug_provenance`, `refuse_stale_ringplug`) rather than trusting the tree.
 
@@ -370,7 +381,7 @@ The turn itself is three steps:
    resident bound as the corpus runs. The only step of the turn with no Codex
    code and no QEMU in it.
 3. **The output is diffed against the banked truth**, split per rung
-   (`zig_verdict` in `ast/plug_arm_lib.sh`). The verdict is the same
+   (`zig_verdict` in `src/plug_arm_lib.sh`). The verdict is the same
    byte-identical claim whichever transport carried the IR.
 
 So the zig arm does not take bare metal out of the loop; it takes out the
@@ -387,7 +398,7 @@ Every rung compiles twice, and the README used one word for both layers
 until 2026-08-23. Now:
 
 - The **subject** is what the seed compiles: real compiler chapters, a few
-  stubs, and a generated harness, concatenated into `ast/<unit>-subject.codex`
+  stubs, and a generated harness, concatenated into `src/<unit>-subject.codex`
   and compiled under QEMU into a bare-metal CDX (the truth arm) and into IR
   the plug consumes (the zig arm). A subject is a compiler, or the front
   part of one.
@@ -408,7 +419,7 @@ contains, line by line -- because those five things are all a rung is.
 name plus `_on_<program>`, when and only when that unit carries more than
 one program.** So the `_on_` suffix is the visible mark of the unit/rung
 split: exactly four rungs carry one, and they are the two composite units.
-`LADDER_RUNGS` in `ast/oracle_lib.sh` is the list of claims and
+`LADDER_RUNGS` in `src/oracle_lib.sh` is the list of claims and
 `LADDER_UNITS` the list of compiles; sourcing the file checks one against
 the other, and `truth_prov.py` repeats the check at import.
 
@@ -436,16 +447,16 @@ elsewhere in this repo is the wire encoding named after it.
 
 ## What the truth arm does, for every unit
 
-`truth_arm` in `ast/oracle_lib.sh`, in order: `gen_<unit>_harness.py` writes
+`truth_arm` in `src/oracle_lib.sh`, in order: `gen_<unit>_harness.py` writes
 the harness (and any stubs it derives from real chapters); `bundle_<unit>.ps1`
-concatenates chapters, stubs and harness into `ast/<unit>-subject.codex`
+concatenates chapters, stubs and harness into `src/<unit>-subject.codex`
 through the author's own `plug-build-lib.ps1`, so cites resolve the way the
 depot resolves them; two blobs are written from that source -- a CDX
 compile and an IR-CCE compile, each with the unit's mode flags appended --
 and each is compiled by the seed in its own QEMU boot (`ring_compile.py`);
 the CDX is then booted (`codex_vm.run_cdx`), its serial output captured
 with the `WD:`, `HEAP:` and `STACK:` chatter dropped, and written to
-`ast/<unit>.raw`; `split_truth.py` turns that into one `ast/<rung>.truth`
+`src/<unit>.raw`; `split_truth.py` turns that into one `src/<rung>.truth`
 per rung -- a copy for a single-program unit, a cut on the
 `=== subject <rung> ===` / `=== end <rung> ===` marks for the two
 composite units, marks removed. A provenance sidecar records the seed and
@@ -467,7 +478,7 @@ the seed, the subject's bytes and the flags.
 One gap worth knowing: the harness-content hash banking checks watches
 `gen_<unit>_harness.py` and `bundle_<unit>.ps1`, plus the three shared files
 in `truth_prov.SHARED` (`emit_harness.py`, `oracle_lib.sh`, `split_truth.py`)
--- which is why the plug arms live in `ast/plug_arm_lib.sh` and not in
+-- which is why the plug arms live in `src/plug_arm_lib.sh` and not in
 `oracle_lib.sh`: moving them back would rekey every truth on disk, so editing the generator
 that owns a composite unit's SECOND program
 (`gen_ir_to_x86_on_cce_harness.py`,
@@ -587,7 +598,7 @@ are byte-identical, written by the same bs-emit-stripping transform, so
 the subjects differ only in the harness chapter name and the program.
 It is a separate unit and always will be:
 its program cannot exist until `ir_to_codex` has run. **Program.**
-`ast/ir_to_codex.truth` -- the working truth of the previous unit, the
+`src/ir_to_codex.truth` -- the working truth of the previous unit, the
 emitted source itself. **Harness.** as `ir_to_codex`. **Flags.** as
 `ir_to_codex`. **Truth.** the emitted source again. The rung's real claim is
 not arm agreement but `ir_to_codex.truth == ir_to_codex_roundtrip.truth`,
@@ -639,13 +650,13 @@ then, only if the diagnostic bag holds no errors: `header-len`,
 `--- header ---`, `--- content ---`, `--- tail ---`, each as decimal bytes
 thirty-two to a line; otherwise the single line
 `CODEGEN-HALTED: errors in bag; no binary printed`. Digits, not a binary:
-`ast/f4_boot.py` is what reassembles and boots them.
+`src/f4_boot.py` is what reassembles and boots them.
 
 #### `ir_to_x86_on_fib`
 
 Program: the fifteen-line fib snippet plus a frameless `double`, chosen for
 what they do NOT need -- machine-word arithmetic, two self-calls as the only
-fixups, no rodata, no runtime helper. That is what lets `ast/f3_run.zig`
+fixups, no rodata, no runtime helper. That is what lets `src/f3_run.zig`
 carve fib out of the dumped buffer and call it. Full image in the truth.
 
 #### `ir_to_x86_on_cce`
@@ -752,7 +763,7 @@ rungs; the verdict never does.
   compiler's own serial-ring reader costs one. ir_to_x86's IR is 13.1 MB on
   the u47 seed, so it has no choice.
 
-`arm_for` in `ast/plug_arm_lib.sh` decides, because which transport is needed is a
+`arm_for` in `src/plug_arm_lib.sh` decides, because which transport is needed is a
 property of the IR, and the IR belongs to the unit: the `ir_to_x86` and
 `passes_to_x86` units take the ring, and the four rungs they carry ride in
 with them.
@@ -770,7 +781,7 @@ matter.
 bytes of the zig arm's executable are produced by the zig toolchain, which has
 nothing to do with Codex -- not its back end, not its seed, not anything in this
 repository. Worth being specific, because it is better than it sounds: the rungs
-run their zig with `zig run` (`ast/plug_arm_lib.sh`, `zig_verdict`), and zig 0.16
+run their zig with `zig run` (`src/plug_arm_lib.sh`, `zig_verdict`), and zig 0.16
 does not use LLVM for that. It uses its own x86-64 back end. Measured on the
 command the rungs actually use, not on a nearby one: `zig run` produces a
 10,253,773-byte binary and `zig run -fllvm` produces a 4,113,312-byte one. So
@@ -793,7 +804,7 @@ What it proves is **agreement, not correctness.** Both arms descend from the
 same source, so a mistake they share is a mistake the ladder cannot see -- if
 the back end computed a rodata offset wrongly, the transpiled back end would
 reproduce that faithfully and the diff would be empty. That is what
-`ast/f4_boot.py` ("Consumers of what the ladder emits", below) is for:
+`src/f4_boot.py` ("Consumers of what the ladder emits", below) is for:
 booting the emitted binary asks a third party with no stake in the argument.
 
 One shape of the shared-mistake worry is closed for the content section, and
@@ -814,7 +825,7 @@ both the IR the two arms rest on and the tool that generates the zig arm. The
 only lineage in the building genuinely unrelated to Codex is zig's own back end.
 
 **Nothing here is checked by running it.** Even in the strongest rungs the CDX
-bytes are compared as digits. `ast/f3_run.zig` and `ast/f4_boot.py` do execute
+bytes are compared as digits. `src/f3_run.zig` and `src/f4_boot.py` do execute
 emitted code, but they run artifacts already known to be byte-identical between
 arms, so each is one execution rather than a comparison -- and neither is in
 `allcycles.sh`.
@@ -865,15 +876,15 @@ regenerates both -- it runs the author's bundler with the compile step
 stubbed out (`Build-PlugCdx` is replaced, since that step needs the author's
 Windows host) to write `plug-source.codex`, then compiles that through the
 seed with `ring_compile.py` to produce `zig-plug.cdx` and its fingerprint.
-`ast/allcycles.sh` runs `cycle.sh` first, so a fresh CODEX clone needs no
+`src/allcycles.sh` runs `cycle.sh` first, so a fresh CODEX clone needs no
 prior build step, and `cycle.sh` is the only producer of these artifacts
 here (it alone writes the fingerprint `plug_provenance` demands; the
 author's own plug build is Windows-only and never runs on this host). A
 fresh LADDER clone is a different matter: the banks are tracked, but the
-working `ast/*.truth` and `ast/*.ir` files the arms consume are not. It does
-NOT need a rebank for them. `ast/allcycles.sh` restores what it can and
+working `src/*.truth` and `src/*.ir` files the arms consume are not. It does
+NOT need a rebank for them. `src/allcycles.sh` restores what it can and
 rebuilds the rest: `restore_truths.py` copies each banked truth into place
-rather than re-measuring it, and `ast/ensure_ir.sh` regenerates any missing
+rather than re-measuring it, and `src/ensure_ir.sh` regenerates any missing
 or unstamped `.ir`. Before those existed the only way to get those files was
 a full rebank -- about 27 minutes spent producing INPUTS.
 
@@ -910,7 +921,7 @@ paragraph above for what a fresh ladder clone must regenerate first.
 **Every zig build in this ladder is Debug, and that is a decision rather than
 a default nobody looked at.** No `-O` flag appears anywhere in the repository:
 `native_build.sh`, `cycle.sh`, `tier_run.py`, `overnight_verify.sh`,
-`ast/oracle_lib.sh` and `recon.sh` all invoke `zig run` or `zig build-exe`
+`src/oracle_lib.sh` and `recon.sh` all invoke `zig run` or `zig build-exe`
 bare, and bare means Debug.
 
 Keep it that way, for a reason specific to what this ladder is for. Its job is
@@ -966,15 +977,15 @@ every banked truth; the bare-metal arm is unaffected, which is why
 ## Running it
 
 Paths below are relative to this repository; the bundlers and rung scripts
-live in `ast/`, the transports and VM helpers at the top level. Everything wants
+live in `src/`, the transports and VM helpers at the top level. Everything wants
 `CODEX_ROOT` in the environment:
 
     export CODEX_ROOT=/path/to/your/Codex/clone
 
-    ast/truthcycle.sh         # one rung's truth arm: bundle, compile, bank
-    ast/lexcycle.sh           # the same rung through the plug, diffed
-    ast/allcycles.sh          # rebuild both plugs, sweep all fourteen
-    ast/rebank_all.sh         # re-bank every truth arm, then sweep
+    src/truthcycle.sh         # one rung's truth arm: bundle, compile, bank
+    src/lexcycle.sh           # the same rung through the plug, diffed
+    src/allcycles.sh          # rebuild both plugs, sweep all fourteen
+    src/rebank_all.sh         # re-bank every truth arm, then sweep
 
     verify_emitter.sh         # the standing answer to an EMITTER change: six
                               # legs -- natives, the type-variable case matrix,
@@ -1009,14 +1020,14 @@ A passing rung prints one line:
 
     ORACLE PASS: zig lex output byte-identical to bare-metal truth
 
-**`ast/allcycles.sh`** rebuilds both plugs and then sweeps every rung. It is the
+**`src/allcycles.sh`** rebuilds both plugs and then sweeps every rung. It is the
 guard against fixing one rung and breaking four. A unit whose output contains
 neither `ORACLE` nor `TRANSPORT FAILED` is failed. `ORACLE` matches both
 `ORACLE PASS` and `ORACLE DIFF`, so the rule is not catching failure -- it is
 catching **silence**, a rung that produced no verdict at all. One did once, and
 read exactly like a rung that never ran.
 
-**`ast/rebank_all.sh`** re-records every truth arm and then sweeps.
+**`src/rebank_all.sh`** re-records every truth arm and then sweeps.
 Run it bare: it relaunches itself detached into
 `logs/rebank-<stamp>.log` and prints the tail command, so a hung VM or
 a closed terminal cannot take the verdicts with it. Run it after any seed change: a new seed invalidates both arms, since it compiles the truth
@@ -1025,10 +1036,10 @@ first and stops on the first failure, because the failure modes are shared.
 
 Then the smaller pieces:
 
-- `ast/truthcycle_<m>.sh` / `ast/<m>cycle.sh` -- one rung, one arm, where such a
+- `src/truthcycle_<m>.sh` / `src/<m>cycle.sh` -- one rung, one arm, where such a
   wrapper exists (see the two-arms section: the set has holes, and the
   `_on_cce` and `_on_arith` wrappers run the unit they ride in).
-- `ast/plugcycle.sh <m>` -- rebuild and run one rung, reporting markers grepped
+- `src/plugcycle.sh <m>` -- rebuild and run one rung, reporting markers grepped
   from the emitted zig. Error counts under-report: zig stops at the first
   `@compileError`.
 - `cycle.sh [prog...]` -- rebundle the zig plug and ring-compile it, then run
@@ -1156,7 +1167,7 @@ gap.
 | what | ceiling | where |
 |---|---|---|
 | A QEMU guest | 3,072 MB | `CODEX_MEM_MB` in `~/.codex_ladder_env`; the seed guest dies silently above it |
-| The zig arm of a rung | **6 GB** | `ZIG_ARM_MEMORY_MAX`, `ast/oracle_lib.sh:356`, applied by `bounded_run` |
+| The zig arm of a rung | **6 GB** | `ZIG_ARM_MEMORY_MAX`, `src/oracle_lib.sh:356`, applied by `bounded_run` |
 | An emitted binary under a corpus runner | 800 MB | `RUN_MEMORY_MAX`, `corpus_run.py:207`; the full corpus replayed under it with zero hits and a max RSS of 145 MB |
 | **`codexzig` itself** | **none** | `codexzig_corpus.py:89` runs the tool with no `BOUNDED` prefix |
 
@@ -1250,13 +1261,13 @@ but the newest N and prunes the worktrees.
 
 The failure this prevents is not a run that crashes. It is a run that reads
 yesterday's artifact and PASSES. Every output the ladder produces is
-gitignored -- `ast/*.truth`, `*.truth.prov`, `*.ir`, `*.zig`, `*-subject.codex`,
+gitignored -- `src/*.truth`, `*.truth.prov`, `*.ir`, `*.zig`, `*-subject.codex`,
 `*-source.codex`, `native/*` -- so a shared checkout quietly accumulates a
 complete set of plausible, real, stale files under exactly the names the next
 run looks for.
 
 **A generated file in source control goes stale and misleads rather than
-documenting anything.** `ast/zigemit-source.codex` was tracked until 2026-08-29
+documenting anything.** `src/zigemit-source.codex` was tracked until 2026-08-29
 as a "provenance snapshot" -- until it was measured: 279,579 bytes against the
 366,757 a real Update 53 bundle produces, six ZigEmitter commits and 2,380 lines
 stale. Diffing against it did not say which tree a build came from; it said
@@ -1264,7 +1275,7 @@ which tree plus everything since, with no way to tell those apart. Nothing was
 lost by untracking it, because git history holds every snapshot ever committed.
 
 Two other instances in one afternoon on 2026-08-21: a debug-instrumented
-`native/codexir` and a clobbered `ast/codexir.zig` left where a later census
+`native/codexir` and a clobbered `src/codexir.zig` left where a later census
 would have used them without complaint, and blobs written to fixed `/tmp` paths
 a second experiment would have overwritten.
 
@@ -1331,9 +1342,9 @@ never seen, and its negative control (cut at a different ref, expect
 
 ## Operating rules
 
-1. **Sweep after any emitter change.** `ast/allcycles.sh`. One rung passing
+1. **Sweep after any emitter change.** `src/allcycles.sh`. One rung passing
    proves nothing about the other thirteen.
-2. **Re-bank after any seed change.** `ast/rebank_all.sh`, before any diff means
+2. **Re-bank after any seed change.** `src/rebank_all.sh`, before any diff means
    anything. The full procedure, prerequisites included, is "Processing a
    new Update" below.
 3. **Validate a new subject standalone first.** Compile it through the seed on
@@ -1483,7 +1494,7 @@ function we call, and every one was found by a rung dying an hour into a run.
 Update 55 split the entry point out -- `opening.codex` defines `codex-opening`,
 `EntryPoint.codex` holds `opening` -- so **`Chapter: Opening` is bundlable by a
 subject that supplies its own entry point**, and a harness can call the driver
-instead of restating it. `ast/emit_harness.py`'s `driver_cdx_source()` does
+instead of restating it. `src/emit_harness.py`'s `driver_cdx_source()` does
 that, and `zigc` uses it: thirty lines of copied phase order and deck arithmetic
 became two calls.
 
@@ -1503,8 +1514,8 @@ already been paid for the expensive way.
 
 **Arity -- our calls against their signatures.**
 
-    xref arity ast/ $CODEX_ROOT/codex/ --phases     # driver phases only
-    xref arity ast/ $CODEX_ROOT/codex/              # everything
+    xref arity src/ $CODEX_ROOT/codex/ --phases     # driver phases only
+    xref arity src/ $CODEX_ROOT/codex/              # everything
 
 Indexes every definition in the checkout by its parameter list and walks every
 application in ours. `lower-chapter` went 8 -> 9 -> 11 across three Updates and
@@ -1521,7 +1532,7 @@ shows those.
 `xref bundle` under the hood, and it names the file to add rather than only the
 name that is missing. cycle.sh runs it on the plug bundle between bundling and
 the guest. The gap it closed: for years this asked only about
-`ast/<m>-subject.codex`, so the plug bundle -- the one every rung depends on --
+`src/<m>-subject.codex`, so the plug bundle -- the one every rung depends on --
 was the one nobody checked, and a bundle short three chapters cost 23 seconds of
 QEMU and a dead sweep to discover.
 
@@ -1587,7 +1598,7 @@ compile runs:
 
       # every driver function our harnesses call
       grep -ohE '\b(compile-[a-z-]+|lower-chapter|check-chapter|scope-achapter|resolve-chapter|run-ir-pipeline|lift-lambdas)\b' \
-        ast/*Harness.codex ast/gen_*_harness.py | sort -u
+        src/*Harness.codex src/gen_*_harness.py | sort -u
 
   Every `^[-+]  <name> :` line is a signature that moved. **`xref arity` does the
   crossing** -- see step 2 -- so read the diff for INTENT and let the tool find
@@ -1615,14 +1626,14 @@ cheap experiment needs no checkout CHANGE -- `CODEX_ROOT` must still name a
 valid checkout for the imports to resolve, but it can stay wherever it is.
 The seed parameter is not reachable from `ring_compile.py`'s command line;
 call the function. Reuse a small blob from an earlier run's working tree --
-blobs are gitignored, so a fresh tree has none until `ast/arithcycle.sh`
-(which writes `ast/arith-cdx.blob` in its first seconds) or any rung has
+blobs are gitignored, so a fresh tree has none until `src/arithcycle.sh`
+(which writes `src/arith-cdx.blob` in its first seconds) or any rung has
 run once -- and run the pair:
 
     git -C $CODEX_ROOT show <old>:seed/Codex.cdx > $SANDBOX/seed-old.cdx
     git -C $CODEX_ROOT show <new>:seed/Codex.cdx > $SANDBOX/seed-new.cdx
     python3 -c "import ring_compile as r; \
-      r.compile_ring('ast/arith-cdx.blob', '$SANDBOX/probe.cdx', seed='$SANDBOX/seed-new.cdx')"
+      r.compile_ring('src/arith-cdx.blob', '$SANDBOX/probe.cdx', seed='$SANDBOX/seed-new.cdx')"
 
 (`$SANDBOX` is what `sandbox.sh`'s env file exports; probe artifacts belong
 to the experiment's directory, not `/tmp`.)
@@ -1654,7 +1665,7 @@ diff.
   BUNDLE that was compiled, which is the half that also covers
   `PlugTypes.codex` and `IRTextParser.codex`. The ring plug's guard is
   still the stronger one, because it RE-BUNDLES: `ringplug_build.sh`
-  records the bundle sha in `ast/ringplug.cdx.fp` and `plug_run_ring.py`
+  records the bundle sha in `src/ringplug.cdx.fp` and `plug_run_ring.py`
   re-bundles and refuses a mismatch before booting, so it catches a
   source edit that was never bundled and this one does not. Banking refuses a moved
   seed or moved harness content after the fact (the `truth_prov` sidecars),
@@ -1707,7 +1718,7 @@ because a wrong answer IS the measurement.
 ### 7. Run, bank, retire
 
 **A NEW SEED MEANS REBANK, NOT SWEEP, AND THE ORDER IS NOT NEGOTIABLE.** A
-sweep (`ast/allcycles.sh`) compares this plug's arms against BANKED truths, and
+sweep (`src/allcycles.sh`) compares this plug's arms against BANKED truths, and
 a new Update's seed has none -- `restore_truths.py` says `NO BANK for this
 seed` and the sweep used to carry on regardless. It does not fail there; it
 fails whenever the first rung needs a `.truth` as its own subject, which is
@@ -1720,7 +1731,7 @@ the order is the thing to remember: **rebank, then sweep.**
   end on the new checkout in minutes. `rebank_all.sh` does not run them --
   its first plug exercise is the sweep at the END, hours in, so a gross
   plug-side breakage found there was findable at the start.
-- Then the rebank. `ast/rebank_all.sh` detaches itself (nohup, a log
+- Then the rebank. `src/rebank_all.sh` detaches itself (nohup, a log
   under `logs/rebank-<stamp>.log`, the compute lock taken first) so a
   hung VM cannot take the verdicts with it; run it plainly and tail the
   log it names. Run it in a sandbox (`./sandbox.sh uNN-rebank`), never in
@@ -1733,12 +1744,12 @@ the order is the thing to remember: **rebank, then sweep.**
 - **Bank as soon as the truth arms are green** (`bank_truth.py`), whatever
   the zig arms have done or whether they have run at all. A truth is a
   bare-metal measurement and the plug cannot reach one; `bank_truth.py`
-  derives what the arms said from `ast/<rung>.diff` and records it in
+  derives what the arms said from `src/<rung>.diff` and records it in
   `ARMS` beside `SEED`, where `bank_diff.sh` reads it back. Green arms gate
   the banked-against table and the `uNN-14of14` tag, whose own name is the
   rule.
   Terminology, because a crashed session once nearly tagged over its
-  absence: the rebank RECORDS working truths (`ast/<m>.truth`; its
+  absence: the rebank RECORDS working truths (`src/<m>.truth`; its
   "banked" log lines mean this) -- the BANK is `truth/uNN/`, written
   only by an explicit `bank_truth.py`, which `rebank_all.sh` never
   runs. "All banked" in a rebank log does not mean the bank exists.
@@ -1792,11 +1803,11 @@ The `f` numbers are milestones of the fib ladder: F1 was fib through the front
 end, F2 was fib through the x86 back end (the `ir_to_x86_on_fib` rung), F3 runs the emitted
 code, F4 boots the emitted binary.
 
-- `ast/f3_run.zig` -- carves a function out of an emitted CDX, drops it in RWX
+- `src/f3_run.zig` -- carves a function out of an emitted CDX, drops it in RWX
   memory and calls it. `fib(30) = 832040`, from both the truth dump and the zig
   dump. Works because the emitted code uses the System V ABI and buffer-relative
   call displacements.
-- `ast/f4_boot.py` -- reassembles the dump into a real CDX the way
+- `src/f4_boot.py` -- reassembles the dump into a real CDX the way
   `emit-binary-tail` does (header, content, tail), boots it, and checks it prints
   what its program says. Six binaries: the fib, cce and mid programs, from truth and from
   zig. This is the one check that does not depend on the two arms sharing a
@@ -1825,7 +1836,7 @@ code, F4 boots the emitted binary.
   same order as `codexir | zigemit`, which is why agreement with the
   pipeline is structural.
   **The build ends with the fixed point**: the binary it just produced must
-  re-emit `ast/codexzig.zig` -- the file the seed-under-QEMU plus
+  re-emit `src/codexzig.zig` -- the file the seed-under-QEMU plus
   ring-plug-under-QEMU path wrote minutes earlier -- byte for byte.
   `./codexzig_build.sh --check <prog.codex>` transpiles one program both
   ways and byte-compares, refusing a `CODEGEN-HALTED` or an output carrying
@@ -1846,18 +1857,18 @@ code, F4 boots the emitted binary.
 
 ## zigc: the compiler as an ordinary process
 
-`ast/ZigcHarness.codex` is the `passes_to_x86` unit's chapter set with a real I/O
+`src/ZigcHarness.codex` is the `passes_to_x86` unit's chapter set with a real I/O
 boundary instead of a baked-in Text literal and a decimal dump: **source in on
 stdin, a CDX binary out on stdout.** Built the same way every rung is -- bundle,
 compile to IR with the seed, transpile through the plug -- and then
 `zig build-exe` on the result.
 
-    $ ast/gen_zigc_harness.py && pwsh ast/bundle_zigc.ps1   # write and bundle it
+    $ src/gen_zigc_harness.py && pwsh src/bundle_zigc.ps1   # write and bundle it
     $ # ...then compile that subject to IR with the seed and push it through the
-    $ # plug, exactly as a rung's two arms do, leaving ast/zigc.zig
-    $ zig build-exe ast/zigc.zig -femit-bin=zigc      # 16,905 lines of zig, no
+    $ # plug, exactly as a rung's two arms do, leaving src/zigc.zig
+    $ zig build-exe src/zigc.zig -femit-bin=zigc      # 16,905 lines of zig, no
                                                       # @compileError markers, ~4s
-    $ ./zigc < ast/repro-mid.codex > mid.cdx          # ~3s
+    $ ./zigc < src/repro-mid.codex > mid.cdx          # ~3s
     $ ls -l mid.cdx
     -rw-r--r-- 1 steve steve 87257 mid.cdx
 
@@ -1888,10 +1899,10 @@ Two things it is not:
 
 ## Generated files
 
-`ast/gen_<m>_harness.py` writes `ast/<M>Harness.codex` -- except
+`src/gen_<m>_harness.py` writes `src/<M>Harness.codex` -- except
 `gen_ir_to_x86_on_cce_harness.py` and `gen_passes_to_x86_on_arith_harness.py`,
 which own only their unit's second program; the harness itself comes from
-the `ir_to_x86` and `passes_to_x86` generators. `ast/emit_harness.py` holds the compile pipeline once --
+the `ir_to_x86` and `passes_to_x86` generators. `src/emit_harness.py` holds the compile pipeline once --
 `frontend_source` (source text to a lowered IR) and `pipeline_source`
 (that plus the x86 emission) -- so the five generators that run it
 (`gen_ir_to_x86` and `gen_passes_to_x86`, whose units carry the `_on_` rungs;
@@ -1899,13 +1910,13 @@ the `ir_to_x86` and `passes_to_x86` generators. `ast/emit_harness.py` holds the 
 generators import only its shared tables (`DECK_PROLOGUE`,
 `RESOLVED_TABLES`).
 
-The bundlers are PowerShell (`ast/bundle_<m>.ps1`), because they call the
+The bundlers are PowerShell (`src/bundle_<m>.ps1`), because they call the
 repository's own `plug-build-lib.ps1` to resolve chapter cites. That is why pwsh
 is a requirement here.
 
 Everything generated is ignored and regenerates from a script beside it. The
 scripts are the record. There are no exceptions as of 2026-08-29; the last
-one, `ast/zigemit-source.codex`, is written up under "One sandbox per
+one, `src/zigemit-source.codex`, is written up under "One sandbox per
 experiment" as a worked example of why a generated file in source control
 goes stale and misleads rather than documenting anything.
 
@@ -1916,8 +1927,8 @@ goes stale and misleads rather than documenting anything.
   expensive build by fingerprint (`rm zigc` forces a rebuild). Its header
   states the reason it exists: "a number nothing re-checks is a number that
   was true once." **Still wrong, verified 2026-08-29: the transcript names
-  `ast/repro-mid.codex`, which does not exist and is gitignored
-  (`ast/.gitignore`). `zigc_verify.sh` defaults to `ast/repro.codex`, which
+  `src/repro-mid.codex`, which does not exist and is gitignored
+  (`src/.gitignore`). `zigc_verify.sh` defaults to `src/repro.codex`, which
   is tracked.** The fingerprint it caches on moved to `tool_identity.py` on
   2026-08-29 and is now 16 hex where it was 64, so the first run after that
   change rebuilds `zigc` once.

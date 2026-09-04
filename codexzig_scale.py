@@ -5,7 +5,7 @@ Two claims in JUSTIFICATIONS ("The deck costs 145 MB per MB of source") and
 one finding (45, the reservation is advisory) were measured by hand once.
 This is the runner behind them, so neither is a number that was true once.
 
-WHAT IT MEASURES. Every `ast/*-subject.codex` through `native/codexzig`,
+WHAT IT MEASURES. Every `src/*-subject.codex` through `native/codexzig`,
 reading the `CX-DECK used=` trace the emitted runtime prints on stdout, and
 byte-comparing the emitted zig against `codexir | zigemit`. The deck peak is
 near-linear in source size; the reservation is 512 MB; the largest subject is
@@ -51,7 +51,7 @@ def main():
             raise SystemExit(f'MISSING {t} -- build it first '
                              f'(codexzig_build.sh, native_build.sh)')
     compute_lock.take()
-    subs = sorted((LADDER / 'ast').glob('*-subject.codex'),
+    subs = sorted((LADDER / 'src').glob('*-subject.codex'),
                   key=lambda p: p.stat().st_size)
     # A GLOB THAT MATCHES NOTHING MUST NOT PASS. The subjects are gitignored
     # build artifacts of fourteen separate bundlers, so a sandbox where only
@@ -60,8 +60,8 @@ def main():
     # the exact shape JUSTIFICATIONS warns about, in the file that feeds it.
     if len(subs) < EXPECT_SUBJECTS:
         print(f'### ONLY {len(subs)} of {EXPECT_SUBJECTS} unit subjects are '
-              f'bundled in ast/ -- refusing to report a partial sweep as a '
-              f'sweep.\n    Bundle the rungs (ast/ensure_ir.sh, or a full '
+              f'bundled in src/ -- refusing to report a partial sweep as a '
+              f'sweep.\n    Bundle the rungs (src/ensure_ir.sh, or a full '
               f'cycle) or accept that this table is not comparable.')
         return 2
     print(f'### {len(subs)} unit subjects through codexzig')
@@ -98,7 +98,7 @@ def main():
 
     # --- finding 45: what running out of deck looks like ---
     print(f'\n### squeezing the deck to {SQUEEZE_MB} MB (finding 45)')
-    zig = LADDER / 'ast' / 'codexzig.zig'
+    zig = LADDER / 'src' / 'codexzig.zig'
     if not zig.is_file():
         print(f'    no {zig} to squeeze -- finding 45 NOT re-checked this run')
         return 2
@@ -119,7 +119,7 @@ def main():
         print('    SQUEEZE BUILD FAILED:',
               b.stderr.decode('utf-8', 'replace')[:200])
         return 1
-    subj = LADDER / 'ast' / SQUEEZE_SUBJECT
+    subj = LADDER / 'src' / SQUEEZE_SUBJECT
     if not subj.is_file():
         print(f'    no {subj} to squeeze -- finding 45 NOT re-checked this run')
         return 2

@@ -42,10 +42,10 @@ CODE = re.compile(r'CDX\d{4}')
 # lately rather than with the source. allcycles.sh carries the same list for
 # the same reason; both read LADDER_UNITS from oracle_lib.sh.
 def ladder_units(ladder):
-    text = (ladder / 'ast' / 'oracle_lib.sh').read_text()
+    text = (ladder / 'src' / 'oracle_lib.sh').read_text()
     m = re.search(r'^LADDER_UNITS="([^"]+)"', text, re.M)
     if not m:
-        raise SystemExit('bank_diags: no LADDER_UNITS in ast/oracle_lib.sh')
+        raise SystemExit('bank_diags: no LADDER_UNITS in src/oracle_lib.sh')
     return m.group(1).split()
 
 
@@ -122,7 +122,7 @@ def do_diff(a, b):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('ast_dir', nargs='?', help='the sweep ast/ directory holding .diags')
+    ap.add_argument('ast_dir', nargs='?', help='the sweep src/ directory holding .diags')
     ap.add_argument('--slug', help='bank name (default: derived from the seed)')
     ap.add_argument('--out', default='diags', help='directory to write into')
     ap.add_argument('--diff', nargs=2, metavar=('OLD', 'NEW'))
@@ -131,7 +131,7 @@ def main():
     if args.diff:
         return do_diff(*args.diff)
     if not args.ast_dir:
-        ap.error('an ast/ directory is required unless --diff is given')
+        ap.error('an src/ directory is required unless --diff is given')
 
     ast_dir = pathlib.Path(args.ast_dir).resolve()
     ladder = pathlib.Path(__file__).resolve().parent

@@ -50,7 +50,7 @@ STAMP() { echo "@@@@ $1 $(date +%H:%M:%S)"; }
 PHASE=init
 trap 'echo "@@@@ CHAIN ENDED at phase $PHASE $(date +%H:%M:%S)"' EXIT
 
-CODEX_ROOT="$PIN" . "$T/ast/oracle_lib.sh"
+CODEX_ROOT="$PIN" . "$T/src/oracle_lib.sh"
 
 # PHASE_FROM resumes the chain at a later phase. PHASE_FROM=C runs the gaps
 # half on its own, which is what the heap half going red asks for: the two
@@ -80,7 +80,7 @@ CODEX_ROOT="$GAPS" python3 "$T/seed_identity.py" | grep -q "Update 48" || { echo
 
 if ! skip A; then
     PHASE=A; STAMP "A: heap ladder sweep (allcycles, nr-heap)"
-    CODEX_ROOT="$HEAP" "$T/ast/allcycles.sh" > "$T/logs/overnight-heap-sweep.log" 2>&1 \
+    CODEX_ROOT="$HEAP" "$T/src/allcycles.sh" > "$T/logs/overnight-heap-sweep.log" 2>&1 \
         || { echo "HEAP SWEEP RED -- see logs/overnight-heap-sweep.log:"; tail -12 "$T/logs/overnight-heap-sweep.log"; exit 1; }
     grep -E "SWEEP: " "$T/logs/overnight-heap-sweep.log"
 fi
@@ -102,7 +102,7 @@ fi
 
 if ! skip C; then
     PHASE=C; STAMP "C: gaps ladder sweep (allcycles, nr-gaps)"
-    CODEX_ROOT="$GAPS" "$T/ast/allcycles.sh" > "$T/logs/overnight-gaps-sweep.log" 2>&1 \
+    CODEX_ROOT="$GAPS" "$T/src/allcycles.sh" > "$T/logs/overnight-gaps-sweep.log" 2>&1 \
         || { echo "GAPS SWEEP RED -- see logs/overnight-gaps-sweep.log:"; tail -12 "$T/logs/overnight-gaps-sweep.log"; exit 1; }
     grep -E "SWEEP: " "$T/logs/overnight-gaps-sweep.log"
 fi

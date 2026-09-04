@@ -98,7 +98,7 @@ def take():
 def probe():
     """The refusal take() would give, or None -- without taking anything.
 
-    For a script that is about to detach: ast/rebank_all.sh relaunches
+    For a script that is about to detach: src/rebank_all.sh relaunches
     itself into a log, and on 2026-08-24 the child refused into a log
     nobody was tailing yet, so for four minutes the run looked launched
     and did not exist. The parent asks here, while there is still someone

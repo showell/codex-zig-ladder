@@ -7,7 +7,7 @@
 # bundling happens here and nowhere else in the two-venue path.
 #
 # The bundling entrypoints and fingerprint semantics are the same ones
-# cycle.sh and ast/ringplug_build.sh use (Build-TranspilerPlug with the
+# cycle.sh and src/ringplug_build.sh use (Build-TranspilerPlug with the
 # compile step stubbed; sha of the bundled source for the ring fp, and
 # oracle_lib's plug_fingerprint for the TCP one) -- only the compile
 # venue moved. Those two scripts remain the all-local authority.
@@ -62,7 +62,7 @@ rm -f "$PLUG_CDX"
 plug_fingerprint > "$PLUG_DIR/build-output/zig-plug.fingerprint" || exit 1
 rm -f "$T/.prep-plug.blob"
 
-# --- the ring plug (ast/ringplug.cdx) ---
+# --- the ring plug (src/ringplug.cdx) ---
 cd "$T/ast"
 rm -f ringplug-source.codex
 ~/.local/pwsh/pwsh -NoProfile -File ./bundle_ringplug.ps1 | tail -1
@@ -74,10 +74,10 @@ open(sys.argv[2], 'wb').write(b"CDX map\n" + src + b"\x04")
 print(f"ring blob: {len(src)} bytes")
 PY
 cd "$T"
-rm -f ast/ringplug.cdx
-"$T/droplet_compile.sh" "$T/.prep-ring.blob" "$T/ast/ringplug.cdx"
-[ -s ast/ringplug.cdx ] || { echo "RING PLUG COMPILE FAILED"; exit 1; }
-sha256sum ast/ringplug-source.codex | cut -d' ' -f1 > ast/ringplug.cdx.fp
+rm -f src/ringplug.cdx
+"$T/droplet_compile.sh" "$T/.prep-ring.blob" "$T/src/ringplug.cdx"
+[ -s src/ringplug.cdx ] || { echo "RING PLUG COMPILE FAILED"; exit 1; }
+sha256sum src/ringplug-source.codex | cut -d' ' -f1 > src/ringplug.cdx.fp
 rm -f "$T/.prep-ring.blob"
 
 # --- push the ring kernel, its fingerprint, and the drivers ---
@@ -86,8 +86,8 @@ rm -f "$T/.prep-ring.blob"
 # would hold its boot reservation), so the
 # freshly compiled zig-plug.cdx stays in build-output for the LOCAL
 # arms, where plug_provenance still wants it fresh.
-scp -qC "$T/ast/ringplug.cdx" "$HOST:ring/ringplug.cdx"
-scp -q "$T/ast/ringplug.cdx.fp" "$HOST:ring/ringplug.cdx.fp"
+scp -qC "$T/src/ringplug.cdx" "$HOST:ring/ringplug.cdx"
+scp -q "$T/src/ringplug.cdx.fp" "$HOST:ring/ringplug.cdx.fp"
 scp -q "$T/plug_run.py" "$T/plug_run_checked.py" "$T/pcap_parity.py" "$T/plug_run_ring.py" "$T/cce.py" "$HOST:ring/"
 
 echo "### sweep_prep done $(date +%H:%M:%S): both kernels compiled on the droplet and pushed"

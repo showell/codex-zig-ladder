@@ -126,7 +126,7 @@ def newest_input(ast, m):
                              if not re.match(r'\s*\[[\w\[\]]+\]\$\w+\s*=', l))
         # The generated harnesses and stubs a bundler names are inputs too, and
         # they are the ladder's own files rather than the depot's, so they move
-        # whenever we change a rung. Only the ones in ast/ count: a bundler also
+        # whenever we change a rung. Only the ones in src/ count: a bundler also
         # names thirty compiler chapters, and treating those as inputs would
         # report every subject stale whenever a checkout touched their mtimes.
         inputs += [ast / name for name in re.findall(r'(\w+\.codex)', text)]
@@ -136,7 +136,7 @@ def newest_input(ast, m):
 
 
 
-# THE PLUG BUNDLES ARE NOT `ast/<m>-subject.codex` AND SO WERE NEVER CHECKED.
+# THE PLUG BUNDLES ARE NOT `src/<m>-subject.codex` AND SO WERE NEVER CHECKED.
 # That is the gap this file existed to close and did not: on 2026-09-03 the
 # emitter became four files, the ladder's bundlers still named one, and the
 # plug bundle went to a guest missing three chapters. It came back 23 seconds
@@ -153,7 +153,7 @@ def plug_bundles():
     tcp = CODEX / 'codex' / 'plugs' / 'zig' / 'build-output' / 'plug-source.codex'
     if tcp.is_file():
         out.append(('zig-plug', tcp))
-    ring = LADDER / 'ast' / 'ringplug-source.codex'
+    ring = LADDER / 'src' / 'ringplug-source.codex'
     if ring.is_file():
         out.append(('ringplug', ring))
     return out
@@ -171,8 +171,8 @@ def plug_inputs():
 
 
 def main():
-    ast = LADDER / 'ast'
-    # An explicit argument list selects from BOTH families -- the ast/ rung
+    ast = LADDER / 'src'
+    # An explicit argument list selects from BOTH families -- the src/ rung
     # subjects and the plug bundles. cycle.sh passes `zig-plug` because it has
     # just built that one and nothing else; treating the name as a missing rung
     # subject would have made it fail for the wrong reason.

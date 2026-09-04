@@ -25,7 +25,7 @@
 # costs less.
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
-. "$T/ast/oracle_lib.sh"
+. "$T/src/oracle_lib.sh"
 OUT="$T/native"
 
 # VENUE. CODEX_NATIVE_VENUE=droplet sends the two QEMU stages to the
@@ -44,7 +44,7 @@ OUT="$T/native"
 # (three seconds of CPU in eighteen minutes). The venue is the 8 GB
 # ladder droplet now and droplet_compile.sh pins 3072, so the toggle
 # does what it says again; the measurement stays in JUSTIFICATIONS.md.
-. "$T/ast/native_lib.sh"
+. "$T/src/native_lib.sh"
 mkdir -p "$OUT"
 ring_plug_fresh
 

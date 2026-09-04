@@ -69,7 +69,7 @@ def source_defs(path):
 
 def main():
     unit = sys.argv[1] if len(sys.argv) > 1 else 'ir_to_x86'
-    ast = LADDER / 'ast'
+    ast = LADDER / 'src'
     subject, ir = ast / f'{unit}-subject.codex', ast / f'{unit}.ir'
     for p in (subject, ir):
         if not p.is_file():

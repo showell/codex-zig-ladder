@@ -2,7 +2,7 @@
 """Bank the working truths under the seed that produced them.
 
 A truth is a measurement, not a build product. Everything else the ladder
-writes regenerates from a script beside it, which is why `ast/*.truth` is in
+writes regenerates from a script beside it, which is why `src/*.truth` is in
 .gitignore along with the subjects and the emitted zig -- but a truth
 regenerates only by running the rung again, for an hour. So the working
 copies stay unversioned beside the rung, and a bank is taken deliberately,
@@ -45,7 +45,7 @@ the bug.** The old rule was that HEAD must BE the release commit, enforced
 because the directory carried the release's name and a branch would have
 overwritten it. What it cost, 2026-09-03: a complete, correct set of fourteen
 `u56-candidate` truths, recorded in 1,793 seconds and then refused by the sweep
-in the same script while the files sat in `ast/`. The ladder's ordinary job is
+in the same script while the files sat in `src/`. The ladder's ordinary job is
 comparing a branch we understand against a branch we do not; two releases is
 merely the case where both names are releases, and it was the only case this
 script would record.
@@ -74,7 +74,7 @@ from seed_identity import measurement_slug, stamp, tree_stamp, truth_dir
 # about what the ladder is: a rung missing from the bank is a rung whose truth
 # quietly is not there when someone reaches for it.
 def ladder_rungs():
-    text = (LADDER / 'ast' / 'oracle_lib.sh').read_text()
+    text = (LADDER / 'src' / 'oracle_lib.sh').read_text()
     for line in text.splitlines():
         if line.startswith('LADDER_RUNGS='):
             return line.split('"')[1].split()
@@ -84,7 +84,7 @@ def ladder_rungs():
 def arm_verdict(rungs):
     """What the zig arms said about these truths, derived rather than declared.
 
-    An arm writes `ast/<rung>.diff`: empty when the emitted zig matched the
+    An arm writes `src/<rung>.diff`: empty when the emitted zig matched the
     bare-metal truth byte for byte, the differences when it did not. ABSENT is
     a third state and it is not a synonym for red -- `zig_arm` returns before
     it diffs anything when the zig will not build, so a unit that failed to
@@ -95,7 +95,7 @@ def arm_verdict(rungs):
     of them the ladder actually agreed with, and the bank is the only artifact
     that travels with the answer.
     """
-    ast = LADDER / 'ast'
+    ast = LADDER / 'src'
     agreed, differed, no_result, stale = [], [], [], []
     for m in rungs:
         d = ast / f'{m}.diff'
@@ -128,7 +128,7 @@ def main():
     s = stamp()
     slug = measurement_slug()
     dest = truth_dir(slug)
-    ast = LADDER / 'ast'
+    ast = LADDER / 'src'
 
     named = f"Update {s['update']}" if s['update'] is not None else 'no release note names it'
     print(f"seed   {s['sha256'][:16]}  ({s['bytes']:,} bytes)")
@@ -169,7 +169,7 @@ def main():
     # What that gate actually cost, measured 2026-09-03: a complete, correct set
     # of fourteen `u56-candidate` truths, recorded in 1,793 seconds and then
     # refused by the sweep in the same script -- "no bank for this seed" --
-    # while the files sat in ast/. The ladder's ordinary job is comparing a
+    # while the files sat in src/. The ladder's ordinary job is comparing a
     # branch we understand to a branch we do not; Update N against Update N+1 is
     # just the case where both happen to be releases, and it was the only case
     # this script would let you record.

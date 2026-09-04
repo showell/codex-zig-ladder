@@ -5,7 +5,7 @@
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(python3 "$T/ladder_root.py" codex)"
-. "$T/ast/oracle_lib.sh"
+. "$T/src/oracle_lib.sh"
 # This is a COMPUTE job -- it ring-compiles the plug and then boots it
 # once per warmup -- and it took no lock until 2026-08-25. Nothing in
 # the script names QEMU, which is exactly why the omission survived:

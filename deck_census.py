@@ -11,8 +11,8 @@ Main-heap bytes are keyed by call site alone. The table is dumped to STDOUT
 every 32 MB of deck growth and at the exhaust panic, so a run that dies
 still reports; the truth stream is stderr and is untouched.
 
-    ./deck_census.py patch  ast/codexir.zig ast/codexir-census.zig [slack_mb] [reserve_mb]
-    zig build-exe ast/codexir-census.zig -femit-bin=native/codexir-census
+    ./deck_census.py patch  src/codexir.zig src/codexir-census.zig [slack_mb] [reserve_mb]
+    zig build-exe src/codexir-census.zig -femit-bin=native/codexir-census
     ./native/codexir-census < subject > census.out 2> subject.ir
     ./deck_census.py report census.out native/codexir-census
 

@@ -45,7 +45,7 @@
 #   4 roc ports   roc_ports_run.py. Somebody else's suite, somebody else's
 #                 expected values, and the only leg here written by people
 #                 who have never seen this emitter.
-#   5 sweep       ast/allcycles.sh, the rungs against bare-metal truth.
+#   5 sweep       src/allcycles.sh, the rungs against bare-metal truth.
 #                 The only leg that consults an oracle outside the zig arm.
 #
 # A RED LEG DOES NOT STOP THE CHAIN. Each verdict is information and the
@@ -184,7 +184,7 @@ say "  $(grep -c 'fixed point holds' "$S/leg3-codexzig.log") fixed point"
 leg leg4-roc-ports ./roc_ports_run.py
 say "  $(grep -E '^### [0-9]+ match' "$S/leg4-roc-ports.log" | tail -1)"
 
-leg leg5-sweep ./ast/allcycles.sh
+leg leg5-sweep ./src/allcycles.sh
 say "  $(grep -c 'ORACLE PASS' "$S/leg5-sweep.log") rungs green"
 
 say "CHAIN DONE."

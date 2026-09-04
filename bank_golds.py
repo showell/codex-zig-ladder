@@ -154,7 +154,7 @@ def main():
     # The rung truths, if this sandbox measured them. Copied with their
     # provenance sidecars: a truth without one is a measurement nobody can
     # place afterwards, which is bank_truth.py's rule and holds here too.
-    truths = sorted((LADDER / 'ast').glob('*.truth'))
+    truths = sorted((LADDER / 'src').glob('*.truth'))
     if truths:
         (dest / 'rungs').mkdir(exist_ok=True)
         for t in truths:

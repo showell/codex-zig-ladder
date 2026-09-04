@@ -1,18 +1,18 @@
 #!/bin/bash
 # Oracle for the ring refill path: the arith subject padded past the 1 MB
 # ring with inert prose must compile through the refill and run with output
-# identical to the unpadded subject's banked truth (ast/arith.truth, from
+# identical to the unpadded subject's banked truth (src/arith.truth, from
 # arithcycle.sh). Same executable content, oversize source -- any
 # divergence convicts the transport, not the subject.
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
-. "$T/ast/oracle_lib.sh"
+. "$T/src/oracle_lib.sh"
 # The refill test is a real ring compile of a padded blob: a guest.
 REPO="$(python3 "$T/ladder_root.py" codex)"
 S="${TMPDIR:-/tmp}/ring-refill-test"
 mkdir -p "$S"
 
-[ -s $T/ast/arith.truth ] || { echo "no ast/arith.truth -- run ast/arithcycle.sh first"; exit 1; }
+[ -s $T/src/arith.truth ] || { echo "no src/arith.truth -- run src/arithcycle.sh first"; exit 1; }
 
 python3 - "$S" "$REPO" <<'PY'
 import sys
@@ -48,7 +48,7 @@ open(f'{s}/padded.out', 'w').write("\n".join(lines) + "\n")
 print(f"padded subject ran: {len(lines)} lines")
 PY
 
-if diff $T/ast/arith.truth "$S/padded.out"; then
+if diff $T/src/arith.truth "$S/padded.out"; then
     echo "RING REFILL PASS: oversize compile matches the unpadded truth"
 else
     echo "RING REFILL FAIL: output diverged"; exit 1

@@ -9,7 +9,7 @@
 # deleting exactly that shape.
 #
 # Callers set T (ladder root) and OUT (where the binary lands), and source
-# ast/oracle_lib.sh first.
+# src/oracle_lib.sh first.
 
 seed_compile() {   # <blob> <out>
     if [ "${CODEX_NATIVE_VENUE:-local}" = droplet ]; then
@@ -33,7 +33,7 @@ ring_transpile() {  # <ir> <zig> <log>
 # file because sourcing a library must not start a guest.
 ring_plug_fresh() {
     echo "############ ring plug"
-    bash "$T/ast/ringplug_build.sh"
+    bash "$T/src/ringplug_build.sh"
 }
 
 build_one() {
@@ -55,21 +55,21 @@ PY
 
     cd "$T"
     echo "--- compiling $name to IR (seed, QEMU, venue: ${CODEX_NATIVE_VENUE:-local})"
-    rm -f "ast/$name.ir"
-    seed_compile "ast/$name-ir.blob" "ast/$name.ir"
-    [ -s "ast/$name.ir" ] || { echo "COMPILE FAILED: no $name.ir"; return 1; }
+    rm -f "src/$name.ir"
+    seed_compile "src/$name-ir.blob" "src/$name.ir"
+    [ -s "src/$name.ir" ] || { echo "COMPILE FAILED: no $name.ir"; return 1; }
 
     echo "--- transpiling $name through the plug (QEMU, venue: ${CODEX_NATIVE_VENUE:-local})"
-    rm -f "ast/$name.zig"
-    ring_transpile "ast/$name.ir" "ast/$name.zig" "ast/$name.transport.log" \
-        || { echo "TRANSPORT FAILED ($name):"; tail -5 "ast/$name.transport.log"; return 1; }
+    rm -f "src/$name.zig"
+    ring_transpile "src/$name.ir" "src/$name.zig" "src/$name.transport.log" \
+        || { echo "TRANSPORT FAILED ($name):"; tail -5 "src/$name.transport.log"; return 1; }
 
     # A marker means the plug could not translate a CONSTRUCT, and the build
     # must not proceed to a binary that is quietly missing it. The prelude's
     # own comptime preconditions are not that; which ones exist, and why
     # skipping them hides nothing, is findings/prelude-comptime-guards.txt.
     local markers
-    markers=$(grep -o '@compileError("[^"]*")' "ast/$name.zig" \
+    markers=$(grep -o '@compileError("[^"]*")' "src/$name.zig" \
         | grep -vxF -f <(grep -v '^#' "$T/findings/prelude-comptime-guards.txt") \
         | sort | uniq -c || true)
     if [ -n "$markers" ]; then
@@ -79,7 +79,7 @@ PY
     fi
 
     echo "--- building the native binary"
-    zig build-exe "ast/$name.zig" -femit-bin="$OUT/$name"
+    zig build-exe "src/$name.zig" -femit-bin="$OUT/$name"
     ls -la "$OUT/$name" | awk '{print "    " $NF, $5, "bytes"}'
     echo "############ $name built"
 }

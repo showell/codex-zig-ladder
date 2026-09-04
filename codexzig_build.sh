@@ -29,8 +29,8 @@
 # there.
 set -e
 T="$(cd "$(dirname "$0")" && pwd)"
-. "$T/ast/oracle_lib.sh"
-. "$T/ast/native_lib.sh"
+. "$T/src/oracle_lib.sh"
+. "$T/src/native_lib.sh"
 OUT="$T/native"
 mkdir -p "$OUT"
 
@@ -74,7 +74,7 @@ if [ "${1:-}" = --check ]; then
         echo "### DIFFER -- this is a finding, not a flake."
         echo "    The known deliberate delta is strip-fun-args: the compiler's"
         echo "    carries a ForAllEff arm the plug's copy lacks. Check that"
-        echo "    first (ast/bundle_codexzig.ps1 says why), then look further."
+        echo "    first (src/bundle_codexzig.ps1 says why), then look further."
         diff "$W/pipe.zig" "$W/one.zig" | head -20
         exit 1
     fi
@@ -85,7 +85,7 @@ ring_plug_fresh
 build_one codexzig gen_codexzig_harness.py bundle_codexzig.ps1 codexzig-subject.codex
 
 # THE FIXED POINT, checked here because this is where both sides exist. The
-# build just produced ast/codexzig.zig the long way -- the seed under QEMU,
+# build just produced src/codexzig.zig the long way -- the seed under QEMU,
 # then the ring plug under QEMU. The binary that came out of it must
 # reproduce that file from the same source, byte for byte. It exercises
 # every chapter of the compiler and the whole emitter, and it costs about a
@@ -96,19 +96,19 @@ build_one codexzig gen_codexzig_harness.py bundle_codexzig.ps1 codexzig-subject.
 # 193 bytes from the artifact on disk and nothing noticed, because the claim
 # was made once by hand.
 echo "############ fixed point: codexzig re-emitting its own bundle"
-SELF="$T/ast/codexzig.self.zig"
+SELF="$T/src/codexzig.self.zig"
 rm -f "$SELF"
-"$OUT/codexzig" < "$T/ast/codexzig-subject.codex" 2> "$SELF" >/dev/null
+"$OUT/codexzig" < "$T/src/codexzig-subject.codex" 2> "$SELF" >/dev/null
 if grep -q "^CODEGEN-HALTED:" "$SELF"; then
     echo "### CODEGEN-HALTED on its own bundle:"; head -1 "$SELF"; exit 1
 fi
-if cmp -s "$SELF" "$T/ast/codexzig.zig"; then
-    echo "    IDENTICAL to ast/codexzig.zig ($(stat -c%s "$SELF") bytes) -- fixed point holds"
+if cmp -s "$SELF" "$T/src/codexzig.zig"; then
+    echo "    IDENTICAL to src/codexzig.zig ($(stat -c%s "$SELF") bytes) -- fixed point holds"
 else
     echo "### NOT A FIXED POINT: what codexzig emits for its own bundle differs"
     echo "    from what the seed-plus-ring-plug path emitted for it."
-    echo "    self $(stat -c%s "$SELF") bytes, build $(stat -c%s "$T/ast/codexzig.zig") bytes"
-    cmp "$SELF" "$T/ast/codexzig.zig" | head -3
+    echo "    self $(stat -c%s "$SELF") bytes, build $(stat -c%s "$T/src/codexzig.zig") bytes"
+    cmp "$SELF" "$T/src/codexzig.zig" | head -3
     exit 1
 fi
-echo "############ codexzig built -- try: $OUT/codexzig < ast/fib-repl.codex 2> fib.zig"
+echo "############ codexzig built -- try: $OUT/codexzig < src/fib-repl.codex 2> fib.zig"

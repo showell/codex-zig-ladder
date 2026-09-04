@@ -89,7 +89,7 @@ added `lcopy-pat`, which asks `address-of` of an IR pattern for the first time
 **TWO RUNGS OPEN, and one is a MISMATCH not a refusal.** `ir_to_wire`: **bare
 metal types a comparison `boolean` and the ZIG PLUG types it `error`.**
 Corrected 2026-09-04 -- this file and U55.log both had the direction backwards
-and blamed the oracle. `ast/plug_arm_lib.sh:70` runs `diff <(truth) zigout`, so
+and blamed the oracle. `src/plug_arm_lib.sh:70` runs `diff <(truth) zigout`, so
 the left side is bare metal, and the banked truth
 (`truth/seed-81f9e817+c9a859b20769`) contains `boolean` outright. So the oracle
 is RIGHT, `boolean` is the correct type for `n <= 1`, and the plug is emitting
@@ -1388,7 +1388,7 @@ is re-framed.
 
 ## 7. Diagnostics as a banked set
 
-**Objective: INTEGRITY. KEYBOARD to build, then one `ast/rebank_all.sh`
+**Objective: INTEGRITY. KEYBOARD to build, then one `src/rebank_all.sh`
 to bank -- a sweep will NOT do.** `<unit>-subject.cdx.diags` is written
 only by the truth arm's bare-metal compile (`oracle_lib.sh:231-235`);
 `ensure_ir.sh` says in its own prose that it writes none, and
@@ -1396,7 +1396,7 @@ only by the truth arm's bare-metal compile (`oracle_lib.sh:231-235`);
 disk carries a diags population today. The rebank is the only producer.
 
 **Write the banker as a READER of a run's outputs, not a step inside
-it** -- consuming `ast/*-subject.cdx.diags` and `ast/*.ir.diags` after
+it** -- consuming `src/*-subject.cdx.diags` and `src/*.ir.diags` after
 the fact. Then it can be written and debugged while a run is in flight
 and a bug in it costs no compute. **And bank the harness set hash beside
 the seed sha** (`truth_prov.set_hash`, the way `bank_truth.py` does for
@@ -1446,8 +1446,8 @@ than a rung, since the seed is the oracle directly.
 
 It builds clean and runs (17,994 lines, 0 plug refusals, 3 s to build,
 under a second to compile). **The byte comparison is inconclusive**: the
-README's subject `ast/repro-mid.codex` is gitignored and gone, and the
-substituted `ast/repro.codex` produces output ~2 KB larger than the
+README's subject `src/repro-mid.codex` is gitignored and gone, and the
+substituted `src/repro.codex` produces output ~2 KB larger than the
 seed's -- the direction expected from what zigc documents itself as
 dropping (proof pruning, dropped-def handling). Two drivers, not two
 compilers.
@@ -1576,7 +1576,7 @@ Left:
   could never remove the need for the stack -- while PR 81, which emits
   those loops, and PR 82, which turned the parser's top-level scans into
   self recursion, stood beside it in the same push. Both claims in the
-  replacement were read out of the swept `ast/parse.zig` rather than
+  replacement were read out of the swept `src/parse.zig` rather than
   argued, and the residue that survives is counted: two arms of
   `parse-top-level` still leave through a mutual cycle, worth eight
   frames on the 2.5 MB subject and three on the parser. The constant is

@@ -111,7 +111,7 @@ def run_agreed(plug_cdx, ir_path, out_path, port=9145, attempts=4, timeout=420,
     print("[agreed] FAILED: no two chunk sizes produced the same output.")
     return False
 
-# Kept so existing callers (ast/oracle_lib.sh) keep working.
+# Kept so existing callers (src/oracle_lib.sh) keep working.
 run_checked = run_verified
 
 if __name__ == "__main__":

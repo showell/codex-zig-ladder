@@ -5,7 +5,7 @@ Objective 6 says coverage is chosen by COUNTING rather than by taste, and this
 is the count. It reads three things and needs no arguments:
 
   - the plug's builtin table  (ZigEmitter.codex), for the surface that exists
-  - ast/passes_to_x86-subject.codex,  2.6 MB of real compiler, for how often each is used
+  - src/passes_to_x86-subject.codex,  2.6 MB of real compiler, for how often each is used
   - findings/*.codex,         for what the tiers actually mention
 
 and prints the gap, worst first. A builtin with hundreds of call sites and no
@@ -23,7 +23,7 @@ THE `reached` COLUMN IS THE ONE THAT CHANGES DECISIONS. Counting occurrences in
 the subject counts code the rungs never run: IR emission prunes to what the
 `opening` reaches, and for `whole` that is 3,540 of 4,773 definitions -- a
 quarter of the file is dead in every rung built from it. So this also counts
-the plug's own `cx_` helper in the EMITTED zig (`ast/*.zig`), which is the
+the plug's own `cx_` helper in the EMITTED zig (`src/*.zig`), which is the
 pruned program. A builtin with heavy use in source and none in any emitted rung
 is one **no rung can reach**, and a unit test is the only thing that will ever
 cover it.
@@ -55,7 +55,7 @@ import zig_pages
 # on 2026-09-03, so reading ZigEmitter.codex alone found zero builtins and
 # reported full coverage of nothing.
 EMITTER_TEXT = zig_pages.text()
-SUBJECT = LADDER / 'ast' / 'passes_to_x86-subject.codex'
+SUBJECT = LADDER / 'src' / 'passes_to_x86-subject.codex'
 FINDINGS = LADDER / 'findings'
 
 
@@ -69,7 +69,7 @@ def main():
     show_all = '--all' in sys.argv
     if not SUBJECT.is_file():
         raise SystemExit(f'no {SUBJECT} -- bundle the passes_to_x86 unit first '
-                         '(ast/bundle_passes_to_x86.ps1), since the count is against real source')
+                         '(src/bundle_passes_to_x86.ps1), since the count is against real source')
 
     names = sorted(set(re.findall(r'ZigBuiltinEmitter \{ name = "([^"]+)"',
                                   EMITTER_TEXT)))
@@ -79,7 +79,7 @@ def main():
     helper = dict(re.findall(
         r'ZigBuiltinEmitter \{ name = "([^"]+)", emit = [^"]*"(cx_[a-z_0-9]+)\(',
         EMITTER_TEXT))
-    zigs = [p.read_text(errors='replace') for p in sorted((LADDER / 'ast').glob('*.zig'))]
+    zigs = [p.read_text(errors='replace') for p in sorted((LADDER / 'src').glob('*.zig'))]
 
     def reached(name):
         fn = helper.get(name)

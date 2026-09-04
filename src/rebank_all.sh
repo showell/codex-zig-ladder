@@ -91,4 +91,4 @@ done
 
 summary_done=1
 echo "############ all truths recorded ($((SECONDS - started))s); sweeping the plug against them"
-"$T/ast/allcycles.sh"
+"$T/src/allcycles.sh"

@@ -31,18 +31,18 @@ def refuse_stale_ringplug(here):
     native tools. The bundle is deterministic, so re-bundle to a scratch name
     and compare against the fingerprint ringplug_build.sh recorded; any
     mismatch means the checkout's plug sources moved since the cdx was built."""
-    fp_file = here / "ast" / "ringplug.cdx.fp"
+    fp_file = here / "src" / "ringplug.cdx.fp"
     if not fp_file.is_file():
-        raise SystemExit("no ast/ringplug.cdx.fp; run ast/ringplug_build.sh")
-    check = here / "ast" / "ringplug-source-check.codex"
+        raise SystemExit("no src/ringplug.cdx.fp; run src/ringplug_build.sh")
+    check = here / "src" / "ringplug-source-check.codex"
     subprocess.run([os.path.expanduser("~/.local/pwsh/pwsh"), "-NoProfile",
                     "-File", "./bundle_ringplug.ps1", "-OutName", check.name],
-                   cwd=here / "ast", check=True, capture_output=True)
+                   cwd=here / "src", check=True, capture_output=True)
     got = hashlib.sha256(check.read_bytes()).hexdigest()
     check.unlink()
     if got != fp_file.read_text().strip():
-        raise SystemExit("ast/ringplug.cdx is stale against the checkout's "
-                         "plug sources; run ast/ringplug_build.sh")
+        raise SystemExit("src/ringplug.cdx is stale against the checkout's "
+                         "plug sources; run src/ringplug_build.sh")
 
 
 def run_ring_plug(ir_path, out_path, plug_cdx=None, mem_mb=None, timeout=1800):
@@ -51,7 +51,7 @@ def run_ring_plug(ir_path, out_path, plug_cdx=None, mem_mb=None, timeout=1800):
     here = pathlib.Path(__file__).parent
     if plug_cdx is None:
         refuse_stale_ringplug(here)
-    plug_cdx = plug_cdx or str(here / "ast" / "ringplug.cdx")
+    plug_cdx = plug_cdx or str(here / "src" / "ringplug.cdx")
     ir = open(ir_path, "rb").read()
     if b"\x00" in ir:
         raise SystemExit(f"{ir_path}: contains NUL; read-serial-cce would stop early")

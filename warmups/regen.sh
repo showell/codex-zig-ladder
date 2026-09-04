@@ -4,7 +4,7 @@
 # after a seed change, or whenever the .ir files are missing.
 set -e
 T="$(cd "$(dirname "$0")/.." && pwd)"  # ladder-root-bootstrap: reaches the LADDER only; the checkout comes from ladder_root
-. "$T/ast/oracle_lib.sh"
+. "$T/src/oracle_lib.sh"
 # One guest per warmup: each is compiled bare-metal through the seed.
 S=$T/warmups
 
