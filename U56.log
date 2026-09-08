@@ -188,3 +188,44 @@ defects are invisible to it and neither is a surprise on their side.
 Neither is a finding to send yet -- what is measured here is that OUR build of
 THEIR compiler does not link. The next step is to reproduce each on a small
 program, which is what makes it a report rather than a story.
+
+## Working toward a fixed point: the u57-candidate branch
+
+**The process is reversed this cycle, and deliberately.** Before U56 we worked
+on one branch per fix and periodically cherry-picked them onto a candidate.
+Now the candidate comes FIRST and PR branches are split out of it as needed.
+The old order meant the candidate was always a reconstruction of work done
+somewhere else, and a reconstruction can differ from what was measured.
+
+Two branches, one per repo, each with its own job:
+
+    Cobblestone       u57-candidate   worktree cobblestone-u57, base 6cd2ca1b
+    codex-zig-transpiler  u57-candidate   base u56-smoke
+
+`cobblestone-u56rel` stays DETACHED at the release as an untouched reference.
+Turning a directory named `u56rel` into a `u57` branch is exactly the
+"directory name lies about the branch" trap already on the record.
+
+The transpiler needs its own branch because `generated/` is tracked and its
+artifacts must be attributable to the candidate rather than to the release.
+`master` there is untouched at `b830f5c` = `origin/master`.
+
+### 56658c1a — box every payload-carrying variant
+
+A cherry-pick of our own `9cc2052b`, clean, one file, +34/-13. It applied
+without conflict because its author had already expressed it against the
+single-file `ZigEmitter.codex` and said so in the commit message: "On our own
+branch this lives across three emitter pages; the four-page split is not
+upstream and is deliberately not part of this candidate." Work done carefully
+five days ago cost nothing to reuse today.
+
+### 821e650d — the real-to-text prelude shadows the boxing helper
+
+New, because the defect is new. The fragment declared a local `var cx_new` for
+the fractional part of a Real, shadowing `fn cx_new(v: anytype)`. Renamed to
+`cx_frac`. Checked first that the line carries no `ShakeUse "cx_new"`, so no
+real reference to the helper was touched.
+
+**Then swept the whole prelude for the same class**: 105 file-scope
+declarations against 20 distinct locals, no other collision. That defect class
+is closed rather than merely this instance of it.
