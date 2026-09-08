@@ -510,3 +510,85 @@ divergence sitting on top of an IR ratchet that went UP by one.
 Neither instrument is sufficient. The counters found the cause in ninety
 seconds; the wire says how much of it matters. **`identical` goes up, never
 down** -- it went up.
+
+---
+
+## CLOSED — Update 56 was aborted by upstream
+
+Damian advised that Update 56 is broken. Everything below is the state of the
+world as of 2026-09-08, verified rather than assumed.
+
+**It was not reverted from history.** `6cd2ca1b` is still an ancestor of
+`upstream/master`. The correction arrived as a forward Update, not a revert, so
+nothing this log measured has been un-published:
+
+    6cd2ca1b  Update 56                          seed D9CF240465C3D0BC
+    3907073c  Withheld block (issue 123)
+    49fa9f27  Update 57                          seed B63014D717B1A2F9
+
+`6cd2ca1b..49fa9f27` is 347 files, +10,659 / -9,658. The withheld-block commit
+removes the card game, its mobile app, the edge mesh, the explorer, wademo and
+the product quire from the public mirror, with every test, design, annotation
+and script that cites them.
+
+U57's release note names **COMPILER-20's over-application miscompile** as
+fixed. That is a core-compiler defect, not a plug defect, which is consistent
+with the reasons being ones that do not reach our arms -- but this log does not
+claim that, because we have not measured it.
+
+### The two build defects survive into Update 57
+
+    git diff --quiet 6cd2ca1b..49fa9f27 -- codex/plugs/zig/ZigEmitter.codex
+
+is TRUE. Update 57 touches nothing under `codex/plugs/zig/`, so the emitter is
+byte-identical across the abort. Both causes are still live at `49fa9f27`:
+
+- variants that carry a payload are still boxed by zig's finite-size rule
+  rather than by a rule of ours, so `address-of` is still partial
+- `cx_real_to_text` still declares `var cx_new`, shadowing the prelude's own
+  `cx_new` boxing helper, which is a reserved name at line 122 of the same file
+
+The three commits on `u57-candidate` touch that one file and nothing else. They
+apply to the new pin as directly as to the old one.
+
+Also unchanged: **nothing in the Cobblestone repo invokes the zig toolchain.**
+Their gate checks emission, so an emitter that emits zig which does not compile
+passes it. That is why the same two defects cross an Update boundary untouched.
+
+### What this log's numbers are, now
+
+Every measurement here is pinned to `6cd2ca1b` (or to `e941ba11`, our branch
+over it). A measurement does not expire -- these remain true OF THOSE SHAS. But
+none of them is evidence about `49fa9f27`, and no green here may be quoted at
+the new pin without being re-taken. The marks stay where they were set; the
+datum moved out from under them.
+
+The Rust arm's `0 agree / 1032 diverge` is the one number to carry forward as a
+CAUSE rather than a result: `gen-eq-def` arrived in U56 and U57 is built on U56,
+so the missing desugarer feature is still missing and still the reason.
+
+### What survives the abort completely
+
+Pin-independent, because it is our tooling and not a reading:
+
+    cobblestone-qemu    zig_plug_pages.py replaces a hand-kept page list
+                        emit_harness.py passes "Program", matching the driver
+    zig transpiler      build.py derives what it does not own from the module
+                        constants; build_codexir.py writes PROVENANCE.oracles
+                        from content, not mtime; zig-plug-pages.ps1 is read by
+                        both bundlers
+    wasm transpiler     module_pin() refuses a tracked module older than the
+                        checkout; checkout_state() is captured at preflight and
+                        re-checked before writing
+
+Those were the real yield of the U56 pass. They were built to catch a stale
+reference, and an aborted Update is exactly the event that produces one.
+
+### Owed, and unaffected by the abort
+
+The wasm arm is still not square: `generated/MEMORY.bank` is a drifted
+reference reporting -24.07% while gating nothing, `--prove-gate` has never been
+run, and `--road guest` is documented and not built. None of that depends on
+which Update is current.
+
+**Next Update opens U57.log.** This file is closed.
