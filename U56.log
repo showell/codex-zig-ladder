@@ -327,3 +327,43 @@ plug-built compiler typing every comparison `error` where bare metal said
 
 `project_current_cycle.md` carried a pins table reading Update 54 while the
 work was two Updates further on. Corrected in place and dated.
+
+## The WarmupFib discrepancy was ours, and normalising it was the wrong fix
+
+`verify_fib_with_qemu.py` reported the two roads differing at line 1: bare
+metal named the chapter `Program`, our native `codexir` named it after the
+file's own title. The first fix normalised the chapter name away and called it
+a road difference. It is not.
+
+**`opening.codex` passes the literal `"Program"` at every `compile-frontend`
+call site**, and it reaches `desugar-document` through `compile-checked` and
+`compile-desugar-and-scope`, where it becomes the IR's `(chapter ...)`. Bare
+metal goes through the real driver, so bare metal was right.
+`subjects/emit_harness.py` passed `doc.chapter-title` in that argument
+position, so our codexir emitted a chapter name no driver produces.
+
+`codex-zig-transpiler`'s `CodexIrHarness.codex` already passes the literal and
+`build_codexir.py` ASSERTS the output opens `(chapter "Program"`. Two codexir
+harnesses disagreed about the compiler's own convention and only one was right
+-- the harness/driver setup gap again, and the comment fifteen lines above the
+bug warns about exactly it.
+
+Fixed at the cause, normalisation reverted. Rebuilt: 13 lines each, **NONE
+differing, nothing ignored** (`~/runs/u57-qemu-fix`, u57-candidate
+`e941ba11`).
+
+**Normalising is worse than leaving a check red.** The comparison is worth
+something because the two roads share a source and nothing else, so a
+normalisation is a third explanation written by us in advance, and every later
+run would carry it.
+
+### What this does and does not say about the boxing fix
+
+Bare metal is where `address-of` is the identity and cannot fail, so agreement
+there is the right acquittal. It covers fib. It does NOT reach the 37
+`address-of` sites that feed `cons-mix` memo keys in `Unifier.codex`, which fib
+never executes -- that is where a wrong address collides silently instead of
+failing, and the subject that exercises it is the compiler itself.
+
+Also measured on the way: **codexir BUILDS at u57-candidate** -- 28.9 MB
+through the zig plug in 4m21s. At U56 as released it does not link at all.
