@@ -1,0 +1,60 @@
+# Update 56 — smoke testing the release
+
+Upstream `6cd2ca1b`, 2026-09-08, seed `D9CF240465C3D0BC`. U55 (`675a0775`) to
+U56 is 874 files, +65,116 / -23,086.
+
+The checkout is a NEW detached worktree `~/showell_repos/cobblestone-u56rel`.
+Nothing existing was moved: `u56-candidate` and `u56-candidate-sunday` are both
+still parked where they were, and neither is an ancestor of the release --
+Damian squashed, so ancestry cannot answer "did our fix land".
+
+**The seed file's sha256 begins `d9cf240465c3d0bc`**, so the seed named in a
+release note IS the sha256 prefix of `seed/Codex.cdx`. That is a free identity
+check on any checkout and it is worth doing first.
+
+## Our PRs, and how we know they landed
+
+Damian's release note names 117, 118, 119, 127, 128, 129, 130, 131 and 134 as
+ingested, with 132 and 133 omitted from the paragraph by mistake and corrected
+on their main afterwards. The credit lives in
+`docs/PM/Active/GitHubUpdates/GitHubUpdate56.md`, never in the one-line commit
+message -- all 56 release commits are one line by convention.
+
+Two probes of our own, and BOTH were broken before they were right:
+
+- **reverse-apply** (`git apply --reverse --check`) said "not verbatim" for all
+  eleven. Meaningless: across a 65k-line update the context lines cannot match.
+  It is the right probe for "is this branch upstream" and the wrong one for
+  "did this change land".
+- **content presence** said 0/40 for every PR, contradicting Damian outright.
+  Two bugs stacked: `grep` on this box is **ugrep**, where `--exclude-dir=.git`
+  warns and makes every `-q` probe return false -- so every lookup was a false
+  negative -- and the lines being sampled were backlog PROSE, which upstream
+  always rewrites in its own words.
+
+Restricted to code files with a working grep:
+
+    129  25/25 (100%)   130  14/14 (100%)   133  25/25 (100%)
+    118  20/25  (80%)   128   9/13  (69%)   132  17/25  (68%)
+    131  16/25  (64%)   119   5/11  (45%)   127   3/11  (27%)
+    117   3/23  (13%)
+
+Present, adapted rather than copied. **A red from an instrument nobody has
+calibrated is not a finding.** Both probes had to be checked against a known
+answer before either was worth quoting.
+
+## Two registered predictions now testable
+
+- **`lower-def` emits the stripped type** (COMPILER-55 / our PR 134) landed, so
+  "an unrelated name's sort position stops deciding a definition's shape". The
+  essay registered the prediction before the measurement: on repin, the
+  self-host should go **2,846 of 2,846** byte-identical, up from 2,845.
+- **`gen-eq-def` synthesises `__eq_<T>` for every comparable sum, and an
+  instantiated helper is minted for a generic sum and attached to the wire.**
+  A new synthesised-definition family -- the exact vein the essay called the
+  richest, and the shape our counters are most sensitive to.
+
+COMPILER-67 is that same equality arc breaking upstream's own `.codex` printer:
+TEXT mode printed the lowered `__eq_TokenKind ...` where the source read `=`,
+and it failed 14 definitions at their release gate.
+
