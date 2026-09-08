@@ -408,3 +408,58 @@ one stays.
 
 codex-wasm-transpiler normally works off `master`; `u57-candidate` there is
 temporary and folds back once its fixed point holds.
+
+## The wasm arm, and a guard that was worth more than the run
+
+`--road both` at u57-candidate: **the two roads agree, byte for byte**, and the
+fixed point holds at 8,254,433 bytes, sha `ee2df1aa8c3865a5`. Memory 1655.5 MB,
+40.4% of the wasm32 ceiling.
+
+**The ratchet reads -24.07% and that is a LOOSE gate, not a good result.** The
+bank (2180.2 MB) predates a memory improvement and has never been re-taken, so
+it would catch a large regression and nothing smaller. Re-banking is a
+deliberate `--rebank`, not something to do in passing.
+
+### The first run failed, and the failure message was wrong
+
+The `self` road runs the TRACKED `generated/codexwasm.wasm`, built at
+`422405d0`. The `zig` road builds a fresh native binary from the checkout in
+play. At a repin those are not two machines running one emitter, they are two
+emitters -- and the build reported `THE ROADS DISAGREE ... a defect in one of
+the two, and the source is the same source`. The subject was the same source.
+The emitters were not.
+
+Update 56 added one line to `WasmEmitter.codex` -- `n == "host-socket"` -- and
+that alone put the two generation-1 modules 34,742 bytes apart:
+`(table $ft 3897)` against `3896`, one function apart, the byte shift
+cascading through every global.
+
+**This is not an edge case. It is what happens on every Update**, which is
+exactly when somebody runs `--road both` for the first time. The missing-module
+case was guarded; the stale one was not. Now a refusal in preflight in 0.2s
+naming both revisions and the remedy, instead of a false accusation after 154
+seconds.
+
+Fixing the guard BEFORE re-running mattered: taking the zig road first would
+have gone green and left the guard unwritten, so the next Update walks into the
+same wall.
+
+### The detached-pin NOTE is retired, not rationalised
+
+The build asked for a DETACHED `$COBBLESTONE_ROOT` and printed a NOTE when it
+did not get one. We printed and reasoned past that NOTE on every run, which is
+the definition of noise.
+
+Detached is a PROXY for the property that matters -- this checkout did not move
+under this build -- and a leaky one: a detached HEAD can be moved too, and
+neither state stops a file being edited while the bundler reads it. The build
+now takes the sha AND the dirty flag at preflight and checks both before
+writing anything, so a commit, a branch switch and an edit are all caught.
+
+**Tags are the better pin and are deferred deliberately** (Steve, 2026-09-08):
+immutable by convention, named rather than a bare sha, no worktree to maintain.
+The moved-under-build check works whatever the pin is, so tags are additive
+later rather than a rework.
+
+codex-wasm-transpiler is back on `master` with no branches of ours; the
+temporary `u57-candidate` folded in and `safari-u56` is deleted.
