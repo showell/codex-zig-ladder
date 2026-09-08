@@ -7,15 +7,68 @@ carries over dies here with it.
 `PRIORITIES.md` is no longer the plan. It is a record of one.
 `OLD_README.md` is what this file used to say.
 
-## Where the work went
+## Where the work went, and how the pieces relate
 
-| repo | what it is |
+This repository is retired, but its README, its `U<NN>.log` files and its
+Claude memory are still the index for every Cobblestone-related repo here.
+Start at this table.
+
+**Four coordinates locate any piece of work.** Naming all four is how you avoid
+comparing two things that were never comparable.
+
+| axis | values |
 |---|---|
-| [`cobblestone-qemu`](../cobblestone-qemu) | **run Codex on real x86 and tell me what came out** — the QEMU transport, carved out of here first because it was this repo's one irreplaceable capability |
-| [`rust-codex-compiler`](../rust-codex-compiler) | a completely independent oracle: `.codex` in, standard Codex IR out, plus an interpreter that sees MEANING rather than shape |
-| [`codex-zig-transpiler`](../codex-zig-transpiler) | a fixed point against a large subject |
-| [`codex-wasm-transpiler`](../codex-wasm-transpiler) | a fixed point against a large subject |
-| [`safari-codex`](../safari-codex) | an actual application, four arms on one source |
+| **toolchain** | Rust · Zig · Wasm · QEMU (bare metal) |
+| **subject** | fib · curated 28 · safari · the compiler itself (self-host) |
+| **version** | a released Update (U56 = `6cd2ca1b`) · a candidate branch (`u57-candidate`) |
+| **layer** | frontend (lex, parse, desugar, check, lower) → IR → plug → binary |
+
+### Toolchains — two directions of attack
+
+**Rust tests the system from the OUTSIDE IN.** `rust-codex-compiler` is an
+independent reimplementation of the frontend, so it can disagree with upstream
+about the IR. It is the only arm that can see a defect ABOVE the IR, because it
+does not inherit upstream's frontend.
+
+**Zig and Wasm test the system from the INSIDE OUT.** Both run Damian's own
+frontend and check what comes out the back: each transpiles the compiler's own
+source and must emit the same bytes for it twice — under QEMU and as the binary
+that emitted it. A fixed point says the whole frontend plus the whole emitter
+agree with themselves on the largest subject available. It cannot see a
+frontend defect, because both of its passes inherit the same frontend.
+
+**QEMU is the ground truth under both.** `cobblestone-qemu` runs Codex on real
+x86 with no host runtime, which is the only place `address-of`, boxing, the
+deck and memory are real rather than modelled.
+
+| repo | toolchain | what it proves |
+|---|---|---|
+| [`rust-codex-compiler`](../rust-codex-compiler) | Rust | an independent frontend: `.codex` in, Codex IR out, graded byte-for-byte against `codexir`; plus an interpreter that sees MEANING rather than shape |
+| [`codex-zig-transpiler`](../codex-zig-transpiler) | Zig | the fixed point, and the `codexir`/`codexcheck` oracles the Rust arm is graded against |
+| [`codex-wasm-transpiler`](../codex-wasm-transpiler) | Wasm | the same fixed point through a second plug, which is what makes a shared-component defect visible |
+| [`cobblestone-qemu`](../cobblestone-qemu) | QEMU | run Codex on real x86 and tell me what came out |
+
+### Subjects — what gets compiled
+
+A subject is not a toolchain. The same subject run through two toolchains is
+the comparison that finds things; the same toolchain run on two subjects is
+coverage.
+
+| repo | subject |
+|---|---|
+| [`cobblestone-curated-tests`](../cobblestone-curated-tests) | 28 resolved units with upstream's own expected output, citing nothing — no `CODEX_ROOT`, no quire registry |
+| [`safari-codex`](../safari-codex) | a real application, four arms on one source |
+
+`fib` lives in `cobblestone-qemu` because it cites nothing and needs no
+bundler, which is what makes it the transport smoke test. The compiler's own
+source is the largest subject there is, and it is what the fixed point uses.
+
+### Reading a claim
+
+"The fixed point holds" is a claim about **Zig · the compiler itself ·
+u57-candidate · frontend-through-plug**. It says nothing about Rust, nothing
+about safari, and nothing about U56 as released — where it does NOT hold.
+Every one of those four is load-bearing.
 
 Still here and not yet carried: `findings/` and `outbound/` — 344 of this
 repo's 521 tracked files, the accumulated register of what we found in Damian's

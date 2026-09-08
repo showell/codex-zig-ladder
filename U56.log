@@ -229,3 +229,48 @@ real reference to the helper was touched.
 **Then swept the whole prelude for the same class**: 105 file-scope
 declarations against 20 distinct locals, no other collision. That defect class
 is closed rather than merely this instance of it.
+
+## The fixed point holds at u57-candidate
+
+    pass 1  the emitter under QEMU:  2,948,357 bytes
+    pass 2  the emitter as a binary: 2,948,357 bytes
+    HOLDS: byte-identical
+    arith: all 9 expected lines
+
+Two fixes were sufficient; nothing was hiding behind the first error.
+
+Run 2, behind the prose trim, holds at the same byte count -- and
+`codexzig.ir`, `codexzig.qemu.zig` and `codexzig.native.zig` are byte-identical
+to run 1. Only the bundled source, its blobs and the line numbers in
+`ringplug.cdx.diags` move.
+
+**That corrects a prediction made in this log an hour earlier.** The reasoning
+was that a comment block shifts every span after it and spans ride in the IR,
+so the emitted bytes must move. They do not. A comment-only change to
+`ZigEmitter.codex` is inert below the source bundle. The prediction was wrong
+and the run is what says so; the run was worth making for the provenance story
+regardless.
+
+`PROVENANCE` names `e941ba11`, clean, matching the worktree HEAD, unmoved
+through the build.
+
+### Coordinates of this claim
+
+Zig · the compiler itself · u57-candidate · frontend-through-plug. It says
+nothing about the Rust arm, nothing about safari, and nothing about U56 as
+released -- where the same build fails at `zig build-exe`.
+
+## What Update 56 did and did not take
+
+Of the 25 commits on our `422405d0` candidate, **exactly one is missing from
+U56**: `9cc2052b`, box every payload-carrying variant. Everything else landed,
+adapted rather than copied.
+
+A one-line marker heuristic flagged four; three were false positives from
+reworded prose and were checked individually before being dismissed --
+`688c6138` (the signed displacement) and `1f0a2265` (the `hosted-kind` guard at
+`TypeChecker.codex:2716`) and `c053cd7a` (`poke-byte`, `__memset`) are all in
+the release.
+
+PR 131 carried two halves and only one landed. The half that did not is the one
+that makes `address-of` total.
