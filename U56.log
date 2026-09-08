@@ -111,16 +111,20 @@ broken invariant rather than as a missing file.
 Run on a NEW branch `u56-smoke` off `u55-minimal`. `master` is untouched at
 `b830f5c` = `origin/master`.
 
-**The branch is not tidiness, it is the essay's Phase 1.** `generated/` is
-tracked, and `generated/codexcheck-subject.codex` is the SPEC that
-rust-codex-compiler grades against — by PATH, not by branch. Building here
-rewrites that file to U56's compiler. On `u55-minimal` that would have moved
-the Rust arm's oracle underneath it silently, which is the "measure first, port
-second" trap in its most literal form. The old subject and oracle stay reachable
-on `u55-minimal`.
+**The branch keeps `generated/` attributable.** It is tracked, and a build
+rewrites `codexzig-subject.codex`, `codexzig.ir` and both zig files, so those
+artifacts must belong to the branch that produced them.
 
-**That the Rust arm reads a floating path rather than a pinned checkout is a
-real hazard**, and this Update is the first time it could bite.
+**It does NOT move the Rust arm's oracle, and the claim here that it did was
+wrong.** `generated/codexcheck-subject.codex` -- the SPEC rust-codex-compiler
+grades against -- is gitignored and built by `build_codexir.py`, not by
+`build.py`. It and `generated/local/{codexir,codexcheck}` all still date from
+the old pin and are consistent with each other. Repinning the Rust arm is a
+deliberate act, not a side effect of building the transpiler.
+
+The hazard is real but narrower than stated: the Rust arm reads those by PATH,
+so once `build_codexir.py` runs at a new pin, the subject and the oracles move
+under any Rust gate without the gate saying so.
 
 ### RED, and it is the shape we were looking for
 
