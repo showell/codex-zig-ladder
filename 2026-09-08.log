@@ -136,3 +136,25 @@ until after measuring against it.
 unattended, no early exit. Then the queue in
 [[project_rustc_checkpoint_2026_09_08]]: L2 first, then the `desk-*` four, then
 the effect-handler cluster.
+
+## The corpus IR ratchet, re-measured
+
+After the Handle / Try / WithTimeout / `^` arms and the arithmetic-unifies fix,
+`corpus_ir_gate.sh` over all 1,246 units:
+
+                        first run    after
+    identical               855   ->  864
+    differs                 162   ->  165
+    we-refuse                15   ->    3
+    oracle-refuses          201   ->  204
+    both-refuse              13   ->   10
+
+The nine new identical units are exactly the nine named earlier
+(scope-handler-clause, handler-nested-ops, effect-handler-nested-same,
+effect-smoke, handler-smoke, handler-dotted-discharge, with-timeout-test,
+int-pow, pow-on-real). Three more left `we-refuse` for `differs`, and three
+left `both-refuse` for `oracle-refuses` -- programs we now emit IR for and the
+oracle halts on. That last column is "we are more permissive than they are";
+its growth is something to look at, not to celebrate.
+
+Log: `~/runs/rustc-checkpoint-2026-09-08/14-corpus-ir-after-handle.log`.
