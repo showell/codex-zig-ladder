@@ -58,3 +58,64 @@ COMPILER-67 is that same equality arc breaking upstream's own `.codex` printer:
 TEXT mode printed the lowered `__eq_TokenKind ...` where the source read `=`,
 and it failed 14 definitions at their release gate.
 
+
+## Smoke test 1 — codex-qemu: does the transport still work?
+
+**What this repo proves:** run Codex on real x86 and tell me what came out.
+Four steps, only the last not a VM — bundle (pwsh) → compile through the seed
+under QEMU → transpile through the ring plug under QEMU → `zig build-exe`. If
+`fib` builds and prints the right numbers, U56's seed boots, its compiler
+compiles, and its zig plug emits. It says nothing about anything larger.
+
+**RED first, and it was ours.** `zig_plug_pages.txt` — a hand-kept list of the
+pages of `Chapter: Zig Emitter` — named four pages. Upstream carries ONE
+(`ZigEmitter.codex`) at both U55 and U56; the four-page split is on our own
+`u56-candidate` branch and upstream did not take it. So the bundler asked for
+`ZigEmitterExpressions.codex`, pwsh died on a missing file, and it did so
+*three steps into a build that had already booted a guest*.
+
+**`check_zig_pages.py` catches this in under a second, and I did not run it.**
+That linter exists for exactly this, memory says to run the linters before any
+guest, and I booted the guest first anyway. The cost was small here only
+because fib is the cheap subject.
+
+Fixed properly rather than by editing the list: `zig_plug_pages.py` reads the
+chapter's own `Page N of M` footers out of the checkout and refuses if they do
+not describe a whole chapter. Same code gives one page against the release and
+four against `u56-candidate`. The list is deleted — it was a second copy of
+something the chapter already says, and a second copy goes stale on exactly the
+release you most want to measure.
+
+**GREEN.** Against `6cd2ca1b`:
+
+    ring plug   bundled 7442 lines, 390080 bytes, compiled under QEMU
+    fib         compile to IR 4s · transpile 3s · zig build 8s
+    ./fib       55 / 610          <- fib 10 and fib 15, correct
+
+So U56's seed boots and its whole bare-metal transport is sound.
+
+**codex-qemu has no git remote.** Carved out 2026-09-04 and never given one, so
+everything in it lives only on this box. Not fixed here: making a repo is
+outward-facing.
+
+## Smoke test 2 — codex-zig-transpiler: does the fixed point hold?
+
+**What this repo proves, and it is a different question:** the emitter emits
+the same bytes for its own source whether it runs on bare metal or as a native
+binary. The subject is the whole compiler (72,741 lines at U56, up from
+~68k), so this is where a rejected or mis-applied PR of ours would show as a
+broken invariant rather than as a missing file.
+
+Run on a NEW branch `u56-smoke` off `u55-minimal`. `master` is untouched at
+`b830f5c` = `origin/master`.
+
+**The branch is not tidiness, it is the essay's Phase 1.** `generated/` is
+tracked, and `generated/codexcheck-subject.codex` is the SPEC that
+rust-codex-compiler grades against — by PATH, not by branch. Building here
+rewrites that file to U56's compiler. On `u55-minimal` that would have moved
+the Rust arm's oracle underneath it silently, which is the "measure first, port
+second" trap in its most literal form. The old subject and oracle stay reachable
+on `u55-minimal`.
+
+**That the Rust arm reads a floating path rather than a pinned checkout is a
+real hazard**, and this Update is the first time it could bite.
