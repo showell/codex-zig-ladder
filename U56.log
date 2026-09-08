@@ -121,3 +121,70 @@ on `u55-minimal`.
 
 **That the Rust arm reads a floating path rather than a pinned checkout is a
 real hazard**, and this Update is the first time it could bite.
+
+### RED, and it is the shape we were looking for
+
+The build gets through five stages — U56's seed compiles the 3.48 MB subject
+(72,741 lines) to 12.1 MB of IR, and the ring plug transpiles that to zig — and
+then **`zig build-exe` fails.** No fixed point at U56.
+
+Two independent defects, both in the zig plug's prelude.
+
+#### 1. Half of PR 131 landed, and it is the half that does not matter alone
+
+    codexzig.qemu.zig:25076: error: zig plug: no address-of for codexzig.qemu.IRPat
+    codexzig.qemu.zig:25076: error: zig plug: no address-of for codexzig.qemu.IRActStmt
+
+`cx_address_of` switches on pointers, slices, ints, bools and BARE enums, and
+`@compileError`s on anything else. `lcopy-pat` asks it for an `IRPat`:
+
+    lcopy-pat : IRPat, MemoCtx -> IRPat
+    lcopy-pat (p) (mc) =
+     if address-of p < mc.mc-floor then p
+
+PR 131 had two halves. **Half A** — a source literal lives in `.rodata` and the
+displacement is SIGNED, so it answers a distinct negative instead of colliding
+with the 0 sentinel — **is in U56**, prose and all. **Half B** — box every
+payload-carrying variant, so `address-of` is TOTAL the way it is on bare metal
+— **is not**:
+
+    zig-typedef-boxed-loop        U55: 0    our 422405d0: 5    U56: 0
+    "no longer only the self-recursive"  U55: 0    ours: 1     U56: 0
+
+U56 is byte-for-byte U55 here. Half B is the half that makes the plug agree
+with bare metal's model rather than diverge from it: bare metal boxes EVERY
+variant value, which is why `address-of` there is `emit-identity-builtin` and no
+type can fail it. This plug boxed only what zig's finite-size rule forced, so
+`address-of`'s meaning depended on a decision made for SIZING — `IRExpr` held
+`IRExpr` directly and was boxed, `IRPat` reached itself only through
+`List IRPat` and was not.
+
+Our own emitter note recorded the cost the last time: **six of fourteen rungs
+fail at U55, every one on this refusal.** The gap is old; U55's memory campaign
+added `lcopy-pat`/`lcopy-stmts` and made it reachable.
+
+#### 2. A new U56 defect, ours nowhere in it
+
+    codexzig.qemu.zig:24778: error: local variable shadows declaration of 'cx_new'
+
+`cx_new` is the prelude's boxing helper, `fn cx_new(v: anytype) *@TypeOf(v)`.
+U56 added a `cx_real_to_text` prelude fragment that declares a local
+`var cx_new`, and zig forbids shadowing a file-scope declaration.
+
+    local `var cx_new = ` in the prelude    U55: 0    our 422405d0: 0    U56: 1
+
+**Two prelude parts that are each correct alone and collide when both are
+emitted.** The prelude is tree-shaken, so this needs a program that both shows
+a Real and boxes something — which is most programs, but perhaps not the ones
+their gate runs.
+
+#### What this says about their gate
+
+The release note says "all 40 lenses streaming, so the whole compiler emits
+through each". Emission is not compilation: the plug emitted this zig happily,
+and `zig build-exe` is what refused. If their gate stops at emitted text, both
+defects are invisible to it and neither is a surprise on their side.
+
+Neither is a finding to send yet -- what is measured here is that OUR build of
+THEIR compiler does not link. The next step is to reproduce each on a small
+program, which is what makes it a report rather than a story.
