@@ -367,3 +367,44 @@ failing, and the subject that exercises it is the compiler itself.
 
 Also measured on the way: **codexir BUILDS at u57-candidate** -- 28.9 MB
 through the zig plug in 4m21s. At U56 as released it does not link at all.
+
+## The QEMU layer, fully re-traced at u57-candidate
+
+`run_all.py`, fresh sandbox, 722s, codex `e941ba11` branch `u57-candidate`:
+
+    fib       BUILT  0m07s      zigemit   BUILT  0m41s
+    codexir   BUILT  4m26s      x86emit   BUILT  ~6m
+
+    [zig]  PASS  native codexir | zigemit: fib prints 55 and 610 (1214 B of IR)
+    [qemu] PASS  bare metal: 55 and 610 -- IR IDENTICAL to the native tool
+    [x86]  PASS  emitted machine code runs and computes fib
+    [boot] PASS  emitted x86-64, BOOTED: prints 6765 (fib 20)
+
+    verdict GREEN
+
+`x86emit` is built at this candidate for the first time, which is also the
+second generator exercised by the `desugar-document ... "Program"` harness fix.
+The qemu IR comparison reads identical with **nothing normalised**.
+
+## The wasm branches were a straight line, not a fork
+
+Compared before touching anything, because three branches is where work gets
+reinvented:
+
+    master         7512ded
+    safari-u56     95f94a2   an ANCESTOR of master -- 0 commits unique, 2 behind
+    u57-candidate  b06194e   master + one commit
+
+Nothing to salvage. `safari-u56` was held by an orphaned worktree
+`~/showell_repos/codexwasm-safari` that no script, doc or memory referenced.
+Removed with `git worktree remove` and `git branch -d`, both of which refuse
+rather than force; `95f94a2` is still in master's history, so nothing is lost.
+
+**Two different branches were named `safari-u56`**, one in `NewRepository`
+(worktree `cobblestone-safari`, live, named in safari's PROVENANCE) and one in
+codex-wasm-transpiler (dead). A name that means two things in two repos is how
+the right documentation gets you to delete the wrong branch. The Cobblestone
+one stays.
+
+codex-wasm-transpiler normally works off `master`; `u57-candidate` there is
+temporary and folds back once its fixed point holds.
