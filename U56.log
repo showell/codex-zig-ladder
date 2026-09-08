@@ -491,3 +491,22 @@ registered in advance, and it held.
 One desugarer change, not a thousand defects. Until it lands, the Rust arm's
 report card cannot be read -- which is the whole reason to find the moved mark
 before reading the number.
+
+### And the wire barely moved
+
+    counters agree   1001 -> 0      (1032 diverge, +64 tvars each)
+    IR identical      864 -> 865
+    IR differs        165 -> 164
+
+Those look contradictory and are not. `gen-eq-def`'s `__eq_<T>` definitions are
+minted at REGISTRATION and pruned before emission, so they cost 64 type
+variables in every unit and reach the wire in almost none.
+
+The counters are blind to what a later pass prunes -- recorded as a caution
+after unit-family members went byte-identical with four definitions named
+`"    "`. This is the same blindness from the other side: a TOTAL counter
+divergence sitting on top of an IR ratchet that went UP by one.
+
+Neither instrument is sufficient. The counters found the cause in ninety
+seconds; the wire says how much of it matters. **`identical` goes up, never
+down** -- it went up.
