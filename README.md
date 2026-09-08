@@ -11,7 +11,7 @@ carries over dies here with it.
 
 | repo | what it is |
 |---|---|
-| [`codex-qemu`](../codex-qemu) | **run Codex on real x86 and tell me what came out** — the QEMU transport, carved out of here first because it was this repo's one irreplaceable capability |
+| [`cobblestone-qemu`](../cobblestone-qemu) | **run Codex on real x86 and tell me what came out** — the QEMU transport, carved out of here first because it was this repo's one irreplaceable capability |
 | [`rust-codex-compiler`](../rust-codex-compiler) | a completely independent oracle: `.codex` in, standard Codex IR out, plus an interpreter that sees MEANING rather than shape |
 | [`codex-zig-transpiler`](../codex-zig-transpiler) | a fixed point against a large subject |
 | [`codex-wasm-transpiler`](../codex-wasm-transpiler) | a fixed point against a large subject |
@@ -56,5 +56,5 @@ machine survives
 And the **QEMU knowledge** — the ring protocol, the gdbstub write-position
 injection, the stall at exactly `RING_SIZE` that fires spuriously, the memory
 bounds added after an emitted binary livelocked the host twice. Months of ouches
-encoded as guards. That is in `codex-qemu` now, and it was always the expensive
+encoded as guards. That is in `cobblestone-qemu` now, and it was always the expensive
 part; the rungs were the cheap enumeration on top of it.

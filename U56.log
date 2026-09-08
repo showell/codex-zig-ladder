@@ -59,7 +59,7 @@ TEXT mode printed the lowered `__eq_TokenKind ...` where the source read `=`,
 and it failed 14 definitions at their release gate.
 
 
-## Smoke test 1 — codex-qemu: does the transport still work?
+## Smoke test 1 — cobblestone-qemu: does the transport still work?
 
 **What this repo proves:** run Codex on real x86 and tell me what came out.
 Four steps, only the last not a VM — bundle (pwsh) → compile through the seed
@@ -94,9 +94,11 @@ release you most want to measure.
 
 So U56's seed boots and its whole bare-metal transport is sound.
 
-**codex-qemu has no git remote.** Carved out 2026-09-04 and never given one, so
-everything in it lives only on this box. Not fixed here: making a repo is
-outward-facing.
+**It is now `cobblestone-qemu`**, at
+`github.com/showell/cobblestone-qemu` — it had no remote at all before this,
+having been carved out on 2026-09-04 and never given one, so everything in it
+lived on this box alone. The repo takes the name of the thing it runs; the
+`codex` to `cobblestone` rename is a slow one and this is the first piece.
 
 ## Smoke test 2 — codex-zig-transpiler: does the fixed point hold?
 
