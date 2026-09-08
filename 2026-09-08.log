@@ -1,0 +1,75 @@
+# 2026-09-08 work log
+
+What was changed and what was run, in order, one line each. Detail lives in the
+commit it points to; findings go upstream as PRs. This file is the thread, not
+the record.
+
+The day's work was in `rust-codex-compiler` (hashes below are that repo) plus
+outbound to `damiant3/Cobblestone`. The ladder is retired and is not touched;
+it holds the log because a log belongs in a repo anyone can read.
+
+## The self-host IR diff: 2,417 -> 2,845 of 2,846 definitions
+
+Diffing the whole compiler's own IR against `codexir` at the same pin, per
+definition. Each line is a rule read off the oracle with a probe and pinned by
+a test.
+
+    8ae473e  LinkedList is not a constructor; i64-min is a wire atom      +120
+    d4acafd  `[]` infers a bare variable, so it can be a LinkedList        +61
+    0ee6b00  the callee's parameter is the argument's expectation         +187
+    496801d  the overflow mode is part of the operator's name               +7
+    cf16816  lowering has a scope; a shadowing binder is re-spelled        +25
+    ed58ae8  the pipeline runs BEFORE the lift -- 0 definitions missing    +10
+    42bfd74  RESOLVE is a phase; a Text sorts in CCE order, not ASCII      +18
+    b0a0788  a let's bindings do not outlive their definition               +3
+    8b3377b  a let statement swallows its act block; generic fields        +2
+    260b8fa  a field store meets the field type and answers the record      +1
+    be8841e  __record-set names its field with a text literal               +2
+    94ceaaa  the two arms of an if meet; the condition meets Boolean        +1
+    99a4824  arithmetic answers the tighter type                            +1
+
+The one definition still differing is upstream's, filed as PR 134.
+
+## The corpus: 19 crashes to 0
+
+    7aa1f50  an occurs check, and `linear` is transparent to unification
+
+Found by sweeping all 1,246 units rather than by a gate -- `irdump gradewhole`
+aborted partway and the abort was the interesting part. 1,190 -> 1,208 lower,
+38 refuse with a reason, 0 crash.
+
+## Gate repair
+
+    d107814  safari/run.sh reads safari's arm-gaps.tsv instead of a copy
+
+`treesspec` had been reported WRONG for three days while the answer sat in
+`spec/arm-gaps.tsv` one repo over. Not a regression; issue 125's third
+instance. Confirmed independently: Cobblestone reads `11.700000000000001` as
+bits ...750 where correctly-rounded is ...751.
+
+## Outbound
+
+    PR 117-133   replied to every landing; withdrew two questions whose
+                 answers were already in their `build/` (check-subset-cites,
+                 check-zig-prelude-surface)
+    PR 134       NEW, ingested as COMPILER-66: a definition's emitted IR type
+                 is decided by where an unrelated definition's NAME sorts.
+                 Demonstrated by five inert definitions moving 12 bytes.
+                 Their head has since moved it from 1-of-104 to 3-of-90 on its
+                 own, `sort-by` itself now among the three.
+    issue 94 s3  measured: the free-vs-failed marker already exists, emits,
+                 parses and ships; whole population is 8 atoms in one gold.
+                 Steve ruled YES and forwarded it.
+
+## Gates at end of day
+
+    197 unit tests · curated run.sh 28/28 · native.sh 28 agree / 0 REFUSED
+    irdump grade 923/1012 · irdump defs 39,639/39,828 · safari GREEN
+    self-host counters 118,066 / 311,802 / 145,772 / 118,066 / 0, unchanged
+    through all fifteen commits
+
+## Next
+
+The linearity checker. We have none; 18 corpus units the oracle refuses we
+report clean, and the 26-unit gate (18 must refuse, 8 must pass) already
+exists.
