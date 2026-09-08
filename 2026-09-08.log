@@ -158,3 +158,23 @@ oracle halts on. That last column is "we are more permissive than they are";
 its growth is something to look at, not to celebrate.
 
 Log: `~/runs/rustc-checkpoint-2026-09-08/14-corpus-ir-after-handle.log`.
+
+## The counter gate, re-measured
+
+                    checkpoint    after
+    agree                 994   ->  1001
+    diverge                38   ->    31
+    oracle refuses        214   ->   214
+
+The handler family -- the largest divergence cluster at the checkpoint -- is
+gone from the list entirely. Seven groups remain: `desk-*` x4 (rows only, one
+shared cause), induction x6 (we over-mint; a proof checker, not a delta),
+fork/par x4, typeclass x6, and thirteen singletons.
+
+Log: `~/runs/rustc-checkpoint-2026-09-08/15-corpus-counters-after-handle.log`.
+
+Housekeeping: a `whodunit.sh` run on `desk-span` had been alive for 39 minutes,
+having survived the earlier kill -- I had killed its parent PID and not the
+script itself, and it had spawned a fresh bisection probe. Killed by PID. Its
+result was worthless anyway (the release binary was rebuilt underneath it), but
+it had been sharing the box with the counter gate, against one-job-at-a-time.
