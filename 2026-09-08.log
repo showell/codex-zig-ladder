@@ -68,8 +68,71 @@ bits ...750 where correctly-rounded is ...751.
     self-host counters 118,066 / 311,802 / 145,772 / 118,066 / 0, unchanged
     through all fifteen commits
 
+## Afternoon: the linearity checker, built
+
+    f508091  the checker carries diagnostic codes, not just a count
+    3cf2b3a  the linear discipline: one walk, six diagnostics
+    9080264  a minted owner carries the discipline too
+    eb0aa14  a mutable record has one owner: consume-of and CDX2062
+    4deac6d  a tuple can carry a linear component; the pattern decides
+
+A linear value is used exactly once; a mutable record is handed to a NEW OWNER
+at most once. Different rules, and the difference is the design: reading a
+field of a mutable record is free, and only a call that gives it back makes a
+second owner. `linear_gate.sh` 25 agree / 0 differ / 1 skipped.
+
+`check.rs` had never carried the `mutable` keyword past the parser --
+`TypeDef::Record` held the flag and nothing read it.
+
+## Three cold reviews, in docs/
+
+    2aa99fa  check.rs      -- L2 verified red on slice.sh today
+    26fbbfb  lowering      -- the `0 0` def flags, MEASURED against the oracle
+    51df7c0  desugar       -- overturned one of the threads it was given
+
+Each has a non-findings section with the upstream line that makes the rejected
+candidate faithful. That section did real work: it stopped a "fix" to
+`flatten_app` that would have moved us AWAY from the subject.
+
+## Evening: five gaps of one shape
+
+Every one a fact the parser earned and a later layer never read.
+
+    5baad8d  punctual reaches the wire; the def flags are not always zero
+    890af01  linear strips at param bind, unique-params, revised
+    d6f49f6  lowering never refuses a field access; CDX2005 instead
+    c8a703a  a unit type is a constructor arrow; CDX2095 can fire
+    3342e3a  a unit family is two definitions per member
+    f5c0a2c  a class is a record type, an instance is three definitions
+    3095ae4  an undeclared definition learns its effect row from its body
+    3c86c28  an effect operation is a name, and we bound none of them
+
+Corpus refusals 38 -> 28. Corpus counters 988 -> 994 agree of 1,032 comparable.
+The graded five never moved.
+
+**The near-miss worth remembering:** the unit-family cut named every member
+`"    "` (lossless CST -- the first token is whitespace). Four units still went
+byte-identical and all five counters stayed exact, because those definitions
+are unreachable and pruned before emission. Counter agreement was satisfied for
+entirely the wrong reason; only a test that read the NAMES caught it.
+
+## Tooling, and an essay
+
+    b0580ad  tools/mintprofile.sh + whodunit.sh -- reconstruct the ORACLE'S
+             mint log by truncating the chapter and differentiating. 534
+             definitions localised in 10 s; 8,298 in 14 probes
+    bb50ce8  corpus_ir_gate.sh -- the third corpus gate, and the only one that
+             reads the wire
+
+    http://143.244.172.148:9100/notes/verifying-an-update-with-a-second-front-end.md
+
+The release protocol for U56: bank a baseline, repin and change NOTHING else,
+attribute every delta before closing any of it, never port from the new subject
+until after measuring against it.
+
 ## Next
 
-The linearity checker. We have none; 18 corpus units the oracle refuses we
-report clean, and the 26-unit gate (18 must refuse, 8 must pass) already
-exists.
+`~/runs/rustc-checkpoint-2026-09-08/REPORT.md` -- a thirteen-step chain, run
+unattended, no early exit. Then the queue in
+[[project_rustc_checkpoint_2026_09_08]]: L2 first, then the `desk-*` four, then
+the effect-handler cluster.
