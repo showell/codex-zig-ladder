@@ -278,3 +278,52 @@ the release.
 
 PR 131 carried two halves and only one landed. The half that did not is the one
 that makes `address-of` total.
+
+## Adversarial pass: what each green thing cannot see
+
+### Nothing upstream compiles the zig its plug emits
+
+    grep -rn 'zig build-exe|zig build |zig cc|zig test' \
+      --include='*.ps1' --include='*.py' --include='*.sh' \
+      --include='*.md' --include='*.codex' .        ->  no matches
+
+The zig toolchain is invoked NOWHERE in the Cobblestone repo.
+`codex/plugs/zig/run.ps1` runs the plug to produce `.zig` text and stops.
+
+The release note says "all 40 lenses streaming, so the whole compiler emits
+through each". That is a claim about EMISSION. Both defects that stop the U56
+build here -- a `@compileError` for `address-of` on a payload-carrying variant,
+and a local shadowing the prelude's `cx_new` -- are errors only the zig
+compiler raises, so they are invisible to their suite **by construction**, not
+by oversight. It also explains how the boxing half of PR 131 could fall out
+with nothing on their side noticing.
+
+This is measured, and it is the strongest candidate to send.
+
+### What our own green instruments cannot see
+
+- **The fixed point is self-consistency, not correctness.** Both passes share
+  upstream's frontend, so a frontend defect is invisible to it -- the property
+  that retired the ladder. It never validates an Update, and saying "the fixed
+  point holds at u57-candidate" earlier in this log came close to implying it
+  does.
+- **A build that compiles is not a right answer.** The boxing fix makes
+  `cx_address_of` ANSWER where it used to refuse. `usedfor address-of` over the
+  U57 compiler: 94 call sites, 65 chapters, and **37 of them feed `cons-mix`**
+  -- memo keys, where a wrong address collides silently rather than failing.
+  That is the shape of the recorded defect where a bad `.rodata` answer made
+  six distinct effect labels into one.
+- **`native.sh` borrows a two-day-old oracle.** It reads
+  `generated/local/codexir`, which is still at the old pin, so it would compare
+  against Sep 6 while every name in sight says u57-candidate.
+
+The arm that CAN see the boxing question is bare metal, where `address-of` is
+the identity and cannot fail. `verify_fib_with_qemu.py` diffs its IR against
+the native tool's; its own docstring records that comparison catching the
+plug-built compiler typing every comparison `error` where bare metal said
+`boolean` -- which an output check of 55 and 610 passed both ways round.
+
+### Past-Claude is not a better source than upstream
+
+`project_current_cycle.md` carried a pins table reading Update 54 while the
+work was two Updates further on. Corrected in place and dated.
