@@ -463,3 +463,31 @@ later rather than a rework.
 
 codex-wasm-transpiler is back on `master` with no branches of ours; the
 temporary `u57-candidate` folded in and `safari-u56` is deleted.
+
+## The Rust arm at the new pin: 0 agree, and it is ONE cause
+
+First measurement with the oracles repinned to `e941ba11` and the Rust port
+untouched at `f5686ea` -- repin and change nothing, so every delta is the
+Update's.
+
+    counters   1001 agree -> 0 agree, 1032 diverge
+
+Zero is not 1,032 defects. Three probes:
+
+    int-pow        ours[323 323 586 233]  oracle[387 387 586 233]
+    handler-smoke  ours[303 303 500 227]  oracle[367 367 500 227]
+    induction-list ours[284 284 472 199]  oracle[346 346 472 198]
+
+**+64 on substitutions and next-id; next-row-id and expr-types UNCHANGED.**
+That is the signature of a definition we do not synthesise -- type variables
+minted at registration, no rows, and no spans because a generated body's spans
+are synthetic.
+
+It is `gen-eq-def`: U56 synthesises `__eq_<T>` for every sum whose fields can
+be compared. **The essay drafted before the Update named this vein and said any
+new deriving/class/instance feature would land here first.** A prediction
+registered in advance, and it held.
+
+One desugarer change, not a thousand defects. Until it lands, the Rust arm's
+report card cannot be read -- which is the whole reason to find the moved mark
+before reading the number.
