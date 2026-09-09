@@ -712,3 +712,68 @@ diverging units than that account allows, and they are the next thing to read.
 The headline stands: one guard line moved 984 units from diverging to agreeing,
 and the gate is readable again for the first time since U56. Whatever is still
 red is now news rather than noise, which is exactly what it was for.
+
+## The eq call site: generated helpers reach the wire, and a pattern defect they hid
+
+`rust-codex-compiler` `5a98dee`, over `9900fad`. Subject and oracles unchanged
+at `8570fba1`.
+
+### What was built
+
+`lower-eq-dispatch`. `==` and `/=` on a type the desugarer generated
+`__eq_<T>` for become a call to it; the arm probes the overlay and then the
+checker's bindings for the NAME, which is upstream's `lookup-type-split`, and
+finding it is the whole proof the operand is such a type. A type with
+arguments is called by the instantiated name, `__eq_Box@Integer`, which
+`codexir` puts on the wire with no definition attached. `/=` is
+`if call then False else True`. A list has no helper and stays `binary eq`.
+
+Before this every generated helper was dead: emitted, named by nothing,
+pruned. The self-host oracle names `__eq_TokenKind` sixteen times; we named it
+zero.
+
+### The defect the dead helpers hid
+
+Every pattern in a generated definition carries the same synthetic span. Our
+checker recorded a pattern type per span, so all of them shared one key and
+`pat_type_at` answered the FIRST helper's type for every derived pattern:
+`Red` in `__eq_Color` came back as `Tup2`, the prelude's first helper. Nothing
+saw it while the helpers were pruned. The checker now skips a synthetic span,
+as it already did for expression types, and lowering rebuilds a sub-pattern's
+type from the constructor's binding and the scrutinee -- upstream's
+`resolved-ctor-field-type`, which it does for every pattern.
+
+This is the anti-pattern Steve named this morning, in both directions. Upstream
+does not carry forward WHICH types the desugarer gave helpers, so lowering
+infers it from a string probe of the type environment and re-derives the
+instance key from the resolved operand. Our `pat_types` tried to carry the
+checker's knowledge forward, but keyed by span, and the desugarer's synthetic
+span is not an identity -- so the carried knowledge was lossy exactly where it
+was needed and we fell back to the same reconstruction. The honest fix
+upstream of both is a node identity the desugarer mints, which no layer has.
+
+### Measured before the gates
+
+Two probes against `codexir`: a nullary sum, a generic sum at a concrete and at
+a variable argument, a list, and a sum with a generic-sum field. Byte-identical
+on the BUNDLED source, all six definitions; on the raw source one type-variable
+number differs because our `irdump` bundles the prelude and `codexir` reads
+stdin. 219 tests, one new, pinning that wire.
+
+Survey of the oracle wire over all 1,269 units, banked as
+`eq-helper-sites-on-oracle-wire.tsv` beside the run: **10 units name a helper**
+-- 8 the plain name, 2 also an instantiated one. So this arm can move at most
+about ten units on the corpus IR gate; the self-host is where it shows.
+
+### Predictions, registered before the run
+
+    self-host wire     MISSING 1 -> 0; identical up from 2,714 of 2,869
+    corpus IR          identical up by 3-10 from 879; refusal rows unchanged
+    corpus counters    EXACTLY 984 agree / 68 diverge -- nothing counted moved
+    corpus diag        unchanged
+
+Run: `~/runs/rustarm-20260909T124555Z-eqsite/` -- `gates.sh` does release
+build, self-host, corpus IR, corpus counters; `after.sh` appends the
+diagnostics gate. Results land in `gates.log` and the numbered logs. The
+`ai-*` expr-types family is NOT this: the counters read the checker and this
+arm is lowering. That family is still unread.
