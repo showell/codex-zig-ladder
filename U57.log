@@ -558,3 +558,62 @@ It matters because upstream's own diagnostics quote names that way: the CDX2095
 text is "`'Spot'` is a unit type ... has no field `'x'`". Pasting a diagnostic
 into a chapter's prose breaks the build. One unit in 1,246 has the shape, which
 is why only one moved.
+
+## CORRECTION: the lexer refusal is OURS, and the corpus is two Updates stale
+
+The entry above treats `unit-field-assign`'s CDX8 refusal as a U56-era upstream
+defect and a PR candidate. **It is neither.** Working it up for submission is
+what showed why.
+
+`codex/test/errors/unit-field-assign.codex`, upstream, at three pins:
+
+    675a0775  U55     "   CDX2060  ... '' is immutable"     3 spaces
+    6cd2ca1b  U56     " CDX2060  ... '' is immutable"       1 space
+    49fa9f27  U57     " CDX2060  ... '' is immutable"       1 space
+
+    ~/units-u56/unit-field-assign.codex                     3 spaces
+
+**Prose is one-space-indented and is not lexed. Upstream added the CDX8
+diagnostic in U56 -- `Syntax/Lexer.codex` is the file U56 changed -- and
+re-indented its own affected files in the SAME Update.** The diff between our
+copy and theirs is exactly those two lines and nothing else.
+
+`Lexer.codex` already carries the apostrophe rule and the census behind it: a
+quote straight after a letter or a digit is an apostrophe and no diagnostic is
+raised, measured over 4,025 files with zero false positives. `don't` and
+`compiler's` pass for that reason. There is nothing here to send.
+
+### The corpus named `units-u56` holds U55 sources
+
+Of the 43 non-`apps/` test files that changed between U55 and U56, 19 are in
+the corpus and comparable:
+
+    corpus chapter matches U55    18
+    corpus chapter matches U56     0
+    matches neither                1
+
+**Zero at U56.** The subject every corpus gate runs against is a U55-era cut
+wearing a U56 name, and it has been graded against a U57 oracle all night.
+
+That does not invalidate the ratchet -- holding the subject fixed while the
+oracle moves is the right experiment, and it is why `identical 865` was
+bit-identical across the repin. What it invalidates is the NAME, and any
+reading of `oracle-refuses 204` as a property of upstream's current tree.
+`unit-field-assign` is one refusal that exists only because our copy is stale;
+there may be more.
+
+**The fifth coordinate is not the only one that goes unlabelled.** A subject
+pinned by a directory name nobody re-checked is the same failure as a bank
+nobody re-took, and it was found the same way -- by trying to use the number
+for something.
+
+### What this costs and what it does not
+
+Re-cutting the corpus at `8570fba1` moves the SUBJECT, so it resets the
+ratchet: `identical 865` is a number about a U55 subject and cannot be compared
+to a number about a U57 one. That is a deliberate act, like a rebank, and it is
+not done here. `resolve_corpus.py` lives in the deprecated ladder and reads the
+ambient `CODEX_ROOT`.
+
+Until it is re-cut, quote the corpus numbers as what they are: **a U55-era
+subject against a U57 oracle**, with the port between them.
