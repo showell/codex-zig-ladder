@@ -898,3 +898,29 @@ another branch while the oracle read the truncated bytes. `CODEXC_RAW=1`
 both prefix tools export it. This is the same apples-to-oranges the corpus
 provenance guards against, one layer down, and it is why `mintprofile` read
 zero expr-types on our side for every prefix.
+
+## desk-* parked: an environment interaction, not a WebSocket bug (SCOPE)
+
+The `desk-*` four (+32 next-row-id, nothing else) were the counter gate's
+cleanest remaining family, so I dug. Chapter-boundary bisection of desk-hover
+(75,369 lines, 218 chapters, a 60-line DeskHoverTest plus its whole resolved
+GUI closure) pointed at WebSocket. It is a red herring: `encode-web-socket`
+(1,414 lines, the SAME WebSocket chapter with its own deps) AGREES exactly,
+4918 rows both sides. So the 32 rows appear only when WebSocket is checked
+inside desk-hover's 200-chapter environment -- an interaction, likely a name
+resolving to a different arity in the larger scope (the chapter-collision
+shape), not a local bug.
+
+Method notes banked: chapter-boundary bisection is SOUND (deps resolve
+backward, a truncated prefix breaks no reference); mid-chapter / per-definition
+truncation is NOT (defs reference each other in any order, the oracle refuses
+the truncated prefix, and a quick bisector reads that refusal as a divergence
+and narrows to a false site -- `whodunit.sh`'s `decide` nudge exists for this).
+A divergence that vanishes in isolation was never localized there.
+
+**PARKED by Steve's direction:** do not chase corner-case language coverage in
+the Rust front end until U57 validation and the U58 candidate are further
+along -- safari has not been run against this pin yet. This is U55-era row
+accounting, exposed only because the counter gate became readable this week,
+not a U57 regression. The fix, when it is worth making, starts from a small
+constructed reproducer.
