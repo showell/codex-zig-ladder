@@ -874,3 +874,27 @@ up from run 2, `list-comprehension-copy` among the movers; refusals unchanged.
 
 After run 3 the counter gate's remaining 35 are the pre-U56 families: desk-*
 x4, induction x6, fork/par x4, typeclass x6, and the singletons.
+
+## Run 2 confirms the honest fix; the prefix tools were comparing two programs
+
+Run 2 (`0d64627`, the honest pattern-identity fix) equals run 1 (`5a98dee`,
+the reconstruction) to the definition on ALL FOUR gates:
+
+    self-host wire   identical 2,729 of 2,869, MISSING 0, same 140 DIFFERS
+    corpus IR        identical 892, differs 156, refusals 4/206/11
+    corpus counters  984 agree, 68 diverge (run 2 is BEFORE the map-list fix)
+    diagnostics      agree 1096, differ 173
+
+No unit refuses with "no checker answer for the pattern", so no pattern the
+lowering now demands an answer for goes unvisited by the checker. The honest
+fix is the reconstruction, byte for byte, with the derivation deleted.
+
+While run 3 (`9350219`, the map-list span) ran self-host, the desk-* four --
+`whodunit.sh` was the tool for it, and it was lying. It truncates a unit at a
+definition boundary; on a RESOLVED unit that drops chapters the header still
+cites, and `bundle::load` re-resolved them against the ambient `CODEX_ROOT` on
+another branch while the oracle read the truncated bytes. `CODEXC_RAW=1`
+(`90cd2cf`) returns the bytes unread, matching what the oracle sees on stdin;
+both prefix tools export it. This is the same apples-to-oranges the corpus
+provenance guards against, one layer down, and it is why `mintprofile` read
+zero expr-types on our side for every prefix.
