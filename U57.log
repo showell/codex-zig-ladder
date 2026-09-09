@@ -256,3 +256,60 @@ at BUILD time and a check-only run can be a different one:
     codex     8570fba1...    branch u58-candidate
     verdict   GREEN          checkers 99aea4593ea9
     built     not by this run
+
+## Smoke test 2 — codex-zig-transpiler
+
+**What it proves, and it is a different question:** the emitter emits the same
+bytes for its own source whether it runs on bare metal under QEMU or as the
+native binary that run produced. The subject is the whole compiler, so a
+rejected or mis-applied PR shows here as a broken invariant rather than a
+missing file.
+
+Run on **`master`**, repinned to `cobblestone-u58`. No branch: branches off
+Cobblestone are load-bearing, branches off our own repos are drift.
+
+    fixed point   HOLDS, byte-identical      2,959,750 bytes both passes
+    arith.codex   MATCHES arith.expected     all 9 lines
+    subject       72,906 lines, 3,487,974 bytes   (was 72,741 at U56)
+    codexzig.ir   12,167,592 bytes                (was 12,109,027)
+    cold build    494s, three guests              (was 481s)
+
+**Stage 6 is the one that matters.** `zig build-exe` succeeds here and fails at
+both raw U56 and raw U57 on the same two prelude defects. Nothing upstream runs
+that stage, which is why the defects survive Updates.
+
+### One measurement fell out for free
+
+`generated/intake/ringplug-source.codex.blob` is UNCHANGED across the repin --
+git says so, and cobblestone-qemu's independent bundler agrees. So the plug
+SOURCE is identical at both pins while the compiled kernel is not:
+
+    ringplug.cdx   542,781 -> 590,117 bytes   +8.7%
+
+**Identical input, one variable moved: the seed.** That is the cleanest shape
+a comparison here can take, and it arrived without being designed. U57 adds
+over-application emission to the x86 back end (COMPILER-20, three new
+definitions in `X86_64Compound.codex`), so growth is the expected direction;
+the magnitude is unexplained and is an observation, not a finding.
+
+### What this build did NOT repin
+
+The Rust arm's oracles -- `generated/local/{codexir,codexcheck}` and
+`generated/codexcheck-subject.codex` -- still date from `e941ba11`.
+`build.py` does not move them, `build_codexir.py` does, and `PROVENANCE` says
+in its own words that it does not vouch for their pin. Repinning the Rust arm
+stays a deliberate act.
+
+### A near-miss worth recording
+
+The two repos' ring plug bundles differ by exactly 2 bytes (390,562 here,
+390,564 in cobblestone-qemu). The cause is a comment in each repo's own copy of
+`ZigPlugRing.codex` naming its own host-side driver -- `guest.py` here,
+`ring_compile.py` there. **Both are correct.** This was nearly filed as a stale
+reference on the strength of the name alone; `guest.py` exists in this repo.
+
+The fact that survives is narrower and is about what may be compared: the two
+repos build ring plugs from sources that differ by two bytes of prose, so their
+ring plug ARTIFACTS are not cross-comparable byte for byte, and `cce.py` and
+`BootPaintStubs.codex` are exact duplicates across the two repos that nothing
+keeps in step.
