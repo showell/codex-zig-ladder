@@ -63,6 +63,14 @@ coverage.
 bundler, which is what makes it the transport smoke test. The compiler's own
 source is the largest subject there is, and it is what the fixed point uses.
 
+The **Firefox arm** is the WGSL kernels, graded by `naga` — Firefox's own WGSL
+front end, run offline; Chrome's Tint is the permissive one, so a kernel Tint
+accepts and naga rejects is a shader Firefox rejects. It lives in
+[`cobblestone-qemu/wgsl/`](../cobblestone-qemu/wgsl): `check.sh` gates every
+committed kernel in a second, `regen.sh` rebuilds a stale one from the
+checkout's own plug under QEMU, and `serve.sh` is the tunnelled eye test. Its
+README has the tunnel command and the rest.
+
 ### Reading a claim
 
 "The fixed point holds" is a claim about **Zig · the compiler itself ·
