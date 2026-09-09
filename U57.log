@@ -313,3 +313,98 @@ repos build ring plugs from sources that differ by two bytes of prose, so their
 ring plug ARTIFACTS are not cross-comparable byte for byte, and `cce.py` and
 `BootPaintStubs.codex` are exact duplicates across the two repos that nothing
 keeps in step.
+
+## Smoke test 3 — codex-wasm-transpiler, and squaring what was owed
+
+**What it proves:** the module compiles the source that produced it and gets
+itself back byte for byte, with two independent roads required to agree.
+
+### The stale-module guard did its job on the way in
+
+Repinning to `cobblestone-u58` made the tracked module (built at `e941ba11`)
+older than the checkout, and the self road refused rather than comparing two
+emitters and calling the difference a defect. Generation 1 was regenerated
+through the zig road first, exactly as the refusal said to.
+
+    zig road      8,287,746 bytes, sha 6223e82a44d53ee9
+    self road     agrees BYTE FOR BYTE, 1655.6 MB, 19.4s
+    fixed point   IDENTICAL, 8,287,746 bytes both ways
+    sample        MATCHES arith.expected, all 9 lines
+    subject       72,183 lines, 3,441,876 bytes (was 3,432,921)
+
+The subject grew 8,955 bytes; codex-zig-transpiler's grew 8,937 across the same
+repin. Both carry the whole compiler, so they move together, and that they do
+is a cheap cross-check on both bundlers.
+
+### The zig road borrowed an emitter and nobody checked its pin
+
+The self road refuses a module built at another revision. **The zig road
+reaches the identical hazard through `$CODEXZIG` and was covered by nothing.**
+PROVENANCE recorded which binary ran and NOTEd that its provenance belonged to
+another repository -- honest, and not a gate.
+
+`borrowed_pin` now reads the receipt that repository writes beside the binary
+and refuses a mismatch. An unreadable receipt is reported in preflight and
+recorded as a NOTE rather than read as agreement: a binary from elsewhere
+cannot be made to say where it came from, and treating silence as a match is
+the failure being eliminated.
+
+**Proven to fire before it was trusted.** Pointed at `cobblestone-u57` with the
+u58-built binary it refuses in 0.2s, before any work. Both pins are now stated
+in preflight rather than assumed:
+
+    codexzig   built at 8570fba1, matching the checkout
+    module     generation 1 was built at 8570fba1, matching the checkout
+
+### The bank was a number that made the output look measured
+
+    old bank   2,286,092,288 bytes   2180.2 MB
+    peak       1,736,048,640 bytes   1655.6 MB
+
+Every run reported **-24% and read as good news while gating nothing.** At a 2%
+ratchet that bank could only have fired on a 34% regression. It was taken
+before a memory improvement and never re-taken.
+
+Rebanked at 1655.6 MB, deliberately, at `u58-candidate`, after both roads had
+agreed at that pin. The peak was 1655.5 MB at `e941ba11` and 1655.6 MB here, so
+it is a number that has held across an Update rather than one run's reading.
+The ratchet now fires above 1688.7 MB.
+
+### Both gates are now KNOWN armed
+
+Not assumed, and this is the point of running them:
+
+    --prove-gate           flips one byte of generation 2. Caught at offset
+                           4,143,873, reported DIFFERS, restored. FIRES.
+    CXWASM_DRIFT_PCT=-1    makes the ratchet refuse a run that grew +0.00%.
+                           Exits non-zero. FIRES.
+
+**Two memory files disagreed about whether `--prove-gate` had ever been run** --
+the wasm project memory said it had and fires, the handoff memory said it never
+had. Neither is evidence now: it was run here and it fires.
+
+### A baseline may only come from a run that passed
+
+`--rebank` wrote `MEMORY.bank` inside `check_memory`, before the fixed point
+had been compared -- and before the checkout-moved check whose own message
+promises that a build which loses its tree writes nothing. The number is now
+held until `main()` has a verdict.
+
+### A tracked file whose content was a function of the FLAG
+
+`generated/codexwasm.diag` is the emitter's stdout for whichever road ran. The
+native binary prints CX-DECK deck telemetry and the wasm module does not, so
+the two roads write 396 lines and 3 lines into the same tracked path, and
+choosing a different flag showed up in `git diff generated/` as a 396-line
+change to the artifact set.
+
+Nothing outside `build.py` reads it, `refuse_halt` reads it within the run, and
+generation 2's equivalent was already in the gitignored `local/`. Moved beside
+it and untracked -- the inconsistency was gen 1's, not a decision.
+
+### Still not built, and honestly labelled
+
+`--road guest` -- the seed compiling the subject and the wasm plug emitting
+from it, both on bare metal -- remains NOT BUILT. The README says so in those
+words. It is the road that would make the genesis zig-free; `docs/` carries the
+argument. Designed, not built, and not pretending otherwise.
