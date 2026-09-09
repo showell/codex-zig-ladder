@@ -1,0 +1,148 @@
+# Update 57 — smoke testing the release
+
+Upstream `49fa9f27`, 2026-09-09, seed `B63014D717B1A2F9`. The seed file's
+sha256 begins `b63014d717b1a2f9`, so the release note's seed name and the
+checkout agree. Free identity check, done first.
+
+The checkout is a NEW detached worktree `~/showell_repos/cobblestone-u57rel`.
+
+## Update 56 was ABORTED, and 57 is built on top of it
+
+Not reverted -- `6cd2ca1b` is still an ancestor of `upstream/master`:
+
+    6cd2ca1b  Update 56              seed D9CF240465C3D0BC   aborted
+    3907073c  Withheld block (issue 123)
+    49fa9f27  Update 57              seed B63014D717B1A2F9
+
+`6cd2ca1b..49fa9f27` is 347 files, +10,659 / -9,658. `U56.log` is closed and
+its readings stand as readings of `6cd2ca1b`; nothing there is evidence about
+this pin.
+
+## What Update 57 took from us: nothing, and that is correct
+
+The release note says plainly: **"No outside PR landed this cycle."** Our queue
+agrees -- all eleven PRs 117 through 134 are CLOSED and none is open, because
+they all went in at U56.
+
+**The question worth asking instead is whether the abort disturbed what U56 DID
+take.** An aborted Update followed by a withheld-block purge is exactly the
+event that drops something quietly. `6cd2ca1b` being an ancestor makes this
+exact rather than a sampling probe: take the files each PR branch touched and
+ask whether U57 moved any of them.
+
+    PR   branch                                  files  moved in U57
+    117  compiler-hosted-kind-check-compact          2   1
+    118  zig-plug-memory-builtins                    2   0
+    119  zig-plug-closure-param-namespace            2   0
+    127  mcopy-type-variant-tag                      1   0
+    128  zig-plug-empty-slice-and-ll-copy            1   0
+    129  wgsl-firefox-naga                          37   0
+    130  zig-plug-real-int-conversions               3   0
+    131  zig-address-of-literal-pr                  45   1
+    132  cite-hoist-pr                              47   1
+    133  crlf-foreword-pr                           16   1
+    134  binding-lookup-duplicate-key                1   1
+
+**All five "moved" files are the same file: `compiler-backlog.md`.** Every CODE
+file our landed PRs touched is byte-identical between U56 and U57. The abort
+disturbed none of our work.
+
+That the only movement is in the register is the expected shape -- prose churns
+every Update, which is why the probe is run on files rather than on text.
+
+## COMPILER-66 is fixed, and it is the open half of PR 134
+
+The register's own rule is that a closed entry is DELETED and a real gap is
+never quietly dropped, so a row vanishing is ambiguous on its face. Six rows
+vanished (COMPILER-9, 20, 43, 66, 68, 69) and one arrived (COMPILER-72).
+
+COMPILER-66 was ours and still open, so it is the one to verify rather than
+accept. It is a real fix, in `IR/LoweringTypes.codex`:
+
+    -  compare-binding-names (a) (b) = text-compare (a.name) (b.name)
+    +  compare-binding-names (a) (b) =
+    +   let by-name = text-compare (a.name) (b.name)
+    +   in if by-name /= 0 then by-name
+    +   else binding-shape-rank (a.bound-type) - binding-shape-rank (b.bound-type)
+
+with `binding-shape-rank` ranking SumTy/RecordTy 0, ForAllTy/ForAllEff 2, and
+everything else 1. **They made the COMPARATOR total rather than making the sort
+stable.** `all-bindings` still holds two differing entries per definition, but
+the two no longer compare equal, so the unstable qsort cannot order them by
+accident and the lower-bound `bsearch-text-pos` lands on the peeled entry every
+time.
+
+That closes an owed item on our side: the register recorded that they would
+want our peak-linear-memory arm **if a stable sort became the repair**. It did
+not become the repair, so that instrument is not needed.
+
+## A new warning that measures our own recurring mistake
+
+`CDX2097 PartialApplicationUnused` is new, and the whole +148 of
+`Types/TypeCheckerInference.codex` is its implementation:
+
+  A let binds a partial application of a named function and nothing reads the
+  binding, so the call is never completed and its effects never happen.
+
+**That is the harness-fidelity failure mode, given a diagnostic.**
+`check-chapter` went 5 parameters to 9 at U54 and every harness kept passing
+five; under-application evaluates to a function value and the type error lands
+phases later against whatever consumed it. Upstream now warns at the binding.
+
+Untested by us as yet: whether it fires on our harnesses, and whether it fires
+anywhere in upstream's own tree.
+
+## The driver is untouched, so harness fidelity is not at risk this Update
+
+`opening.codex` moved 17 lines and **all of them are in the DISK entry point**
+-- `disk-path-of` honouring the stub's stdin path instead of the constant
+`SOURCE.SRC`. Nothing in the compile driver: no arity change to
+`check-chapter`, `lower-chapter`, `compile-frontend-cdx` or
+`compile-frontend-passes`.
+
+The other compiler files U57 moved:
+
+    Core/CdxCodes.codex                +3       CDX2097
+    Types/TypeCheckerInference.codex   +148     CDX2097's implementation
+    IR/LoweringTypes.codex             +12      COMPILER-66
+    Emit/X86_64*.codex                 +84/-48  the x86 back end
+    compiler-backlog.md                +10/-17  the register
+
+**The x86 back end moved, so a difference in the `x86emit` subject is EXPECTED
+and is not a defect.** Registered before the run rather than rationalised after.
+
+## The linters, before any guest
+
+The lesson of U56, where a guest was booted three steps into a build that a
+one-second linter would have stopped.
+
+`check_zig_pages.py` in this ladder still reads the hand-kept
+`zig_plug_pages.txt`, which cobblestone-qemu replaced with a derived
+`zig_plug_pages.py`. **This ladder is deprecated and is not the place to fix
+that**, so the live page check is cobblestone-qemu's, and running it IS the
+linter because it refuses rather than guesses.
+
+    CODEX_ROOT=cobblestone-u57rel  python3 zig_plug_pages.py   ->  ZigEmitter
+    CODEX_ROOT=cobblestone-u58     python3 zig_plug_pages.py   ->  ZigEmitter
+
+One page at both pins, consistent with U56 and with upstream never having taken
+our four-page split.
+
+Arity needed no run: the driver diff above answers it directly.
+
+## u58-candidate
+
+`u57-candidate` was our candidate over the ABORTED U56. Its three commits touch
+`ZigEmitter.codex` and nothing else, and U57 left that file byte-identical, so
+all three cherry-picked onto `49fa9f27` clean:
+
+    a77ed493  box every payload-carrying variant, so address-of is total
+    2271bfdc  the real-to-text prelude no longer shadows cx_new
+    8570fba1  the boxing comment states the rule, not how it was found
+
+Branch **`u58-candidate`**, worktree `~/showell_repos/cobblestone-u58`.
+
+**Two Updates in a row have now declined `9cc2052b`**, the boxing half of PR
+131, and the reason is unchanged: nothing in the Cobblestone repo invokes the
+zig toolchain, so their gate checks emission and cannot see that the emitted
+zig does not compile.
