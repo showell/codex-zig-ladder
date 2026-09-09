@@ -831,3 +831,46 @@ Cobblestone `u58-candidate`, worktree `cobblestone-u58`, revision `8570fba1`
 its cited dependencies into one file by the ladder's `resolve_corpus.py`.
 1,269 of them. The oracles were built from the same revision, which is the
 point of the name.
+
+## The 33-unit family was one span: `map-list` carries the loop variable's
+
+Run 1's controls held exactly -- counters 984/68, diagnostics 1096/173 -- and
+run 2's self-host equals run 1's to the definition (2,729 of 2,869, MISSING 0,
+the same 140 DIFFERS). Run 2 continues on the corpus gates.
+
+While it ran, the family. `tools/mintprofile.sh` on `list-comprehension-copy`
+was no use: its "ours" column read zero expr-types on every prefix. The cause
+is the tool, not the checker -- a truncated prefix of a RESOLVED unit loses a
+cited chapter, `bundle::load` sees it missing and re-resolves against the
+ambient `CODEX_ROOT`, which is on another branch. The tool pre-dates resolved
+units. Left as is and recorded here; `tools/README.md` should say it before
+anyone else reaches for it.
+
+The answer came from reading upstream's `ForExpr` arm instead. It stamps the
+invented `map-list` NAME with `token-span var-tok`, the loop variable's real
+span; only the lambda and the two applications are synthetic. Ours stamped all
+four synthetic, so the checker recorded nothing for the name: one `expr-types`
+short per comprehension, which is exactly the family's shape -- `ai-*` short by
+8 to 11, `list-comprehension-copy` by 1.
+
+`1354fec` gives the name the variable's span. Measured with the debug binaries
+before any gate:
+
+    the 33 family units    33 agree on all four counters, 0 diverge
+    self-host counters     EXACT on all four; expr-types 147,916 = the oracle
+                           (the +216 residual was the compiler's comprehensions)
+    list-comprehension-copy wire   DIFFERS 4 lines in run 1 -> byte-identical
+
+This is the anti-pattern's mirror image: upstream DID carry knowledge forward
+from the parser -- a real position onto a node the desugarer invents -- and
+the port dropped it on the assumption that invented means synthetic. The
+lowering comment that reasoned from that assumption is corrected in the commit after `1354fec`.
+
+Run 3 is queued behind run 2 as `~/runs/rustarm-20260909T132000Z-maplist-span/`
+(its header carries two stray lines from a sed over run 2's script; the
+PURPOSE and prediction lines are right). Predictions: corpus counters
+984/68 -> 1017/35; self-host counters EXACT on all five; corpus IR identical
+up from run 2, `list-comprehension-copy` among the movers; refusals unchanged.
+
+After run 3 the counter gate's remaining 35 are the pre-U56 families: desk-*
+x4, induction x6, fork/par x4, typeclass x6, and the singletons.
