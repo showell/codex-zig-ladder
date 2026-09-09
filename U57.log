@@ -924,3 +924,61 @@ along -- safari has not been run against this pin yet. This is U55-era row
 accounting, exposed only because the counter gate became readable this week,
 not a U57 regression. The fix, when it is worth making, starts from a small
 constructed reproducer.
+
+## Safari repinned to u58 by DERIVING the language, and the gate tamper-tested
+
+### The footgun: safari pinned its own Cobblestone, and it had drifted
+
+safari-codex named its own language worktree in pins.tsv
+(`cobblestone ~/showell_repos/cobblestone-safari`), sitting at `422405d0`
+(Update 55 era) while codexzig and codexwasm had both moved to `8570fba1` (the
+u58 candidate). A second copy of a pin the transpilers already carry is the
+copy that drifts; the arms would have graded a U55 language with U57 binaries
+and nothing said so. Steve's call: the private-pin mechanism dated to the
+earliest days and was never anything but a footgun -- remove it.
+
+`harness/cobblestone_pin.py` now derives the checkout from the two borrowed
+transpilers' generated provenance and REFUSES if they disagree -- the agreement
+is the drift check at the one place it matters. pins.py, spec/run.sh and
+spec/arms.py derive through it; the four off-path scripts no longer default to
+the dead worktree; `build_codexzig.sh` now REFUSES a stale binary instead of
+building one, symmetric with build_codexwasm.sh, so safari borrows both
+transpilers and builds neither. `run.sh` runs `python3 -u` so progress shows
+when redirected. safari-codex `466af69`.
+
+### Green on u58, all three arms
+
+`./spec/run.sh --arms`: 54 specs pass on rust, zig and wasm, grading 2351
+values. The only differences are three known, filed zig gaps (issue 125), which
+are non-fatal by arm-gaps.tsv. Arms all built from `8570fba1`.
+
+### Issue 125 is OPEN and owner-acknowledged -- not a hand-wave
+
+Read the live tracker rather than infer. Owner (2026-09-08): tracked as
+COMPILER-57, open, unowned, "not yet independently measured on our side ...
+stays open until measured and fixed." NOT won't-fix, so we keep the specs.
+Issue 106 (the 19-digit overflow) is CLOSED, subsumed. Answered the owner's
+"not measured" directly: posted a self-checking probe on #125 (comment
+5603740994) -- a 16-digit literal vs the same value computed with single ops,
+equal on a correct front end and one ULP apart on the doubled-rounding parser,
+no oracle -- plus the Update-57 measurement on two independent front ends.
+Draft at safari `outbound/issue125-followup-measure-it-yourself.md`.
+
+### Tamper battery: the gate is sound
+
+Each tamper applied and reverted (tree clean throughout), rust arm unless noted:
+
+    T1  corrupt an expected value    -> t-sin BAD at 1, exit 1
+    T2  make a line grade zero       -> "a line graded ZERO values"
+    T3  grade below the floor        -> "graded 9 ... at least 24"
+    T4  a spec with no floor line    -> refused before running
+    T5  empty arm-gaps, run --zig    -> EXACTLY the 3 issue-125 specs go
+                                        "THE ARMS DISAGREE", exit 1; restored
+    T6b undefined name (compile err) -> 0 graded, below floor, exit 1
+
+T5 is the load-bearing proof: the arms genuinely compute three ways and
+compare, and arm-gaps entries are promises, not decoration -- remove one and a
+real divergence turns fatal. No holes found. One curiosity NOT chased (compiler
+corner case, per the scope steer): a missing `end` on an act block at EOF still
+compiles (codexrun exit 0), but the spec runs correctly, so it is not a gate
+hole.
