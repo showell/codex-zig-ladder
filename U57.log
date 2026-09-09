@@ -697,3 +697,18 @@ In the recursive-sum test **only the two non-recursive controls moved**; every
 self-recursive row is unchanged, because those already had a derived definition
 at U55. That is a clean confirmation that the widening did exactly what it
 claims and nothing else. 218 pass, 0 fail.
+
+### The counter gate: 0 agree -> 984, and the prediction missed
+
+    before   0 agree, 1052 diverge, 217 the oracle refuses
+    after    984 agree,  68 diverge, 217 the oracle refuses
+
+**Predicted 1000-1045 agree and 10-50 diverge; actual 984 and 68. Outside both
+ranges, in the same direction: too optimistic.** The prediction assumed the
+residual would be the pre-U56 families (desk-*, induction, fork/par, typeclass,
+singletons -- about 31) plus a little for the 23 new units. There are 37 more
+diverging units than that account allows, and they are the next thing to read.
+
+The headline stands: one guard line moved 984 units from diverging to agreeing,
+and the gate is readable again for the first time since U56. Whatever is still
+red is now news rather than noise, which is exactly what it was for.
