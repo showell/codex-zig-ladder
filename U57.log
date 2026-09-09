@@ -440,3 +440,121 @@ was harmless only while the two agreed.
 
 **The lesson is not "run the gate", it is "a check nobody has to remember is
 worth more than a flag that proves the same thing on demand".**
+
+## The Rust arm, repinned
+
+**What this arm proves, and it is the only one that proves it:** an independent
+front end, written in Rust, produces the same IR as the compiler does. It is
+the only arm that sees defects ABOVE the IR wire, because zig and wasm both
+inherit upstream's front end and a fixed point cannot see a frontend defect.
+
+Oracles rebuilt at `8570fba1`; the port untouched at `f5686ea`.
+
+    subject sha   ecfb2ff9af350393  ->  ab2af30213ac26f4
+    codexzig      6512a08b0454f609  ->  65165823744c9838
+
+### On the corpus, Update 57 moved NOTHING
+
+`units-u56` is a materialised 1,246-unit corpus and none of the corpus gates
+reads `CODEX_ROOT`, so the subject and the port both hold and exactly one
+variable moves.
+
+                      at e941ba11         at 8570fba1
+    IR identical            865       ->        865
+    IR differs              164       ->        164
+    we-refuse                 3       ->          3
+    oracle-refuses          204       ->        204
+    both-refuse              10       ->         10
+    counters agree            0       ->          0
+    counters diverge       1032       ->       1032
+
+**Bit-identical, both gates.** U57's compiler changes -- COMPILER-66's
+comparator, CDX2097, the x86 over-application work -- move no unit's IR and no
+unit's counters. The 0-agree divergence is entirely U56's `gen-eq-def`, and
+implementing it remains the one thing that unblocks the counter gate.
+
+That COMPILER-66 changes no emitted IR anywhere in 1,246 units is worth
+recording on its own: it makes the `all-bindings` lookup deterministic without
+moving a byte, which is what a repair of an ambiguity should look like.
+
+### The self-host moved, and it is not attributable to this Update
+
+    checkpoint pin    byte-identical 2845 of 2846   (1 differs: deck-record)
+    at 8570fba1       byte-identical 2714 of 2869   (154 differs, 1 MISSING)
+
+**The registered prediction was 2,846 of 2,846 and it is WRONG.** It was made
+when PR 134's emitted half landed, and two Updates of compiler change have
+gone by since; the prediction's other variables did not hold.
+
+**But this number cannot be attributed to U57, and the reason is structural.**
+The corpus gates hold `units-u56` fixed and repin only the oracle. Here the
+subject IS the compiler, so a repin changes what is compiled and what grades it
+in one step -- the subject went from 2,846 definitions to 2,869. There is no
+`e941ba11` baseline for this gate because the earlier run measured only the two
+corpus gates, and the old oracle is a build away.
+
+Given the corpus is bit-identical across U56->U57, the move belongs to the
+window that ends at U56, not to U57. Stated as attribution, not measurement.
+
+### The step that reported PASS while comparing nothing
+
+The self-host counters went off exact for the first time --
+
+                     ours       oracle
+    substitutions   119599      119985     +386
+    next-id         119599      119985     +386
+    expr-types      147700      147916     +216
+    next-row-id     316077      316077        0
+    check-errors         0           0        0
+
+-- and the harness printed **PASS**. The step echoed both sides and never
+compared them, so its exit code was `grep`'s. The same shape sat in the
+checkpoint's chain, where the numbers happened to be equal and nobody looked.
+
+**I copied both self-host steps verbatim into my own gate script and inherited
+the defect rather than noticing it.**
+
+Now `rust-codex-compiler/selfhost_gate.sh`, in the repo, in the README's gate
+list, in `docs/gates.md`, comparing and exiting non-zero. It splits MISSING
+from DIFFERS, which the old step did not, and that paid immediately: of the
+155, exactly **one** is MISSING and it is `__eq_TokenKind` -- `gen-eq-def`'s
+synthesised equality, reaching the wire here where the corpus prunes it.
+
+`expr-types` moving is the same feature's other half. The signature recorded at
+U56 was "+64 on substitutions and next-id, rows and `expr-types` UNCHANGED";
+that was the synthesised definition alone. The instantiated helper for a
+generic sum IS attached to the wire, and it carries spans.
+
+### A refusal that is U56's, found by looking at a one-unit delta
+
+Diagnostics went `agree 1076, differ 170` to `agree 1075, differ 171` -- but
+the baseline was taken at the CHECKPOINT's oracle pin, not at `e941ba11`, so
+that delta spans two oracle moves. `corpus_check_gate` was never re-run at
+`e941ba11`.
+
+The one unit is `unit-field-assign`, and the oracle now refuses it at the
+LEXER, where it used to reach the type checker:
+
+    ours   [1 CDX2095]        oracle [1 CDX8]
+
+`CDX2095` is `FieldOnUnitType`, which is what the unit is for. `CDX8` is
+`UnterminatedCharacter`. **U57 changed no lexer file and U56 changed
+`Syntax/Lexer.codex`**, so this is U56-era, not something the repin introduced.
+
+Reduced from the unit to a three-line chapter:
+
+    3sp prose  "the compiler's own text"    ok     embedded apostrophe
+    3sp prose  "don't and won't"            ok     embedded apostrophes
+    3sp prose  "Balanced 'x' here."         ok     exactly one character
+    3sp prose  "Empty '' here."             CDX8
+    3sp prose  "Two chars 'ab' here."       CDX8
+
+A whitespace-delimited `'...'` in PROSE that is not exactly one character halts
+the compile with "Unterminated character literal: hit end of line before
+closing `'`" -- while the closing quote is on the line. The first hypothesis,
+"an apostrophe in prose", was wrong and a minimal repro said so.
+
+It matters because upstream's own diagnostics quote names that way: the CDX2095
+text is "`'Spot'` is a unit type ... has no field `'x'`". Pasting a diagnostic
+into a chapter's prose breaks the build. One unit in 1,246 has the shape, which
+is why only one moved.
