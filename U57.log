@@ -982,3 +982,18 @@ real divergence turns fatal. No holes found. One curiosity NOT chased (compiler
 corner case, per the scope steer): a missing `end` on an act block at EOF still
 compiles (codexrun exit 0), but the spec runs correctly, so it is not a gate
 hole.
+
+## Quick pass: the 28 curated programs are green at the U58 candidate
+
+`cobblestone-curated-tests` (units resolved from `cobblestone-u56-sunday`),
+three gates, rust-codex-compiler `90cd2cf`, codexir at `8570fba1`:
+
+    run.sh    (interpreter vs frozen expected)   28 pass, 0 fail
+    native.sh (Rust irdump vs codexir @ u58)     28 agree, 0 DIFFERS, 0 REFUSED
+    ir.sh     (interpreter interpreting frontend) 28 identical, 0 differ
+
+The units predate u58 but AGREE with the u58 oracle on all 28, so nothing they
+exercise moved u56->u58 and the Rust front end matches upstream on every one.
+Provenance note for U58 refinement: the set's PROVENANCE still names
+`cobblestone-u56-sunday`; re-cutting at u58 is a provenance-honesty rebank (like
+safari's corpus re-cut), not a correctness need, since the 28 already agree.
