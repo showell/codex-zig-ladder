@@ -408,3 +408,35 @@ it and untracked -- the inconsistency was gen 1's, not a decision.
 from it, both on bare metal -- remains NOT BUILT. The README says so in those
 words. It is the road that would make the genesis zig-free; `docs/` carries the
 argument. Designed, not built, and not pretending otherwise.
+
+### And then the flag was deleted
+
+Running `--prove-gate` once discharged an owed item and proved nothing about
+the next thousand builds. Steve's objection is the right one: **a thing kept on
+life support because it was once useful is a tax**, and this repository already
+says so in `build.py` about a gate it deleted -- "an item that stops catching
+anything is a tax".
+
+The check itself is not the tax. What it rules out is not a broken `==` but the
+comparison pointed at the WRONG OPERAND, after which every run agrees forever
+and the byte count printed beside IDENTICAL still looks right. Nothing else
+here catches that, and a green run cannot show it.
+
+So the flag is gone and the self-test runs every build. Measured rather than
+estimated: **43 ms against a 94-second build.**
+
+Both the self-test and the real comparison now read through one `operands`
+expression, so a refactor cannot move one without the other. The first attempt
+read `GEN2_WAT` directly inside the self-test, which would have proved only
+that the function can open a file -- a weaker check than the flag it replaced,
+and caught before it was committed.
+
+**Proven to fire before being trusted.** With `operands` returning `WAT` twice
+-- the exact refactor described above -- the build exits 1 instead of printing
+`IDENTICAL -- 8287746 bytes`.
+
+The deleted flag also restored generation 2 from generation ONE's bytes, which
+was harmless only while the two agreed.
+
+**The lesson is not "run the gate", it is "a check nobody has to remember is
+worth more than a flag that proves the same thing on demand".**
