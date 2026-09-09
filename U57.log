@@ -146,3 +146,113 @@ Branch **`u58-candidate`**, worktree `~/showell_repos/cobblestone-u58`.
 131, and the reason is unchanged: nothing in the Cobblestone repo invokes the
 zig toolchain, so their gate checks emission and cannot see that the emitted
 zig does not compile.
+
+## Smoke test 1 — cobblestone-qemu
+
+**What it proves:** run Codex on real x86 and tell me what came out. Four
+subjects through the seed under QEMU, then four checkers on fib.
+
+### Raw U57 first, to see the failure
+
+Both our defects are live at `49fa9f27`, measured rather than inferred:
+
+    fib       BUILT  0m07s          the transport works, the seed boots
+    zigemit   RED    zigemit.zig:3891:9: error: local variable shadows
+                                     declaration of 'cx_new'
+
+`codexir` was NOT run at raw U57. It emits the same prelude and would fail on
+the identical line, so the run would cost five minutes to confirm arithmetic.
+The build stops at the first red by design and there is nothing to learn from
+proving a shared failure twice.
+
+### u58-candidate, and there is no third defect
+
+    ring plug   0m26s      7442 lines, 390080 bytes
+    fib         0m07s
+    zigemit     0m41s
+    codexir     4m35s      (compile 2m46s, transpile 1m44s)
+    x86emit     6m26s      (compile 3m06s, transpile 3m14s)
+
+    verify zig    PASS   native codexir | zigemit: fib prints 55 and 610
+    verify qemu   PASS   bare metal: IR identical to the native tool
+    verify x86    PASS   emitted machine code runs
+    verify boot   PASS   emitted x86-64 BOOTS and prints 6765
+    GREEN 4/4
+
+**The two fixes are sufficient at U57 exactly as they were at U56.**
+
+### The ring plug is byte-identical across the two releases
+
+`ringplug-source.codex` is 390564 bytes at BOTH `u57-candidate` (over U56) and
+`u58-candidate` (over U57), with the same source list and no diff. Every
+chapter it bundles -- `Core/Name`, `Core/SourceText`, `Types/CodexType`,
+`Ast/AstNodes`, `IR/IRChapter`, `plugs/common/PlugTypes`,
+`plugs/common/IRTextParser`, and the Zig Emitter -- is untouched by U57.
+
+So the plug is literally the same program at both pins, and any difference
+between the two runs is the SEED's. Corroborated by the compile diagnostics
+being identical too: 26 CDX4010, 4 CDX3005, 1 CDX4030 at each.
+
+### Timings say nothing moved structurally
+
+    stage              U56+ours   U57+ours
+    ring plug             0m25s      0m26s
+    zigemit compile       0m25s      0m26s
+    codexir compile       2m39s      2m46s
+    codexir transpile     1m43s      1m44s
+    x86emit compile       2m54s      3m06s
+    x86emit transpile     3m14s      3m14s
+
+Every stage within a few percent, consistent with a seed that grew from
+3,217,563 to 3,322,781 bytes. **U57 is marginally SLOWER, not faster** -- the
+first reading of this table compared U57's compile step against U56's subject
+TOTAL and read as a 40% improvement that does not exist.
+
+### The x86 change is real and invisible to fib, which is correct
+
+The emitted x86 for fib is byte-identical at both pins: 287,765 bytes of dump,
+26 symbols, 89,677 reassembled. A difference was registered as EXPECTED before
+the run because `Emit/X86_64*.codex` moved; there is none, and the reason is
+specific rather than a shrug.
+
+The change is COMPILER-20's over-application miscompile:
+
+    -    is FunTy (pt) (row) (rt) -> emit-partial-application st name [] (1 + fun-type-arity rt)
+    +     let ua = lookup-x86-arity (st.user-arities) name
+    +     in emit-partial-application st name [] (if ua > 0 then ua else 1 + fun-type-arity rt)
+
+plus `emit-over-push-extras`, `emit-trampoline-over-dynamic` and
+`emit-over-apply-loop` in `X86_64Compound.codex`, and a new test
+`codex/test/ops/saturated-call-returning-function.codex`. **fib applies nothing
+over its arity**, so identical bytes is the right answer.
+
+COMPILER-20 was our PR 90, and over-application is a lane we opened (PRs 79, 80,
+83, 86). The four fib checkers assert fib's ANSWER, not emitted bytes, so this
+arm cannot regress on a legitimate back-end change -- and equally cannot see one.
+
+## Two gaps in our own tooling, found by using it
+
+**The .pyc guard covered two ways in and not the third.** Running
+`python3 zig_plug_pages.py` by hand -- which is how `bundle_ringplug.ps1` calls
+it -- wrote `roots.cpython-312.pyc` into the checkout. `-B` in a shebang applies
+to `./name.py` alone and `PYTHONDONTWRITEBYTECODE` in `build.sh` covers only
+what build.sh spawns, so every `.ps1` call was already outside the guarantee.
+The empty `.gitignore` surfaced it in one `git status`, which is what it is for.
+
+The four verifiers already set `sys.dont_write_bytecode` before importing, with
+the reason written out; the four scripts that import a local module did not.
+They do now, so the guarantee no longer depends on how python was started.
+
+**`run_all.py` could not check a sandbox it did not build.** The checkers read
+`$SANDBOX` and always could, but the orchestrator coupled build and check, so a
+`build.sh` run had no path to a verdict -- and a sandbox with no RESULT is
+documented here as broken. `SANDBOX` naming a directory that already has a
+PROVENANCE now means check that one, the same contract `build.sh` already uses.
+The verdict above took 10 seconds instead of a 13-minute rebuild.
+
+RESULT now also names the CHECKER sha, because PROVENANCE stamps the qemu sha
+at BUILD time and a check-only run can be a different one:
+
+    codex     8570fba1...    branch u58-candidate
+    verdict   GREEN          checkers 99aea4593ea9
+    built     not by this run
