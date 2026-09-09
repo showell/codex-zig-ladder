@@ -617,3 +617,83 @@ ambient `CODEX_ROOT`.
 
 Until it is re-cut, quote the corpus numbers as what they are: **a U55-era
 subject against a U57 oracle**, with the port between them.
+
+## The one-pin baseline, and gen-eq-def implemented
+
+### The baseline, subject and oracle sharing `8570fba1`
+
+The corpus was re-cut at the pin and `~/units-current` points at it. Both
+numbers below are NEW baselines -- the subject moved, so they do not compare to
+anything taken before today.
+
+    subject   ~/units-8570fba1d353   1,269 units   (was 1,246 at a U55-era cut)
+    oracles   8570fba1
+    port      f5686ea, then 9900fad
+
+    diagnostics   agree 1096, differ 173
+    counters      0 agree, 1052 diverge, 217 the oracle refuses
+    IR wire       identical 879, differs 169, we-refuse 4,
+                  oracle-refuses 206, both-refuse 11
+
+**Every one of the five IR rows and all three counter rows landed inside the
+ranges predicted before the run.** The prediction is in the transcript and the
+point of registering it was to find out whether the model of the arm is right;
+it is.
+
+`unit-field-assign` is gone from the differ list entirely, which confirms the
+diagnosis: that refusal was our stale corpus and nothing else.
+
+**`we-refuse` moved 3 -> 4**, the row flagged in advance as the one to watch.
+The new unit is `edge-mesh-mint`, and its cause is the one `rsa-verify` already
+had -- "`hash-mix` has more params than its type has arrows". A new unit on a
+known gap, not a new defect class.
+
+### gen-eq-def: the guard, and what the guard was not
+
+The history recorded earlier in this log was wrong and is corrected here.
+**`gen-eq-def` is not new in U56.** It exists at U55. One line changed:
+
+    U55   if deriving-has (td.deriving) "Eq" | td-self-recursive td
+    U56   if deriving-has (td.deriving) "Eq" | td-eq-safe        td
+
+`td-eq-safe` is a variant body no constructor field of which names `Real`.
+`Real` is out because NaN is not equal to itself. Our port already implemented
+the U55 half, so this was a guard widening rather than a port.
+
+    int-pow     all five counters EXACT, both sides 397 397 610 241
+    self-host   substitutions and next-id  119599 -> 119985  = the oracle
+                expr-types  UNCHANGED at 147700
+
+**`expr-types` not moving is the proof we did it the same way** rather than
+merely something similar: every span in a generated definition is synthetic and
+records nothing, so a version of this that recorded spans would be a different
+bug wearing the same clothes.
+
+### It is half the feature, and the wire says so
+
+The self-host wire did not move at all -- 2,714 of 2,869, `MISSING 1`. The
+reason is exact:
+
+    __eq_TokenKind mentions, ours      0
+    __eq_TokenKind mentions, oracle   15
+
+We generate the definition and never CALL it. Upstream rewrites an equality on
+a sum into a call to the generated helper, so its copy is reachable and
+survives pruning; ours is dead the moment it is made. The residual
+`expr-types +216` is most likely those rewritten call sites, which carry real
+spans rather than synthetic ones.
+
+That is the next item and it is the one that touches emitted bytes.
+
+### Three tests that were pinned to an old oracle
+
+`cargo test` went to 3 failures, all checker mint-counts whose docstrings say
+they were "read off `codexcheck` at `u56-candidate-sunday`". They were re-read
+at `8570fba1` -- asked of the oracle, not updated to whatever we now produce,
+which is the difference between re-pinning a test and rewriting it to match the
+implementation.
+
+In the recursive-sum test **only the two non-recursive controls moved**; every
+self-recursive row is unchanged, because those already had a derived definition
+at U55. That is a clean confirmation that the widening did exactly what it
+claims and nothing else. 218 pass, 0 fail.
