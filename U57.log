@@ -777,3 +777,57 @@ build, self-host, corpus IR, corpus counters; `after.sh` appends the
 diagnostics gate. Results land in `gates.log` and the numbered logs. The
 `ai-*` expr-types family is NOT this: the counters read the checker and this
 arm is lowering. That family is still unread.
+
+### Run 1 measured `5a98dee`: the wire moved where predicted, and further
+
+`~/runs/rustarm-20260909T124555Z-eqsite/`, subject and oracles at `8570fba1`.
+
+    self-host wire   identical 2,714 -> 2,729 of 2,869   MISSING 1 -> 0
+                     differs 154 -> 140; expr-types +216 UNCHANGED
+    corpus IR        identical 879 -> 892   differs 169 -> 156
+                     refusal rows unchanged: 4 / 206 / 11
+
+**Predicted +3 to +10 on the corpus; actual +13.** Missed low again, and by
+the same mechanism as yesterday's counter prediction: I sized the arm by the
+units whose oracle wire NAMES a helper (10) and forgot that a unit can move
+for the side effect. The thirteen: the six eq-family units the survey named,
+`list-test`, and SIX handler units -- `effect-smoke`, `handler-smoke`,
+`handler-nested-ops`, `handler-dotted-discharge`, `scope-handler-clause`,
+`effect-handler-nested-same` -- whose remaining diff was a `==` on a sum.
+`lang-smoke` and `typeclass-smoke` name helpers and still differ elsewhere.
+The counter and diagnostics gates of this run were still to come at the time
+of writing; they are controls and must read 984/68 and 1096/173.
+
+### The honest fix, and a correction Steve made
+
+Steve, on reading the entry above: recognising the anti-pattern and then
+shipping the reconstruction anyway is papering over, and naming the honest
+fix in the next sentence does not change that. He is right, and the memory
+that says so already existed.
+
+`0d64627` does it where it lives. The desugarer mints a distinct span for
+every node it invents -- line 0 still, so `is_synthetic` is unchanged, and the
+next offset in upstream's file 0; four generating functions had bound one span
+and stamped it on every node. `expr_type_key` files a synthetic span under 0,
+as upstream does, so it can collide with nothing. The checker records every
+pattern's type again. Lowering reads that answer for every pattern node and
+REFUSES when there is none: no fallback to the scrutinee, no rebuilding from
+declarations, and `ctor_field_types` is gone. Both probes byte-identical to
+`codexir` on the bundled source; 219 tests.
+
+What it costs on the wire is the question run 2 answers. It is queued as
+`~/runs/rustarm-20260909T131500Z-eqsite-honest/` behind run 1's tail, so the
+release binaries run 1 reads are not swapped under it. Prediction: every
+number equal to run 1's, counters exactly 984/68, and any WE-REFUSE that says
+"no checker answer for the pattern" is a pattern the checker never visited,
+which would be news about the checker and not about this fix.
+
+### Where the corpus comes from, since "corpus units" was vague
+
+`~/units-current -> ~/units-8570fba1d353`, and its PROVENANCE says: every
+`.codex` under `codex/test/` except `apps/` in Damian's repository at
+Cobblestone `u58-candidate`, worktree `cobblestone-u58`, revision `8570fba1`
+-- upstream Update 57 plus our three ZigEmitter commits -- each resolved with
+its cited dependencies into one file by the ladder's `resolve_corpus.py`.
+1,269 of them. The oracles were built from the same revision, which is the
+point of the name.
