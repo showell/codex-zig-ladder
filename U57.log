@@ -1046,3 +1046,13 @@ sub-pattern nested inside a constructor pattern is read as a wildcard** --
 the zig plug refuses the payload case and answers wrong on the nullary one,
 the wasm plug answers wrong on both. Issue drafted; zig fix sized at ~80
 lines; both wait on Steve's go.
+
+**PR 141** (`plug-nested-patterns`): both plugs read a nested sub-pattern as a
+wildcard; zig Text literal patterns never built. Chain form + work list in
+zig; address-taking sub-test/bind helpers in wasm; 20-line unit. Fixed points
+HOLD (zig, wasm both roads); wasm corpus sweep unchanged (same 26 differ);
+zigemit rebuilt on bare metal, ir-zig now 46/46 + 28/28 + 54/54.
+
+**Diagnostics:** the concrete-head CDX2001 had invented 68 errors corpus-wide
+(never measured there) -> primitive pairs only, gate back to 1096/173. CDX3002
+undefined name added (11 units). Essay `where-typed-ir-stands.md`.
