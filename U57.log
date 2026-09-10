@@ -1126,3 +1126,16 @@ Chain 10 (release, self-host, counters, gate, census) runs on a52ed8b.
 Left: `bounded` declarations and the cost model (5 units, CDX6101),
 `deriving` (2052, 2), `Integer vs Fun` (3, pending the census), a second
 1071 on two units.
+
+**Morning.** Counters (chain 10, at a52ed8b): 1,036 / 16 -- twenty units
+newly exact against the session's baseline (the desk family, edge-mesh-mint,
+rsa-verify, the proof units), dce-reach the one pre-existing divergence. The
+16 left are the typeclass family (upstream synthesises `__show_T` and
+`__compare_T` definitions we do not), hosted-echo/http, builtin-alloc,
+foreword-state, int-wrapping-spelling, nrf52840-drivers, plug-oracle-arith,
+unit-smoke, vec-sized, edge-mesh-planes. Self-host EXACT, wire 2869/2869.
+Then the cost model (`src/cost.rs`: bounded declarations against the
+growing / allocating / over-budget sets, `BUILTIN_ALLOC` from upstream's
+registry; `linear` is a keyword our parser had not accepted as a class) and
+the class-instance rule read off `deriving` clauses (2052). Commits f001d47,
+b0044ef. Check gate 10 and the post-scoper census are running.
