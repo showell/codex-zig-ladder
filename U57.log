@@ -1056,3 +1056,11 @@ zigemit rebuilt on bare metal, ir-zig now 46/46 + 28/28 + 54/54.
 **Diagnostics:** the concrete-head CDX2001 had invented 68 errors corpus-wide
 (never measured there) -> primitive pairs only, gate back to 1096/173. CDX3002
 undefined name added (11 units). Essay `where-typed-ir-stands.md`.
+
+**Diagnostics, evening:** gate 1,096/173 -> 1,107/162, zero invented errors.
+CDX3002 added; it exposed act-level `let` scoping, claims/induction as proofs,
+known-but-untyped names, instance-method params named by their paren, a stale
+builtin table -- all fixed. `trying` lists are three scopes. The conflict
+census (`CONFLICT-PAIR`) says Unit-vs-base and VectorMask-vs-Boolean are
+upstream's reconciliations; the other clean-program conflicts are ours (desk,
+chapter scoping). Next: the effects family (39 units).
