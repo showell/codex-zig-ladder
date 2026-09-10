@@ -1139,3 +1139,11 @@ growing / allocating / over-budget sets, `BUILTIN_ALLOC` from upstream's
 registry; `linear` is a keyword our parser had not accepted as a class) and
 the class-instance rule read off `deriving` clauses (2052). Commits f001d47,
 b0044ef. Check gate 10 and the post-scoper census are running.
+
+**The census, post-scoper:** on clean units only Unit-vs-base (114),
+VectorMask-vs-Boolean (4), one Real-vs-Unit, one Constructed-vs-Text. No
+function pair anywhere, so `report_conflict` now names a primitive meeting
+a function (818dac8): the last three CDX2001 units. Gate 10 (at a52ed8b):
+1,248 / 21, its seven invented rows (six drivers' `I2c`, typeclass-poly's
+synthetic dictionary literal) fixed in c3857fa and e04fc8c. Chain 11 runs on
+818dac8.
