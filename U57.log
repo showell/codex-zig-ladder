@@ -1147,3 +1147,9 @@ a function (818dac8): the last three CDX2001 units. Gate 10 (at a52ed8b):
 1,248 / 21, its seven invented rows (six drivers' `I2c`, typeclass-poly's
 synthetic dictionary literal) fixed in c3857fa and e04fc8c. Chain 11 runs on
 818dac8.
+
+**Chain 11 (at 818dac8), the night's end:** check gate **1,267 agree / 2
+differ**, zero invented; the two are the second CDX1071 upstream's expression
+parser emits on a dot line (leading-dot-continuation, selector-no-field).
+Counters 1,036 / 16, self-host EXACT, wire 2869/2869. From 1,123 / 146 at
+the evening's gate 5. Essay postscript: `where-typed-ir-stands.md`.
