@@ -997,3 +997,35 @@ exercise moved u56->u58 and the Rust front end matches upstream on every one.
 Provenance note for U58 refinement: the set's PROVENANCE still names
 `cobblestone-u56-sunday`; re-cutting at u58 is a provenance-honesty rebank (like
 safari's corpus re-cut), not a correctness need, since the 28 already agree.
+
+## 2026-09-10: shape 2 closed on both sides; the arms consolidated; safari's check/gold scheme retired
+
+**Rust (`zonk-and-default` 332ae5b):** the single-caller inliner pairs the
+candidate's declared return type with the call site's type; probe 04 builds on
+our plug, upstream's still refuses. Self-host wire unmoved 2869/2869. Essay:
+`notes/the-call-site-already-knew.md`.
+
+**Upstream (PR 139, `inline-once-return-type` off 49fa9f27; on `u58-candidate`
+as 527d438f):** the same pair in `once-apply-site`, an `ir-fidelity` case
+(DROPPED -> CARRIED, reads with -Passes), COMPILER-74 registered for the
+checker's missing orphan default. Measured on the u58 stack: bootstrap
+converged in one round, QEMU fixed point HOLDS byte-identical, corpus census
+1,052 identical / 0 differ / 217 both-refuse. Bundles with the fix:
+`~/runs/codexzig-inline-rt/{codexzig,codexir}`.
+
+**`irdump whole` names the chapter Program** (ce498a3), as the driver does at
+every site; the third argument is gone from every caller.
+
+**The arms (cobblestone-curated-tests 489d28d):** `arms/<arm> <units-dir>`
+replaces fourteen per-corpus shell scripts; tools from bundles in `tools.tsv`
+(`~/codexir` and `~/zigemit` made durable); two frozen IRs per unit
+(`.upstream.ir` on repin, `.rust.ir` on purpose); `ir-rust` exact, `ir-diff` a
+report; `arm-gaps.tsv` for filed plug gaps; `ir-interp` dropped.
+
+**Safari (39e50d6):** `spec/export.py` -> `units/` (tracked), graded from the
+outside; judge/, gold/, probe/, build/ and the sweep/metal/wasm_arm harness
+retired; Grade under quire `Spec`. All arms green at u58 bundles except the
+three issue-125 literals (filed) and roc's four upstream-frontend holes.
+
+**Finding for Job 1, unread:** `ir-diff` on safari -- 31 of 54 units carry
+`error` on a `field-val "codepoint"` where upstream types `real`. Ours behind.
