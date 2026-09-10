@@ -1029,3 +1029,20 @@ three issue-125 literals (filed) and roc's four upstream-frontend holes.
 
 **Finding for Job 1, unread:** `ir-diff` on safari -- 31 of 54 units carry
 `error` on a `field-val "codepoint"` where upstream types `real`. Ours behind.
+
+## 2026-09-10 evening: PR 140, seventeen more Roc ports, a plug miscompile
+
+**PR 140** (`record-field-applied-args`): `lower-record` hands each field its
+declared type with the applied arguments substituted; a cold review widened it
+to the `let`-bound literal (`expected-or-recorded-ty`). Census 1,046 / 6 / 217,
+fixed point HOLDS. The six include COMPILER-30's class-dictionary lead.
+
+**Roc corpus 29 -> 46.** Batch 1 (closures, recursive sums, mutual recursion,
+a match): all green everywhere. Batch 2 (nested tags, multi-payload, when in
+arithmetic, captures, or-patterns, poly list-length, no-payload variant):
+`roc-poly-nopayload-variant` is COMPILER-74 (filed); **`roc-match-nested-tags`
+and `roc-rec-logic-match` expose a MISCOMPILE in both hosted plugs: a
+sub-pattern nested inside a constructor pattern is read as a wildcard** --
+the zig plug refuses the payload case and answers wrong on the nullary one,
+the wasm plug answers wrong on both. Issue drafted; zig fix sized at ~80
+lines; both wait on Steve's go.
