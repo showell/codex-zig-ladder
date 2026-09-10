@@ -17,3 +17,4 @@
 # a line here.
 #
 # If you are about to add a rule, you are about to hide something.
+__pycache__/
