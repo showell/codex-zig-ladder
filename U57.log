@@ -1064,3 +1064,34 @@ builtin table -- all fixed. `trying` lists are three scopes. The conflict
 census (`CONFLICT-PAIR`) says Unit-vs-base and VectorMask-vs-Boolean are
 upstream's reconciliations; the other clean-program conflicts are ours (desk,
 chapter scoping). Next: the effects family (39 units).
+
+## 2026-09-10 night: the diagnostics pile, unattended
+
+**Gate 5 read: 1,123 agree, 23 worse than before the effects axis.** Ten
+programs the oracle compiles clean had gained an effect error, fifteen refused
+ones were refused with too many. Four missing rules, one axis: `with E body`
+never discharged E from the body's row; a function passed as an argument was
+unified with symmetric rows where upstream lifts the argument's labels to the
+parameter's (`widen-arg-to-param`, dotted and scoped); one CDX2031 per
+definition, not per site; row labels are a canonical set. Gate 6: 1,146 /
+123, zero invented; counters 1,022 / 30; self-host EXACT, wire 2869/2869.
+
+**The proof normalizer, ported** (`src/proof_norm.rs`, run by the desugarer
+while the symbol table is writable): declared equalities reduce -- definitions
+unfold, matches on constructors reduce, literal arithmetic folds, the six list
+primitives compute on Cons/Nil spines -- and a for-all claim proved by
+`induction on` is checked constructor by constructor with hypotheses and cited
+lemmas bound. Then proof acyclicity (CDX4023) and the proof grammar (CDX4024).
+The proof slice of the corpus: 19 agree -> 41 of 44. Counters 1,030 / 22:
+eight proof units newly exact. Two silent holes found on the way: `forall`
+instantiation never substituted inside `propeq`/`tyapply`, so `Refl`'s
+variable was the TABLE's and the first claim bound it for all; and
+`TypeCon` vs `Constructed n []` were two spellings of one type.
+
+**The resolver's rules and the small ones:** CDX3001 duplicates, CDX3008
+undefined type names, CDX2032 arity, CDX2071/2073 literal ranges, CDX2093
+lanes, CDX2002 vs CDX3002 by case, CDX2086, CDX2072, CDX2003. A resolver error
+halts before the checker, as the oracle does (probed). That slice: 30 of 31.
+
+Commits d96b920, 793d627, d5c4c21, b3c6b0c. `tools/conflict_census.sh` is
+the census as a script. Gate 7 (at 793d627) and the census are running.
