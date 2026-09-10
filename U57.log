@@ -1111,3 +1111,18 @@ integer belongs is our own desk-family scoping gap) and the proof-relevance
 walk no longer follows record fields through the type table. Commits
 1f4988d, 75ac2c9, and the lexer/scope commit. The next gate runs on the
 last of them.
+
+**Toward morning.** Gate 9 (at 1af7474): 1,233 / 36. Since then: the
+CHAPTER SCOPER (`src/scoper.rs`, upstream's `Semantics/ChapterScoper`):
+a name two chapters define is mangled with its chapter and each chapter's
+mentions resolve to its own -- this was the desk family's `Rec:DateTime`
+where an integer belongs and the invented non-exhaustive match there, both
+gone; the parser's type-syntax refusals (1120/1121/1073/1024); record
+completeness (2006/2005); the punctuality checks (`src/punctual.rs`,
+6001/6002/6003/6004/6005); `I2c` in the capability vocabulary (six driver
+units had gained a CDX4001 -- the grep that read the table dropped names
+with digits). Commits a1b51fb, 91a248d, a52ed8b and the vocabulary fix.
+Chain 10 (release, self-host, counters, gate, census) runs on a52ed8b.
+Left: `bounded` declarations and the cost model (5 units, CDX6101),
+`deriving` (2052, 2), `Integer vs Fun` (3, pending the census), a second
+1071 on two units.
