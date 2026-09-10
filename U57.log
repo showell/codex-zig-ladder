@@ -1095,3 +1095,19 @@ halts before the checker, as the oracle does (probed). That slice: 30 of 31.
 
 Commits d96b920, 793d627, d5c4c21, b3c6b0c. `tools/conflict_census.sh` is
 the census as a script. Gate 7 (at 793d627) and the census are running.
+
+**Later that night.** Gate 7 (at 793d627): 1,157 / 112, zero invented.
+Counters 1,030 / 22 (fourteen proof and effect units newly exact; the one
+new divergence, dce-reach, predates the night). Then, unit-sized: the
+narrowing lints with the range prover (`src/narrowing.rs`, CDX2050/2051,
+`if`-arm refinement, bounded returns; 8/8 agree); comparison bans
+(2085/2089), list pattern shapes (2088), unreachable arms and constructor
+coverage (2096/2070), declared rigidity (2087), unobservable field writes
+(2068), the list-literal ceiling (9004); the lexer's refusals surfaced
+through checkdump (5/6/7/8) with a halt; capability scope (`src/
+effect_scope.rs`, 4001/4002). Two rules were narrowed by the census before
+they shipped: CDX2003 refuses only Text/Boolean/Char (a record where an
+integer belongs is our own desk-family scoping gap) and the proof-relevance
+walk no longer follows record fields through the type table. Commits
+1f4988d, 75ac2c9, and the lexer/scope commit. The next gate runs on the
+last of them.
