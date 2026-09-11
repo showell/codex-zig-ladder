@@ -1213,3 +1213,31 @@ reads as a definition and we dropped as a type def; found by deleting one
 line at a time from the accepted prefix after seventeen refused cuts. Every
 instrument is at 100% or filed. **The Rust compiler is PARKED here (Steve's
 call)**; the pivot is to Roc. Essays: `trimming-cobblestone.md`.
+
+**2026-09-12, the wire, the PR, and parking.** The third gate read for the
+first time since the reference decision: at 77bd70b, 928 identical, 122
+differ, 2 we-refuse, 205 the oracle refuses, 12 both. Then, one upstream
+rule each (b140ac6..9044a29): the IR pipeline halts on a diagnostic as the
+driver does (the 205 become both-refuse); labels sort in CCE order, not the
+alphabet (`text-compare` compares code units); `int-rem` is a `rem-int`
+binary and `compare` dispatches on the left type; a binary's operands and
+an `if` condition are lowered with their expectation; `lower-bin-op` picks
+vector and real-family operators; the inliner folds `X - (X / Y) * Y` to
+`rem-int`; arithmetic on a unit keeps the unit; a negated integer is
+int-default; a unit constructor's value keeps the unit (`__unit-<offset>`).
+Sampled on the 122: 40 identical after the first batch, more after; chain
+16 (release, self-host, counters, check, wire) runs on 9044a29 for the
+authoritative number. Families left, each named: a `when`/`if` whose arms
+mix bounded and plain integers (upstream's fresh result var takes the
+first arm; ours narrows), the `(tvar N)` rows where our zonk-and-default is
+ahead by policy, `add5 = (\x -> ..)` and the user conversion
+`Celsius-to-Kelvin` inlined by ours and kept by upstream, `fork`, list
+patterns' scrutinee let, `lazy` and vector patterns (we-refuse 2).
+
+**PR 142 sent** (outbound/SENT-pr142-class-scan-line-start.md): the
+section-title instance scan, off clean Update 58. Update 58 landed upstream
+2026-09-10 as 5b3e14a7. Two Update 58 plug gaps met on the way, reproduced
+on clean 5b3e14a7, stated in the PR and not yet filed: `cx_new` shadowed in
+zigemit.zig; no address-of for IRActStmt/IRPat in codexir.zig.
+
+**PARKED.** Steve's call: the Rust compiler rests here; the pivot is to Roc.
