@@ -1191,3 +1191,7 @@ A defect to file upstream, not one the reference copies. edge-mesh-planes
 (-2 ids), not yet read. The unit-smoke WIRE still differs from codexir in
 the unit lets (`__unit-N`), which predates today and belongs to the arms.
 Chain 13 runs on 3044651.
+
+**Chain 13 (at 3044651):** self-host EXACT, counters **1,050 / 2**
+(edge-mesh-planes, nrf52840-drivers -- both -2 ids, causes above and
+below), check gate 1,267 / 2 unchanged, zero invented.
