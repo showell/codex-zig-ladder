@@ -1246,3 +1246,12 @@ zigemit.zig; no address-of for IRActStmt/IRPat in codexir.zig.
 61, we-refuse 2 (lazy-smoke, vec-pattern), oracle-refuses 0, both-refuse
 217 (from 928 / 122 / 2 / 205 / 12 at 77bd70b); check 1,269 / 0; counters
 1,051 / 0 / 1 filed; self-host EXACT. The 61 are the families named above.
+
+**2026-09-11, evening: the pivot happened.** Safari runs in Roc: `rocemit`
+(rust-codex-compiler) emits one whole Roc module per Codex chapter from the
+typed IR; 54 of 54 specs match the frozen verdicts under roc-lang/nightlies'
+`nightly-2026-09-11-793f9d8`; a Roc wasm platform drives the same browser
+page; a Roc bird sits on the fifth tree on the right of every segment. The
+work and its log live in `~/showell_repos/roc-apps` (GitHub showell/roc-apps)
+and the essays `an-afternoon-safari-to-roc.md`, `what-is-slow.md`,
+`safari-wasm-in-roc.md`. This log ends here; the ladder is deprecated.
