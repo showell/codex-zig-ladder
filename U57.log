@@ -1153,3 +1153,41 @@ differ**, zero invented; the two are the second CDX1071 upstream's expression
 parser emits on a dot line (leading-dot-continuation, selector-no-field).
 Counters 1,036 / 16, self-host EXACT, wire 2869/2869. From 1,123 / 146 at
 the evening's gate 5. Essay postscript: `where-typed-ir-stands.md`.
+
+**2026-09-11, the type-class port and the counter backlog.** Chain 12 (at
+1e8d1ee) held the diagnostics gate at 1,267 / 2 with zero invented, self-host
+EXACT, counters 1,041 / 11. The day's work was the counter backlog, one
+cause each, read off the oracle with a matrix of minimal units:
+
+- The type-class desugaring (`src/classes.rs`, 1e8d1ee): derived
+  Show/Eq/Ord defs, class-method registration for multi-instance classes,
+  the constrained-def rewrite (dictionary parameter, method calls through
+  it, `__d-Show-a` for the derived classes), dictionaries at call sites, and
+  the PRIMITIVE WRAPPERS -- a chapter with a derived-dictionary def gets
+  `__show_Integer/Boolean/Text/Real` (and `__compare_*`) ahead of its own
+  defs. That last rule showed up as +8 ids / +12 rows per chapter for Show
+  and +12 / +24 for Ord whatever the def looked like; the oracle's binding
+  list named the wrappers. typeclass-smoke, type-class-no-instance exact.
+- A class's own name past its superclass (dd53201): `class Equatable a =>
+  Sortable` named Equatable twice. typeclass-poly exact.
+- The bare `Integer wrapping` (8cbcb86): read as `Integer a`, so every
+  such def was parameterized and instantiated. int-wrapping-spelling and
+  plug-oracle-arith exact. A negated i64-min literal folded with checked
+  arithmetic panicked the debug build only (49f20de).
+- Unit conversions synthesized (`1 Minute = 60 Second` declares
+  `Minute-to-Second`) and effect ops skipped when a builtin already binds
+  the name (fbe5596): unit-smoke, foreword-state exact.
+- The builtin type probe (`ladder/builtins_probe.py`, 3044651): unsized
+  vectors rendered as a Python list and were unreadable; `schan-name` left
+  as a name; no arm for a named row; host-socket and identity-set-proc
+  refused; effect names dropped that the table carried by hand. vec-sized,
+  hosted-echo, hosted-http, builtin-alloc exact.
+
+Left on the counter side, each with its cause: nrf52840-drivers (-2 ids):
+upstream's class/instance scanner reads `instance ID)` out of the section
+title `TWIM0 (I2C, 0x40003000 -- shared with SPIM via instance ID)` and
+synthesizes a dictionary `ID-dict-)`; pruned from the wire, so counter-only.
+A defect to file upstream, not one the reference copies. edge-mesh-planes
+(-2 ids), not yet read. The unit-smoke WIRE still differs from codexir in
+the unit lets (`__unit-N`), which predates today and belongs to the arms.
+Chain 13 runs on 3044651.
