@@ -1195,3 +1195,12 @@ Chain 13 runs on 3044651.
 **Chain 13 (at 3044651):** self-host EXACT, counters **1,050 / 2**
 (edge-mesh-planes, nrf52840-drivers -- both -2 ids, causes above and
 below), check gate 1,267 / 2 unchanged, zero invented.
+
+**Chain 14 (at e8b479d):** check gate **1,269 / 0** (the doubled CDX1071 on
+dot lines, e8b479d), counters 1,050 / 2, self-host EXACT. Two essays:
+`where-rust-stands-against-upstream.md` (the four instruments' numbers, the
+open gaps) and `working-against-an-imperfect-oracle.md` (the method; Steve's
+replies became memory `feedback_working_against_an_oracle`). Steve's call:
+hold the 100% bar on the two counter units, then PARK the Rust compiler.
+Next: a counter-gaps ledger for the upstream-caused row (nrf52840-drivers),
+and edge-mesh-planes' `update-session-resolved`.
