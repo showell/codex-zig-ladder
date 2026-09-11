@@ -1241,3 +1241,8 @@ on clean 5b3e14a7, stated in the PR and not yet filed: `cx_new` shadowed in
 zigemit.zig; no address-of for IRActStmt/IRPat in codexir.zig.
 
 **PARKED.** Steve's call: the Rust compiler rests here; the pivot is to Roc.
+
+**Chain 16 (at 9044a29), the wire read again:** identical **989**, differs
+61, we-refuse 2 (lazy-smoke, vec-pattern), oracle-refuses 0, both-refuse
+217 (from 928 / 122 / 2 / 205 / 12 at 77bd70b); check 1,269 / 0; counters
+1,051 / 0 / 1 filed; self-host EXACT. The 61 are the families named above.
