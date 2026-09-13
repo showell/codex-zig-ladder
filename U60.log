@@ -280,3 +280,14 @@ global.
 going forward. All these fallthroughs just make the code more fragile and harder
 to reason about." The fallback and `CODEXC_RAW` are debt. The replacement, and
 how it names its checkout, are to be designed with Steve before coding.
+
+## The repin steps that rewrite tracked expectations (Steve: go, in order)
+
+**1. safari `spec/export.py` at U60: nothing moved.** Language
+`cobblestone-u60rel`; 54 exported, 0 refused, exit 0 (run with `CODEX_ROOT`
+unset, since `codexrun` inherits the environment). All 108 unit files were
+rewritten at 16:01 and `git status` is clean. Why: the only Cobblestone chapters
+the units carry are Console, ListUtils and Tuple (Grade, DeviceMath, Trig and the
+rest are safari's own quire). All three are byte-identical between `8570fba1`,
+the pin of the 2026-09-10 export, and `9fff850c`. Nothing to commit, and no
+`.rust.ir` to re-freeze.
