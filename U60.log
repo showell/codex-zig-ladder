@@ -331,3 +331,40 @@ Those two units were rebuilt by hand through `~/codexzig` and `zig build-exe`:
                                 constructor of Foo a, leaves `a` unconstrained.
                                 The same class as COMPILER-81, but not its
                                 specimen, and no upstream row names it.
+
+**4. arm-gaps.tsv pruned.** A filed gap that now matches prints `match` anyway,
+so a stale row just rots.
+
+    roc     7 rows closed by U59 (PR 140 x3 run-zig; PR 141 x2 run-zig + x2
+            run-wasm). The 2 left are relabelled from the real errors above:
+            roc-alias-empty -> COMPILER-81; roc-poly-nopayload-variant ->
+            "COMPILER-81's class, not its specimen; no upstream row names this
+            shape". Re-run: run-zig roc 44 match, 2 build-failed-filed, exit 0.
+            curated-tests fc76400.
+    safari  all 6 issue-125 rows closed (run-zig and run-wasm 54/54); the
+            header stays. safari-codex a4ad51a.
+
+## The chain at U60, end to end
+
+    1  cobblestone-qemu        GREEN 5/5 (after assemble_unit.ps1: the seed
+                               reads what compile.ps1 would send)
+    2  codex-zig-transpiler    fixed point HOLDS; ~/codexzig, ~/codexir and
+                               ~/zigemit refreshed, SHA256SUMS added
+    3  codex-wasm-transpiler   fixed point HOLDS, both roads agree, +0.05% memory
+    4  rust-codex-compiler     master = ee9cb16 (+ test fix 05a43cd); release
+                               rebuilt; cargo test 243/0
+    5  safari, curated         specs 54; run-interp, ir-rust, ir-zig, run-wasm
+                               all match; run-zig 128 but 2 filed; ir-diff
+                               128 but 2 (policy); re-export moved nothing;
+                               upstream IR re-frozen (PR 140, issue 125)
+
+**Open, and nothing is running:**
+
+- Rust does its own resolution, per Steve. Design first; the fallback and
+  CODEXC_RAW go.
+- The cite resolvers: cobblestone-qemu FINDINGS 3 (3a, 3b, the Rust row).
+  Watching, not findings.
+- roc-poly-nopayload-variant's T287: a shape no upstream row names. A candidate
+  measurement for upstream; not drafted.
+- The Rust arm's own gates (check, counters, self-host, wire) were not run
+  against the U60 ~/codexir. Its oracle moved, and the arm is parked.
