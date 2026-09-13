@@ -255,3 +255,28 @@ The fix is confined to `#[cfg(test)]`, so the release binaries built from
 `FINDINGS.md` 3, third row). Every unit in the three dirs carries ListUtils and
 Tuple, and the Rust-side arms run with `CODEX_ROOT` unset, so a missing cite
 refuses instead of resolving against the ambient checkout.
+
+## Consumers without tracked writes: all green
+
+    safari spec/run.sh   54 specs pass, grading at least 2,351 values
+    run-interp           cobblestone 28/28 · roc 46/46 · safari 54/54 match
+    ir-rust              cobblestone 28/28 · roc 46/46 · safari 54/54 agree
+    ir-zig               cobblestone 28/28 · roc 46/46 · safari 54/54 match
+    run-zig (earlier)    cobblestone 28/28 · roc 44 + 2 filed · safari 54/54
+
+The Rust arms used `~/build/rust-target/release`, built from master `ee9cb16`,
+and `ir-zig` used `zigemit 9fff850c`. `ir-rust` agreeing everywhere means the 35
+commits master took change nothing `irdump` emits for these 128 units.
+
+**CODEX_ROOT, eliminated at its source (Steve).** The Rust tools read it in two
+places: the `bundle` binary, and `bundle::load`'s lazy fallback for a unit that
+lacks a chapter. `~/.bashrc` line 4 exported it globally at NewRepository, so the
+fallback would have landed there silently. Line 4 is deleted. Every live script
+names its checkout or refuses without one; the transpilers use
+`COBBLESTONE_ROOT`, and only the deprecated ladder could have relied on the
+global.
+
+**Direction, not yet done:** "we should have Rust totally do its own resolution
+going forward. All these fallthroughs just make the code more fragile and harder
+to reason about." The fallback and `CODEXC_RAW` are debt. The replacement, and
+how it names its checkout, are to be designed with Steve before coding.
