@@ -131,5 +131,16 @@ the first `for` into a chapter we bundle. Tracked, and not a finding:
 cobblestone-qemu `FINDINGS.md` section 3.
 
 `generated/` was cleaned first (Steve): the dirty 2026-09-10 artifacts were
-restored to HEAD and the ignored cache deleted. **Not yet run:** a cold
-`./build.py` at U60, three guests, which also repins `generated/`.
+restored to HEAD and the ignored cache deleted.
+
+**Cold `./build.py --force` at U60: the fixed point HOLDS.**
+
+    fixed point   byte-identical, 2,999,039 bytes of zig
+    arith.codex   MATCHES all 9 expected lines
+    built in      506s; guest peaks 406 / 721 / 1,347 MB of 3,072
+    diagnostics   ring plug 36 (CDX3005x4, CDX4010x31, CDX4030x1), no
+                  CDX3006; the transpiler compile carries none
+
+`generated/` is repinned to U60. `PROVENANCE.oracles` is not this build's: it
+still describes the `codexir`/`codexcheck` pair `build_codexir.py` made at
+`8570fba1`, and those binaries are gone from `generated/local/`.
