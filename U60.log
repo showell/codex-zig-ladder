@@ -121,10 +121,14 @@ Guest-free at U60, each of the five appears once as `Foreword--<name>`, the
 resolver adds nothing, and the bundle holds 6,586 definitions, the same
 multiset as before with none defined twice.
 
-**The two upstream resolvers disagree about presence.** plug-build-lib's own
-comment names the consequence: "asked only after the registry fails, a chapter
-both present and resolvable is bundled twice". This is not a finding yet: we
-have not shown it bite a bundle upstream builds.
+**The two resolvers disagree about presence, and neither rule is new.**
+`Resolve-CiteOrder` checks presence only when the chapter's file is missing, a
+rule from Update 35 (`faf1c639`). The implicit ListUtils/Tuple walk arrived in
+Update 36 (`b1c50258`). plug-build-lib's "Presence is asked FIRST" is OUR PR 69
+(landed `a061c173`, 2026-08-19), which fixed exactly this ordering in
+`Resolve-PlugForewords` and left `Resolve-CiteOrder` unchanged. U59 only put
+the first `for` into a chapter we bundle. Tracked, and not a finding:
+cobblestone-qemu `FINDINGS.md` section 3.
 
 `generated/` was cleaned first (Steve): the dirty 2026-09-10 artifacts were
 restored to HEAD and the ignored cache deleted. **Not yet run:** a cold
