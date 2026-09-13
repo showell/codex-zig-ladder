@@ -308,3 +308,26 @@ upstream made in U59, and each is attributed token by token:
                   0.012500000000000011 -> ...240). Issue 125's fix reaching the
                   plug-built codexir. They are the same eight that ir-diff had
                   one ULP off from the Rust front end.
+                  Committed as safari-codex c5179a0.
+
+**3. run-wasm and ir-diff at U60.**
+
+    run-wasm   cobblestone 28/28 · roc 46/46 · safari 54/54 MATCH
+               (codexwasm built 2026-09-13T15:49:38Z, codexzig at
+               cobblestone-u60rel)
+    ir-diff    cobblestone 28 same · safari 54 same · roc 44 same, 2 differ
+
+Safari's eight one-ULP differences are gone. The two roc differences are the
+units run-zig still refuses, where the Rust front end writes `int-default` and
+upstream leaves the variable unconstrained: the zonk-and-default policy
+difference, expected.
+
+Those two units were rebuilt by hand through `~/codexzig` and `zig build-exe`:
+
+    roc-alias-empty             "zig plug: no element type for this empty list"
+                                -- COMPILER-81's own words, its own specimen
+    roc-poly-nopayload-variant  "zig plug: type variable T287 is not declared
+                                at this site" -- Baz, the no-payload
+                                constructor of Foo a, leaves `a` unconstrained.
+                                The same class as COMPILER-81, but not its
+                                specimen, and no upstream row names it.
