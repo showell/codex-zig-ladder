@@ -1,0 +1,131 @@
+# Update 60
+
+Updates 59 and 60 both landed 2026-09-12. We go straight from our Update 58
+work to Update 60.
+
+    9fff850c  Update 60   seed CF9EDD812EA7E78B
+    3fefc985  Update 59   seed 49070BAEB1E31085
+    5b3e14a7  Update 58   seed F9165E313BE16815
+
+Each seed name is the sha256 prefix of that commit's `seed/Codex.cdx`, checked
+for all three. Worktree `cobblestone-u60rel` is detached at `9fff850c`.
+
+## What upstream did with ours
+
+Nothing of ours is open upstream: no PR, no issue.
+
+    U59   PRs 135 136 137 138 139 140 141 142, with credit; issues 120, 125
+    U60   issues 110 (native CDX keeps declared exports), 115 (deck exit
+          refuses a nonpositive counter), 126 (hosted comparisons Boolean);
+          COMPILER-82, native nested patterns, from PR 141
+
+Changes made on ingestion:
+
+- PR 142's row is COMPILER-84, not 81, which was already taken.
+- PR 141's Zig half was rewritten: a depth-first walk with a balanced fragment
+  join replaces our copied work lists. The wasm half gained lazy guard
+  evaluation after a nested match.
+- The source prose of PRs 139 and 140 was omitted.
+
+Every u58-candidate commit's artifact is present at U60. `var cx_new` is gone
+(`cx_frac`, also apoorvapendse's PR 143), and the boxing, the five fixtures and
+PR 137's two rows are all present. `ZigEmitter.codex` differs from the
+candidate's by their rewrite.
+
+**Issue 126 asks us for something.** If our own `codexir` still types the six
+comparisons `error`, they want the build recipe. Theirs, built through the Zig
+plug's streaming entry, types all six `boolean`, and its IR payload is
+byte-identical to bare metal's.
+
+Still open on their side: `typeclass-smoke` (T578, MethodSpecialization); plugs
+2.58, the network Zig entry running out of memory on compiler-sized IR;
+COMPILER-81, an unconstrained empty-list element; COMPILER-39, where only the
+wasm plug reads declared exports.
+
+## cobblestone-qemu, first run: RED in 6 seconds, and ours
+
+    ~/runs/20260913T143816Z-u60   ring plug   CDX3002: Undefined name: map-list
+
+The line is `ZigEmitter.codex:2372`, a `for` in `zig-nested-context`. It is
+from upstream's rewrite of PR 141's Zig half; our branch has no `for` in that
+file.
+
+**The defect was the harness.** Upstream's `build/compile.ps1` runs the
+checkout's `Resolve-CiteOrder` over its source and writes the resolved chapters
+between the mode line and the source. That resolver walks Foreword ListUtils
+and Tuple for EVERY unit, because the desugarer writes `map-list` for a `for`
+and `MkTup<N>` for a tuple. Our blobs were the mode line, the bundle and EOT.
+Nothing bundled used `for` in a live section until U59.
+
+Measured before changing anything, with upstream's two functions over our
+bundles: they add Foreword ListUtils and Tuple, 123 lines, to both the ring
+plug and fib, and nothing else. The ZigPlug body's cite closure (15 chapters)
+does not reach ListUtils. Upstream's plug build compiles only because
+compile.ps1 adds it.
+
+Fixed as cobblestone-qemu `b7dcd33` (Steve chose calling upstream's resolver
+over hardcoding the two chapters or citing ListUtils in our ring body):
+`assemble_unit.ps1` dot-sources the checkout's `build/quire-map.ps1` and makes
+compile.ps1's calls. On the U60 ring plug bundle, the new blob is the old one
+with 3,731 bytes after the mode line, and the rest is byte-identical.
+
+The second run (`~/runs/20260913T144846Z-u60`) built the ring plug in 25 s
+(600,237 bytes) and compiled fib, then the transpile refused the plug as
+stale. That was mine: `b7dcd33` also changed the ring plug fingerprint to the
+blob's sha, while `plug_run_ring.py` re-bundles and compares the bundle's.
+Reverted in `ad04f1c`, and the comment now says the two must agree.
+
+## cobblestone-qemu, third run: GREEN 5/5 in 11m44s
+
+    ~/runs/20260913T145016Z-u60             checkers ad04f1c
+    ring plug   0m26s
+    fib         0m08s
+    zigemit     0m42s   compile 26s, transpile 13s
+    codexir     4m30s   compile 2m39s, transpile 1m46s
+    x86emit     5m47s   compile 2m56s, transpile 2m46s
+    verify   zig PASS · qemu PASS · x86 PASS · boot PASS (prints 6765)
+
+The stage timings are within a few percent of u58-candidate's (above in
+U57.log).
+
+The QEMU checker first read "IR DIFFERS from the native tool, first at line
+6". **Attributed:** bare metal's unit carries ListUtils and Tuple, whose
+sections, `MkTup` ctors and `Tup` type defs survive pruning. Native `codexir`
+fed the same unit gives bare metal's IR line for line, 17 of 17. The checker
+now hands the native tool that unit (cobblestone-qemu `72c9b5c`), and it reads
+"IR identical".
+
+**Issue 126, measured.** Our U60 native `codexir` types all six comparisons
+`boolean`, and its IR for the six-comparison chapter is byte-identical to the
+seed's on the same unit. Posted on the issue (comment 5654072955); FINDINGS.md
+finding 1 is marked closed. Which change flipped it on our road is not
+measured.
+
+## codex-zig-transpiler: the same gap, keyboard work done
+
+`guest.wrap` wrote mode line, bundle and terminator. `source/resolve_unit.ps1`
+makes compile.ps1's two calls and writes the result INTO the bundled file, so
+stage 7 (native) still reads what stage 4 (the seed) read. `build.py`'s
+`bundle()` runs it after each bundler.
+
+Resolving the transpiler subject raised compile.ps1's own WARNING: five
+forewords (Maybe, Wrap64, Fat16, ImportGate, FactDisk) that
+`bundle_codexzig.ps1` listed under Parsmi. plug-build-lib asks about presence
+FIRST, so it took `Parsmi--Maybe` as Maybe. quire-map's `Resolve-CiteOrder`
+consults presence only when the chapter's FILE is missing; otherwise it needs a
+`Foreword--Maybe` header. compile.ps1 would therefore have bundled each twice.
+The bundler no longer lists them, and plug-build-lib brings them as
+`Foreword--<name>`, as it does CCE.
+
+Guest-free at U60, each of the five appears once as `Foreword--<name>`, the
+resolver adds nothing, and the bundle holds 6,586 definitions, the same
+multiset as before with none defined twice.
+
+**The two upstream resolvers disagree about presence.** plug-build-lib's own
+comment names the consequence: "asked only after the registry fails, a chapter
+both present and resolvable is bundled twice". This is not a finding yet: we
+have not shown it bite a bundle upstream builds.
+
+`generated/` was cleaned first (Steve): the dirty 2026-09-10 artifacts were
+restored to HEAD and the ignored cache deleted. **Not yet run:** a cold
+`./build.py` at U60, three guests, which also repins `generated/`.
