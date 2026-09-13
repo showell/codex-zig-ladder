@@ -181,3 +181,33 @@ patterns). The U60 cobblestone-qemu sandbox holds a fresh one.
 `build_codexir.py` echoes all of codexzig's stdout. That carries 410
 `CX-DECK` deck reports per oracle, the zig prelude's report since our PRs
 77/81/83, and the verdict lines sit among them.
+
+**`~/zigemit` is refreshed too**, from the U60 cobblestone-qemu sandbox
+(`1c1883b4`). Its receipt is that sandbox's PROVENANCE, with SHA256SUMS added.
+Its only consumer is curated `ir-zig`.
+
+## Consumers, first: run-zig (ahead of Steve's order)
+
+Steve's order is wasm first, then the Rust compiler back on master, then safari
+and curated. run-zig ran before both of those. The result stands, because it
+reads only `~/codexzig`:
+
+    cobblestone/units    28 of 28 match
+    roc/units            44 match, 2 build-failed-filed: roc-alias-empty and
+                         roc-poly-nopayload-variant, both filed as COMPILER-74
+                         (upstream now tracks the empty-list element as
+                         COMPILER-81)
+    safari-codex/units   54 of 54 match -- the three issue-125 real-literal
+                         gaps match now
+
+**Stale run-zig rows in `arm-gaps.tsv`:** safari's three (issue 125) and roc's
+five (PR 140 x3, PR 141 x2). A filed gap that now matches just prints `match`,
+so these rot silently. Prune them once the wasm rows are known too.
+
+Before the wasm rebuild, codex-wasm-transpiler's dirty `generated/` (a
+2026-09-10 build at `075a4550`) was restored and its ignored cache cleared;
+`MEMORY.bank` is tracked and was not touched. Its `build.py` looks for a
+codexzig pin at `<binary>/../../PROVENANCE`, which assumes the transpiler
+repo's layout. Pointed at the `~/codexzig` bundle it would report the pin
+UNVERIFIED, so the build points `CODEXZIG` at
+`codex-zig-transpiler/generated/local/codexzig`, the same `8169dac4`.
