@@ -451,3 +451,30 @@ and `cx_deck_report` writes only there. The deck parts alone, built with zig:
 
 Queued: the candidate's fixed point, then codexir built from it and compared
 with U60's over all 128 units, then ir-interp against it.
+
+**The queue ran detached** (`systemd-run --user`, logs in
+`~/runs/2026-09-13-u60-queue/`), 18:00 to 18:18, while Steve travelled.
+
+    candidate fixed point       HOLDS, byte-identical, 475 s; arith 9/9
+    candidate zig vs U60's      37 lines: cx_deck_fd, the fd 3 probe in
+                                cx_deck_set, the write in cx_deck_report,
+                                and the compiler's own copies of them
+    candidate codexir vs U60's  128 units: IR and notices identical, no
+                                CX-DECK on stdout, U60's lines on fd 3 by
+                                count and used=; 36 units reach the report
+    ir-interp vs the candidate  safari 54 agree, nothing set aside
+
+`arith.zig` reaches `cx_deck_report` without `cx_deck_set`. It gains the
+variable and an early return, and it still never reports. The evidence is
+codex-zig-transpiler branch `deck-report-fd3` (`64156b3`); the plug branch is
+on the fork.
+
+**Safari re-exported and re-frozen** (safari `289750c`). Each unit's IR moved
+only in the definitions' chapter field, which gained the quire: every
+`.rust.ir` differs from its predecessor only there, and `ir-diff` reads the
+two frozen files as the same before and after.
+
+    run-interp, ir-zig, run-zig   54 match
+    ir-interp                     54 agree
+    ir-rust, ir-diff (re-frozen)  54 agree, 54 same
+    run-wasm                      54 MATCH
