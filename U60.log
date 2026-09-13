@@ -240,3 +240,18 @@ point `9044a29`, then 30 rocemit/Mem commits (a new `roc_emit.rs`, plus about
 `lowering.rs`). Every release binary in `~/build/rust-target/release`
 predated commits to its own sources, so they are rebuilt from master before
 any consumer arm runs.
+
+    cargo build --release   at ee9cb16, 2m08s, exit 0
+    cargo test              did NOT compile: c6792a2 gave roc_emit's num_lit
+                            an f32 flag and left three unit tests calling it
+                            with one argument. The fix passes `false`, the
+                            f64 path those tests are about. 243 passed,
+                            0 failed.
+
+The fix is confined to `#[cfg(test)]`, so the release binaries built from
+`ee9cb16` are the ones the consumer arms use.
+
+**The Rust front end's resolver falls back to CODEX_ROOT** (cobblestone-qemu
+`FINDINGS.md` 3, third row). Every unit in the three dirs carries ListUtils and
+Tuple, and the Rust-side arms run with `CODEX_ROOT` unset, so a missing cite
+refuses instead of resolving against the ambient checkout.
