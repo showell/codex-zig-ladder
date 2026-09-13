@@ -144,3 +144,40 @@ restored to HEAD and the ignored cache deleted.
 `generated/` is repinned to U60. `PROVENANCE.oracles` is not this build's: it
 still describes the `codexir`/`codexcheck` pair `build_codexir.py` made at
 `8570fba1`, and those binaries are gone from `generated/local/`.
+
+## The bundles, refreshed at U60
+
+**Read before running.** `build_codexir.py` reads build.py's subject,
+`local/codexzig`, the two harness chapters, `zig` from PATH, and
+`generated/PROVENANCE` for the pin. It writes only under `generated/`; the
+bundles are copied by hand.
+
+The consumers parse the receipts, so the format is a contract:
+
+- curated `arms/common.py` takes the first `checkout` line from codexzig's
+  receipt, and the line after it from codexir's;
+- `arms/run-wasm` takes the LAST `checkout` line's path as `COBBLESTONE_ROOT`;
+- safari's `harness/cobblestone_pin.py` takes `^checkout\s+(\S+)` and sets it
+  as `CODEX_ROOT`;
+- rust-codex-compiler runs `grep -A1 '^checkout' | tail -1`.
+
+So each receipt keeps exactly one `checkout` line, and that path is the pin.
+
+    ~/codexzig   codexzig 8169dac4, the binary behind the fixed point's stage 7
+    ~/codexir    codexir 5aa4b516, codexcheck 0ee2893c (build_codexir.py,
+                 both smokes pass; transpiler a3bb952)
+    both         checkout cobblestone-u60rel 9fff850c; SHA256SUMS beside
+                 the receipt
+
+Every consumer parser, run on the new receipts, resolves
+`cobblestone-u60rel` / `9fff850c`. Safari's `CODEX_ROOT` and run-wasm's
+`COBBLESTONE_ROOT` therefore now point at the U60 tree. The old bundles were
+deleted: neither binary matched any build under `~/runs`, and neither receipt
+carried a binary hash.
+
+**NOT refreshed:** `~/zigemit` (`075a4550`, u58-candidate plus nested
+patterns). The U60 cobblestone-qemu sandbox holds a fresh one.
+
+`build_codexir.py` echoes all of codexzig's stdout. That carries 410
+`CX-DECK` deck reports per oracle, the zig prelude's report since our PRs
+77/81/83, and the verdict lines sit among them.
