@@ -368,3 +368,17 @@ so a stale row just rots.
   measurement for upstream; not drafted.
 - The Rust arm's own gates (check, counters, self-host, wire) were not run
   against the U60 ~/codexir. Its oracle moved, and the arm is parked.
+
+**Steve, after the chain:** Rust resolution and the Rust gates wait for the
+next big project (Rust -> Roc). Report T287 upstream, then dig into the resolver
+ledger, possibly alongside Rust resolution.
+
+- **Issue 146 sent** (`outbound/SENT-issue146-nullary-ctor-unbound-param.md`).
+  A minimal reproducer on clean U60 shows the seed's own IR leaving `Baz`'s
+  parameter unbound (`tvar 287`), with controls. A cold read cut three
+  unsupported claims and one wrong explanation before it went.
+- **Essay:** http://143.244.172.148:9100/notes/the-cite-resolvers.md
+  It lays out the four resolvers (R1 plug-build-lib, R2 quire-map, R3 Rust,
+  R4 concat-codex-self's own walk), with graphviz. `concat-codex-self.ps1` and
+  `bundle-app.ps1` cannot hit 3a: the first prefixes forewords with their own
+  quire, and the second starts from a bare source.
