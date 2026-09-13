@@ -382,3 +382,72 @@ ledger, possibly alongside Rust resolution.
   R4 concat-codex-self's own walk), with graphviz. `concat-codex-self.ps1` and
   `bundle-app.ps1` cannot hit 3a: the first prefixes forewords with their own
   quire, and the second starts from a bare source.
+
+## Rust resolves on its own, the release binaries are swapped, ir-interp is back
+
+Steve's direction: Rust does all of its own resolution, with no fallthroughs.
+
+**The resolver** (rust-codex-compiler `16e88f3`). `bundle.rs` reads no
+environment variable. The checkout is the tree the file lives in, or a
+`checkout` line in the nearest `quires.tsv`. A cite finds its chapter by the
+compiler's scoper rule (`find-slug-for-cite-name`): `Quire--Name` first, then
+the one chapter of that name under any prefix or none, with several refused.
+A `Quire--Name`-only rule came first and refused too much:
+- the self-host subject;
+- all 128 curated and safari units;
+- `cite-override-quire.codex`.
+
+Measured:
+
+    tools/resolver_agree.py, 1,293 programs under codex/test, apps/ out
+      1,291  the same headers in the same order as compile.ps1's resolver
+          2  both refuse: errors/missing-cite, errors/unregistered-quire-cite
+    every unit the Rust arms read        unchanged, byte for byte
+    Roc ladder, new rocemit              496 of 1,032, ledger byte-identical
+
+**codexrun hosts the compiler.**
+- `print-text` and `write-binary` are added (`037313a`).
+- `~/codexir` ships `codexir-subject.codex` (`409c58cc`), which an
+  `ir-subject` receipt line names (codex-zig-transpiler `a652544`).
+- Curated `arms/ir-interp` is back (`c832989`). codexrun runs that source on
+  each unit and must equal codexir byte for byte.
+- fib went first, through `ladder/hosts.py`: 1,863 bytes, identical.
+
+The results:
+
+    ir-interp   cobblestone 28, roc 46, safari 54 agree
+                36 safari units carry CX-DECK lines on codexir's stdout,
+                set aside and counted
+
+The first safari run read 36 DIFFERS. Every one was the zig runtime's `CX-DECK`
+telemetry on stdout, and the IR was identical.
+
+**The swap.**
+- `~/build/rust-target` is `037313a`.
+- Safari's `quires.tsv` names the checkout, and `cobblestone_pin.py` checks it
+  against the codexzig bundle's pin (`b80e7ca`).
+- roc-apps' `CODEX_ROOT` exports are gone, and the ladder writes a unit's stamp
+  when it writes the verdict (`7be322f`).
+
+After the swap, with `CODEX_ROOT` unset:
+
+    run-interp, ir-rust, ir-zig, ir-interp   all 128 units match or agree
+    safari spec/run.sh                       54 pass, grading >= 2,351 values
+    Roc ladder                               496 of 1,032, ledger unchanged
+    gpu Plasma, games Game2048Wasm           pass, from cobblestone-u60rel
+    safari spec/export.py                    54 exported, no .expected moved;
+                                             the units' headers now carry
+                                             their quire (not yet committed)
+
+**CX-DECK moves to fd 3** (Steve's call). The report is ours (PRs 77/81/83),
+and nothing upstream reads it. It shares fd 1 with the compilers' notices, and
+five places already work around it. The candidate is `zig-deck-report-fd3`
+(`55760826`, local, off U60): `cx_deck_set` asks once whether fd 3 is open,
+and `cx_deck_report` writes only there. The deck parts alone, built with zig:
+
+    U60        fd 3 closed or open   CX-DECK on stdout
+    candidate  fd 3 closed           nothing anywhere
+    candidate  fd 3 open             the CX-DECK line on fd 3, stdout empty
+
+Queued: the candidate's fixed point, then codexir built from it and compared
+with U60's over all 128 units, then ir-interp against it.
