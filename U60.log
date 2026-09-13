@@ -291,3 +291,20 @@ the units carry are Console, ListUtils and Tuple (Grade, DeviceMath, Trig and th
 rest are safari's own quire). All three are byte-identical between `8570fba1`,
 the pin of the 2026-09-10 export, and `9fff850c`. Nothing to commit, and no
 `.rust.ir` to re-freeze.
+
+**2. freeze-upstream-ir with `~/codexir` at `9fff850c`.** Every change is a fix
+upstream made in U59, and each is attributed token by token:
+
+    cobblestone   28 unchanged
+    roc           43 unchanged, 3 re-frozen: roc-iter-map, -keep-if, -drop-if.
+                  __lam_0's result was `ctd "Step" (args (tvar 16))`, the
+                  record declaration's own parameter; now `(tvar 45)` or
+                  `(tvar 44)`, the applied argument. PR 140's fix.
+                  Committed as curated-tests 50f3ee8.
+    safari        46 unchanged, 8 re-frozen: BikeSpec FrameSpec JointSpec
+                  LensSpec NumSpec TreesSpec TrigSpec ViewYawSpec. All 18
+                  changed tokens are num-lit bits moving by exactly one
+                  (TreesSpec 11.700000000000001 -> ...751, ViewYawSpec
+                  0.012500000000000011 -> ...240). Issue 125's fix reaching the
+                  plug-built codexir. They are the same eight that ir-diff had
+                  one ULP off from the Rust front end.
