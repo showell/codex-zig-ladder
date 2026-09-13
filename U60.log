@@ -211,3 +211,32 @@ codexzig pin at `<binary>/../../PROVENANCE`, which assumes the transpiler
 repo's layout. Pointed at the `~/codexzig` bundle it would report the pin
 UNVERIFIED, so the build points `CODEXZIG` at
 `codex-zig-transpiler/generated/local/codexzig`, the same `8169dac4`.
+
+## codex-wasm-transpiler at U60: the fixed point holds and both roads agree
+
+The self road refuses a tracked module built at another revision, and the old
+one was `8570fba1`. So the zig road ran first, then `--road both`.
+
+    pin check     codexzig built at 9fff850c, matching the checkout
+    subject       3,493,315 bytes
+    native        codexwasm 40,477,730 bytes; emits in 51s
+    roads         zig and self agree byte for byte
+    fixed point   IDENTICAL, 8,412,266 bytes (278fe129), self-test caught
+    memory        1,656.4 MB, 40.4% of wasm32; ratchet +0.05% (not rebanked)
+    sample        arith.codex MATCHES all 9 lines
+    .wat vs HEAD  17,526 -> 17,837 lines (+3,677 / -3,366), +124,520 bytes
+
+One reading I nearly misreported: a `git diff --stat` showing the `.wat` with
+17,526 lines deleted and none added. It ran in the same breath as `--road both`,
+whose zig road truncates the `.wat` while it re-emits. That was the file
+mid-rewrite, not a result.
+
+## rust-codex-compiler back on master
+
+Steve's call: fast-forward `master` to `zonk-and-default`, `77bd70b` ->
+`ee9cb16`, pushed. That is 35 commits: 5 type-engine commits up to the park
+point `9044a29`, then 30 rocemit/Mem commits (a new `roc_emit.rs`, plus about
+170 lines in shared files including `irdump.rs`, `ir.rs`, `desugar.rs` and
+`lowering.rs`). Every release binary in `~/build/rust-target/release`
+predated commits to its own sources, so they are rebuilt from master before
+any consumer arm runs.
