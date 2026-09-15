@@ -1,0 +1,33 @@
+=== wasm arm, u60
+
+1 frozen, of 1
+[  54.6s] 
+[  54.6s]       1  MATCH
+=== wasm arm, branch
+
+1 frozen, of 1
+[  50.8s] 
+[  50.8s]       1  MATCH
+roc u60 built --opt=dev in 0 s (exit 0)
+roc u60 built --opt=speed in 1 s (exit 0)
+roc branch built --opt=dev in 1 s (exit 0)
+roc branch built --opt=speed in 1 s (exit 0)
+roc dev trace u60: trace checksum 1002658228 | seconds: 0.570 0.594 0.557 0.604 0.595
+roc dev trace branch: trace checksum 1002658228 | seconds: 0.684 0.574 0.528 0.525 0.595
+roc dev render u60: render checksum 1082315010240 | seconds: 0.823 0.762 0.785 0.775 0.850
+roc dev render branch: render checksum 1082315010240 | seconds: 0.937 0.726 0.844 0.752 0.724
+roc speed trace u60: trace checksum 1002658228 | seconds: 0.033 0.033 0.033 0.034 0.033
+roc speed trace branch: trace checksum 1002658228 | seconds: 0.031 0.031 0.031 0.031 0.030
+roc speed render u60: render checksum 1082315010240 | seconds: 0.074 0.075 0.097 0.072 0.072
+roc speed render branch: render checksum 1082315010240 | seconds: 0.099 0.098 0.074 0.073 0.075
+codexzig u60 exit 0 (40926 bytes of zig)
+zig u60 built -ODebug in 1 s (exit 0)
+zig u60 built -OReleaseFast in 22 s (exit 0)
+codexzig branch exit 0 (41785 bytes of zig)
+zig branch built -ODebug in 1 s (exit 0)
+zig branch built -OReleaseFast in 23 s (exit 0)
+zig Debug u60: checksum 1082315010240 | seconds: 2.444 2.153 2.335
+zig Debug branch: checksum 1082315010240 | seconds: 2.016 2.095 1.757
+zig ReleaseFast u60: checksum 1082315010240 | seconds: 0.619 0.547 0.556
+zig ReleaseFast branch: checksum 1082315010240 | seconds: 0.455 0.556 0.515
+=== done

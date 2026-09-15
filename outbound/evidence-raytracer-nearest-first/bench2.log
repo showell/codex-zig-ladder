@@ -1,0 +1,95 @@
+codexzig before: 40818 bytes of zig; rt-nearest in unit: 0, half-fov /2000: 3
+zig before built -ODebug in 1 s
+zig before built -OReleaseFast in 21 s
+roc before built --opt=dev in 0 s
+roc before built --opt=speed in 1 s
+codexzig after: 41677 bytes of zig; rt-nearest in unit: 5, half-fov /2000: 3
+zig after built -ODebug in 0 s
+zig after built -OReleaseFast in 20 s
+roc after built --opt=dev in 0 s
+roc after built --opt=speed in 2 s
+zig Debug before run 1: 2.035 checksum 2399541620792
+zig Debug after run 1: 1.783 checksum 2399541620792
+zig Debug before run 2: 2.051 checksum 2399541620792
+zig Debug after run 2: 1.752 checksum 2399541620792
+zig Debug before run 3: 2.017 checksum 2399541620792
+zig Debug after run 3: 1.747 checksum 2399541620792
+zig Debug before run 4: 2.036 checksum 2399541620792
+zig Debug after run 4: 1.788 checksum 2399541620792
+zig Debug before run 5: 2.068 checksum 2399541620792
+zig Debug after run 5: 1.874 checksum 2399541620792
+zig Debug before run 6: 2.035 checksum 2399541620792
+zig Debug after run 6: 1.826 checksum 2399541620792
+zig Debug before run 7: 2.085 checksum 2399541620792
+zig Debug after run 7: 1.791 checksum 2399541620792
+zig ReleaseFast before run 1: 0.547 checksum 2399541620792
+zig ReleaseFast after run 1: 0.475 checksum 2399541620792
+zig ReleaseFast before run 2: 0.543 checksum 2399541620792
+zig ReleaseFast after run 2: 0.484 checksum 2399541620792
+zig ReleaseFast before run 3: 0.543 checksum 2399541620792
+zig ReleaseFast after run 3: 0.475 checksum 2399541620792
+zig ReleaseFast before run 4: 0.542 checksum 2399541620792
+zig ReleaseFast after run 4: 0.476 checksum 2399541620792
+zig ReleaseFast before run 5: 0.568 checksum 2399541620792
+zig ReleaseFast after run 5: 0.507 checksum 2399541620792
+zig ReleaseFast before run 6: 0.570 checksum 2399541620792
+zig ReleaseFast after run 6: 0.485 checksum 2399541620792
+zig ReleaseFast before run 7: 0.572 checksum 2399541620792
+zig ReleaseFast after run 7: 0.485 checksum 2399541620792
+roc dev trace before run 1: 0.575 trace checksum 2317124232
+roc dev trace after run 1: 0.582 trace checksum 2317124232
+roc dev trace before run 2: 0.591 trace checksum 2317124232
+roc dev trace after run 2: 0.576 trace checksum 2317124232
+roc dev trace before run 3: 0.590 trace checksum 2317124232
+roc dev trace after run 3: 0.577 trace checksum 2317124232
+roc dev trace before run 4: 0.569 trace checksum 2317124232
+roc dev trace after run 4: 0.568 trace checksum 2317124232
+roc dev trace before run 5: 0.597 trace checksum 2317124232
+roc dev trace after run 5: 0.594 trace checksum 2317124232
+roc dev trace before run 6: 0.581 trace checksum 2317124232
+roc dev trace after run 6: 0.579 trace checksum 2317124232
+roc dev trace before run 7: 0.572 trace checksum 2317124232
+roc dev trace after run 7: 0.569 trace checksum 2317124232
+roc dev render before run 1: 0.805 render checksum 2399541620792
+roc dev render after run 1: 0.794 render checksum 2399541620792
+roc dev render before run 2: 0.799 render checksum 2399541620792
+roc dev render after run 2: 0.795 render checksum 2399541620792
+roc dev render before run 3: 0.830 render checksum 2399541620792
+roc dev render after run 3: 0.834 render checksum 2399541620792
+roc dev render before run 4: 0.809 render checksum 2399541620792
+roc dev render after run 4: 0.802 render checksum 2399541620792
+roc dev render before run 5: 0.838 render checksum 2399541620792
+roc dev render after run 5: 0.797 render checksum 2399541620792
+roc dev render before run 6: 0.822 render checksum 2399541620792
+roc dev render after run 6: 0.832 render checksum 2399541620792
+roc dev render before run 7: 0.834 render checksum 2399541620792
+roc dev render after run 7: 0.820 render checksum 2399541620792
+roc speed trace before run 1: 0.036 trace checksum 2317124232
+roc speed trace after run 1: 0.032 trace checksum 2317124232
+roc speed trace before run 2: 0.037 trace checksum 2317124232
+roc speed trace after run 2: 0.034 trace checksum 2317124232
+roc speed trace before run 3: 0.036 trace checksum 2317124232
+roc speed trace after run 3: 0.033 trace checksum 2317124232
+roc speed trace before run 4: 0.036 trace checksum 2317124232
+roc speed trace after run 4: 0.032 trace checksum 2317124232
+roc speed trace before run 5: 0.037 trace checksum 2317124232
+roc speed trace after run 5: 0.033 trace checksum 2317124232
+roc speed trace before run 6: 0.037 trace checksum 2317124232
+roc speed trace after run 6: 0.033 trace checksum 2317124232
+roc speed trace before run 7: 0.036 trace checksum 2317124232
+roc speed trace after run 7: 0.033 trace checksum 2317124232
+roc speed render before run 1: 0.083 render checksum 2399541620792
+roc speed render after run 1: 0.083 render checksum 2399541620792
+roc speed render before run 2: 0.084 render checksum 2399541620792
+roc speed render after run 2: 0.099 render checksum 2399541620792
+roc speed render before run 3: 0.082 render checksum 2399541620792
+roc speed render after run 3: 0.097 render checksum 2399541620792
+roc speed render before run 4: 0.084 render checksum 2399541620792
+roc speed render after run 4: 0.084 render checksum 2399541620792
+roc speed render before run 5: 0.083 render checksum 2399541620792
+roc speed render after run 5: 0.084 render checksum 2399541620792
+roc speed render before run 6: 0.083 render checksum 2399541620792
+roc speed render after run 6: 0.084 render checksum 2399541620792
+roc speed render before run 7: 0.083 render checksum 2399541620792
+roc speed render after run 7: 0.086 render checksum 2399541620792
+=== done
