@@ -6,8 +6,9 @@ Chapter: Ray Bench
   cites Math chapter Quaternion
   cites Math chapter Cordic
 
- raytrace-on-screen's scene and camera, traced at 160 x 120 for 30 frames
- with the clock stepping 100 ms a frame, and the sum of every pixel printed.
+ raytracer-test's spheres and light, with a unit floor normal and a field of
+ view of 1000, traced at 160 x 120 for 30 frames with the clock moving one
+ sphere, and the sum of every pixel printed.
 
  We say:
 
