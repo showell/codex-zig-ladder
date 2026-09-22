@@ -266,3 +266,34 @@ https://github.com/damiant3/Cobblestone/issues/157
 
 codexrun act-level let: FIXED (rust-codex-compiler a97bbda); aesgcm-test
 matches; run-interp and ir-interp 128/128 unchanged.
+
+## Bookkeeping, the Rust gates, SizedVec, and the safari app
+
+`~/units-current` -> `units-3af67f99e0d0` (1,292 units, 3 s). Safari's pin
+moved to cobblestone-u61rel (safari `7902a15`). `~/zigemit` is the U61 build;
+`~/codexzig-u60`, `~/codexir-u60` deleted after the census.
+
+Rust gates at U61 (release built from `a97bbda`):
+
+    check      1,286 / 6   all SizedVec + six new builtins (Rust catch-up)
+    counters     998 / 75  every one "upstream mints 2-14 more type variables";
+                           the last-green checker (77bd70b) counts hamt-test
+                           exactly as today's does, so the ORACLE moved -- in the
+                           U58->U60 frontend (ParserExpressions, ~80 lines;
+                           nested patterns fit), not U61. Parked Rust catch-up.
+    self-host  counters +10 (same cause); wire 60 of 2,898 differ, ALL of them
+               #153's closure (int-default where we keep the variable).
+
+SizedVec port (rust-codex-compiler `01f4ddf`): Ty::SizedVec, the probe spells
+SizedVecTy (svec n e), both builtin tables regenerated at U61 (+ mask4-*,
+vec4-select, vec4-reduce-add), and report_conflict refuses the vector families
+as unify-at does, admitted by a census (VEC-PAIR rows: none on any clean unit).
+Check gate 1,291 / 1. The one left (vec-wide-refused's second error) is vector
+`==` typed Boolean here where upstream types it VectorMask 4 -- not SizedVec.
+
+Safari's whole-app road (`harness/build_wasm.sh`, native, 59 s): GREEN once
+wasmify knew U61's `main(cx_init: std.process.Init.Minimal)` (safari
+`a544e9e`); 2,430-command frame walks exactly, 1,200 frames of endurance, 300
+painted frames. The other whole-app roads were retired 2026-09-10.
+
+Left for U61: the wasm repin.
