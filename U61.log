@@ -210,3 +210,25 @@ aside in all three corpora.
 "add it as a test to the bvt or language battery". Two `codex/test/errors/`
 refusal tests expecting 2001, red at U61 by design, and backlog row
 COMPILER-85. https://github.com/damiant3/Cobblestone/pull/154
+
+## The int-default closure census (issue 153, comments 5778521152 and 5778919083)
+
+Damian: "maybe we need a more extensive test battery for this whole unify to
+int incompleteness". We suggested checking the PROPERTY (an application-typing
+rule in IRCheck / ir-fidelity) and making the closure visible, and ran a census:
+`~/codexir-u60` vs `~/codexir` over `~/units-current`, 1,219 s serially (the
+four 3 MB desk-* programs were 5.5 min of it; my 10-minute estimate sampled 20
+programs and missed them).
+
+    1,050 clean on both · 42 moved, all by the closure (1,284 tvar -> int-default)
+    586 sites in 27 programs wrong at U61 and not at U60
+        MkTup2/3 412 · __record-set 172 · type-class specializations 3
+    6 sites wrong at both (edalias: show applied to a List)
+    the same rule over irdump (Rust) for the 27: 0
+
+The checker had four bugs of its own before the numbers meant anything: it
+skipped the whole tree (caught by the MkTup2 control), missed list elements
+(the [[]] control), read a `let`'s body as its type, and treated equivalent
+spellings (bounded int, unit, ctd/record-ty/sum) as mismatches -- 3,327
+"standing" sites that were noise. Evidence:
+`outbound/evidence-issue153-census/`.
