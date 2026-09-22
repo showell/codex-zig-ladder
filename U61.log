@@ -185,3 +185,28 @@ Next, in order:
    `compile-frontend-ir` as codex-zig-transpiler's does, instead of copying
    the phases -- the copy is how RESOLVE went missing.
 8. roc-apps still names `u61-candidate`; it can move to the release.
+
+## The arms at U61 (unattended, 16m42s): 128 of 128, every arm
+
+    ~/runs/20260922T140912Z-u61-arms/SUMMARY
+    cobblestone 28 · roc 46 · safari 54 -- run-zig, ir-zig, run-wasm, run-interp,
+    ir-rust, ir-interp all match/agree; ir-diff roc 44 same, 2 differ
+
+Re-freeze preview: 4 roc `.upstream.ir` move, 0 elsewhere; every change an
+unbound `(tvar N)` become int-default. Re-frozen (curated `15f6184`), and the two
+run-zig gap rows (COMPILER-81, issue 146) pruned: roc run-zig 46 of 46.
+
+ir-diff after: roc-alias-empty and roc-poly-nopayload-variant now AGREE with the
+Rust reference, which already emitted int-default. roc-tuple-two-lists and
+-same-list-twice now DIFFER: `MkTup2`'s name carries Tup2's parameters, closed
+to int-default though its arguments are lists (confirmed on the seed). Posted
+on issue 153 as a second shape (comment 5778393190).
+
+`arms/ir-interp`'s CX-DECK filter removed (curated `75ff9e9`); 0 lines were set
+aside in all three corpora.
+
+## PR 154: the tests Damian asked for
+
+"add it as a test to the bvt or language battery". Two `codex/test/errors/`
+refusal tests expecting 2001, red at U61 by design, and backlog row
+COMPILER-85. https://github.com/damiant3/Cobblestone/pull/154
