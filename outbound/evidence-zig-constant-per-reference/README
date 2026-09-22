@@ -1,0 +1,15 @@
+The Zig plug rebuilds a constant at every reference: reproducers.
+
+  const-by-name.codex     reads `table` (64 entries) a million times by name
+  const-bound-once.codex  passes `table` down once; same output (32500000)
+
+Measured 2026-09-22 with ~/codexzig (U61, c5d831dd), zig 0.16.0:
+
+  by-name     Debug        0.59 s   peak 525,312 KB   faults 131,037
+  by-name     ReleaseSafe  0.36 s   peak 524,288 KB   faults 131,018
+  bound-once  Debug        0.00 s   peak   1,920 KB   faults     177
+  bound-once  ReleaseSafe  0.00 s   peak     896 KB   faults     159
+
+by-name ReleaseFast was 0.354 s: the cost is fresh memory (kernel page
+faults), not safe-mode poisoning. The vault-crypto-test profile, where heap
+regions reclaim the memory, is in essay notes/u61-crypto-and-speed.md.
