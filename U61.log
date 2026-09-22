@@ -1,0 +1,94 @@
+# Update 61
+
+    3af67f99  Update 61   seed 7BCD5BC6BCE0AF41
+    9fff850c  Update 60   seed CF9EDD812EA7E78B
+
+One squashed commit over U60: 126 files, +8,119 / -6,552. The seed name is the
+sha256 prefix of `seed/Codex.cdx`, checked. Worktree `cobblestone-u61rel` is
+detached at `3af67f99`.
+
+## What upstream did with ours
+
+The release notes say they took PRs 147-152 and issue 146. Measured against
+`u61-candidate` (U60 + PRs 147-152), file by file over the 20 files the
+candidate touches:
+
+    15 byte-identical   Fireworks, the eleven fat16 fixtures,
+                        app-runner-frame.expected, raytracer-test.{codex,expected}
+     4 prose only       GuiOpening, Raytracer, AppRunner, app-runner-frame.codex:
+                        our prose paragraphs deleted, no code changed
+     1 code changed     ZigEmitter.codex: PR 147 made OPT-IN
+
+PR 147 as landed: the deck report goes to fd 3 only when `CODEX_DECK_REPORT=1`
+is in the environment (byte-exact; `01` does not count). To read the
+environment, the emitted `main` now takes `std.process.Init.Minimal` and stores
+`environ` in a new prelude part, `cx_environ`. Read, not yet run beyond the
+probes below:
+
+- `main`'s text is scanned for shake roots (ZigEmitter `zig-mask-hi ns
+  main-text`), so `cx_environ` is kept in every program.
+- `Init.Minimal` and `Environ.block.slice` exist in zig 0.16.0; the scan sits
+  under a comptime `os.tag == .linux`, so Windows never analyses it.
+- 112 prelude parts against the 128 the two-mask shake carries.
+- The comment on `zig-p-cx-deck-report` still says "only when it was open at
+  the first cx_deck_set" and does not mention the variable. Prose, theirs.
+
+Ours to follow: nothing of ours reads CX-DECK as telemetry. The two filters that
+drop it (curated `arms/ir-interp`, a comment in codex-wasm-transpiler
+`build.py`) go when the bundles are rebuilt at U61.
+
+## cobblestone-qemu: GREEN 5/5 in 12m43s
+
+    ~/runs/20260922T130255Z-u61             checkers 138a31b
+    fib 8s · zigemit 42s · codexir 4m34s
+    verify   zig PASS · qemu PASS (IR identical to the native tool) · x86 PASS · boot PASS (6765)
+
+## The one compiler change: unbound type variables close to Integer
+
+`IR/ResolveTypes.codex` (COMPILER-81, our issue 146). `resolve-ty-deep` now
+maps every `TypeVar` that the definition's own signature does not carry to
+`int-default`. The IR pipeline, and so `inline-single-caller`, runs BEFORE
+`rewrite-ir-defs` (opening.codex:772 then :851).
+
+Five probes, `codexir | zigemit | zig`, in the session scratchpad `u61probe/`:
+
+    probe                  U60 native      U61 native      U61 SEED (bare metal) -> zigemit
+    p1 issue 146           refused T287    refused T287    ok ok  (int-default)
+    p2 nullary at Real     correct         correct
+    p3 inlined generic     correct         correct
+    p4 empty lists         refused         refused         refused: "no zig type" (error)
+    p5 local lambdas       correct         correct
+
+**Our native codexir cannot see the fix, and that is OURS.** The harness is
+generated with `frontend_source(..., resolve=False)`
+(cobblestone-qemu `subjects/gen_codexir_harness.py:92`). `emit_harness.py`'s
+docstring justifies that: RESOLVE "lives in compile-frontend-cdx ONLY --
+compile-frontend-ir ... emits the IR with its annotations unrewritten". That has
+been false since Update 50 (`8cc80685`), when the resolve moved into
+`compile-frontend-passes`, which both entries call. Every harness in
+codex-zig-transpiler and codex-wasm-transpiler is the same shape: none calls
+`rewrite-ir-defs`. Until U61 the phase was a no-op on what we compared (a record
+program, p6, is IDENTICAL seed vs native), so nothing showed it.
+
+Consequence: our IR oracle (`~/codexir`, the curated `.upstream.ir` freezes,
+the Rust arm's grading) and `codexzig` diverge from the seed wherever an unbound
+variable survives lowering. Curated `run-zig` will keep refusing
+`roc-poly-nopayload-variant` at U61 although upstream's pipeline accepts it.
+
+## A counterexample to COMPILER-30's closed invariant
+
+COMPILER-30 records "a clean compile carries zero `ErrorTy`" as MEASURED and
+HOLDING (red, 2026-09-08). `list-length [[]]` compiles clean on the U61 seed
+and carries `(list-expr (elems) error)`. Minimal:
+
+    [[]]        error on the inner literal, outer element left as a bare tvar
+    [[[]]]      the same, one level down
+    [[1]]  [[], [1]]  [[1], []]  ([] : List (List Integer))     clean
+
+At U61 the bare outer variable is then CLOSED TO INTEGER. The seed's IR types
+`[[]]` as `List Integer` and `list-length` as `List Integer -> Integer`, which
+is not an arbitrary choice for an unconstrained variable -- the element IS a
+list. The `error` predates U61 (U60 native shows it); the wrong Integer is new.
+
+NOT YET ATTRIBUTED: `lower-nonempty-list`'s element-0 witness came from OUR
+PR 101, so whether we caused the `error` half is open. Settle before sending.
