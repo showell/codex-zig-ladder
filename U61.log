@@ -65,9 +65,10 @@ generated with `frontend_source(..., resolve=False)`
 docstring justifies that: RESOLVE "lives in compile-frontend-cdx ONLY --
 compile-frontend-ir ... emits the IR with its annotations unrewritten". That has
 been false since Update 50 (`8cc80685`), when the resolve moved into
-`compile-frontend-passes`, which both entries call. Every harness in
-codex-zig-transpiler and codex-wasm-transpiler is the same shape: none calls
-`rewrite-ir-defs`. Until U61 the phase was a no-op on what we compared (a record
+`compile-frontend-passes`, which both entries call. It is the only harness of
+that shape: codex-zig-transpiler's and codex-wasm-transpiler's call the driver
+(`compile-frontend-ir`, `-cdx`) and so resolve once rebuilt at U61. Until U61
+the phase was a no-op on what we compared (a record
 program, p6, is IDENTICAL seed vs native), so nothing showed it.
 
 Consequence: our IR oracle (`~/codexir`, the curated `.upstream.ir` freezes,
@@ -90,8 +91,25 @@ At U61 the bare outer variable is then CLOSED TO INTEGER. The seed's IR types
 is not an arbitrary choice for an unconstrained variable -- the element IS a
 list. The `error` predates U61 (U60 native shows it); the wrong Integer is new.
 
-NOT YET ATTRIBUTED: `lower-nonempty-list`'s element-0 witness came from OUR
-PR 101, so whether we caused the `error` half is open. Settle before sending.
+**Attributed, and not ours.** The root is the checker: `infer-list` types an
+empty literal as a bare fresh variable, not `List t`
+(`Types/TypeCheckerInference.codex:1386-1390`) -- plausibly so that `[]` can be
+a List or a LinkedList, which `empty-list-element-source` serves. Nothing
+constrains the variable to be a list at all, so in `[[]]` the element type is
+free, lowering finds no list type for the inner literal and falls to
+`IrList [] ErrorTy` (`Lowering.codex:1456`, the arm upstream's row names as
+pre-dating PR 101). Our PR 101 added the lookup under the literal's span; it
+does not reach this case, and did not cause it.
+
+The same looseness is a SOUNDNESS HOLE, native codexir, no diagnostics:
+
+    v : Integer = []          clean, IR (list-expr (elems) error)
+    text-length []            clean
+    [] + 1                    clean, IR carries (error "arithmetic operand ...")
+    [1] + 1                   CDX2001 List vs Integer   (the control)
+
+To confirm on the seed (one ~10 s compile) before filing as an issue; the
+List/LinkedList design is theirs to rule on.
 
 ## The harness fix, measured
 
