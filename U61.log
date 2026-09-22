@@ -251,3 +251,18 @@ run-interp 21 match. No arm disagreed with upstream's expected output.
   not legitimate). ReleaseSafe profile: sha256 52%, memset 30% -- unattributed.
 
 `u62-candidate` (worktree `cobblestone-u62`, pushed) = U61 + PR 154 + 155 + 156.
+
+## Issue 157: what crypto shows about the Zig emitter
+
+A constant (zero-parameter def) is rebuilt at every reference and never
+reclaimed outside heap regions: a 64-entry table read 1M times by name is
+0.36 s and 512 MB peak (131k page faults) vs 0.00 s / 0.9 MB bound once, same
+output. Upstream's riscv memoisation broke real-cert (in-place list-set-at into
+sha256-h0), so per-reference rebuilding is required for correctness; reported
+as cost, not as a request. Plus: safe-build allocation poisoning (30% of the
+vault test), and trapping arithmetic ruling out ReleaseFast; the stale
+"Integer arithmetic wraps" prose at ZigEmitter:603.
+https://github.com/damiant3/Cobblestone/issues/157
+
+codexrun act-level let: FIXED (rust-codex-compiler a97bbda); aesgcm-test
+matches; run-interp and ir-interp 128/128 unchanged.
