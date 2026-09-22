@@ -92,3 +92,32 @@ list. The `error` predates U61 (U60 native shows it); the wrong Integer is new.
 
 NOT YET ATTRIBUTED: `lower-nonempty-list`'s element-0 witness came from OUR
 PR 101, so whether we caused the `error` half is open. Settle before sending.
+
+## The harness fix, measured
+
+cobblestone-qemu `e2321e1`: the codexir harness runs RESOLVE. Native codexir
+now emits the seed's IR byte for byte on p1, p4 and p6, and p1 (issue 146)
+prints `ok ok` through native zigemit. 5/5 GREEN again in 12m42s
+(`~/runs/20260922T132619Z-u61-resolve`) -- a run that rebuilt four subjects to
+test one; `build.sh codexir` was the whole of what it needed.
+
+codex-zig-transpiler's harnesses already call the driver (`compile-frontend-ir`,
+`-cdx`); only their prose repeated the stale claim (`aafe3c0`).
+
+## codex-zig-transpiler: the fixed point HOLDS at U61
+
+    fixed point   byte-identical, 3,007,652 bytes of zig (U60: 2,999,039)
+    arith.codex   MATCHES all 9 expected lines
+    524s cold     guest compile 216s · guest transpile 182s · NATIVE transpile 84s
+
+`generated/` repinned (`50567bf`). The 84s is the native binary transpiling the
+compiler's own source -- noted, not yet attributed.
+
+## PR 147 as landed, run
+
+The new `codexzig` is itself an emitted program with a deck. Transpiling
+safari's `SafariSpec.codex` (1,058,484 bytes): unset, 0 CX-DECK lines on fd 3;
+`CODEX_DECK_REPORT=1` with fd 3 open, 89 lines, last `used=9437392`. The zig it
+emits is byte-identical either way. On a small unit (p3) no setting reports,
+because the deck never passes the 1 MB stride -- a negative that needed the
+positive control to mean anything.
