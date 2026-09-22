@@ -1,0 +1,18 @@
+The Update 61 int-default closure census posted on issue 153.
+
+  apply_check.py   the rule: in (apply F A T), F is (fn P R) with P agreeing
+                   with A's type and R with T; in (list-expr (elems ...) E)
+                   each element agrees with E and carries no `error`.
+                   (tvar N) agrees with anything. Equivalent spellings are
+                   normalized (bounded int = int, unit = its carrier,
+                   ctd = record-ty = sum by name).
+  census.txt       ~/codexir-u60 vs ~/codexir (U61) over ~/units-current
+                   (1,269 programs, cut from cobblestone-u58 8570fba1);
+                   NEW = wrong at U61 and not at U60, STANDING = wrong at both.
+  rust.txt         the same rule over irdump (rust-codex-compiler c0379e0)
+                   for the 27 affected programs: 0 sites.
+  affected.txt     the 27.
+
+Controls: roc-tuple-two-lists (MkTup2, found as NEW, 4 sites) and
+list-length [[]] (found as STANDING). The compiles took 1,219 s serially; the
+four 3 MB desk-* programs were 5.5 min of it.

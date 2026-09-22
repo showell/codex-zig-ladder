@@ -1,0 +1,10 @@
+programs                                 27
+halted or no IR                          0
+IR identical                             0
+IR moved                                 27
+moved by MORE than tvar->int-default     27
+closure tokens                           -3405
+programs with a contradicted closure     0
+contradicted sites (new at U61)          0
+standing sites (wrong at U60 too)        0
+
