@@ -297,3 +297,21 @@ wasmify knew U61's `main(cx_init: std.process.Init.Minimal)` (safari
 painted frames. The other whole-app roads were retired 2026-09-10.
 
 Left for U61: the wasm repin.
+
+## codex-wasm-transpiler at U61: the fixed point holds and both roads agree
+
+No guests: the repin is node + zig (the guest road was never built).
+
+    zig road      177s; generation 1 8,421,508 bytes
+    both roads    115s; the two roads agree byte for byte; sample matches
+    memory        1,656.4 MB, 40.4% of wasm32; ratchet +0.05% (not rebanked)
+
+`generated/` repinned (`03293f9`); build.py's stale CX-DECK comment fixed
+(`a09255a`).
+
+## Verdict: Update 61 is verified
+
+Every arm is at U61 and green: bare metal 5/5, both transpiler fixed points,
+the curated 128 on seven arms, U61's changed tests, safari's specs and whole
+app. What U61 took of ours it took faithfully. Out to Damian from this cycle:
+issue 153 (+ census), issue 157, PRs 154-156; `u62-candidate` carries the PRs.
