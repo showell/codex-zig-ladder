@@ -139,3 +139,49 @@ safari's `SafariSpec.codex` (1,058,484 bytes): unset, 0 CX-DECK lines on fd 3;
 emits is byte-identical either way. On a small unit (p3) no setting reports,
 because the deck never passes the 1 MB stride -- a negative that needed the
 positive control to mean anything.
+
+## Issue 153 sent
+
+The empty-literal soundness hole, confirmed on the U61 seed (4 s per compile):
+`v : Integer = []` and `v = text-length []` compile clean; the control
+`[1] + 1` halts on CDX2001. Same at U60 (native). Read cold first; record
+`outbound/SENT-issue153-empty-literal-any-type.md`.
+https://github.com/damiant3/Cobblestone/issues/153
+
+## The bundles, refreshed at U61
+
+    ~/codexzig   codexzig c5d831dd, the fixed point's stage-7 binary (transpiler 50567bf)
+    ~/codexir    codexir + codexcheck from build_codexir.py (2m23s, no guest, both smokes pass)
+    both         checkout cobblestone-u61rel 3af67f99; SHA256SUMS verify
+
+The consumer parsers (curated, rust) resolve `cobblestone-u61rel` / `3af67f99`.
+The U60 bundles are kept as `~/codexzig-u60` and `~/codexir-u60` until the
+consumers have run; delete them then. `~/zigemit` is NOT refreshed (still U60);
+the U61 one is in `~/runs/20260922T132619Z-u61-resolve`.
+
+`roc-poly-nopayload-variant` (issue 146) through the new `~/codexzig`: builds,
+prints `ok ok`. The one `tvar` left in `~/codexir`'s IR is `inspect-foo`'s own
+`Foo a` parameter, which the signature binds.
+
+## Where this stops (2026-09-22, venue change)
+
+Done: what upstream did with ours; qemu 5/5; the Integer default probed; our
+codexir harness fixed (cobblestone-qemu `e2321e1`); zig fixed point HOLDS and
+`generated/` repinned; PR 147's opt-in run; issue 153 sent; bundles refreshed.
+
+Next, in order:
+1. curated arms against the new bundles (native, minutes): run-zig, ir-zig,
+   run-wasm, ir-interp. Expect `.upstream.ir` re-freezes where a variable
+   closes to int-default -- a REVIEWED re-freeze. roc-poly-nopayload-variant's
+   gap row closes; ir-interp's CX-DECK filter is dead code now.
+2. safari: move `quires.tsv`'s checkout to cobblestone-u61rel, re-grade.
+3. codex-wasm-transpiler repin (guest time; quote it first). Its `build.py`
+   CX-DECK comment is stale.
+4. rust-codex-compiler against the U61 `~/codexir`: its expected IR moved
+   wherever a variable closes to int-default.
+5. `~/units-current` is cut from u58; recut at U61.
+6. Not chased: the 84 s NATIVE transpile inside the fixed point.
+7. Structural follow-up: cobblestone-qemu's codexir harness could CALL
+   `compile-frontend-ir` as codex-zig-transpiler's does, instead of copying
+   the phases -- the copy is how RESOLVE went missing.
+8. roc-apps still names `u61-candidate`; it can move to the release.
