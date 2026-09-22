@@ -232,3 +232,22 @@ skipped the whole tree (caught by the MkTup2 control), missed list elements
 spellings (bounded int, unit, ctd/record-ty/sum) as mismatches -- 3,327
 "standing" sites that were noise. Evidence:
 `outbound/evidence-issue153-census/`.
+
+## U61's changed tests on our arms; PRs 155, 156; u62-candidate
+
+25 of U61's 34 changed test programs carry `.expected` (crypto mostly).
+run-zig 17 match / 6 build-failed / 2 refused (quotation stage, out of scope);
+run-interp 21 match. No arm disagreed with upstream's expected output.
+
+- Zig plug has no `bit-not` emitter (4 crypto tests via SHA-512) -> PR 155.
+- Unused `x <- e` in an act is an unsilenced const, in emit-zig-act-stmts and
+  its tail twin -> PR 156, with test `act-unused-bind`.
+- OURS: codexrun's code.rs does not let an act-level `let` swallow the rest of
+  the block (lowering.rs does); aesgcm-test dies "undefined name
+  empty-result". An inline rewrite hit code.rs's borrowed-AST lifetimes;
+  the fix wants an AST pre-pass. Open.
+- Speed (essay notes/u61-crypto-and-speed.md): vault-crypto-test Debug 61.8 s,
+  ReleaseSafe 3.97 s (same output), ReleaseFast 2.37 s (drops overflow traps,
+  not legitimate). ReleaseSafe profile: sha256 52%, memset 30% -- unattributed.
+
+`u62-candidate` (worktree `cobblestone-u62`, pushed) = U61 + PR 154 + 155 + 156.
