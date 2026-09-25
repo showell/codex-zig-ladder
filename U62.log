@@ -106,7 +106,8 @@ BUILD, not a defect in U62:
    using generic equality got different IR from native codexir than from the
    seed. fib uses none, so the qemu check's IR diff could not see it. The
    harness now CALLS `compile-frontend-ir` -> `prepare-method-ir` ->
-   `emit-ir-chapter` with `-WithDriver` (`b0f9312`). Its first run found one
+   `emit-ir-chapter` with `-WithDriver` (`b0f9312`): U61's "next" item 7,
+   which had proposed exactly this. Its first run found one
    more stale list: `-WithDriver` named six foreword chapters that
    `assemble_unit.ps1` has added itself since U60, so every type in them came
    out twice (CDX3001 x15). Removed.
@@ -120,11 +121,51 @@ Ours to follow:
 - The equality-helper drift, dated: `eq-attach-helpers` is on the driver's IR
   path from U56 (`6cd2ca1`) on and absent through U55; no cobblestone-qemu
   commit before `b0f9312` mentions it. So cobblestone-qemu's native codexir
-  lacked the driver's `__eq_*` helpers for U56-U61. The codexir/codexcheck
-  ORACLES the Rust arm is graded against live in codex-zig-transpiler, with
-  their own harness; whether that copy has the same gap is unread. Check it
-  before trusting anything it banked for a program using generic equality.
+  lacked the driver's `__eq_*` helpers for U56-U61. codex-zig-transpiler's
+  harnesses had the same gap: measured below.
 - `emit_harness.py`'s `frontend_source` still stands in for the driver in the
   x86emit harness. Same question, not yet asked.
 - A stray `main` branch on cobblestone-qemu (my mistake, at `e2321e1`, equal
   to `master`) is Steve's to delete; deleting it was refused from here.
+
+## codex-zig-transpiler: the fixed point HOLDS at U62
+
+    fixed point   byte-identical, 3,156,931 bytes of zig (U61: 3,007,652)
+    arith.codex   MATCHES all 9 expected lines
+    309s cold     stage 4 guest 105s (peak 723 MB) · stage 5 guest 103s (1430 MB) · NATIVE transpile 66s
+    oracles       codexir + codexcheck rebuilt (113s, no guest), both smokes pass
+
+`f0acd43` (source) and `711a0bf` (`generated/` repinned). The same three
+build fixes as cobblestone-qemu (ring plug `-CompilerChapters`, the guard,
+`compiler-order.txt` for the one chapter list, leaving out only BootPaint and
+EntryPoint), and both harnesses now take the driver's IR front door,
+`compile-frontend-ir` -> `prepare-method-ir` -> `emit-ir-chapter`.
+
+For CodexZigHarness that is more than tidiness. Pass 1 of the fixed point is
+the seed in IR mode, which IS that front door; pass 2 used to reach the same
+IR through `compile-frontend-cdx`'s `cdx-ir` and a copied prune. At U62 the
+front door also runs `method-materialize`, so a neighbouring path would have
+been one Update from breaking the fixed point for a reason that was never the
+emitter's.
+
+**The equality-helper gap, measured** on upstream's
+`codex/test/eq-generic-recursive` (resolved with `resolve_unit.ps1`):
+
+    U61 codexzig   1 __eq_ def (the desugarer's __eq_Named); every generic ==
+                   dangles, and the plug emits @compileError("zig plug: no
+                   emitter for __eq_Pair@Text"): the program does not build
+    U62 codexzig   4 defs (__eq_Box_82Integer, __eq_Box_82Text,
+                   __eq_Pair_82Text, __eq_Named); MATCHES all 9 expected lines
+
+So the gap FAILED LOUD in codexzig, a refusal at zig build rather than a wrong
+answer, which is why nothing banked a wrong result from it. The IR oracle is the
+softer case: `~/codexir` at U56-U61 emitted IR with the dangling reference
+and no error, so an IR diff against the seed would differ there. Whether any
+curated or Rust-graded unit uses generic equality over a parameterised type is
+the question for those arms at U62.
+
+Correction to this log's earlier line: U61 did not skip this repo (U61.log
+has "the fixed point HOLDS at U61"). I had read only U61.log's head and tail.
+
+Setup quirks from a cloud session: `build.py` wants `zig` on PATH (not a
+path like cobblestone-qemu's `ZIG`) and pwsh at `~/.local/pwsh/pwsh`.

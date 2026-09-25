@@ -120,7 +120,9 @@ and zig 0.16.0. The environment's network policy denies ziglang.org (a 403
 from the session's own proxy, not from ziglang.org), but PyPI's
 `ziglang==0.16.0` is the same build: link its package directory to
 `~/zig-0.16.0`. Nothing installed survives the session; install reactively. `build.sh` looks for
-pwsh at `~/.local/pwsh/pwsh`, so set `PWSH=$(command -v pwsh)`. There is no
+pwsh at `~/.local/pwsh/pwsh`, so set `PWSH=$(command -v pwsh)`, or link it there,
+which codex-zig-transpiler's `build.py` needs (it has no override). That one
+also wants `zig` on PATH: `export PATH=~/zig-0.16.0:$PATH`. There is no
 KVM, which does not matter: the harness defaults to `tcg`, which is what the
 droplet timings were measured on.
 
