@@ -639,3 +639,4 @@ docs/list-versions.md.
   a cite the unit lacks, the 20-error cap, `++` at the parser, vector masks).
   Next, ready but not yet gated: `alloc-bytes` in the interpreter (38 of 50
   sweep programs match with it); see the README's Work in progress.
+- rust-codex-compiler: `alloc-bytes` in the interpreter, gated: sweep 807 -> 839.
