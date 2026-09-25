@@ -401,3 +401,46 @@ that print heap/allocation measurements; 2 an extra trailing blank line; and
 
 So U62's port work for Rust, beyond builtins: the 4 wrongful refusals and 6
 missing refusals above, then the 7 sweep differences. None is done here.
+
+## Verdict: Update 62 is verified. No defect found in U62 itself.
+
+Every arm is at U62 and green on what it grades: bare metal 5/5, both
+transpiler fixed points (zig; wasm on both roads), the curated corpora on
+every arm (cobblestone 28, roc 46, safari 54), safari's specs and whole app.
+What U62 took of ours it took faithfully: PRs 155 and 156 verbatim, PR 154's
+tests byte-identical (its backlog row dropped as the fix made it moot), and
+issue 153's two shapes and issue 157's three items all acted on, the second
+shape of 153 visibly in the two roc re-freezes.
+
+**Every red this cycle was ours, and almost all of it was drift.** Our
+harnesses carried hand-kept copies of upstream's build: chapter lists, the
+driver's IR tail, the quire table's location, the foreword chapters the
+driver cites. U62 moved each of those and each copy broke, or had already
+drifted silently: the equality helpers missing from the IR since U56, and
+`wasm-exports` read in a shape upstream stopped accepting at U59. The bulk of
+the work was replacing those copies with upstream's own sources:
+
+    build/compiler-order.txt        chapter lists   (cobblestone-qemu,
+                                                     codex-zig-transpiler,
+                                                     codex-wasm-transpiler)
+    plugs/zig/build.ps1             the ring plug's compiler chapters
+    compile-frontend-ir +
+    prepare-method-ir               every harness's IR (three repos)
+    assemble_unit's cite resolver   the driver's foreword chapters
+    build/host/windows/
+    quire-map.ps1                   the quire table (Rust, safari)
+
+Two upstream changes needed a decision rather than a sync, both our own asks
+landing: the ReleaseFast/ReleaseSmall refusal (issue 157) made safari's
+browser module ReleaseSafe (2.6 MB stripped, from 0.7 MB), and the guard
+entered cobblestone-qemu's and the transpiler's precondition lists.
+
+**What U62 leaves for us is Rust catch-up, not upstream defects:** the four
+builtins (done), four programs the port refuses and six it accepts where U62
+decides otherwise, and seven runtime differences in the sweep. Listed in the
+rust-codex-compiler section above.
+
+**Out to Damian from this cycle: nothing.**
+
+Also new this cycle: processed entirely in the cloud (see the top of this
+log), and the Rust verdict is now meaning-based (sweep + check + linear).
