@@ -496,3 +496,27 @@ roc-apps `tests/ledger.txt` committed. Every PASS -> REFUSED has one cause of th
 
 Roc porting queue, U62's first: the three builtins, the class tests, then
 the list-parameter refusal that U62's code widened.
+
+### Roc: the timer builtins, and why they reached Roc at all
+
+rust-codex-compiler `6255747`: rocemit and codexrun give `pit-input-hz` 1193182
+and `pit-count` 11932 (x86's constant helpers, X86_64Boot.codex) and
+`cpu-park` 0 (`sti; hlt`, answering 0). roc-apps `8513cd2`: ladder **740 ->
+753 PASS**, 253 -> 239 REFUSED; `cpu-park`'s own test times the halt against
+the HPET and is DIVERGES (its `answers 0 0` line is language, and passes).
+Sweep 743 -> 744.
+
+Steve asked how a PIT constant reached Roc, machine code being out of scope.
+It did not reach the programs: `fat32-parse` cites GopFat16 -> GopDisk ->
+GopUsbMsc/GopXhci, and U62 rewrote GopXhci's `xhci-ms-ticks` onto the exact
+PIT constants. **rocemit emits every cited chapter whole** (one module per
+chapter), so one definition no program calls refused the unit.
+
+**The same holds for the list-parameter refusal U62 widened.** In five of its
+33 regressions sampled (e1000-aneg-budget, e1000-asde-arms, dhcp-acquire,
+net-drain-budget, forewords@encode-qoi) the refused definition
+(`e1000-copy-into`, `ne2k-copy-into`, `qoi-decode-pixels`) is in the unit but
+absent from upstream's own IR, which every upstream backend prunes to what
+`opening` and the declared exports reach before emitting. Pruning rocemit's
+input the same way would clear those without teaching the emitter the shape.
+That changes rocemit's "whole chapter" output design: Steve's call.
