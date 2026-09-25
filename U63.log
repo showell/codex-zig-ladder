@@ -44,3 +44,47 @@ the network entry streams its reply in ~16 KB batches (reek 27285), so a
 672,807-byte reply that ran the depot plug out of memory at 256 MB now
 completes byte-identically. Issue 157 (computed-body tables, left open at
 U62) is not mentioned.
+
+## qemu (cobblestone-qemu)
+
+Three U63 source changes broke the build; all three are fixed in
+cobblestone-qemu `aa995ae` (master). None of them showed at U62 because
+none of them existed there:
+
+1. **`cites Codex chapter Phase Allocator`** is new in SourceText and
+   IRChapter (0 such cites at U62, 1 each at U63). Upstream strips it in its
+   plug build library. `subjects/bundle_ringplug.ps1` no longer carries its
+   own bundler: it dot-sources `codex/plugs/common/plug-build-lib.ps1`, calls
+   upstream's `Build-TranspilerPlug` with the chapter lists parsed out of
+   `codex/plugs/zig/build.ps1`, and overrides only `Build-PlugCdx` (we
+   compile the bundle ourselves). At U62 it bundles byte-identically to the
+   old bundler.
+2. **`emit-zig-chapter` is gone**; only `emit-zig-chapter-stream` remains
+   (it prints with print-uni and restores the heap per def). ZigPlugRing and
+   ZigEmitHosted call it. The ring plug ends with a `RINGPLUG-END` line, and
+   `plug_run_ring.py` captures in sentinel mode and decodes UTF-8 where it
+   used to decode SIZE-framed CCE.
+3. **New chapter `IR/IRFidelity`**, cited by opening.codex, cites IRCheck.
+   It is added to `bundle_ir_to_x86.ps1`'s middle end.
+
+**FOR DAMIAN: the serial ring stalls intermittently at U63.** With the
+fixes in place, all four subjects built on some runs and not others. Two
+wedges, both reported by ring_compile's stall detector as "DATA IS WAITING
+and the guest is not taking it: it slept through the wake":
+
+- the codexir compile, at rpos 2,097,152, in `__bare_metal_read_serial+0x86`.
+  The bundle was unchanged, and the next run got past this point.
+- the x86emit transpile (15,786,747 bytes of IR into the ring plug), at rpos
+  11,534,336. The same step, rerun twice directly from that sandbox with the
+  same IR and the same plug, succeeded both times with byte-identical output:
+  3,329,030 bytes, sha 973b629e258b2d08.
+
+Same inputs, different outcomes: the failure is flaky, not a
+deterministic breakage. Both stall points are multiples of 1 MB, which is the
+ring's refill boundary. The read routines (`emit-bare-metal-read-serial`,
+`-raw`, `-cce`) are unchanged from U62 to U63. One U63 change near
+interrupts is that the process switch now enables CR4.OSXSAVE with XCR0=7 and
+saves XSAVE state when CPUID reports AVX, which it does under our
+`-cpu max` on TCG. That is a hypothesis only; nothing here tests it. We
+saw no stall at U62 in this container: both of its full runs went
+GREEN 5/5 (8m58s, 8m47s), and its four reds were all ours.
