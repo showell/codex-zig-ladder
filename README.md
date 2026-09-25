@@ -78,6 +78,39 @@ u57-candidate · frontend-through-plug**. It says nothing about Rust, nothing
 about safari, and nothing about U56 as released — where it does NOT hold.
 Every one of those four is load-bearing.
 
+## Processing a new Update
+
+Each Update gets a `U<NN>.log` here. Every Update is a little different, so
+this is the usual shape, not a checklist; the previous log is the best guide.
+
+1. **Header.** Upstream is `damiant3/Cobblestone`. It has no tags and no GitHub
+   releases: an Update is one squashed commit on `master`, and its notes are
+   `docs/PM/Active/GitHubUpdates/GitHubUpdate<NN>.md` in that commit. The seed
+   name is the first 16 hex digits, uppercased, of the sha256 of
+   `seed/Codex.cdx`; check it for both the new and the previous Update.
+2. **What upstream did with ours.** `u<NN>-candidate` is the previous Update
+   plus our PRs. Upstream's `refs/pull/<N>/head` are fetchable, so the PR
+   heads can stand in for the candidate. Compare file by file:
+   byte-identical, prose only, code changed, dropped. **Check prose
+   separately**: upstream often takes a PR with its comments edited or
+   deleted, and "the code landed" does not say whether they did. When a file
+   moved for other reasons too, `git apply --check -R` of the PR's diff says
+   whether the PR's hunks are there as sent.
+3. **`cobblestone-qemu`**, `run_all.py` with `CODEX_ROOT` at the Update's
+   commit. GREEN is 5/5.
+
+Then whatever the Update touches: the curated tests, the Rust gates, safari,
+the transpilers' fixed points. The verdict closes the log.
+
+**From a cloud session** (a fresh container, no droplet): only this repo is
+cloned; add the sibling repos to the session. `cobblestone-qemu` needs
+`qemu-system-x86`, `pwsh` (apt, after Microsoft's `packages-microsoft-prod.deb`)
+and zig 0.16.0. ziglang.org is blocked, but PyPI's `ziglang==0.16.0` is the
+same build: link its package directory to `~/zig-0.16.0`. `build.sh` looks for
+pwsh at `~/.local/pwsh/pwsh`, so set `PWSH=$(command -v pwsh)`. There is no
+KVM, which does not matter: the harness defaults to `tcg`, which is what the
+droplet timings were measured on.
+
 Still here and not yet carried: `findings/` and `outbound/` — 344 of this
 repo's 521 tracked files, the accumulated register of what we found in Damian's
 compiler and what we sent him. That is a record with no machinery attached and
