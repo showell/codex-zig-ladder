@@ -71,3 +71,57 @@ Ours to follow, from the notes alone and not yet run:
   a class with ONE instance is now specialized to it, so a call at a type
   with no instance is a type error (main 27104). `[] == []` needed its own
   release-time fix (main 27130). And the empty literal is list-typed.
+
+## cobblestone-qemu: GREEN 5/5 in 8m58s, after four reds that were all ours
+
+    ~/runs/20260925T110102Z-u62             checkers b0f9312
+    ring plug 23s · fib 7s · zigemit 37s · codexir 3m29s · x86emit 4m13s
+    verify   zig PASS · qemu PASS (IR identical to the native tool) · x86 PASS · boot PASS (6765)
+
+Run in a cloud container (tcg, no KVM, 4 cores), not the droplet, so the
+times are not comparable with U61's 12m43s.
+
+Every red was the harness failing to keep up with how U62 changed upstream's
+BUILD, not a defect in U62:
+
+1. **Ring plug: `Undefined name: shared-const-names`.** The Zig plug calls
+   IR/ConstShare (COMPILER-86); upstream's `plugs/zig/build.ps1` bundles it
+   via a new `-CompilerChapters`. `bundle_ringplug.ps1` now reads that from
+   the checkout (`9ab698a`).
+2. **fib transpile REFUSED on a `@compileError`.** U62's plug emits a
+   top-level comptime refusal of ReleaseFast/ReleaseSmall into every program:
+   issue 157 item 3, as landed (main 26086). It is fixed prelude text, so it
+   went into `prelude-comptime-guards.txt`, which had been empty since U54.
+3. **codexir: nine CDX3002s.** The checker and X86_64Chapter call into the
+   two new chapters without citing them. `bundle_ir_to_x86.ps1` kept its own
+   list of 64 compiler chapters; it now reads `build/compiler-order.txt`
+   (upstream's build refuses a chapter with no row there) and names only the
+   ten it leaves out, each with its reason. Same lines on U62 as the hand list
+   plus the two new chapters; only the order moved, to upstream's.
+4. **codexir: IRTextMeta has no `method-templates`.** U62 moved IR emission
+   into `prepare-method-ir` (lift, `eq-attach-helpers`, prune,
+   `method-materialize`). Our harness was a copy of the driver, and reading
+   the diff showed the copy had ALREADY drifted: it never attached the
+   equality helpers the driver has attached since COMPILER-44. So a program
+   using generic equality got different IR from native codexir than from the
+   seed. fib uses none, so the qemu check's IR diff could not see it. The
+   harness now CALLS `compile-frontend-ir` -> `prepare-method-ir` ->
+   `emit-ir-chapter` with `-WithDriver` (`b0f9312`). Its first run found one
+   more stale list: `-WithDriver` named six foreword chapters that
+   `assemble_unit.ps1` has added itself since U60, so every type in them came
+   out twice (CDX3001 x15). Removed.
+
+The principle, now in README: when an Update makes us edit our own chapter
+lists or harnesses, read how upstream changed its side first, and derive from
+their files.
+
+Ours to follow:
+
+- The equality-helper drift means codexir IR from U56 (COMPILER-44) through
+  U61 lacked `__eq_*` helpers the seed emits. Anything banked from native
+  codexir over that span for a program using generic equality is suspect:
+  the Rust arm's `codexir` grading and the curated arms, at least.
+- `emit_harness.py`'s `frontend_source` still stands in for the driver in the
+  x86emit harness. Same question, not yet asked.
+- A stray `main` branch on cobblestone-qemu (my mistake, at `e2321e1`, equal
+  to `master`) is Steve's to delete; deleting it was refused from here.
