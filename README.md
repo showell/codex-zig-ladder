@@ -147,7 +147,11 @@ from the session's own proxy, not from ziglang.org), but PyPI's
 `~/zig-0.16.0`. Nothing installed survives the session; install reactively. `build.sh` looks for
 pwsh at `~/.local/pwsh/pwsh`, so set `PWSH=$(command -v pwsh)`, or link it there,
 which codex-zig-transpiler's `build.py` needs (it has no override). That one
-also wants `zig` on PATH: `export PATH=~/zig-0.16.0:$PATH`. There is no
+also wants `zig` on PATH: `export PATH=~/zig-0.16.0:$PATH`.
+rust-codex-compiler needs rustc 1.98 (the container had 1.94): `rustup
+toolchain install 1.98`, then `CARGO_TARGET_DIR=~/build/rust-target cargo +1.98
+build --release`. Curated's `~/codexir` bundle must include
+`codexir-subject.codex` for `ir-interp`. There is no
 KVM, which does not matter: the harness defaults to `tcg`, which is what the
 droplet timings were measured on.
 

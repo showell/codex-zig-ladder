@@ -238,6 +238,28 @@ Nothing else moved, so none of the 74 units uses generic equality over a
 parameterised type or a class method: the equality-helper and
 method-template changes to the IR front door are invisible to this corpus.
 
-Not run yet, because they need repos not yet in the session: ir-zig, ir-rust,
-run-interp, ir-interp (rust-codex-compiler's `irdump`/`codexrun`), run-wasm
-(codex-wasm-transpiler), and the safari corpus (safari-codex/units).
+## Curated, the Rust arms at U62: 74 of 74 on every arm
+
+rust-codex-compiler `5c5704a`, `cargo +1.98 build --release` (1m03s) into
+`~/build/rust-target`, where `tools.tsv` looks. The crate needs rustc 1.98;
+the container shipped 1.94, so `rustup toolchain install 1.98` first.
+
+    ir-rust      cobblestone 28 agree · roc 46 agree   (irdump == frozen .rust.ir)
+    ir-zig       cobblestone 28 match · roc 46 match   (Rust IR -> U62 zigemit -> zig -> run)
+    run-interp   cobblestone 28 match · roc 46 match   (codexrun)
+    ir-interp    cobblestone 28 agree (38s) · roc 46 agree (60s)
+
+ir-interp is codexrun hosting U62's own compiler, the new `prepare-method-ir`
+front door included, against native codexir on the same bytes. It needs the
+codexir bundle to ship `codexir-subject.codex` named by its receipt's
+`ir-subject` line (`8f4eb102f2e49693`); the first cut of the bundle above left
+it out.
+
+ir-zig answers the tuple question in practice: the Rust IR's generic
+`(tvar 2)` annotations on `MkTup2` build and run to the right output.
+
+With run-zig and the re-freeze above, that is every curated arm except
+run-wasm (codex-wasm-transpiler) on cobblestone and roc. The safari corpus
+(safari-codex/units) is not run yet on any arm. rust-codex-compiler's own
+gold-backed gates (`corpus_*_gate.sh`, `selfhost_gate.sh`; U61's "Rust gates")
+are separate from these arms and not run yet.
