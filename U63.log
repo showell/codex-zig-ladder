@@ -47,8 +47,13 @@ U62) is not mentioned.
 
 ## qemu (cobblestone-qemu)
 
-Three U63 source changes broke the build; all three are fixed in
-cobblestone-qemu `aa995ae` (master). None of them showed at U62 because
+    GREEN 5/5 in 13m03s   cobblestone-qemu bcda127, sandbox 20260925T233735Z-u63
+    ring plug + fib 39s · zigemit 52s · codexir 5m12s · x86emit 6m09s
+    verify   zig PASS · qemu PASS (IR identical to the native tool) · x86 PASS · boot PASS (6765)
+
+
+Four U63 source changes broke the build; the first three are fixed in
+cobblestone-qemu `aa995ae`, the fourth in `bcda127` (master). None of them showed at U62 because
 none of them existed there:
 
 1. **`cites Codex chapter Phase Allocator`** is new in SourceText and
@@ -66,6 +71,15 @@ none of them existed there:
    used to decode SIZE-framed CCE.
 3. **New chapter `IR/IRFidelity`**, cited by opening.codex, cites IRCheck.
    It is added to `bundle_ir_to_x86.ps1`'s middle end.
+4. **`check-chapter` gained a tenth parameter, `fidelity : Boolean`**
+   (opening passes `flags.fidelity`, False by default). `emit_harness.py`
+   passed nine, so the call curried into a function, and x86emit failed at
+   `zig build-exe` twelve minutes in: "no field named 'state' in struct
+   CxFn1(bool, ChapterResult)". Fixed in `bcda127`, which also makes
+   `check_call` and `lower_call` read their declarations from the checkout
+   and refuse a parameter-count mismatch at bundle time (U63 passes; U62 is
+   refused, as it should be). codexir was never affected: it calls the
+   driver, not the hand-written phase calls.
 
 **FOR DAMIAN: the serial ring stalls intermittently at U63.** With the
 fixes in place, all four subjects built on some runs and not others. Two
@@ -88,3 +102,29 @@ saves XSAVE state when CPUID reports AVX, which it does under our
 `-cpu max` on TCG. That is a hypothesis only; nothing here tests it. We
 saw no stall at U62 in this container: both of its full runs went
 GREEN 5/5 (8m58s, 8m47s), and its four reds were all ours.
+
+The green run above did not stall anywhere, and the one before it (which
+failed on item 4) did not stall either. Neither says anything about the
+stalls, which are intermittent; item 4's fix changes x86emit's IR slightly,
+so stall positions are not comparable across it in any case.
+
+## Our Codex under U63's narrower language
+
+The native codexir above is U63's own driver (`compile-frontend-ir`), so it
+enforces the new refusals (CDX1070, 1075-1079, 2070, 2099, 2100). Every
+resolved unit we own was fed through it:
+
+    safari-codex/units                     54 ok
+    curated-tests/cobblestone/units        28 ok
+    curated-tests/roc/units                46 ok
+    curated-tests/roc/raw                  17 halt, CDX3007 (cite Foreword/Console)
+
+The 17 `roc/raw` halts are unresolved sources, not meant to compile alone;
+their resolved twins in `roc/units` are among the 46. So none of the new
+refusals touches Codex of ours. roc-apps' ported corpus was not swept: it is
+Roc translated from upstream's own tests, all of which upstream compiles
+under the new rules.
+
+codexir exits 0 on a refusal; the verdict is a `CODEGEN-HALTED ... first
+CDX...` line, on stdout for type errors and on the IR stream (stderr) for
+CDX1078. Sweep on that line, not the exit code.
