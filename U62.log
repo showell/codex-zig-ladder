@@ -635,3 +635,7 @@ docs/list-versions.md.
 - rust-codex-compiler (next commit): rocemit writes `Real approximate` and
   the modes; a superclass dictionary field keeps its type parameter (from
   Steve's local session, for roc2rust). roc-apps ladder 877 PASS; ported 580.
+- rust-codex-compiler: the check gate is at 1352 agree, 0 differ (CDX3007 for
+  a cite the unit lacks, the 20-error cap, `++` at the parser, vector masks).
+  Next, ready but not yet gated: `alloc-bytes` in the interpreter (38 of 50
+  sweep programs match with it); see the README's Work in progress.
