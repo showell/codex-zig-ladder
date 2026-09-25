@@ -301,3 +301,38 @@ So every curated arm is green on cobblestone and roc at U62: run-zig,
 ir-zig, ir-rust, run-interp, ir-interp, run-wasm, and the upstream re-freeze
 (two reviewed, COMPILER-85). Not yet: the safari corpus on any arm, and
 rust-codex-compiler's own gold-backed gates.
+
+## Safari at U62: specs, every arm, and the whole app green
+
+    specs        54 pass on codexrun, grading >= 2,351 values
+    export       54 re-exported, 0 changed
+    arms         run-zig, ir-zig, run-interp, run-wasm 54 match · ir-rust,
+                 ir-interp 54 agree · freeze-upstream-ir 54 unchanged ·
+                 ir-diff 54 same
+    whole app    harness/build_wasm.sh: 2,430-command frame walks exactly,
+                 1,200 frames of endurance, 300 painted frames
+
+safari `7b58d93`, rust-codex-compiler `ef432ec`. Two things U62 moved under
+safari, neither a defect in U62:
+
+1. **The quire map moved.** U62 writes it in Codex
+   (`codex/build/quiremapScript.codex`) and generates it to
+   `build/host/windows/quire-map.ps1`; `build/quire-map.ps1` is a shim kept
+   for the many scripts that dot-source it, and has no table. Our two TEXT
+   readers of it broke: codexrun ("has no $QuireDirs table", every spec graded
+   0) and safari's `cite_resolve.py` (IndexError). Both now read the
+   generated file directly -- not the shim, and not the tool catalog the shim
+   consults; Steve's call, since nothing of ours dot-sources and old
+   checkouts are not kept. Both also read a quire added after the table by
+   indexed assignment, which is how U62 registers `Accp`. The PowerShell
+   callers (cobblestone-qemu `assemble_unit.ps1`, codex-zig-transpiler
+   `resolve_unit.ps1`, rust `tools/r2_headers.ps1`) dot-source the shim and
+   were unaffected. This repo's own `cite_resolve.py` and `check_bundles.py`
+   parse it too; this repo is retired, so they are left broken.
+2. **The browser module is ReleaseSafe now.** The plug's new comptime refusal
+   of ReleaseFast/ReleaseSmall (issue 157 item 3) stopped `build_wasm.sh`,
+   which built ReleaseSmall. Sizes: 730,157 bytes ReleaseSmall; 17,903,778
+   ReleaseSafe; 2,645,676 ReleaseSafe `-fstrip`. ReleaseSmall had stripped
+   debug info implicitly, so `-fstrip` restores that and the remaining 3.6x is
+   the safety checks, which are what the issue asked for. Not yet eye-tested
+   in a browser.
