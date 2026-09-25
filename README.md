@@ -102,11 +102,24 @@ this is the usual shape, not a checklist; the previous log is the best guide.
 Then whatever the Update touches: the curated tests, the Rust gates, safari,
 the transpilers' fixed points. The verdict closes the log.
 
+**New chapter dependencies are where Updates get confusing.** If an Update
+makes us edit our own chapter lists or harnesses to keep up, that is a smell:
+first read how upstream changed its side (`build/compiler-order.txt`,
+`codex/plugs/*/build.ps1`, `plug-build-lib.ps1`, `opening.codex`), then
+derive from their files rather than add rows to ours. U62 is the worked
+example: `cobblestone-qemu` `9ab698a`.
+
+Branches: the showell-owned repos take fixes straight to `master` (the default
+branch almost everywhere; not `main`). Our Cobblestone fork is the exception,
+where work goes on non-master branches.
+
 **From a cloud session** (a fresh container, no droplet): only this repo is
 cloned; add the sibling repos to the session. `cobblestone-qemu` needs
 `qemu-system-x86`, `pwsh` (apt, after Microsoft's `packages-microsoft-prod.deb`)
-and zig 0.16.0. ziglang.org is blocked, but PyPI's `ziglang==0.16.0` is the
-same build: link its package directory to `~/zig-0.16.0`. `build.sh` looks for
+and zig 0.16.0. The environment's network policy denies ziglang.org (a 403
+from the session's own proxy, not from ziglang.org), but PyPI's
+`ziglang==0.16.0` is the same build: link its package directory to
+`~/zig-0.16.0`. Nothing installed survives the session; install reactively. `build.sh` looks for
 pwsh at `~/.local/pwsh/pwsh`, so set `PWSH=$(command -v pwsh)`. There is no
 KVM, which does not matter: the harness defaults to `tcg`, which is what the
 droplet timings were measured on.
