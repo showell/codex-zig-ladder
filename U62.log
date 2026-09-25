@@ -640,3 +640,8 @@ docs/list-versions.md.
   Next, ready but not yet gated: `alloc-bytes` in the interpreter (38 of 50
   sweep programs match with it); see the README's Work in progress.
 - rust-codex-compiler: `alloc-bytes` in the interpreter, gated: sweep 807 -> 839.
+- Wrong-output fixes: wide Reals print in U62's exponent form (COMPILER-41,
+  interpreter and Roc Prelude), implicit unit conversion at calls, and the
+  sweep trims trailing blank lines as the ladder does. Sweep 843; ladder 878
+  (real-show-wide no longer DIVERGES); ported 581. Left: heap measurements
+  (5) and device queries (4).
