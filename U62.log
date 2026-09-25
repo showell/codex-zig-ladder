@@ -612,3 +612,14 @@ a record field, which is shared heap), 2 FAIL (lib@brotli-test's sizes;
 e1000-rx-reuse, a heap measurement), 1 CRASH (lib@brotli-dict-test). Not the
 default until Brotli is understood and the full ladder shows no PASS lost.
 The default path is unchanged (full ladder re-run to confirm).
+
+### Roc: list-parameter writes -- now the default
+
+rust-codex-compiler `list_versions` is rocemit's default; roc-apps ladder
+846 -> 872 PASS, no PASS lost (9 new passes are SLOW, compile-time
+evaluation, in tests/slow.txt); ported 567. The Brotli failures were a list
+stored in a record and filled afterwards (brdix-build). Along the way:
+refusing every write through a record field lost 31 passes, so only a
+dropped answer is refused, and const-share pins that a top-level constant
+is copied on write, not shared. Details in rust-codex-compiler
+docs/list-versions.md.
