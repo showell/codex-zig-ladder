@@ -1,5 +1,14 @@
 # Update 62
 
+**PROCESSED IN THE CLOUD, NOT ON THE DROPLET.** Every run in this log was in
+a Claude Code cloud session (a fresh container: tcg, no KVM, 4 cores, 15 GB),
+2026-09-25, and later Updates will be processed the same way. So the
+droplet's `~/codexzig`, `~/codexir` and `~/zigemit` were NOT refreshed at
+U62: they are still U61's, and nothing on the droplet is U62. The U62
+bundles named below existed only in that container, were built from
+3eac1674 that day, and are gone with it. Regenerate; do not look for them.
+Times here are the container's and came out in the droplet's ballpark.
+
     3eac1674  Update 62   seed CC7DD4559232C558
     3af67f99  Update 61   seed 7BCD5BC6BCE0AF41
 
@@ -10,8 +19,9 @@ checked for both seeds (U61's matches U61.log); the release notes' seed
 `CC7DD455` agrees. Release notes: `docs/PM/Active/GitHubUpdates/GitHubUpdate62.md`.
 
 Upstream has no tags or GitHub releases; an Update is a commit on `master`.
-This cycle was started from a cloud session with a blob-less shallow clone,
-not the `cobblestone-u62rel` worktree convention; no local worktree exists yet.
+The checkout every arm built from was a depth-1 clone of upstream `master`
+at `~/showell_repos/cobblestone-u62rel` (the name kept for the receipts'
+sake), not a worktree.
 
 ## What upstream did with ours
 
@@ -178,3 +188,38 @@ has "the fixed point HOLDS at U61"). I had read only U61.log's head and tail.
 
 Setup quirks from a cloud session: `build.py` wants `zig` on PATH (not a
 path like cobblestone-qemu's `ZIG`) and pwsh at `~/.local/pwsh/pwsh`.
+
+## The bundles, built in the container (not refreshed on the droplet)
+
+    ~/codexzig   codexzig 9682f8d5, the fixed point's stage-7 binary (transpiler 711a0bf)
+    ~/codexir    codexir 1ecb3797, codexcheck 69e51708 (build_codexir.py, both smokes pass)
+    ~/zigemit    zigemit e9ad998c, cobblestone-qemu sandbox 20260925T112535Z-u62 (823c5b1)
+    all          checkout /root/showell_repos/cobblestone-u62rel 3eac167; SHA256SUMS beside each receipt
+
+Assembled by hand as at U60/U61: executable(s) + receipt + SHA256SUMS. The
+curated arms' `common.provenance` reads all three as 3eac167.
+
+## Curated at U62: run-zig 74 of 74; two re-freezes, both COMPILER-85
+
+    run-zig              cobblestone 28 of 28 · roc 46 of 46
+    freeze-upstream-ir   cobblestone 28 unchanged · roc 44 unchanged, 2 frozen
+    ir-diff              cobblestone 28 same · roc 44 same, 2 differ
+
+The two that moved are roc-tuple-two-lists and roc-tuple-same-list-twice:
+`MkTup2`'s instantiated type is now `(list int-default)` where U61 closed it to
+`int-default`, though its arguments are lists. That was issue 153's second
+shape (posted as comment 5778393190 at U61); upstream fixed it as COMPILER-85
+(main 26027). Reviewed token by token, nothing else moved; re-frozen as curated
+`0f1bb41`. Note curated's default branch is `main`, not `master`.
+
+ir-diff still says both differ, now the other way round: `.rust.ir` keeps
+`(tvar 2)` there. Upstream is right now; the Rust frontend has COMPILER-85 to
+catch up on. `.rust.ir` is not touched.
+
+Nothing else moved, so none of the 74 units uses generic equality over a
+parameterised type or a class method: the equality-helper and
+method-template changes to the IR front door are invisible to this corpus.
+
+Not run yet, because they need repos not yet in the session: ir-zig, ir-rust,
+run-interp, ir-interp (rust-codex-compiler's `irdump`/`codexrun`), run-wasm
+(codex-wasm-transpiler), and the safari corpus (safari-codex/units).

@@ -7,6 +7,28 @@ carries over dies here with it.
 `PRIORITIES.md` is no longer the plan. It is a record of one.
 `OLD_README.md` is what this file used to say.
 
+> **FUTURE-CLAUDE: UPDATES ARE PROCESSED IN THE CLOUD NOW, NOT ON THE DROPLET.**
+> Update 62 (2026-09-25) was the first processed entirely in a Claude Code
+> cloud session, and that is the plan going forward. What that means:
+>
+> - **Nothing from the previous Update is lying around, on purpose.** No
+>   `~/codexzig`, `~/codexir`, `~/zigemit`, `~/runs`, release worktree or
+>   pinned checkout. Steve prefers it: stale assets from a prior Update cause
+>   confusion, and everything is regenerable. Build what this Update needs,
+>   from this Update's commit. Where an older log (U61 and before) says a
+>   bundle "is kept" or points at a droplet path, that described the droplet.
+> - **The container is fresh and its installs do not survive.** Install tools
+>   reactively (see "From a cloud session" below); there is no setup script
+>   by choice.
+> - **Only codex-zig-ladder is cloned at start.** Add the sibling repos to the
+>   session as the Update reaches them. The app can only show files under
+>   this repo and the scratchpad, so put a diff of any sibling-repo change in
+>   the scratchpad for Steve to read.
+> - **Push as you go.** The container is reclaimed when idle; what is not
+>   pushed is gone.
+>
+> `U62.log` is the worked example, including the order things were built in.
+
 ## Where the work went, and how the pieces relate
 
 This repository is retired, but its README, its `U<NN>.log` files and its
@@ -109,9 +131,12 @@ first read how upstream changed its side (`build/compiler-order.txt`,
 derive from their files rather than add rows to ours. U62 is the worked
 example: `cobblestone-qemu` `9ab698a`.
 
-Branches: the showell-owned repos take fixes straight to `master` (the default
-branch almost everywhere; not `main`). Our Cobblestone fork is the exception,
-where work goes on non-master branches.
+Branches: the showell-owned repos take fixes straight to their default branch.
+That is `master` almost everywhere, but not everywhere
+(`cobblestone-curated-tests` is `main`), so read it before pushing:
+`git ls-remote --symref origin HEAD`. Guessing wrong once created a stray
+`main` on cobblestone-qemu. Our Cobblestone fork is the exception, where work
+goes on non-master branches.
 
 **From a cloud session** (a fresh container, no droplet): only this repo is
 cloned; add the sibling repos to the session. `cobblestone-qemu` needs
