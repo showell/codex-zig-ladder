@@ -336,3 +336,68 @@ safari, neither a defect in U62:
    debug info implicitly, so `-fstrip` restores that and the remaining 3.6x is
    the safety checks, which are what the issue asked for. Not yet eye-tested
    in a browser.
+
+## rust-codex-compiler at U62: what grades meaning, and what U62 left to port
+
+Steve's question: are the gold-backed gates load-bearing, when the goal is that
+the Rust compiler MEANS what Codex means? Mostly not. The counter gate
+(allocation order), the IR and selfhost gates (byte-identity ratchets, RED by
+design) and the `$CODEX_GOLDS` truths (old declaration-layer dumps) measured
+how closely the port reproduces upstream's INTERNALS. Deleted in `cf64f42`,
+with the counter tooling and `safari/run.sh` (it ran safari's retired judge).
+What grades meaning, and is the Rust verdict per Update from now on:
+
+1. **Builtins ported** from `Types/Builtins.codex` (`ladder/builtins_probe.py`):
+   U62 `+pit-input-hz +pit-count +cpu-park -uefi-read-file`.
+2. **Corpus cut** by the port's own `bundle` (`tools/cut_units.py`, new;
+   the ladder's `resolve_corpus.py` broke on the quire-map move):
+   `~/units-3eac16746524`, 1,352 programs, 1,348 units.
+3. **Meaning: `codexrun sweep`** over upstream's own tests with an
+   `.expected`. It was not in the U60/U61 flow.
+4. **Accept/refuse: `corpus_check_gate.sh` and `linear_gate.sh`.**
+
+    sweep     743 of 1,081 print exactly what they should (68.7%)
+    check     1,336 agree, 16 differ
+    linear    25 agree, 0 differ, GREEN
+
+**The sweep's 338 misses:** ~253 the interpreter cannot run (212 hardware/OS
+builtins with no rule -- mmio, process-spawn, uefi keys -- 28 step limits,
+effect handlers, `try`, `with-timeout`); 49 whose `opening` RETURNS its
+answer, which codexrun never prints (docs/known-gaps.md; counted now); ~7
+that print heap/allocation measurements; 2 an extra trailing blank line; and
+**7 real semantic differences**:
+
+    real-approx-modes, real-saturating   saturating overflow -> +inf, not the
+                                         largest finite value (f32 and f64)
+    real-approx-equality                 f32 tiny straddle approx-eq False, want True
+    real-show-wide                       2^63 shows 9223372036854775808.0; U62
+                                         (COMPILER-41) prints 9.22337203685478e+18
+    unit-pattern-lit, unit-show          a Text unit: literal match falls through;
+                                         show prints `Name abcd` for `abcd`
+    variant-address                      empty-address False, want True
+
+(66 more had been reported wrong only for a leading `\x01` or CRLF in the
+`.expected`; the sweep normalises those now, as curated's arms do.)
+
+**The check gate's 16:**
+
+    WE REFUSE, CODEX ACCEPTS   method-template-contract-bounds-large/-small/
+                               -demands, typeclass-instance-types: U62's checked
+                               method templates (fresh method-local variables per
+                               demand); we unify them and say CDX2001
+    CODEX REFUSES, WE ACCEPT   empty-list-as-integer/-as-text (OUR issue 153;
+                               the port has the same hole U62 closed upstream);
+                               typeclass-method-local-fixed-binder (CDX2087,
+                               U62's single-instance specialization),
+                               typeclass-instance-mismatch (CDX2001),
+                               typeclass-dict-by-hand (CDX2098);
+                               paren-open-at-eof (CDX1000, U62's COMPILER-35)
+    BOTH REFUSE, DIFFERENTLY   plus-plus-text (CDX2003 vs CDX1075),
+                               vec-wide-refused (1 vs 2; U61's leftover)
+    NOT SEMANTICS              missing-cite, unregistered-quire-cite (refuse to
+                               bundle by design), method-template-producer-guards,
+                               resolve-type-scope (cite the `Codex` quire, a
+                               $QuireManifests entry our bundler does not read)
+
+So U62's port work for Rust, beyond builtins: the 4 wrongful refusals and 6
+missing refusals above, then the 7 sweep differences. None is done here.
