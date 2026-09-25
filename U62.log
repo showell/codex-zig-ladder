@@ -537,3 +537,32 @@ by name, and without them ten passing units lost equality in Roc.
 The whole-chapter design served one caller, canvas_apps/safari/emitted.sh,
 retired 2026-09-18 (safari's Roc is source now); no `--whole` flag was kept.
 Not run here: roc-apps floor/ (`--by-reach`), which this also prunes.
+
+**CORRECTION: it had a second caller, roc-apps tests/package.py**, which
+builds tests/ported/ by taking each chapter's text from the FIRST unit that
+emits it and sharing it with every test. That is sound only if a chapter's
+text does not depend on the program, and pruning made it depend on the
+program. package.py runs every app before keeping it, so it would drop tests
+silently, not ship broken ones. Not yet fixed; the proposal is rocemit
+pruning to the union of what the packaged programs reach.
+
+### Roc: the class tests
+
+    rust-codex-compiler f7d8c17  stage 2: C-dict-T.m-impl -> m-T (upstream's
+                                 rewrite-dict-projections); rocemit refuses a
+                                 dictionary still used as a value whose type
+                                 it cannot write, with upstream's reason
+                                 (UNSUPPORTED_FREE_BINDER)
+    rust-codex-compiler 6223f05  lowering dispatches class methods to their
+                                 instances: lower-method-apply,
+                                 lower-class-method-ref, lower-dict-placeholder,
+                                 lower-apply-aa, lower-show-apply
+    roc-apps f6f8e45, 0c87aba    ledgers
+
+    ladder   840 -> 843 -> 846 PASS; method-template-contract-escape and
+             typeclass-method-local-shadow REFUSED with upstream's reason
+             (upstream's typed backends refuse them too)
+
+The dispatch was not U62's: our lowering never had it, and every
+multi-instance class reached Roc as a bare `to-text` or `__dict-of-C`.
+Check rows, sweep (744/1081) and curated arms unchanged throughout.
