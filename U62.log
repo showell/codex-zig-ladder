@@ -117,10 +117,13 @@ their files.
 
 Ours to follow:
 
-- The equality-helper drift means codexir IR from U56 (COMPILER-44) through
-  U61 lacked `__eq_*` helpers the seed emits. Anything banked from native
-  codexir over that span for a program using generic equality is suspect:
-  the Rust arm's `codexir` grading and the curated arms, at least.
+- The equality-helper drift, dated: `eq-attach-helpers` is on the driver's IR
+  path from U56 (`6cd2ca1`) on and absent through U55; no cobblestone-qemu
+  commit before `b0f9312` mentions it. So cobblestone-qemu's native codexir
+  lacked the driver's `__eq_*` helpers for U56-U61. The codexir/codexcheck
+  ORACLES the Rust arm is graded against live in codex-zig-transpiler, with
+  their own harness; whether that copy has the same gap is unread. Check it
+  before trusting anything it banked for a program using generic equality.
 - `emit_harness.py`'s `frontend_source` still stands in for the driver in the
   x86emit harness. Same question, not yet asked.
 - A stray `main` branch on cobblestone-qemu (my mistake, at `e2321e1`, equal
