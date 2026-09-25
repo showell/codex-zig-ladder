@@ -22,8 +22,14 @@ covers the 8 files the candidate touches:
 
      6 byte-identical   empty-list-as-{integer,text}.{codex,failing} (PR 154),
                         act-unused-bind.{codex,expected} (PR 156)
+     0 prose only
      1 code as sent     ZigEmitter.codex: both PRs present, file otherwise moved
      1 dropped          compiler-backlog.md: PR 154's COMPILER-85 row
+
+No prose was edited this time, unlike U61. The emitter diffs of PRs 155 and 156
+carry no comments (one table row; two changed lines in each of the two `act`
+emitters), so "as sent" there is code only. The one prose change we sent, PR
+154's backlog row, was dropped whole rather than reworded.
 
 - **PR 155 (`bit-not`)**: our table row is byte-identical at ZigEmitter:1103.
   The patch no longer reverse-applies only because its context moved:
