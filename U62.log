@@ -623,3 +623,15 @@ refusing every write through a record field lost 31 passes, so only a
 dropped answer is refused, and const-share pins that a top-level constant
 is copied on write, not shared. Details in rust-codex-compiler
 docs/list-versions.md.
+
+### Parity catch-up after U62 (not U62's)
+
+- rust-codex-compiler 15c114d: a missing ')' is CDX1000 at end of file too
+  (U62's COMPILER-35; check gate 1346 agree, 6 differ). Interpreter: Real
+  width and mode from declared types (saturating clamps, trapping traps, f32
+  rounds, `~` in f32 units), unit constructors are the identity, and a value
+  opening prints its value. Sweep 744 -> 807 of 1081, none lost.
+  variant-address (a nullary constructor allocated per construction) is left.
+- rust-codex-compiler (next commit): rocemit writes `Real approximate` and
+  the modes; a superclass dictionary field keeps its type parameter (from
+  Steve's local session, for roc2rust). roc-apps ladder 877 PASS; ported 580.
