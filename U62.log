@@ -599,3 +599,16 @@ and stays hand-kept (0).
 Whole mode also exposed `__compare_Boolean`/`__compare_Real` lowered through
 Integer temporaries (upstream's gen-int-compare, normally pruned); rocemit
 writes them in Roc directly.
+
+### Roc: list-parameter writes (in progress, off by default)
+
+rust-codex-compiler `src/list_versions.rs`, behind `rocemit --list-versions`;
+status and next steps in its `docs/list-versions.md`. Codex writes a list in
+place; the pass makes each write a new version, has a function that writes a
+list parameter hand the last version back (as its answer, or as a tuple),
+and has callers continue with it. On the 35 units refused at U62 for "writes
+its list parameter": 24 PASS, 8 correctly REFUSED (a write to a list held in
+a record field, which is shared heap), 2 FAIL (lib@brotli-test's sizes;
+e1000-rx-reuse, a heap measurement), 1 CRASH (lib@brotli-dict-test). Not the
+default until Brotli is understood and the full ladder shows no PASS lost.
+The default path is unchanged (full ladder re-run to confirm).
