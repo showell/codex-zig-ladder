@@ -543,8 +543,7 @@ builds tests/ported/ by taking each chapter's text from the FIRST unit that
 emits it and sharing it with every test. That is sound only if a chapter's
 text does not depend on the program, and pruning made it depend on the
 program. package.py runs every app before keeping it, so it would drop tests
-silently, not ship broken ones. Not yet fixed; the proposal is rocemit
-pruning to the union of what the packaged programs reach.
+silently, not ship broken ones. Fixed below (`rocemit --whole`).
 
 ### Roc: the class tests
 
@@ -566,3 +565,37 @@ pruning to the union of what the packaged programs reach.
 The dispatch was not U62's: our lowering never had it, and every
 multi-instance class reached Roc as a bare `to-text` or `__dict-of-C`.
 Check rows, sweep (744/1081) and curated arms unchanged throughout.
+
+### roc-apps tests/ported: emitted whole, with crash stubs (Steve's call)
+
+    rust-codex-compiler 0322b24, roc-apps aa02052
+    ported   521 -> 566 tests; every packaged app runs with no Roc error
+
+`rocemit --whole` writes every definition of every chapter, unpruned, and
+package.py uses it. A function rocemit cannot write becomes
+`|_, ...| crash("rocemit could not write ...")`; a constant is left out.
+Probed on the nightly first: an unreached function stub compiles clean and a
+reached one crashes with its message, but a `crash` in a top-level constant
+is a build error even unused, because Roc evaluates constants while it
+compiles. Dependents follow (a function using something left out is stubbed,
+a constant is left out, and so is a constant that could reach a stub), as
+does a lifted lambda whose users are gone. rocemit prints each on stderr;
+package.py keeps them in gen/whole/<unit>/notes.txt.
+
+What was left out across all ~850 whole emissions: proof claims (propeq and
+`proof` types, no runtime meaning); four effectful constants (`current-user`,
+`authenticate`, `key-public`, `respond-not-found`); class dictionaries with
+no Roc type (UNSUPPORTED_FREE_BINDER) and the lambdas lifted out of them; and
+`fe-sqrt-m1`, which can reach the list-parameter stub `fe-carry-pass`. No
+machine constants: those are no longer hand-kept at all.
+
+**Constant builtins come from upstream.** `builtins_probe.py
+--rust-constants` reads the builtins x86 emits as constants
+(`emit-constant-helper st "<name>" <ident>` and `<ident> : Integer = N`, in
+Emit/) and prints CONSTANT_BUILTINS, which the interpreter and rocemit answer
+from. At U62: pit-input-hz 1193182, pit-count 11932. `cpu-park` is a routine
+and stays hand-kept (0).
+
+Whole mode also exposed `__compare_Boolean`/`__compare_Real` lowered through
+Integer temporaries (upstream's gen-int-compare, normally pruned); rocemit
+writes them in Roc directly.
