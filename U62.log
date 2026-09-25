@@ -1,0 +1,67 @@
+# Update 62
+
+    3eac1674  Update 62   seed CC7DD4559232C558
+    3af67f99  Update 61   seed 7BCD5BC6BCE0AF41
+
+One squashed commit over U61: 660 files, +74,214 / -11,107, roughly six times
+U61's size. The bulk is codex/test (223 files), codex/plugs (116) and
+codex/compiler (31). The seed name is the sha256 prefix of `seed/Codex.cdx`,
+checked for both seeds (U61's matches U61.log); the release notes' seed
+`CC7DD455` agrees. Release notes: `docs/PM/Active/GitHubUpdates/GitHubUpdate62.md`.
+
+Upstream has no tags or GitHub releases; an Update is a commit on `master`.
+This cycle was started from a cloud session with a blob-less shallow clone,
+not the `cobblestone-u62rel` worktree convention; no local worktree exists yet.
+
+## What upstream did with ours
+
+The release notes say they took issue 153 with PR 154, PRs 155 and 156, and
+issue 157. `u62-candidate` is U61 + PRs 154-156 (U61.log), and all three PR
+heads sit directly on U61, so measuring each PR head against U62 file by file
+covers the 8 files the candidate touches:
+
+     6 byte-identical   empty-list-as-{integer,text}.{codex,failing} (PR 154),
+                        act-unused-bind.{codex,expected} (PR 156)
+     1 code as sent     ZigEmitter.codex: both PRs present, file otherwise moved
+     1 dropped          compiler-backlog.md: PR 154's COMPILER-85 row
+
+- **PR 155 (`bit-not`)**: our table row is byte-identical at ZigEmitter:1103.
+  The patch no longer reverse-applies only because its context moved:
+  `list-length` no longer follows `bit-shr` in the table.
+- **PR 156 (unused `act` bind)**: both hunks reverse-apply cleanly on U62's
+  ZigEmitter, offset -44 lines. Landed verbatim.
+- **PR 154's backlog row**: not carried. Our row filed the empty-list hole as
+  COMPILER-85; upstream fixed it outright (main 26013) and gave COMPILER-85 to
+  the issue's SECOND shape instead: desugared tuples, revised records and
+  derived `show` names losing their instantiated IR types (main 26027). Neither
+  number names the empty-list defect in U62's backlog. The two refusal tests
+  are theirs now, unchanged.
+- **Issue 157**: all three items acted on, none measured here yet.
+  1. The literal table rebuilt at every reference is COMPILER-86: the
+     reproducer went from 528 bytes per read to 0 (main 26048); the compiler
+     shares 32 of its 41 tables, the Zig plug shares constant tables (main
+     26148), record fields and a left `&` operand are covered (main 26370).
+     Three tables remain unshared, named in
+     `docs/Designs/Active/Compiler/ConstantSharing.md`. COMPILER-86 is still
+     open in the backlog for the non-literal case.
+  2. Zig plug allocations no longer bypass std's `0xAA` poisoning (main 26044).
+  3. The plug refuses `ReleaseFast` and `ReleaseSmall` and benches at
+     `ReleaseSafe` (main 26086). Ours that this breaks:
+     `outbound/evidence-raytracer-nearest-first/{bench2,verify-bench}.sh`
+     both run ReleaseFast. They are sent evidence, so a record, not a fix.
+
+ZigEmitter.codex as a whole moved +157 / -60 over U61; PRs 155 and 156 are a
+few lines of that. The rest (issue 157 items 1-3 and whatever else) is
+unread.
+
+The notes credit "the fixes and the initial measurements" to us, "developed
+with Claude", and claim the regression fixtures and the release proof as
+theirs.
+
+Ours to follow, from the notes alone and not yet run:
+
+- Frontend changes the Rust arm will have to meet. Checked method templates
+  and per-demand dictionary slots (COMPILER-90). A constrained function over
+  a class with ONE instance is now specialized to it, so a call at a type
+  with no instance is a type error (main 27104). `[] == []` needed its own
+  release-time fix (main 27130). And the empty literal is list-typed.
