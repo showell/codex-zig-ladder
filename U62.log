@@ -263,3 +263,41 @@ run-wasm (codex-wasm-transpiler) on cobblestone and roc. The safari corpus
 (safari-codex/units) is not run yet on any arm. rust-codex-compiler's own
 gold-backed gates (`corpus_*_gate.sh`, `selfhost_gate.sh`; U61's "Rust gates")
 are separate from these arms and not run yet.
+
+## codex-wasm-transpiler at U62: both roads agree, the fixed point holds
+
+    zig road      codexzig 9682f8d5 (codex-zig-transpiler 711a0bf), built at 3eac167
+    both roads    61s; the two roads agree byte for byte; sample matches
+    artifact      codexwasm.wat 8,713,721 bytes (U61 generation 1: 8,421,508)
+    memory        1,659.1 MB, 40.5% of wasm32; ratchet +0.21% (not rebanked)
+
+`3e01023` (source, build.py) and `0d804bc` (`generated/` repinned). This repo
+had written the opposite of the drift rule into its bundler ("THIS LIST IS A
+DELIBERATE COPY and the drift is accepted"), reasoning about coupling to a
+SIBLING's bundler; `compiler-order.txt` is upstream's own file, so the list is
+derived now like the other two, and the header says why. The harness takes
+`compile-frontend-ir` -> `prepare-method-ir` and hands the prepared chapter
+straight to `emit-wasm-chapter-stream`: no IR text, so the 945 MB round trip
+it dropped stays dropped, and the memory moved +0.21%.
+
+Its copied tail had drifted a THIRD way besides the equality helpers and
+method-materialize: it read `wasm-exports` as a list of Text, a shape
+upstream's emitter has refused since U59 for one `"|a|b|"` literal. For every
+valid declaration it rooted no export, so exported functions were pruned.
+Nothing in this repo declares one; upstream's `ir-roots-with-declared` is the
+same reading done right, and the harness uses it now.
+
+**A cloud-only quirk, fixed:** the zig road first reported codexzig's pin
+UNVERIFIED. The receipt said `3eac167` and `borrowed_pin` wanted 8 to 40 hex
+characters. git abbreviates to as few characters as are unique in the
+repository, never fewer than 7; a full-history checkout gave 8
+(`9fff850c` at U60), a depth-1 clone gives 7. Now 7 to 40.
+
+## Curated run-wasm at U62: 74 of 74
+
+    run-wasm     cobblestone 28 match · roc 46 match   (CODEXWASM=codex-wasm-transpiler checkout)
+
+So every curated arm is green on cobblestone and roc at U62: run-zig,
+ir-zig, ir-rust, run-interp, ir-interp, run-wasm, and the upstream re-freeze
+(two reviewed, COMPILER-85). Not yet: the safari corpus on any arm, and
+rust-codex-compiler's own gold-backed gates.
