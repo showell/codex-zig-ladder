@@ -444,3 +444,55 @@ rust-codex-compiler section above.
 
 Also new this cycle: processed entirely in the cloud (see the top of this
 log), and the Rust verdict is now meaning-based (sweep + check + linear).
+
+## Rust port progress at U62, and which of it is U62's
+
+Committed to rust-codex-compiler: `35fc19d` (empty lists) and `de20759`
+(classes: declared instance methods with `a := head`, freshen-method-local,
+CDX2098, single-instance specialization). Corpus check gate now
+**1,345 agree / 7 differ** (was 1,336 / 16); curated Rust arms green on all
+three corpora with `.rust.ir` unchanged; sweep 743 / 1,081 unchanged.
+The 7 left: four resolution cases (not semantics), `paren-open-at-eof`,
+and two where both refuse differently (plus-plus-text, vec-wide-refused).
+
+**New in U62 or catch-up? Measured, not guessed**, by whether U62 added or
+changed each test file (`git diff 3af67f9 3eac167`):
+
+    ADDED by U62      every check-gate item: both empty-list tests, the four
+                      method-template/typeclass refusals, the three class
+                      checks, paren-open-at-eof
+    CHANGED by U62    real-show-wide (COMPILER-41's new format)
+    UNCHANGED since   real-approx-modes, real-saturating, real-approx-equality,
+    U61               unit-pattern-lit, unit-show, variant-address -- older
+                      parity gaps the sweep exposes because it was never
+                      part of the Update flow; and the 49 unprinted
+                      value-openings (known-gaps.md). Steve: fix these, do
+                      not carry them as "known".
+
+## Roc at U62 (roc-apps tests/ladder.sh)
+
+Nightly `nightly-2026-09-22-e494788` (roc-apps' pin, `roc-nightly.txt`),
+downloaded straight from `github.com/roc-lang/nightlies/releases/download/
+<tag>/roc_nightly-linux_x86_64-<date>-<sha>.tar.gz` (no `gh` here). Tags
+switched from `nightly-2026-August-05-...` to numeric
+`nightly-2026-09-22-...`; newer: 09-23, 09-24, untried.
+`TESTS_ROOT=~/showell_repos/cobblestone-u62rel`; ~/build/roc-apps/gen/tests
+and gen/verdicts must exist. Full run 4m12s.
+
+    740 PASS · 253 REFUSED · 40 SKIP · 26 SLOW · 16 DIVERGES · 5 CRASH · 1 TIMEOUT
+    before (ledger at de6e5f3): 767 PASS · 181 REFUSED; 1,036 units -> 1,081
+
+roc-apps `tests/ledger.txt` committed. Every PASS -> REFUSED has one cause of three:
+
+- **U62's new builtins** `pit-input-hz`, `cpu-park` have no Roc rule
+  ("used as a value"): 8 regressed, 7 new units.
+- **"writes its list parameter ... and answers something else"**: U62's
+  network code (`e1000-copy-into`, `ne2k-copy-into`) and `qoi-decode-pixels`
+  now take the shape rocemit already refuses (112 units in all): 33
+  regressed.
+- **U62's class tests** (method-template-contract-*, typeclass-*): 14 new
+  units refused, `type error` or `builtin format-value`: the Roc emitter
+  needs the same class work the checker just got.
+
+Roc porting queue, U62's first: the three builtins, the class tests, then
+the list-parameter refusal that U62's code widened.
