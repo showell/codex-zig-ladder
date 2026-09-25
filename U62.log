@@ -520,3 +520,20 @@ absent from upstream's own IR, which every upstream backend prunes to what
 `opening` and the declared exports reach before emitting. Pruning rocemit's
 input the same way would clear those without teaching the emitter the shape.
 That changes rocemit's "whole chapter" output design: Steve's call.
+
+### rocemit prunes like upstream (Steve's call)
+
+rust-codex-compiler `8937ef5`, roc-apps `0886f90`. rocemit emitted every
+cited chapter whole; it now prunes the lowered definitions to what
+`ir-emit-roots` reaches (the crate's own `prune_unreachable_roots` and
+`IR_EMIT_ROOTS`), as every upstream backend does. A unit with no `opening`
+stays whole. Every `__eq_<T>` is a root too: upstream's lowering names the
+instantiated helper, ours lowers `==` to a Binary node that roc_emit resolves
+by name, and without them ten passing units lost equality in Roc.
+
+    ladder   753 -> 836 PASS, 239 -> 153 REFUSED, 18 DIVERGES (+net-ack-leak,
+             a __heap-save measurement), no pass lost
+
+The whole-chapter design served one caller, canvas_apps/safari/emitted.sh,
+retired 2026-09-18 (safari's Roc is source now); no `--whole` flag was kept.
+Not run here: roc-apps floor/ (`--by-reach`), which this also prunes.
