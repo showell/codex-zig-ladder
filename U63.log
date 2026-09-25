@@ -1,0 +1,46 @@
+# Update 63
+
+**PROCESSED IN THE CLOUD**, as U62 was: a Claude Code cloud session (a fresh
+container, tcg, no KVM), 2026-09-25. Nothing here is on the droplet; every
+bundle named below was built in that container and is gone with it.
+
+    fb5f2a70  Update 63   seed C74F10419BA0DB66
+    8e0c418c  Update 62   seed CC7DD4559232C558   (was 3eac1674; see below)
+
+**UPSTREAM REWROTE ITS PUBLIC HISTORY THIS CYCLE.** Every commit hash before
+U63 changed: U62 is now `8e0c418c`, where U62.log and every receipt in it
+say `3eac1674`. The notes (`GitHubUpdate63.md`, "Public history rewritten")
+say a clone made before U63 must be cloned again: the phone project and the
+Commodore ROM bytes were purged from the history (red 29018, 29047). Measured
+here, U62's tree lost exactly 15 files to the purge (13 under
+`docs/PM/Done/Suspended/Phone`, 2 under `apps/c64`) and nothing else; the
+seed is unchanged (`CC7DD4559232C558` both ways). So U62's results stand;
+only its hashes moved.
+
+Two commits sit between U62 and U63, both after the purge:
+
+    6b1c10f2  Untrack the old flight images and test disk fixtures
+    9ee0a57e  C64 runs on the MEGA65 Open ROMs
+
+**6b1c10f2 untracks `codex/test/*.disk`** (99 files). The qemu harness and
+roc-apps' ladder hand a test its `.disk` (and `.disk2`) fixture; at U63 those
+files are no longer in the checkout. Expect the disk-reading tests to change
+verdict for that reason and no other, and check before believing anything
+else about them.
+
+U63 over U62: 1,352 files, +62,314 / -25,350 (1,247 files over 9ee0a57e).
+Release notes: `docs/PM/Active/GitHubUpdates/GitHubUpdate63.md`; its seed
+`C74F10419BA0DB66` agrees. `GitHubUpdate64.md` is already present, as next
+cycle's open notes ("NOT PUSHED").
+
+The checkout is a clone of upstream `master` at
+`~/showell_repos/cobblestone-u63rel`, deepened to reach U62.
+
+## What upstream did with ours
+
+We sent no PRs this cycle. The notes' one section with our name, "The zig
+plug (Steve Howell's)", is upstream's own change to the plug we contributed:
+the network entry streams its reply in ~16 KB batches (reek 27285), so a
+672,807-byte reply that ran the depot plug out of memory at 256 MB now
+completes byte-identically. Issue 157 (computed-body tables, left open at
+U62) is not mentioned.
