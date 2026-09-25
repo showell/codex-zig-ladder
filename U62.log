@@ -645,3 +645,4 @@ docs/list-versions.md.
   sweep trims trailing blank lines as the ladder does. Sweep 843; ladder 878
   (real-show-wide no longer DIVERGES); ported 581. Left: heap measurements
   (5) and device queries (4).
+- Interpreter vectors (packed, masks, SizedVec): sweep 843 -> 856. Left: vectors in memory (4).
