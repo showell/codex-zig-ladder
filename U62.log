@@ -212,9 +212,27 @@ shape (posted as comment 5778393190 at U61); upstream fixed it as COMPILER-85
 (main 26027). Reviewed token by token, nothing else moved; re-frozen as curated
 `0f1bb41`. Note curated's default branch is `main`, not `master`.
 
-ir-diff still says both differ, now the other way round: `.rust.ir` keeps
-`(tvar 2)` there. Upstream is right now; the Rust frontend has COMPILER-85 to
-catch up on. `.rust.ir` is not touched.
+ir-diff still says both differ, at the same token, which is `MkTup2`'s type
+annotation where it is applied to `x` and `y`:
+
+    rust        (name "MkTup2" (fn (tvar 2) (fn (tvar 3) (ctd "Tup2" (args (tvar 2) (tvar 3))))))
+    U62 upstr.  (name "MkTup2" (fn (list int-default) (fn (list int-default) (ctd "Tup2" ...))))
+    U61 upstr.  (fn int-default ...), the wrong instantiation COMPILER-85 fixed
+
+Rust annotates the constructor reference with its GENERIC type (the
+declaration's own variables); upstream with the type INSTANTIATED at the use.
+Rust did not change and did not regress. It differed at U61 too, from a wrong
+instantiation; it now differs from a right one. (An earlier draft of this
+entry, and curated `0f1bb41`'s message, said the Rust frontend "has
+COMPILER-85 to catch up on". That was wrong: COMPILER-85 was upstream
+instantiating badly, and Rust never instantiates here.)
+
+Whether Rust SHOULD instantiate constructor references is open: it matters
+only if the Rust IR is meant to match upstream's token for token there. At U61
+ir-zig (Rust IR -> zigemit -> zig, run) matched on these units, so the
+uninstantiated variables break nothing downstream. Settle it with
+rust-codex-compiler's own contract when that arm runs. `.rust.ir` is not
+touched.
 
 Nothing else moved, so none of the 74 units uses generic equality over a
 parameterised type or a class method: the equality-helper and
