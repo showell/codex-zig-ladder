@@ -112,6 +112,15 @@ BUILD, not a defect in U62:
    `assemble_unit.ps1` has added itself since U60, so every type in them came
    out twice (CDX3001 x15). Removed.
 
+Re-run with codexir's harness carrying the hosted deck prologue that
+codex-zig-transpiler's harnesses put in front of the same driver calls
+(`823c5b1`; `b0f9312` had none and had only run fib):
+
+    ~/runs/20260925T112535Z-u62             checkers 823c5b1
+    GREEN 5/5 in 8m47s; codexir 3m26s
+    eq-generic-recursive through native codexir | zigemit: __eq_ helpers on
+    the wire, MATCHES all 9 expected lines
+
 The principle, now in README: when an Update makes us edit our own chapter
 lists or harnesses, read how upstream changed its side first, and derive from
 their files.
