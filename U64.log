@@ -253,3 +253,29 @@ scratch `irsweep.sh`: old irdump, new irdump, upstream, per unit; 16 minutes):
 The four: eq-generic-fields, eq-generic-recursive, list-equality,
 record-equality. Check gate 1,432 / 0, sweep 876, curated and safari
 unchanged. Step 2 (the Eq dictionary lowering and `__eqd_` helpers) next.
+
+## Rust IR parity, step 2: generic equality is byte-identical (rust `e17f3d0`)
+
+`codex/test/generic-eq`'s IR now equals codexir's, all 67,487 bytes: the Eq
+dictionary at each call (the caller's own `__d-Eq-*`, a closed type's `__eq_`
+helper, or `__eqd_<T>` over its arguments' dictionaries), `==` through the
+dictionary in scope, and the slot-based `__eqd_` helpers. Porting it also
+found an old checker gap: a list literal took its LAST element's type and
+unified nothing (upstream: the first element's, every other unified with it).
+
+Corpus IR sweep against step 1: generic-eq refused -> identical, nothing else
+changed. Check gate 1,432 / 0; sweep 876; every Rust arm unchanged.
+
+**A slowdown of ours, found on the way (rust `788837b`).** The CDX2099 check
+I added in `e83bd2a` (`eq_type_withheld`) re-derived every record field, with
+a linear scope scan, on every `==`: fields^4 on the compiler's nested records.
+`shell-build-keep` took over 90 s (codexcheck: 0.83 s), and the check gate
+took 16 minutes or stalled. I first called it pre-existing, having compared
+only against snapshots built after that commit; Steve pushed back, stack
+samples put every sample in that function, and it is fixed (0.01 s; the gate
+is 6 minutes again). The gate now runs each unit under `CHECK_TIMEOUT`
+(30 s), reporting an overrun as a TIMEOUT row, and honours a `gate-slow.txt`
+(empty) for units slow for understood reasons.
+
+Lesson for the log: a performance baseline has to predate the change under
+suspicion; "every snapshot is slow" said nothing when every snapshot was mine.
