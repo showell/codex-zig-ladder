@@ -59,3 +59,22 @@ U63 (stage 4 153s -> 103s, stage 5 212s -> 141s; qemu's codexir 5m12s ->
 3m32s), even with both jobs sharing the box. A guest that waits in `hlt` for
 serial input wakes promptly when its interrupts are acknowledged properly;
 that COMPILER-104 is the whole of the speed-up is plausible, not measured.
+
+## Oracles and bundles at U64
+
+    oracles   codexir + codexcheck rebuilt (107s, no guest), both smokes pass   transpiler b3f0b12
+    ~/codexzig   codexzig 6d1afe19, the fixed point's binary (transpiler 08a4328)
+    ~/codexir    codexir 5d1e782e, codexcheck 7b8e09df, codexir-subject.codex c6353a0e
+    ~/zigemit    zigemit 1f6b714c, cobblestone-qemu sandbox 20260926T095758Z-u64 (cd868ab)
+    all          checkout cobblestone-u64rel 82cb77a; SHA256SUMS beside each receipt
+
+These replace the U62 bundles; U63 never refreshed them.
+
+## Curated and safari on the zig arms: all green, IR unchanged
+
+    run-zig             cobblestone 28 match · roc 46 match · safari 54 match
+    freeze-upstream-ir  cobblestone 28 unchanged · roc 46 unchanged · safari 54 unchanged
+
+The frozen `.upstream.ir` was cut at U62, so "unchanged" spans U63 and U64:
+neither the narrower language nor generic equality by dictionary passing
+moves the IR of any unit we carry. Nothing in them uses `Eq a =>`.
