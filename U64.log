@@ -78,3 +78,32 @@ These replace the U62 bundles; U63 never refreshed them.
 The frozen `.upstream.ir` was cut at U62, so "unchanged" spans U63 and U64:
 neither the narrower language nor generic equality by dictionary passing
 moves the IR of any unit we carry. Nothing in them uses `Eq a =>`.
+
+## codex-wasm-transpiler at U64: both roads agree, the fixed point holds
+
+    both roads    the two roads agree byte for byte; arith matches all 9 lines
+    artifact      codexwasm.wat 9,299,476 bytes (U62: 8,713,721)
+    memory        1,677.6 MB, 41.0% of wasm32; ratchet +1.33% (not rebanked)
+
+`ebcdc00`. One fix, from U63: the effect-handler helpers (`wh-op-arity` and
+the rest) moved out of WasmEmitter into `plugs/common/HandlerLift.codex`,
+which upstream's wasm build line names with `-CommonChapters`. Our bundler
+now reads that list from `codex/plugs/wasm/build.ps1`; without it, codexzig
+refused the subject with eight CDX3002s. `CODEXZIG` must point at
+codex-zig-transpiler's `generated/local/codexzig`, not `~/codexzig`: the
+build reads the receipt at `../PROVENANCE` from the binary, and the bundle
+dir has none there, so the pin reads UNVERIFIED.
+
+## run-wasm and safari's whole app
+
+    run-wasm      cobblestone 28 match · roc 46 match · safari 54 match
+    whole app     harness/build_wasm.sh: 2,430-command frame walks exactly,
+                  1,200 frames of endurance, 300 painted frames;
+                  web/driving/safari.wasm byte-identical to the tracked U62 build
+
+safari `quires.tsv` moves its checkout line to cobblestone-u64rel (the
+build refused the mismatch with the transpilers' pin, as it should).
+
+So at U64 every zig and wasm arm is green on cobblestone, roc and safari.
+Not yet run: the Rust arms (ir-rust, ir-zig, run-interp, ir-interp; Rust is
+parked) and Roc (roc-apps).
