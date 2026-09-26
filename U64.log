@@ -313,4 +313,4 @@ interpreter now answers `HEAP_ORIGIN`, rocemit 6291456 (where Mem and
 MachineMem start). The four lost units pass in both, and so does one new unit.
 engine-software-render's interpreter output differs from its sidecar only by a
 leading 0x01, as it did at U62; that led to finding 75: the "leading SOH" is
-codex-vm writing the UART's baud divisor as output (patch in findings/).
+codex-vm writing the UART's baud divisor as output (patch in findings/; filed as damiant3/Cobblestone#158).

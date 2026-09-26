@@ -1158,7 +1158,7 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
-## 75. NOT YET SENT. The "leading SOH" is codex-vm's: it takes the UART's baud-rate divisor for a transmitted byte, so every `-output` opens with a 0x01 that the guest never sent. Patch: `codex-vm-dlab.patch`
+## 75. SENT as [issue 158](https://github.com/damiant3/Cobblestone/issues/158). The "leading SOH" is codex-vm's: it takes the UART's baud-rate divisor for a transmitted byte, so every `-output` opens with a 0x01 that the guest never sent. Patch: `codex-vm-dlab.patch`
 
 **Found 2026-09-26 (Update 64), by asking where the byte comes from instead of
 stripping it again.** 166 of the 1,713 `.expected` files under `codex/test`
