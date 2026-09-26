@@ -1,0 +1,38 @@
+# Update 64
+
+**PROCESSED IN THE CLOUD**, as U62 and U63 were: a Claude Code cloud session
+(tcg, no KVM), 2026-09-26. Nothing here is on the droplet.
+
+    82cb77a5  Update 64   seed 533C6D630D8660E6
+    fb5f2a70  Update 63   seed C74F10419BA0DB66
+
+U64 over U63: 89 files, +7,597 / -5,406, one commit. Release notes:
+`docs/PM/Active/GitHubUpdates/GitHubUpdate64.md`; its seed agrees. The
+checkout is a fresh clone of upstream `master` at
+`~/showell_repos/cobblestone-u64rel`.
+
+## What upstream did with ours
+
+**The serial-ring stall we reported at U63 is fixed at its cause**
+(COMPILER-104, reek, main 29170). The serial reader polls the UART once
+before `hlt`, leaving the byte it read in RAX. The timer interrupt chose
+which controller to acknowledge by comparing the interrupted program's RAX,
+not the vector, against the local timer's vector 48. A `0` byte (0x30) plus
+a PIT tick sent the acknowledgement to the local APIC; the PIC's in-service
+bit for IRQ0 never cleared, and no timer or serial interrupt came again.
+They reproduced it 3 of 3 on the U63 seed (512-byte bursts of `0` every
+30 ms) and not on the fixed seed (2.9 MB over 180 s). So U63.log's
+XSAVE/AVX guess was wrong.
+
+They leave our **1 MB stall offsets** unexplained. Our side explains them:
+the trigger needs an EMPTY ring, and both our feeders (cobblestone-qemu's
+`ring_compile.py`, the transpiler's `guest.py`) preload the ring's first
+megabyte and then refill it from the host. The guest can drain the ring
+between refills, so an empty ring is likeliest at a 1 MB boundary: both
+stalls, at 2,097,152 and 11,534,336, are exact multiples. Worth one line
+back to Damian.
+
+Nothing else touches our repos directly. The zig plug and every phase
+signature the harnesses call are unchanged (`check-chapter`,
+`lower-chapter`); the compiler changes are generic equality by dictionary
+passing (Desugarer, TypeChecker, Lowering, X86_64).
