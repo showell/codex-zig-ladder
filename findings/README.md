@@ -1158,6 +1158,55 @@ this construct has been wrong twice today; the next step is to read the
 synthesised `EquatableDict` type definition against `count-class-instances`,
 not to adjust the fix and rebuild.
 
+## 75. NOT YET SENT. The "leading SOH" is codex-vm's: it takes the UART's baud-rate divisor for a transmitted byte, so every `-output` opens with a 0x01 that the guest never sent. Patch: `codex-vm-dlab.patch`
+
+**Found 2026-09-26 (Update 64), by asking where the byte comes from instead of
+stripping it again.** 166 of the 1,713 `.expected` files under `codex/test`
+open with one 0x01, and it has been worked around since at least U45: upstream
+strips `^\x01` from the ACTUAL in `build/test-run.ps1`, `bvt.ps1`, `build.ps1`
+and `codex/plugs/common/hosted-compare-lib.ps1`; `boards-test.ps1` searches past
+it; `docs/ExaminersAssay.md` documents it as "the guest's serial stream opens
+with a 0x01 SOH"; and this repository strips it three times (`corpus_run.py`
+`expected_text`, `src/arithcycle.sh`, and through them `codexzig_corpus.py`).
+
+**The guest does not send it.** Every kernel's UART init
+(`codex/compiler/Emit/X86_64Chapter.codex`, `st24`..`st27`) is the textbook
+16550 sequence:
+
+    out 0x3FB, 0x80   ; LCR: DLAB on -- 0x3F8/0x3F9 are now the divisor latch
+    out 0x3F8, 1      ; divisor low = 1 (115200 baud)
+    out 0x3F9, 0      ; divisor high
+    out 0x3FB, 3      ; LCR: 8N1, DLAB off
+
+`tools/codex-vm.c`'s OUT handler forwards EVERY write to 0x3F8 to
+`output_buf_write` and never looks at 0x3FB, so the divisor `1` is recorded as
+the stream's first byte.
+
+**Control, measured:** the U64 kernel `fib_checkers/booted-fib.cdx` under QEMU
+(which models DLAB), COM1 captured to a file: the file is `6765\n`, five bytes,
+no 0x01. The same kernel's codex-vm capture is the one that carries it.
+
+**Why 166 and not all 1,713:** a sidecar recorded through `test-run.ps1` has
+the byte stripped; one copied from a raw `codex-vm -output` keeps it. It never
+failed, because PowerShell's `-eq` is culture-sensitive and SOH has no
+collation weight (ExaminersAssay's own demonstration), so the battery could not
+see the difference and nobody had a reason to ask.
+
+**The fix, in order (Damian's call; the patch is only step 1):**
+
+1. `codex-vm-dlab.patch` (against U64 `tools/codex-vm.c`, applies clean,
+   UNCOMPILED here -- the VM is WHV-only): keep COM1's LCR, and drop a 0x3F8
+   write (plain or REP OUTSB) while DLAB is set. Every `-output` then begins
+   with what the guest printed.
+2. Strip the leading 0x01 from the 166 sidecars (one mechanical commit).
+3. Retire the `^\x01` strips, and with them the reason
+   ExaminersAssay gives for not moving to an ordinal comparison. After 1 and 2
+   an ordinal compare is exact, and a stray SOH a program really prints
+   becomes visible, which is the blind spot the Assay names.
+
+Until step 2 lands upstream, our three strips stay: they are correct against
+the sidecars as committed.
+
 ## 74. SENT as [issue 125](https://github.com/damiant3/Cobblestone/issues/125). A Real literal's decimal-to-binary conversion is not correctly rounded: 10 of 120 ordinary doubles land one ULP away, in the FRONT END, so every backend inherits it
 
 **Found 2026-09-04 by two spec files disagreeing across arms**, and it is the

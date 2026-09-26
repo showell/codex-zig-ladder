@@ -1,0 +1,35 @@
+--- a/tools/codex-vm.c	2026-09-26 17:10:30.036099116 +0000
++++ b/tools/codex-vm.c	2026-09-26 17:10:30.057716251 +0000
+@@ -10313,6 +10313,13 @@
+ 
+ /* Output buffer: accumulate guest UART writes (port 0x3F8 OUT) */
+ static unsigned char *output_buf = NULL;
++/* COM1's LCR (0x3FB). While its DLAB bit (0x80) is set, 0x3F8 and 0x3F9 are
++   the baud-rate divisor latch, not THR and IER, so a write there is not a
++   transmitted byte. Every kernel's UART init sets DLAB and writes divisor 1
++   (115200) to 0x3F8; treated as THR, that 1 opened every -output file with a
++   0x01 that real hardware and QEMU never send -- the "leading SOH" every
++   harness strips and 166 sidecars recorded. */
++static unsigned char com1_lcr = 0;
+ static size_t output_len = 0;
+ static size_t output_cap = 0;
+ /* Serial bytes dropped because the buffer could not grow. Reported once when
+@@ -12974,7 +12981,7 @@
+            The generic COM1 path below takes its byte from RAX, where string
+            data does not live, so without this arm a burst would emit one
+            garbage byte and skip the rest. Consume the whole count here. */
+-        if (ctx->IoPortAccess.AccessInfo.StringOp && port == 0x3F8) {
++        if (ctx->IoPortAccess.AccessInfo.StringOp && port == 0x3F8 && !(com1_lcr & 0x80)) {
+             unsigned long long gpa = ctx->IoPortAccess.Rsi;
+             unsigned long long cnt = ctx->IoPortAccess.Rcx;
+             unsigned long long done = 0;
+@@ -13025,7 +13032,8 @@
+         }
+         /* COM1 OUT: buffer the byte for file output */
+         if (port >= 0x3F8 && port <= 0x3FF) {
+-            if (port == 0x3F8) {
++            if (port == 0x3FB) com1_lcr = (unsigned char)val;
++            if (port == 0x3F8 && !(com1_lcr & 0x80)) {
+                 output_buf_write((unsigned char)val);
+                 if (r10dump && (unsigned char)val == '\n') {
+                     WHV_REGISTER_NAME rns[2] = { WHvX64RegisterR10, WHvX64RegisterRsp };
