@@ -299,3 +299,8 @@ Against U62: 4 lost, 0 gained, 54 new units (24 pass). The four lost are one
 port gap, not a regression: engine-fill-guard, engine-near-clip,
 engine-software-render, gop-scene-viewport all refuse on `__heap-base` used
 as a value, which rocemit (and the Rust interpreter) have not yet ported.
+
+`tests/ported` regenerated at U64 (roc-apps, after `c470e6e`): 594 of the 907
+the emitter runs to their verdict (U62: 581 of 887), every app run against its
+verdict. usb-test and usb-desc-guard still pass but left the package on the
+16 KB cap: the Usb chapters they need grew to 17 KB.
