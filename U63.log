@@ -146,3 +146,22 @@ ring stall in either guest.
 
 Not done yet: the oracles (`build_codexir.py`), the bundles, curated arms,
 Rust gates (parked), safari's full arms, Roc.
+
+## Closed: superseded by Update 64
+
+U63 is closed here, with the list above left unrun. Update 64 (`82cb77a5`)
+landed the next morning and names our stall report: "the QEMU serial-input
+stall Steve Howell reported fixed at its cause (the timer interrupt
+acknowledged by its vector)". So the XSAVE/AVX guess above was wrong;
+the cause is in the timer interrupt's acknowledgement. Verification moves
+to U64, where the stall fix is the first thing to check.
+
+What U63 left done and pushed:
+
+    cobblestone-qemu      aa995ae, bcda127, cd868ab   GREEN 5/5
+    codex-zig-transpiler  32e66ed                     fixed point holds
+    our Codex             clean under the narrower language (128 units)
+
+Not run at U63: the oracles (`build_codexir.py`), the bundles, the curated
+arms, the Rust gates (parked), safari's full arms, Roc. None of them has a
+U63 verdict.
