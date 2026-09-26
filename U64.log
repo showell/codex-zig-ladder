@@ -238,3 +238,18 @@ parity only: lowering `==` through the dictionary, passing a caller's own
 dictionary on, and the minted `__eqd_` helpers (the design's steps 3 and 4).
 Until then `irdump` refuses `generic-eq` rather than emit wrong IR. No curated
 or safari unit uses `Eq a =>`, so every Rust arm is unchanged.
+
+## Rust IR parity, step 1: the equality helpers (rust `b593ffd`)
+
+Rust named instantiated equality helpers but never minted them; upstream has
+attached them on the IR path since U56. Now ported (`src/eq_helpers.rs`,
+upstream's `eq-helper-defs`), with the list arm in lowering and U64's derived
+record equality. A corpus-wide sweep of Rust IR against codexir (new tool,
+scratch `irsweep.sh`: old irdump, new irdump, upstream, per unit; 16 minutes):
+
+    1,036 SAME -> SAME    4 DIFF -> SAME    0 regressions
+      131 DIFF -> DIFF  261 refused by Rust's IR path, before and after
+
+The four: eq-generic-fields, eq-generic-recursive, list-equality,
+record-equality. Check gate 1,432 / 0, sweep 876, curated and safari
+unchanged. Step 2 (the Eq dictionary lowering and `__eqd_` helpers) next.
