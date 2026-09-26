@@ -128,3 +128,21 @@ under the new rules.
 codexir exits 0 on a refusal; the verdict is a `CODEGEN-HALTED ... first
 CDX...` line, on stdout for type errors and on the IR stream (stderr) for
 CDX1078. Sweep on that line, not the exit code.
+
+## codex-zig-transpiler: the fixed point HOLDS at U63
+
+    fixed point   byte-identical, 3,251,035 bytes of zig (U62: 3,156,931)
+    arith.codex   MATCHES all 9 expected lines
+    513s cold     stage 4 guest 153s (peak 727 MB) · stage 5 guest 212s (605 MB) · NATIVE transpile 102s
+
+`32e66ed` (master). The same U63 changes as cobblestone-qemu: the ring plug
+bundled by upstream's `Build-TranspilerPlug` (Phase Allocator cites
+stripped), `emit-zig-chapter-stream` in ZigPlugRing and CodexZigHarness, a
+RINGPLUG-END sentinel capture in `guest.py`, and the payload checked as
+UTF-8 rather than CCE-decoded (`cce.py` deleted, no other user). The
+transpiler subject bundles the whole compiler from `compiler-order.txt`, so
+the Phase Allocator cites and IRFidelity resolve there with no change. No
+ring stall in either guest.
+
+Not done yet: the oracles (`build_codexir.py`), the bundles, curated arms,
+Rust gates (parked), safari's full arms, Roc.
