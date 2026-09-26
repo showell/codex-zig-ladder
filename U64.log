@@ -223,3 +223,18 @@ error on the lexer's own error token).
 Process note: the check gate runs `~/build/rust-target/release/checkdump`
 per unit, so rebuilding during a gate mixes builds. Gate a snapshot:
 `CHECKDUMP=<copy> ./corpus_check_gate.sh`.
+
+## Generic equality in Rust (rust `7b15035`): check gate 1,432 agree, 0 differ
+
+`Eq a =>` is a derived class in the desugarer (dictionary `__d-Eq-a` when any
+parameter mentions `a`; primitive `__eq_` wrappers; the call's dictionary
+marked by an empty span), and the checker keeps upstream's eq-sites and judges
+them per definition (CDX2100 on an unconstrained signature variable; 2085,
+2099 at a call that binds a Real, a vector or a withheld type). The sweep gains
+`generic-eq` (876 of 1,135, none lost): the interpreter prints all 30 rows.
+
+**Every check-gate difference from U63 and U64 is closed.** Left for IR
+parity only: lowering `==` through the dictionary, passing a caller's own
+dictionary on, and the minted `__eqd_` helpers (the design's steps 3 and 4).
+Until then `irdump` refuses `generic-eq` rather than emit wrong IR. No curated
+or safari unit uses `Eq a =>`, so every Rust arm is unchanged.
