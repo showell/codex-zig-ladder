@@ -137,3 +137,61 @@ upstream instantiates constructor references, Rust does not).
 
 Not yet read: the full-corpus sweep (1,433 units cut at U64, up from 1,353)
 and the accept/refuse gates, which come after the chosen corpora.
+
+## Rust on the full corpus: the sweep and the gates
+
+Corpus cut at U64 by the port's own bundler: `~/units-82cb77a56976`, 1,433
+units (U62: 1,353); `~/units-current` points at it. Five tests refuse to
+resolve by design (they cite the manifest-only `Codex`/`Emit` quires or a
+missing chapter); `ops/cap-grant-emit` is the new one.
+
+**Sweep** (every upstream test with an `.expected`, on codexrun):
+
+    U62 corpus, this binary     856 of 1,081
+    U64 corpus, before the fix  873 of 1,135   lost 4, gained 0, 54 new (21 ok)
+    U64 corpus, after the fix   875 of 1,135   +tier1-latin-print, +tier2-print
+
+The four LOST are engine and GOP render tests that now call `__heap-base`,
+a U63 builtin with no interpreter rule: port work, not a meaning change.
+
+**Two intended meaning changes in U63, caught and followed** (rust
+`d39278d`): x86's CCE print tables had two
+defects that the interpreter and the Roc text module emulated on purpose.
+U63 fixed both, and new upstream tests pin them:
+
+- `tier1-slice-bases` now starts slices 0 and 1 at U+0080 and U+0100 (was
+  U+00C0 and U+0140, so every character in U+0080..U+017F printed 0x40 high:
+  `ß` came out `ğ`). `ops/tier1-latin-print`.
+- `__cce_print_multi` sign-extends the tier-2 delta (`movsxd`); it used to add
+  it unsigned, so negative-delta slices printed an overlong sequence (`€`,
+  `☀`, `…`, `•` as U+FFFD). `ops/tier2-print`.
+
+This is the sweep doing the job Steve means it for: a change in what Codex
+prints, found by a program that prints differently under Rust.
+
+**Also real, not fixed:** `cce-foreign-byte`'s raw path. `char-encode` of
+code -1 writes one unit (255) upstream and four in the interpreter. It is the
+path the test itself calls "the defect the helper closes"; U63's new
+`cce-foreign-byte-text` helper is interpreted correctly.
+
+**Check gate: 1,394 agree, 38 differ** (U62: 1,352 / 0). Every difference
+is a rule U63 or U64 added on purpose that Rust has not ported:
+
+    18  we accept, Codex refuses   CDX1077 1078 1079 (narrower language), 2070
+                                   (literal match needs a catch-all), 2085 2099
+                                   2100 (equality on Real/vector/type variable),
+                                   2093 (lane past end), 2050 2051 (bounded-unit
+                                   narrowing), 2001 x2 (mask of the wrong lane
+                                   type: our (vec-mask N) has no lane slot)
+    15  both refuse, other code    8 quotes-* CDX1000 vs 1077; 1075 do-block;
+                                   1076 ctor-field-comma; 5 generic-eq-* refusals
+    3   error counts differ        CDX1070 x2, 1071, 1024 (newline rules)
+    1   we refuse, Codex accepts   generic-eq
+    1   both refuse, we crash      generic-eq-unconstrained (ours `?`)
+
+**Linear gate: 25 agree, 0 differ, GREEN.**
+
+**Generic equality by dictionary passing (U64's feature) is not in Rust.**
+`generic-eq` fails in the sweep (`if` on a function: `==` on a type variable
+evaluates to no usable equality) and in the check gate. It is the largest
+port item this Update opens.
