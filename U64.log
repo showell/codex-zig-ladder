@@ -279,3 +279,23 @@ is 6 minutes again). The gate now runs each unit under `CHECK_TIMEOUT`
 
 Lesson for the log: a performance baseline has to predate the change under
 suspicion; "every snapshot is slow" said nothing when every snapshot was mine.
+
+## Roc: 898 / 1,135 (U62 878) (rust `5f70e10`, roc-apps `c470e6e`)
+
+The first U64 run passed 442. U64's generic equality (and today's Rust port of
+it) sends list and generic-record `==` through derived `__eq_` helpers; rocemit
+refused the `__eq_List@...` calls, and emitted a generic record's `__eq_R`
+without the `where` clause Roc needs. rocemit now restores `==` for both
+before emitting (`roc_emit::restore_list_eq`), so Roc's structural equality
+does the work, as it did at U62: 859.
+
+The remaining ~40 were disk tests. U63 untracked `codex/test/*.disk`; each
+test now carries a `.disk-mint` / `.disk2-mint` recipe and upstream's
+`build/mint-test-disk.ps1` builds the image (sha256-checked, runs under Linux
+pwsh). The ladder mints a missing image through that script rather than
+keeping U62's copies (several of which no longer match their recipes): 898.
+
+Against U62: 4 lost, 0 gained, 54 new units (24 pass). The four lost are one
+port gap, not a regression: engine-fill-guard, engine-near-clip,
+engine-software-render, gop-scene-viewport all refuse on `__heap-base` used
+as a value, which rocemit (and the Rust interpreter) have not yet ported.
