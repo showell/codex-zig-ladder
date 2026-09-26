@@ -36,3 +36,26 @@ Nothing else touches our repos directly. The zig plug and every phase
 signature the harnesses call are unchanged (`check-chapter`,
 `lower-chapter`); the compiler changes are generic equality by dictionary
 passing (Desugarer, TypeChecker, Lowering, X86_64).
+
+## cobblestone-qemu: GREEN 5/5 in 9m26s, no change needed
+
+    GREEN 5/5 in 9m26s    cobblestone-qemu cd868ab, sandbox 20260926T095758Z-u64
+    fib 10s · zigemit 39s · codexir 3m32s · x86emit 4m18s (IR 1m30s, transpile 2m43s)
+    verify   zig PASS · qemu PASS (IR identical to the native tool) · x86 PASS · boot PASS (6765)
+
+U63's green run took 13m03s (codexir 5m12s, x86emit 6m09s), and this one ran
+with the transpiler's three guests alongside it. No stall. One clean run
+does not prove the fix -- the U63 stalls were intermittent -- but it is
+consistent with it, and the guests' speed-up is too (below).
+
+## codex-zig-transpiler: the fixed point HOLDS at U64, no change needed
+
+    fixed point   byte-identical, 3,282,132 bytes of zig (U63: 3,251,035)
+    arith.codex   MATCHES all 9 expected lines
+    354s cold     stage 4 guest 103s (peak 729 MB) · stage 5 guest 141s (609 MB) · NATIVE transpile 64s
+
+`08a4328` repins `generated/`. Every guest ran about a third faster than at
+U63 (stage 4 153s -> 103s, stage 5 212s -> 141s; qemu's codexir 5m12s ->
+3m32s), even with both jobs sharing the box. A guest that waits in `hlt` for
+serial input wakes promptly when its interrupts are acknowledged properly;
+that COMPILER-104 is the whole of the speed-up is plausible, not measured.
