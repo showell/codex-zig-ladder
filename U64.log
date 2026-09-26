@@ -198,3 +198,28 @@ is a rule U63 or U64 added on purpose that Rust has not ported:
 `generic-eq` fails in the sweep (`if` on a function: `==` on a type variable
 evaluates to no usable equality) and in the check gate. It is the largest
 port item this Update opens.
+
+## Rust made stingy: U63's refusals ported (rust `e83bd2a`)
+
+Steve: "I want Rust to be stingy like Codex is now stingy." Every refusal U63
+added is ported, and the check gate goes **1,394/38 -> 1,424 agree, 8
+differ**; all 8 are generic equality (below). Linear gate green; sweep 875,
+none lost; curated and safari unchanged on every Rust arm; cargo test 273.
+
+Parser: CDX1078 (tokens left in a body), 1077 (a dropped token at columns
+1-3; column 1 was CDX1000), 1075 (`do` body), 1076 (`(A, B)` field), 1079
+(discarded literal statement), U63's CDX1070 continuation rule, and header
+`trusting` lines. Checker: vector and withheld-record equality (2085/2099),
+VectorMask carries its lane type (and the IR spells `(vector-mask n T)`),
+Real width/mode mismatches are conflicts, lane range for the 256-bit
+families (2093), literal-match coverage (2070), bounded-unit narrowing at
+record sets and returns (2050/2051). Desugarer: `eq-withheld-set`.
+
+The full gate caught two false refusals on the way, both fixed:
+`raytracer-test` (Rust derived `__eq_RtObject` over a record holding a
+Real, which U63 withholds transitively) and `char-open-at-eol` (a second
+error on the lexer's own error token).
+
+Process note: the check gate runs `~/build/rust-target/release/checkdump`
+per unit, so rebuilding during a gate mixes builds. Gate a snapshot:
+`CHECKDUMP=<copy> ./corpus_check_gate.sh`.
