@@ -304,3 +304,13 @@ as a value, which rocemit (and the Rust interpreter) have not yet ported.
 the emitter runs to their verdict (U62: 581 of 887), every app run against its
 verdict. usb-test and usb-desc-guard still pass but left the package on the
 16 KB cap: the Usb chapters they need grew to 17 KB.
+
+## `__heap-base` ported (rust `4e9ac87`): Roc 903 / 1,135, nothing lost vs U62
+
+Renderer3D reads `__heap-base` as a value to floor its buffer guard. It is the
+target's heap origin (x86 `bare-metal-heap-base`, wasm `$heap_start`); the
+interpreter now answers `HEAP_ORIGIN`, rocemit 6291456 (where Mem and
+MachineMem start). The four lost units pass in both, and so does one new unit.
+engine-software-render's interpreter output differs from its sidecar only by a
+leading 0x01, as it did at U62; that led to finding 75: the "leading SOH" is
+codex-vm writing the UART's baud divisor as output (patch in findings/).
