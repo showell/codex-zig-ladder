@@ -177,17 +177,20 @@ path the test itself calls "the defect the helper closes"; U63's new
 **Check gate: 1,394 agree, 38 differ** (U62: 1,352 / 0). Every difference
 is a rule U63 or U64 added on purpose that Rust has not ported:
 
-    18  we accept, Codex refuses   CDX1077 1078 1079 (narrower language), 2070
-                                   (literal match needs a catch-all), 2085 2099
-                                   2100 (equality on Real/vector/type variable),
-                                   2093 (lane past end), 2050 2051 (bounded-unit
-                                   narrowing), 2001 x2 (mask of the wrong lane
-                                   type: our (vec-mask N) has no lane slot)
-    15  both refuse, other code    8 quotes-* CDX1000 vs 1077; 1075 do-block;
-                                   1076 ctor-field-comma; 5 generic-eq-* refusals
-    3   error counts differ        CDX1070 x2, 1071, 1024 (newline rules)
+    17  we accept, Codex refuses   CDX1077 1078 1079 (narrower language), 2070
+                                   (literal match needs a catch-all), 2085 x2
+                                   2099 x3 2100 x2 (equality on Real/vector/type
+                                   variable), 2093 x2 (lane past end), 2050 2051
+                                   (bounded-unit narrowing), 2001 x2 (mask of the
+                                   wrong lane type: our (vec-mask N) has no lane
+                                   slot)
+    15  both refuse, other code    8 quotes-* and lazy-reserved (ours CDX1000 or
+                                   2001, U63's 1077 first); 1075 do-block; 1076
+                                   ctor-field-comma; 4 generic-eq-* refusals
+                                   (ours CDX3008)
+    4   error counts differ        CDX1070 x2, 1071, 1024 (newline rules)
     1   we refuse, Codex accepts   generic-eq
-    1   both refuse, we crash      generic-eq-unconstrained (ours `?`)
+    1   we crash, Codex refuses    generic-eq-unconstrained (ours `?`)
 
 **Linear gate: 25 agree, 0 differ, GREEN.**
 
