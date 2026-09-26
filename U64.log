@@ -107,3 +107,33 @@ build refused the mismatch with the transpilers' pin, as it should).
 So at U64 every zig and wasm arm is green on cobblestone, roc and safari.
 Not yet run: the Rust arms (ir-rust, ir-zig, run-interp, ir-interp; Rust is
 parked) and Roc (roc-apps).
+
+## Rust on curated and safari: green on every arm
+
+Rust is not parked as a verdict: it is our independent reading of what Codex
+means, and it grades every Update. (Only new porting work was parked.)
+
+rust-codex-compiler `7d1dd6b`: builtins at U64, +40, none removed (256-bit
+vectors and masks, lane-wise vector equality, debug registers, arm64 timers,
+`__heap-base`, U64's `__dderiv-Eq`). The probe had silently dropped
+`identity-set-proc` from the types table, because U63 moved
+`identity-admin-row` from TypeEnv.codex into Builtins.codex; it reads both
+now, and names any declared type it cannot render. U63 also gave a vector
+mask a lane type, which our `(vec-mask N)` has no slot for: the new
+quantifier on `vec-select` and `mask-*` is bound and unused.
+
+    ir-interp    cobblestone 28 agree (37s) · roc 46 agree (58s) · safari 54 agree (3m27s)
+    ir-rust      cobblestone 28 agree · roc 46 agree · safari 54 agree
+    ir-zig       cobblestone 28 match · roc 46 match · safari 54 match
+    run-interp   cobblestone 28 match · roc 46 match · safari 54 match
+    ir-diff      cobblestone 28 same · roc 44 same, 2 differ · safari 54 same
+    cargo test   273 ok
+
+ir-interp is the load-bearing one: codexrun interprets U64's own compiler
+frontend (`~/codexir/codexir-subject.codex`) over each unit, and the IR it
+produces must equal native codexir's on the same bytes. The two ir-diff
+roc differences are U62's, at the same `MkTup2` token (COMPILER-85:
+upstream instantiates constructor references, Rust does not).
+
+Not yet read: the full-corpus sweep (1,433 units cut at U64, up from 1,353)
+and the accept/refuse gates, which come after the chosen corpora.
