@@ -150,3 +150,9 @@ PowerShell 7.6.6 installed in `~/build/pwsh` (the box had none). 696 s.
 zig, wasm and Rust arm on cobblestone, roc and safari, safari's whole app, the
 sweep and the Roc ladder all hold every U64 pass. The Rust work it asked for:
 four new refusals ported (check gate 1,512/0) and the list header cost.
+
+**CLOSED 2026-10-04.** Steve told Damian we found no problems. Removed: the
+`cobblestone-u64rel` worktree and every corpus but U66's (`~/units-current`),
+the qemu sandbox (its zigemit is in `~/zigemit`), the scratch logs. Kept:
+`cobblestone-u66rel` (the next base) and `cobblestone-u61`/`-u62`, which
+roc-apps' canvas apps still build from until they are moved to U66.
