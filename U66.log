@@ -56,3 +56,13 @@ not compared like for like.
 
 These replace the droplet's U61 bundles (the cloud's U64 refresh never
 reached this box).
+
+## codex-wasm-transpiler at U66: both roads agree, the fixed point holds
+
+    both roads    the two roads agree byte for byte; arith matches
+    artifact      codexwasm.wat 9,390,899 bytes (U64: 9,299,476)
+    memory        1,679.6 MB, 41.0% of wasm32; within the ratchet, not rebanked
+
+`61fd273`, no source change. `--road both` refuses until `--road zig` has
+regenerated generation 1 at the new pin (the tracked module was U64's), as it
+should: run the zig road first.
