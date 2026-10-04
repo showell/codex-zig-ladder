@@ -1,0 +1,38 @@
+# Update 66
+
+Processed on the droplet, 2026-10-04, verified mostly on its own terms (Steve).
+U65 was never processed separately; U64 (the cloud's, `U64.log`) is the last
+verified base.
+
+    e7c7a6f3  Update 66   seed 267B6C8360E7D2B4
+    b4e38646  Update 65
+    82cb77a5  Update 64   seed 533C6D630D8660E6
+
+U66 over U64: two commits, 2,890 files, +382,312 / -110,853. Release notes:
+`docs/PM/Active/GitHubUpdates/GitHubUpdate6{5,6}.md`; the seed's sha256 prefix
+agrees with U66's. Checkout: `~/showell_repos/cobblestone-u66rel`, a detached
+worktree of NewRepository at `e7c7a6f3`.
+
+## What upstream did with ours
+
+**Issue 158 only** (the codex-vm UART divisor read as output). Fixed on main
+before U65 was cut (29568, 29618, 30741), so it shipped in U65: codex-vm tracks
+COM1's LCR and drops 0x3F8 writes while DLAB is set; at U66 no
+`codex/test/*.expected` begins with 0x01. Neither Update's notes mention us.
+
+What could move our arms: new refusals CDX4025 (an undecidable proof type,
+COMPILER-110) and CDX1080 (constructor return annotations, COMPILER-116);
+COMPILER-106/107/108 (closures past six values, integer tables past ~6,000,
+record-field calls of seven arguments) from U65; and COMPILER-109, the
+128-column layout, with the parser, scoper and resolver rewritten
+"token-identical" and the plugs reflowed (most of ZigEmitter's and
+WasmEmitter's diff).
+
+## cobblestone-qemu: GREEN 5/5 in 14m07s, no change needed
+
+    GREEN 5/5 in 14m07s    cobblestone-qemu cd868ab, sandbox ~/runs/20261004T120251Z-u66
+    fib 8s · zigemit 52s · codexir 5m48s · x86emit 6m37s
+    verify   zig PASS · qemu PASS (IR identical to the native tool) · x86 PASS · boot PASS (6765)
+
+Slower than U64's cloud run (9m26s; codexir 3m32s) on a different machine;
+not compared like for like.
