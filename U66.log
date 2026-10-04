@@ -36,3 +36,23 @@ WasmEmitter's diff).
 
 Slower than U64's cloud run (9m26s; codexir 3m32s) on a different machine;
 not compared like for like.
+
+## codex-zig-transpiler: the fixed point HOLDS at U66, no change needed
+
+    fixed point   byte-identical, 3,306,681 bytes of zig (U64: 3,282,132)
+    arith.codex   MATCHES all 9 expected lines
+    516s cold     stage 2 29s · stage 4 178s (peak 735 MB) · stage 5 204s (366 MB) · NATIVE transpile 96s
+
+`28c6c4e` repins `generated/`. The ring plug's diags move only by line number
+(the 128-column reflow): the same four CDX3005 shadows.
+
+## Oracles and bundles at U66
+
+    oracles     codexir + codexcheck rebuilt (160s, no guest), both smokes pass   transpiler bc492f2
+    ~/codexzig  codexzig 3342dbb1, the fixed point's binary (transpiler 28c6c4e)
+    ~/codexir   codexir 396dd5ef, codexcheck 65ed0291, codexir-subject.codex 0b0aadb3
+    ~/zigemit   zigemit 6426ef3c, cobblestone-qemu sandbox 20261004T120251Z-u66 (cd868ab)
+    all         checkout cobblestone-u66rel e7c7a6f3; SHA256SUMS beside each receipt
+
+These replace the droplet's U61 bundles (the cloud's U64 refresh never
+reached this box).
