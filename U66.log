@@ -85,4 +85,53 @@ Neither U65 nor U66 moves the IR of any unit we carry (the frozen
 safari `dcd214c` moves `quires.tsv`'s checkout to cobblestone-u66rel.
 
 So at U66 every zig and wasm arm is green on cobblestone, roc and safari.
-PAUSED here (Steve, 2026-10-04) before the Rust arms and Roc, for gopher.
+Paused here for gopher-metal v16 (shipped), then resumed.
+
+## Rust on curated and safari: green on every arm, unchanged from U64
+
+rust-codex-compiler `4e9ac87` (the cloud's U64 tip), release rebuilt cold (154s).
+Builtins: U66's probe output is wholly in `src/builtins.rs`; U65/U66 added none.
+
+    ir-interp    cobblestone 28 agree · roc 46 agree · safari 54 agree
+    ir-rust      cobblestone 28 agree · roc 46 agree · safari 54 agree
+    ir-zig       cobblestone 28 match · roc 46 match · safari 54 match
+    run-interp   cobblestone 28 match · roc 46 match · safari 54 match
+    ir-diff      cobblestone 28 same · roc 44 same, 2 differ (COMPILER-85, as at U62/U64) · safari 54 same
+    cargo test   273 ok
+
+## The corpus at U66, the gates and the sweep
+
+`~/units-e7c7a6f361ed` (now `~/units-current`): 1,512 programs, 1,505 units, 7
+refused by design (they cite the manifest-only `Codex`/`Emit` quires or a
+missing chapter).
+
+**Check gate: 1,504 agree / 8 differ, then 1,512 / 0** after porting U65/U66's
+four new refusals (rust `509290a`):
+- CDX4025 (COMPILER-110): a type too deep to decide is refused, not called a
+  proof; a function's result costs no fuel. Rust had upstream's OLD walk, so it
+  refused `many-parameters` (80 parameters) as a proof with CDX4024 -- the one
+  row of "we refuse, Codex accepts", and it was upstream's fix, not ours.
+- CDX1080 (COMPILER-116): constructor return annotations refused, with
+  upstream's recovery (`ctor-return-recovery` counts 5 on both sides).
+- CDX3011: applying a name that is both a local and a builtin.
+- CDX3009: a user class named Eq, Show or Ord.
+
+**Linear gate: 25 agree, 0 differ.** cargo test 273; every Rust arm unchanged
+after each port.
+
+**Sweep, per program, U64 vs U66 on ONE binary.** A U64 corpus was cut here
+(`~/units-82cb77a56976`, checkout `cobblestone-u64rel`) and both swept:
+
+    U64 corpus   881 of 1,135
+    U66 corpus   932 of 1,206 -> 933 with rust `25ef080`
+    lost 0 · gained 1 (cce-foreign-byte, U64.log's open raw-path item) · 71 new, 51 pass
+
+`25ef080`: a list costs a capacity word and a length word before its elements,
+as x86 lays it out (U66's `list-nil-heap`). Two new tests differ by design and
+stay: `builtin-value-names` (hosted-kind is 1 in the interpreter, a hosted
+target, as in the zig/wasm plugs; the .expected is bare metal's 0) and
+`qemu-virt-board-rv` (UART bytes written through RISC-V MMIO, which the
+interpreter does not model). The rest of the new failures are device builtins
+and unported features (trying blocks), as before.
+
+**No U66 regression on any Rust instrument.**
