@@ -156,3 +156,20 @@ four new refusals ported (check gate 1,512/0) and the list header cost.
 the qemu sandbox (its zigemit is in `~/zigemit`), the scratch logs. Kept:
 `cobblestone-u66rel` (the next base) and `cobblestone-u61`/`-u62`, which
 roc-apps' canvas apps still build from until they are moved to U66.
+
+## Canvas apps onto U66 (after the close, Steve)
+
+roc-apps `bb8f990`, rust `ad9a0e7`. Every roc-apps gate green on
+`cobblestone-u66rel`: games (Damian's graders 23/26/44 arms), framebuffer 18,
+gpu 46, floor 12, ladder 942 with an identical ledger. What U66 asked for: the
+games rebuilt (U65 rules; Minesweeper's new `ms_flag`), two frame hashes
+rebanked after looking at the frames (`gpu-depth-tree`'s added frame,
+`shadow-spin`'s new shadow slope and 1/w weighting), rocemit's approx
+conversions made the identity in device units, the GPU gate emitting
+`--whole`, and every script minting U63+'s untracked disks
+(`tests/test_disk.sh`). One behaviour change upstream, for the better:
+fat16-write with every 7th read refused no longer reports a lost write as a
+success; U66's Fat16 checks the cluster chains it reads.
+
+`cobblestone-u62`'s worktree is removed; `cobblestone-u61` stays as
+gopher-metal's FAT16 fixture source (`probe/run.sh`).
