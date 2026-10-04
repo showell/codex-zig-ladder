@@ -135,3 +135,18 @@ interpreter does not model). The rest of the new failures are device builtins
 and unported features (trying blocks), as before.
 
 **No U66 regression on any Rust instrument.**
+
+## Roc: 942 / 1,206 (U64 903 / 1,135), nothing lost (roc-apps ledger)
+
+`tests/ladder.sh` with `TESTS_ROOT=cobblestone-u66rel`, rust `25ef080`, roc
+nightly 2026-09-22; disks minted by upstream's `build/mint-test-disk.ps1` under
+PowerShell 7.6.6 installed in `~/build/pwsh` (the box had none). 696 s.
+
+    per unit vs U64's ledger   lost 0 · gained 1 (cce-foreign-byte) · 71 new, 38 pass
+
+## Verdict
+
+**U66 regresses nothing we measure.** qemu, the zig and wasm fixed points, every
+zig, wasm and Rust arm on cobblestone, roc and safari, safari's whole app, the
+sweep and the Roc ladder all hold every U64 pass. The Rust work it asked for:
+four new refusals ported (check gate 1,512/0) and the list header cost.
