@@ -66,3 +66,23 @@ reached this box).
 `61fd273`, no source change. `--road both` refuses until `--road zig` has
 regenerated generation 1 at the new pin (the tracked module was U64's), as it
 should: run the zig road first.
+
+## Curated and safari on the zig and wasm arms: all green, IR unchanged
+
+    run-zig             cobblestone 28 match · roc 46 match · safari 54 match
+    freeze-upstream-ir  cobblestone 28 unchanged · roc 46 unchanged · safari 54 unchanged
+    run-wasm            cobblestone 28 match · roc 46 match · safari 54 match
+
+Neither U65 nor U66 moves the IR of any unit we carry (the frozen
+`.upstream.ir` is U62's, so "unchanged" spans U63-U66).
+
+## safari's whole app
+
+    harness/build_wasm.sh   2,430-command frame walks exactly, 1,200 frames of
+                            endurance, 300 painted frames; web/driving/safari.wasm
+                            byte-identical to the tracked build
+
+safari `dcd214c` moves `quires.tsv`'s checkout to cobblestone-u66rel.
+
+So at U66 every zig and wasm arm is green on cobblestone, roc and safari.
+PAUSED here (Steve, 2026-10-04) before the Rust arms and Roc, for gopher.
