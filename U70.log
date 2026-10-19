@@ -1,0 +1,243 @@
+# Update 70
+
+Processed in a cloud session, 2026-10-19. U67, U68 and U69 were never
+processed; U66 (`U66.log`) is the last verified base, and U70 is judged on its
+own merits against it.
+
+    fd7a9a38  Update 70                      seed 292381CBBECE88CA
+    fa0eaade  Update 69                      seed 58D18336B15D7F27
+    8557982b  Update 68 (security follow-up) seed E29C439BEB721E79
+    aefb993f  Update 67 (security fix)       seed 279DF926B5F6811D
+    d1740898  Update 67 (preview, part 2)
+    86532f47  Update 67 (preview)
+    e7c7a6f3  Update 66                      seed 267B6C8360E7D2B4
+
+U70 over U66: six commits, 1,734 files, +196,249 / -12,239, two thirds of it
+UOAIX (`apps/uoaix`, 1,122 files). Under `codex/`, `build/`, `seed/` and
+`tools/`: 353 files, +23,356 / -8,674. Release notes:
+`docs/PM/Active/GitHubUpdates/GitHubUpdate6{7,8,9}.md` and `GitHubUpdate70.md`.
+Each seed's sha256 prefix agrees with its notes. Checkout: `~/cb/cobblestone-u70`, a detached
+worktree at `fd7a9a38`; the arms ran on `~/cb/cobblestone-failfix`, which is
+`fd7a9a38` plus one Zig plug commit (`b70464a6`, below).
+
+## What upstream did with ours
+
+Nothing new to take or refuse: our last PRs (152 raytracer prose, 154
+empty-list refusal tests, 155 zig `bit-not`, 156 zig unused act bind) were
+already in U66 and are still in U70. The notes do not mention us.
+
+What could move our arms, from the notes:
+- **COMPILER-109 finished:** the 128-column reflow reaches the Foreword and the
+  plugs. Long signatures now wrap after a comma or an arrow, and the parser
+  gained `type-breaks-line`, `type-continues-below` and a new refusal, CDX1081.
+  Two declared builtin types are written with `let`.
+- **The serial ring moves from 5 MiB to 15 MiB**
+  (`serial-ring-buf-addr = 15728640`), because the image grew past 6 MiB and
+  the NX boundary now follows the code end (U70).
+- **COMPILER-129, U69/U70:** `fail` unwinds to the nearest `try`; the Zig plug
+  lowers it as error unions (`zig-failing-set`).
+- **CORE-11, U70:** the leaf inliner folds Integer constants and small leaves.
+  This is the release that also fixed the inliner's polymorphic-argument
+  miscompile.
+- **U67 preview:** ambiguous collisions across chapters. A chapter that
+  defines neither of two colliding names must cite the one it means (CDX3027).
+- **Builtins:** `+__hardware-random-word`, `+__stack-save`, `+__cover-arm`,
+  `+__cover-dump`, `-hardware-random`.
+
+## cobblestone-qemu: GREEN 5/5 in 9m44s, after two fixes of ours and one of upstream's
+
+    GREEN 5/5 in 9m44s    cobblestone-qemu 4cce2b3, sandbox ~/runs/20261019T134606Z-u70-failfix
+
+Three things stood between U70 and green, in the order they bit.
+
+1. **The ring moved (ours, `4cce2b3`).** `ring_compile.py` hard-coded
+   0x500000. The guest booted, found nothing in the ring and sat in
+   `__read_line` until the stall cap; RIP sampled through the gdbstub showed
+   15/15 samples in `__read_line`. The four ring constants are now read from
+   the checkout's `X86_64Boot.codex`. codex-zig-transpiler's `guest.py` had
+   the same constant, fixed the same way (`7882036`).
+2. **The Zig plug cannot build the compiler (upstream's; PR below).**
+   `codexir.zig: use of undeclared identifier 'cx_fail_exit'`.
+   - `zig-fails` counts every `IrName "fail"` as a raise, and the x86-64
+     emitter has a parameter of that name (`emit-try ... (fail)`, a
+     `List IRActStmt`). So `emit-try` and every caller up to `opening` landed
+     in the failing set, although the compiler contains no `fail` at all:
+     388 signatures returned `anyerror!T`, and the output has no `cx_raise` at all.
+   - The entry wrapper then called `cx_fail_exit`, which the prelude shake
+     never kept (nothing referenced `cx_raise`).
+   - The same false positive breaks codex-zig-transpiler differently. Lifted
+     lambdas (the `BuiltinSpec` emit table) return `anyerror!T` through
+     closure wrappers that do not catch: `expected type 'T', found 'anyerror!T'`.
+   - The fix is `b70464a6`: `fail` raises only where it is applied. The wasm
+     plug is not affected, because `wat-defs-call-name` already skips a
+     definition whose parameters bind the name.
+3. **A wrapped declaration (ours, `4cce2b3`).** `emit_harness.py`'s
+   `require_arity` read only the first line of `lower-chapter`'s signature,
+   which COMPILER-109 wrapped. It counted 7 parameters, not 11, and refused.
+   It now reads indented continuation lines. Both phase signatures are
+   unchanged from U66.
+
+## codex-zig-transpiler: the fixed point HOLDS (with b70464a6)
+
+    fixed point   byte-identical, 3,387,089 bytes of zig (U66: 3,306,681)
+    arith.codex   MATCHES all 9 lines
+    359s cold     ring plug 21s (395 MB) · compile 95s (735 MB) · transpile 179s (366 MB) · native transpile 57s
+
+`7882036` repins `generated/`. Without `b70464a6`, stage 6 (build the binary)
+fails, as item 2 above describes.
+
+## Oracles and bundles at U70
+
+    oracles     codexir + codexcheck rebuilt (93s, no guest), both smokes pass
+    ~/codexzig  codexzig from generated/local (the fixed point's binary)
+    ~/codexir   codexir, codexcheck, codexir-subject.codex (PROVENANCE.oracles: b70464a6)
+    ~/zigemit   zigemit from sandbox 20261019T134606Z-u70-failfix
+    all         SHA256SUMS beside each
+
+## codex-wasm-transpiler: both roads agree, the fixed point holds
+
+    both roads    the two roads agree byte for byte; arith matches
+    artifact      codexwasm.wat 9,556,120 bytes (U66: 9,390,899)
+    memory        1,681.4 MB, 41.0% of wasm32 (+1.56% against the bank)
+
+`e7126ae` repins `generated/` and changes no source. Point `CODEXZIG` at
+`codex-zig-transpiler/generated/local/codexzig`, where its receipt lives. A
+copy elsewhere reads as "no readable receipt", and the pin goes unverified.
+
+## Curated and safari: every arm green; IR moved where the inliner reached
+
+    run-zig             cobblestone 28 match · roc 46 match · safari 54 match
+    run-wasm            cobblestone 28 match · roc 46 match · safari 54 match
+    ir-zig              cobblestone 28 match · roc 46 match · safari 54 match
+    ir-interp           cobblestone 28 agree · roc 46 agree · safari 54 agree
+    run-interp          cobblestone 28 match · roc 46 match · safari 54 match
+    ir-rust             cobblestone 28 agree · roc 46 agree · safari 54 agree
+    freeze-upstream-ir  cobblestone 2 moved · roc 1 moved · safari 32 moved
+    ir-diff             cobblestone 26 same · roc 43 same (1 inliner, 2 COMPILER-85) · safari 22 same
+
+The moved IR is the leaf inliner (CORE-11). Integer constants such as
+`conifer-gold` and `max-trees` fold into their callers and their definitions
+drop out, and `negation-abutment`'s `two` is folded into `neg-var` (U66
+inlined `neg-var` into `opening` instead). The frozen `.upstream.ir` were last
+cut at U62, so "moved" spans U63-U70. Re-frozen: curated `fb8c0ba`, safari
+`fd363c1`.
+
+## safari's whole app
+
+    harness/build_wasm.sh   2,430-command frame walks exactly, 1,200 frames of
+                            endurance, 300 painted frames
+    safari.wasm             2,645,671 bytes (U66: 2,645,676), rebuilt and tracked
+
+`fd363c1` moves `quires.tsv`'s checkout to `cobblestone-u70rel`.
+
+## Rust: builtins, the parser, and two U67 collision rules still unported
+
+rust-codex-compiler `e07057b`, three commits on `ad9a0e7` (the U66 tip):
+- `7f20a2a` **U70's builtins:** the four added and `hardware-random` removed;
+  `BUILTIN_ALLOC` by hand, all `none` as upstream declares.
+- `037198a` **`builtins_probe.py` reads a `bs-type` written with `let`.**
+  `process-spawn-priority` and `vec-select` had come out with no arity and no
+  type. At fd7a9a38 the probe now prints exactly the committed tables.
+- `e07057b` **A signature breaks after a comma or an arrow onto a deeper
+  line.** Ported case for case from `Parser.codex`, with its refusal (CDX1081).
+  Before this, 53 corpus units the oracle compiles were CDX1000 here: the
+  continuation line parsed as a definition named `Integer` or `List`. Both of
+  upstream's `errors/signature-*-same-column` tests now agree with
+  codexcheck, first code and count.
+
+    cargo test   275 ok (273 + the two parser tests)
+
+## The corpus at U70, the gates and the sweep
+
+`~/units-fd7a9a38d74d` (`~/units-current`): 1,537 programs, 1,529 units, and 8
+the bundler refuses by design (they cite the manifest-only `Codex`/`Emit`
+quires, or a chapter that does not exist).
+
+**Check gate: 1,536 agree / 1 differ** after `e07057b`. An earlier run, on the
+binary before it (its output overwritten by the rerun), had shown at least 53
+rows of `ours[2 CDX1000] oracle[0 -]`: the wrapped signatures. The one difference left
+is inventory, not an invented error:
+
+    collide-ambiguous    ours[0 -] oracle[1 CDX3027]
+
+**Linear gate: 25 agree, 0 differ.**
+
+**Sweep, per program, U66 vs U70 on ONE binary** (`e07057b`):
+
+    U66 corpus   933 of 1,206
+    U70 corpus   937 of 1,227
+    lost 1 · gained 0 · 21 new, 5 pass
+
+- **lost `edge-mesh-mint`:** not a regression. U70 grew the test (+60 lines,
+  +8 expected lines), and it now hits the sweep's step limit.
+- **New tests that differ, two of them ours to fix:**
+  - `lir-listat`: `set-base 42` where 32 is expected. `list-set-at` stores in
+    place, and a tail view shares its base's storage (DevelopersGuide,
+    "`list-set-at` mutates in place"). The interpreter copies on a `Cons`
+    destructure, so the base is not written. **Open, ours.**
+  - `collide-cited`: `pick-helper 1 = 2` where 101 is expected. Two chapters
+    define `pick-helper`; the third cites `PickBeta (pick-helper)` and
+    defines neither. The interpreter resolves a colliding name to its own
+    chapter's definition and then to the first global, never the cited one.
+    The same rule gives `collide-ambiguous` (CDX3027) its refusal. **Open,
+    ours.**
+- **The other 14 failing new tests** are the step limit (the Wycheproof and
+  degenerate-input suites, `cover-arms`, `match-arm-tail`), `trying` blocks
+  (`fail-unwind*`), device builtins, and one unit that cites the
+  manifest-only `Codex` quire.
+
+## Roc
+
+`tests/ladder.sh`, rust `e07057b`. The ledger's pinned nightly (2026-09-22)
+is not fetchable here, so U66 and U70 were both run on the one Roc this
+session has, nightly 2026-10-18-1df370f, and compared to each other:
+
+    U66 tests   936 / 1,206   (the committed ledger, nightly 09-22: 942)
+    U70 tests   947 / 1,227
+    per unit    lost 1 · gained 0 · 21 new, 12 pass
+
+The loss is `net-driver-seam-no-av`: U70's version reaches `rdmsr`, which
+rocemit has no door for (`MACHINE_OPS` in `src/roc_emit.rs`; roc-apps' Machine
+model would need it as well). **Open, ours.** Against the committed ledger
+(nightly 09-22), the newer Roc fails 9 units on both pins:
+- 5 with `invalid nominal record`, `dhcp-acquire` among them (at U70 it
+  also reaches `rdmsr` first);
+- 2 with `value is not polymorphic`;
+- 2 with `type mismatch`.
+
+It passes 3 more (`lib@{markdown,toml,yaml}-guard`). None of these is
+Codex's doing.
+`tests/ledger.txt` is left as committed.
+
+## Upstream findings
+
+- **Zig plug, `zig-fails` (ZigEmitter.codex, Section: Failure):** a bound
+  name `fail` is read as a raise, and the compiler itself no longer builds
+  through the Zig plug. Fix `b70464a6` on branch `zig-plug-fail-local`,
+  patch in the session scratchpad. The same section still matches a failing
+  global by name even where a local shadows it, and that is not fixed here.
+- **GitHubUpdate68.md** carries stray tool markup between "Tools and release
+  documents" and "Release proofs" (`</content>` and `</invoke>`, lines 28-29),
+  left from however it was written.
+
+## Verdict
+
+**U70 regresses nothing we measure, once one upstream bug is fixed.**
+
+The Zig plug's `fail` lowering, new in U69/U70, cannot build the compiler
+itself. A parameter named `fail` in the x86-64 emitter puts the whole
+emitter, and everything that calls it, in the failing set. That is a
+one-line fix (`b70464a6`). With it:
+- qemu is GREEN 5/5;
+- the zig and wasm fixed points hold;
+- every curated and safari arm is green, and the safari app walks exactly;
+- the check gate is 1,536/1 and the linear gate 25/0;
+- the sweep loses nothing but a test that grew past the step limit;
+- the Roc ladder loses one unit, to a device builtin rocemit lacks.
+
+The rest was ours to catch up: the moved serial ring, the 128-column
+signature grammar, `let` in the probe, and U70's builtins. Still open
+on our side:
+- the cite-chosen collision, with its CDX3027 refusal;
+- tail views sharing storage under `list-set-at`, in the interpreter;
+- `rdmsr` in rocemit.
