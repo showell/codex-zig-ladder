@@ -56,7 +56,7 @@ Three things stood between U70 and green, in the order they bit.
    15/15 samples in `__read_line`. The four ring constants are now read from
    the checkout's `X86_64Boot.codex`. codex-zig-transpiler's `guest.py` had
    the same constant, fixed the same way (`7882036`).
-2. **The Zig plug cannot build the compiler (upstream's; PR below).**
+2. **The Zig plug cannot build the compiler (upstream's; PR 159).**
    `codexir.zig: use of undeclared identifier 'cx_fail_exit'`.
    - `zig-fails` counts every `IrName "fail"` as a raise, and the x86-64
      emitter has a parameter of that name (`emit-try ... (fail)`, a
@@ -213,7 +213,7 @@ Codex's doing.
 
 - **Zig plug, `zig-fails` (ZigEmitter.codex, Section: Failure):** a bound
   name `fail` is read as a raise, and the compiler itself no longer builds
-  through the Zig plug. Fix `b70464a6` on branch `zig-plug-fail-local`,
+  through the Zig plug. Fix `b70464a6` on branch `zig-plug-fail-local`, sent as PR 159
   patch in the session scratchpad. The same section still matches a failing
   global by name even where a local shadows it, and that is not fixed here.
 - **GitHubUpdate68.md** carries stray tool markup between "Tools and release
