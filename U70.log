@@ -241,3 +241,33 @@ on our side:
 - the cite-chosen collision, with its CDX3027 refusal;
 - tail views sharing storage under `list-set-at`, in the interpreter;
 - `rdmsr` in rocemit.
+
+## Follow-up, same day: the three open Rust items
+
+rust-codex-compiler `d779133`, roc-apps `ea8c4a0`
+(`claude/great-wright-i7aste`, a branch, as roc-apps' work goes).
+
+- **Collisions, CDX3027:** closed. The scoper now follows ChapterScoper all
+  the way, through `build-mod-renames` and `apply-cite-overrides`. Desugar
+  records a cite's selected names, which it had always dropped. A mention
+  that is neither its chapter's own nor cited is refused with upstream's
+  message. `collide-cited` prints 101, and `collide-ambiguous` agrees with
+  codexcheck.
+- **Tail views:** closed. A `Cons` tail is linked to its list, and a
+  `list-set-at` through either is copied into the other. A push or an
+  insert detaches it, as the reallocation behind one does on bare metal.
+  `ops/lir-listat` matches. The sweep takes 93 s with or without the change.
+- **`rdmsr`:** done, and CPUID with it. rocemit has doors for both, and
+  roc-apps' Machine answers as codex-vm does: `-no-avx`, the AVX-admitted
+  boot cell, and MSRs 0 except the APIC base. `cpuid-avx` and
+  `cpuid-no-avx` pass. `dhcp-acquire`, `dhcp-acquire-e1000`,
+  `net-driver-seam-no-av` and `net-poll-calibrated` now stop at the next
+  builtin, `cpu-read-cr3`, which needs the boot's page tables modelled
+  (`emit-build-process-page-tables`). **Open.**
+
+    check gate   1,537 agree / 0 differ
+    linear gate  25 / 0
+    sweep        939 / 1,227 (+collide-cited, +lir-listat, nothing lost)
+    Roc ladder   949 / 1,227 (+cpuid-avx, +cpuid-no-avx, nothing lost)
+    arms         every curated arm unchanged, 128 / 128
+    cargo test   278 ok
