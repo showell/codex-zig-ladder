@@ -271,3 +271,28 @@ rust-codex-compiler `d779133`, roc-apps `ea8c4a0`
     Roc ladder   949 / 1,227 (+cpuid-avx, +cpuid-no-avx, nothing lost)
     arms         every curated arm unchanged, 128 / 128
     cargo test   278 ok
+
+## Follow-up, 2026-10-20: cpu-read-cr3 and the page tables
+
+rust-codex-compiler `8f4d67c`, roc-apps `ba8ae73`.
+
+- **Tables:** the Machine boots with X86_64Boot's page tables, laid down
+  before any other boot write below 0xE000, the order the x86 boot keeps.
+  That is `emit-build-process-page-tables` (PML4 0x8000, PDPT 0x9000, three
+  RAM directories at 0x83, NX from page 3, the device directory at 0x93
+  with PCD and NX), then `emit-demand-unmap` (heap pages 8-1023, and the
+  guard page with its base at 36320).
+- **cpu-read-cr3:** rocemit answers 0x8000, the PML4 `emit-start` loads.
+  The machine runs no other process.
+- **memory-fence:** answers 0, as x86's `mfence` then 0 does.
+- **Results:** `net-driver-seam-no-av` passes, because its walk of the
+  tables reaches the bare-metal verdicts. The ladder is 950/1,227 with
+  nothing lost.
+- **Still failing, for other reasons:**
+  - `dhcp-acquire` and `dhcp-acquire-e1000` now reach the newer Roc's
+    `invalid nominal record` (Roc's own, as at U66).
+  - `net-poll-calibrated` wants `-e1000-nat`, which the machine does not
+    model.
+  - `atomic-smoke` reaches `atomic-cas`.
+  - `arm64-net-peer-fin` and `arm64-net-peer-fin-framed` now time out at
+    120 s with or without this change. They took 115.5 s yesterday.
