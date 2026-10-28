@@ -206,7 +206,29 @@ The 19 new tests that fail are ones the interpreter never claimed:
 
 ## Roc
 
-ROC_SECTION
+`tests/ladder.sh`, rust `f3378fc`, both pins on the one Roc this session has,
+nightly 2026-10-09-258ab27 (the ledger's pinned 09-22 is not here):
+
+    U70 tests   943 / 1,227
+    U72 tests   945 / 1,257
+    per unit    lost 6 · gained 1 · 30 new, 7 pass
+
+**All six losses are one cause, and it is ours:** U72's `net-isn` (RFC 6528)
+reads `__hardware-random-word` for every TCP connection's initial sequence
+number, so every network unit reaches it (`arm64-send-checked`,
+`arm64-send-refusal`, `arp-cache-bound`, `tcp-checksum-refuse`,
+`tcp-reliability`, `tcp-seqwrap`). rocemit had no rule for it. `ebe1620`
+answers 0, which upstream's callers read as "no hardware word". The units
+then stop one step later: `net-isn` keys on `get-ticks` instead, and rocemit
+has no door for the clock as a value. **Open, ours.** The gain is
+`scope-runtime-open`. `tests/ledger.txt` is left as committed.
+
+Two things cost runs here and are worth knowing:
+- Roc's build cache (`~/.cache/roc`) reached 5.3 GB and filled the session's
+  disk mid-ladder, so the first runs were void.
+- `ladder.sh` wrote the verdicts' log into `gen/tests` before creating it,
+  which fails on a fresh build directory (roc-apps `16cc93d`, on
+  `claude/roc-chat`).
 
 ## Upstream findings
 
@@ -233,9 +255,10 @@ diagnosis than ours. With U72 as released:
 - after porting U72's builtins and checker, the check gate is 1,575/0 and the
   linear gate 25/0;
 - the sweep loses nothing;
-- ROC_VERDICT
+- the Roc ladder loses 6 network units to a clock door rocemit lacks.
 
 Still open on our side:
+- `get-ticks` as a value in rocemit (6 network units);
 - interpreter rules for `fork`, `race`, `await-any` and the session builtins;
 - the probe's `run-process-full`;
 - unfolding cobble-webbox's `cx_fs` part and dropping its `compiler.shale`
