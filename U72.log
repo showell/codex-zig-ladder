@@ -1,0 +1,242 @@
+# Update 72 (and 71)
+
+Processed in a cloud session, 2026-10-28. U70 (`U70.log`) is the last
+verified base; U71 was never processed on its own, and U72 is judged against
+U70 with U71's notes read for what it did with ours.
+
+    07e9a4ea  Update 72                      seed 9E2000181819DC49
+    e0540cef  Update 71                      seed 967435BDFB742810
+    fd7a9a38  Update 70                      seed 292381CBBECE88CA
+
+U72 over U70: two commits, 791 files, +128,549 / -22,412, most of it UOAIX
+(`apps/`). Under `codex/`, `build/`, `seed/` and `tools/`: 279 files,
++18,087 / -8,294. Release notes: `docs/PM/Active/GitHubUpdates/
+GitHubUpdate71.md` and `GitHubUpdate72.md`. Each seed's sha256 prefix agrees
+with its notes. Checkout: `~/cb/cobblestone-u72`, a detached worktree at
+`07e9a4ea`, with no commit of ours on it: every arm ran on upstream as
+released.
+
+## What upstream did with ours
+
+Eight of our pull requests are ingested, six in U71 and two in U72, and four
+of our issues are closed. Each PR was compared file by file against the
+release; prose is checked separately from code.
+
+**PR 159, the Zig plug's `fail` (U71): code taken and extended, our prose
+dropped.** Upstream rewrote `zig-is-fail-callee` to
+`n == "fail" & lookup-arity (ctx.arities) n < 0`, so a defined `fail` is not
+the builtin. It added `zig-invokes-closure` and a closure mark, so `fail`
+also passes through closure values. It also fixes the hole U70.log left open
+("a failing global by name even where a local shadows it"): a shadowing
+parameter is now applied rather than the definition. Our comment explaining
+why a bound name is not a raise was not kept. The code says it now, so
+nothing is lost.
+
+**PRs 160, 161, 166 and 169 (U71): every hunk present as sent.** 169's
+`WebRuntime.codex` is byte-identical to ours.
+
+**PR 168, block device, process scope and FileSystem host calls (U71):
+taken whole.** All 114 added lines are in U71 verbatim. `git apply --check -R`
+fails only because 159's rewrite moved the context around them.
+
+**PR 167, FileSystem append/list-dir/make-dir and `fat16-append-file`, and
+PR 170, Codex Chat, stacked on 167 (U72): every hunk present as sent.** Most
+files are identical. The checker learned the three new operations' scopes in
+the same release (below).
+
+**Issues, all closed by the maintainer:**
+- **162 (TCP stall, `http-encode`):** the maintainer found the real trigger.
+  `ip-sum` folded each element unmasked, and a checksum byte over 255
+  stalled the connection. Fixed at val 48881 with tests
+  `tcp-checksum-wire` and `tcp-checksum-refuse`. `http-encode` now sends UTF-8
+  and counts Content-Length in bytes (val 48773). Verified in
+  `codex/os/net/Ethernet.codex`: `ip-word` and `ip-sum` mask to the low
+  byte. **Not addressed:** our suggestion that the TCP layer refuse an
+  element above 255 rather than mask it.
+- **163 (WebMux):** stash-and-replay of other connections' frames, our option
+  1 (val 48774).
+- **164 (`concat-codex-self` under pwsh on Linux):** fixed in U71.
+  cobble-webbox's `tools/compiler.shale` workaround becomes unnecessary once
+  its pin reaches U71 or later.
+- **165 (the Zig plug's part ceiling):** a third shake mask lifts the ceiling
+  to 189 parts. The `cx_fs` part cobble-webbox folded to fit under the old
+  ceiling could be unfolded.
+
+**Follow-up on our side, nothing done here:** cobble-webbox's `webbox`
+branch of the fork carries PRs that are now merged, and could be rebased onto
+U72.
+
+What could move our arms, from the notes:
+- **Structured concurrency from source (U72):** `par` is written in
+  `ListUtils` over `fork` and `await`, and `race` over the new builtin
+  `await-any`. There are session channels (`s-new`, `s-send`, `s-recv`,
+  `s-close`, typed `SChan (SSend a (SRecv b SEnd))`) and multi-waiter tasks.
+  COMPILER-133/134/136/138/139, CDX2067 for a closure stored in a list.
+- **Capability scope:** a path grant is a PATH, admitting itself and what
+  lies beneath it at a `/`, never a string prefix (`"A"` admits `"A/x"`,
+  never `"AB"`). `append-file`, `make-dir` and `list-dir` name their resource.
+- **The printer parenthesizes `await` arguments.** COMPILER-132.
+  CostModel 5.7 measures builtins that were `unknown`.
+- **Builtins:** `+await-any`, `-par` (now source). `s-new` and
+  `s-recv-value` carry `Concurrent`. About fifty `bs-alloc` rows are now
+  measured.
+
+## cobblestone-qemu: GREEN 5/5 in 22m18s, no change
+
+    GREEN 5/5 in 22m18s    cobblestone-qemu 4cce2b3, sandbox ~/runs/20261028T205727Z-u72
+
+Nothing moved: the ring constants and the wrapped signatures that cost U70
+two fixes are read from the checkout, and both still read right. The time is
+long because the zig fixed point ran beside it on four cores. U70's run took
+9m44s alone.
+
+## codex-zig-transpiler: the fixed point HOLDS
+
+    fixed point   byte-identical, 3,464,374 bytes of zig (U70: 3,387,089)
+    arith.codex   MATCHES all 9 lines
+    guest peaks   ring plug 407 MB · compile 732 MB · transpile 379 MB, of 3072
+
+`b9e5896` repins `generated/` and changes no source. U70 needed our
+`b70464a6` to get here; U72 needs nothing (PR 159 is upstream's now).
+
+## Oracles and bundles at U72
+
+    oracles     codexir + codexcheck rebuilt (179s, no guest), both smokes pass
+    ~/codexzig  codexzig from generated/local (the fixed point's binary)
+    ~/codexir   codexir, codexcheck, codexir-subject.codex (PROVENANCE.oracles: 07e9a4ea, 09c7ed7)
+    ~/zigemit   zigemit from sandbox 20261028T205727Z-u72
+    all         SHA256SUMS beside each
+
+## codex-wasm-transpiler: both roads agree, the fixed point holds
+
+    both roads    the two roads agree byte for byte; arith matches
+    artifact      codexwasm.wat 9,588,827 bytes (U70: 9,556,120)
+    memory        1,682.0 MB, 41.1% of wasm32 (+1.59% against the bank)
+
+`4e6156f` repins `generated/` and changes no source. The tracked module was
+still U70's, so `--road zig` came first and `--road both` then compared like
+with like. `~/showell_repos/codex-wasm-transpiler`, which curated's
+`tools.tsv` names, pointed at a stale clone and was repointed.
+
+## Curated and safari: every arm green; no IR moved
+
+    run-zig             cobblestone 28 match · roc 46 match · safari 54 match
+    run-wasm            cobblestone 28 match · roc 46 match · safari 54 match
+    ir-zig              cobblestone 28 match · roc 46 match · safari 54 match
+    ir-interp           cobblestone 28 agree · roc 46 agree · safari 54 agree
+    run-interp          cobblestone 28 match · roc 46 match · safari 54 match
+    ir-rust             cobblestone 28 agree · roc 46 agree · safari 54 agree
+    freeze-upstream-ir  cobblestone 28 unchanged · roc 46 unchanged · safari 54 unchanged
+    ir-diff             cobblestone 26 same · roc 43 same · safari 22 same (as at U70)
+
+Nothing to re-freeze: U72's compiler emits the same IR as U70's for all 128
+units.
+
+## safari's whole app
+
+    harness/build_wasm.sh   2,430-command frame walks exactly, 1,200 frames of
+                            endurance, 300 painted frames
+    safari.wasm             2,645,821 bytes (U70: 2,645,671), rebuilt and tracked
+
+`9b6be0d` moves `quires.tsv`'s checkout to `cobblestone-u72rel`.
+
+## Rust: U72's builtins and checker, ported
+
+rust-codex-compiler, two commits on `8f4d67c` (the U70 follow-up tip):
+- `5fe63ec` **U72's builtins.** `builtins_probe.py --rust` and
+  `--rust-check-types` spliced over the committed tables: `+await-any`,
+  `-par`, `s-new` and `s-recv-value` effectful. `Concurrent` is interned with
+  the other effect names. `BUILTIN_ALLOC` is regenerated whole from every
+  `bs-alloc`: kept by hand, it had fallen behind upstream's measurements,
+  with about fifty rows still `unknown` and some rows missing.
+- `f3378fc` **U72's checker.** Ported from the TypeChecker diff:
+  - the three file operations' scopes;
+  - `path-admits`;
+  - `Task` and the session types as builtin type names;
+  - `lin-list`'s closure capture (CDX2067), sharing `lin-captured-by` with
+    `lin-arg-lambda`.
+
+  The probe now reads a bare `deck-record` inside a list. It had dropped the
+  declared types of `s-send`, `s-recv` and `s-close`, so a channel used past
+  its protocol checked clean. `report_conflict` now reports two session
+  states of different heads, the one concrete pair `session-typed-mismatch`
+  needs. Every other concrete pair stays a gap, which is why the rule is
+  that narrow.
+
+    cargo test   282 ok (278 + 4 for the above)
+
+`run-process-full`'s declared type is still not rendered by the probe, as
+at U70.
+
+## The corpus at U72, the gates and the sweep
+
+`~/units-07e9a4ea6693` (`~/units-current`): 1,575 programs, 1,567 units, and
+the same 8 the bundler refuses by design.
+
+**Check gate: 1,575 agree / 0 differ** after `f3378fc`. Before it the gate
+had 6 differences, all U72's:
+
+    fs-ops                   ours[8 CDX4002] oracle[0 -]     the three new file ops unscoped
+    scope-path-boundary      ours[0 -] oracle[1 CDX4002]     a prefix admitted "OPSX"
+    race-linear-branch       ours[0 -] oracle[1 CDX2067]     a closure in a list
+    race-linear-list-let     ours[0 -] oracle[1 CDX2067]     the same
+    session-typed            ours[8 CDX3008] oracle[0 -]     session types unknown
+    session-typed-mismatch   ours[6 CDX3008] oracle[1 CDX2001]
+
+The first, `fs-ops`, is our own PR 167's test: we invented eight errors on a
+program upstream compiles.
+
+**Linear gate: 25 agree, 0 differ.**
+
+**Sweep, per program, U70 vs U72 on ONE binary** (`f3378fc`):
+
+    U70 corpus   939 of 1,227
+    U72 corpus   950 of 1,257
+    lost 0 · gained 0 · 30 new, 11 pass
+
+The 19 new tests that fail are ones the interpreter never claimed:
+- `fork`, `race` and `s-new` have no interpreter rule, so 9 of them fail
+  there: `await-twice`, `two-awaiters`, `waiters-mixed`, the `race-*` tests
+  and the `session-*` tests;
+- `trying` blocks (`zig-fail-raise`, `zig-fail-closure`,
+  `tail-self-over-apply`);
+- `__hardware-random-word`, in 4 network tests;
+- block devices, in `fat16-append` and `scope-path-beneath`;
+- `fs-ops`, whose `make-dir` the interpreter does not know.
+
+## Roc
+
+ROC_SECTION
+
+## Upstream findings
+
+- **None that block.** Nothing in U71 or U72 broke an arm of ours: every
+  failure above was ours to catch up.
+- **Issue 162, still open in part:** the TCP checksum is masked to the low
+  byte, which fixes the stall. A list element over 255 still reaches the
+  wire silently truncated, which is what our suggestion to refuse it at the
+  TCP layer was about. Worth one comment on the closed issue, if Steve
+  agrees.
+
+## Verdict
+
+**U72 regresses nothing we measure, and needs nothing from us to get there.**
+
+Upstream took all eight of our PRs: four exactly as sent, two whole, one
+whole once 159's rewrite is accounted for, and 159 itself rewritten and
+extended. It closed all four of our issues, one of them with a better
+diagnosis than ours. With U72 as released:
+- qemu is GREEN 5/5;
+- the zig and wasm fixed points hold, with no source change on our side;
+- every curated and safari arm is green, no IR moved, and the safari app
+  walks exactly;
+- after porting U72's builtins and checker, the check gate is 1,575/0 and the
+  linear gate 25/0;
+- the sweep loses nothing;
+- ROC_VERDICT
+
+Still open on our side:
+- interpreter rules for `fork`, `race`, `await-any` and the session builtins;
+- the probe's `run-process-full`;
+- unfolding cobble-webbox's `cx_fs` part and dropping its `compiler.shale`
+  pwsh workaround, once its pin moves past U71.
